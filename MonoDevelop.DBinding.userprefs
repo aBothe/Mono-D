@@ -2,9 +2,18 @@
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
   <MonoDevelop.Ide.Workbench ActiveDocument="MonoDevelop.DBinding\MonoDevelop.DBinding.addin.xml">
     <Files>
-      <File FileName="MonoDevelop.DBinding\Core\main.cs" Line="11" Column="4" />
-      <File FileName="MonoDevelop.DBinding\MonoDevelop.DBinding.addin.xml" Line="10" Column="9" />
+      <File FileName="MonoDevelop.DBinding\MonoDevelop.DBinding.addin.xml" Line="70" Column="17" />
     </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State expanded="True">
+          <Node name="MonoDevelop.DBinding" expanded="True">
+            <Node name="Core" expanded="True" />
+            <Node name="MonoDevelop.DBinding.addin.xml" selected="True" />
+          </Node>
+        </State>
+      </Pad>
+    </Pads>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore />

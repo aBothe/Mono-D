@@ -15,7 +15,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug</OutputPath>
+    <OutputPath>C:\Program Files (x86)\MonoDevelop\AddIns\BackendBindings</OutputPath>
     <DefineConstants>DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -25,7 +25,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Release</OutputPath>
+    <OutputPath>C:\Program Files (x86)\MonoDevelop\AddIns\BackendBindings</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
@@ -54,9 +54,12 @@
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <Folder Include="Core\" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="MonoDevelop.DBinding.addin.xml" />
+    <Folder Include="Project\" />
+    <Folder Include="Refactoring\" />
+    <Folder Include="Completion\" />
+    <Folder Include="Formatting\" />
+    <Folder Include="Highlighting\" />
+    <Folder Include="Parser\" />
   </ItemGroup>
   <ProjectExtensions>
     <MonoDevelop>
@@ -69,4 +72,7 @@
       </Properties>
     </MonoDevelop>
   </ProjectExtensions>
+  <ItemGroup>
+    <EmbeddedResource Include="MonoDevelop.DBinding.addin.xml" />
+  </ItemGroup>
 </Project>
