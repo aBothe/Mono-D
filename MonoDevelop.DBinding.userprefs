@@ -1,0 +1,13 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="MonoDevelop.DBinding\MonoDevelop.DBinding.addin.xml">
+    <Files>
+      <File FileName="MonoDevelop.DBinding\Core\main.cs" Line="11" Column="4" />
+      <File FileName="MonoDevelop.DBinding\MonoDevelop.DBinding.addin.xml" Line="10" Column="9" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>

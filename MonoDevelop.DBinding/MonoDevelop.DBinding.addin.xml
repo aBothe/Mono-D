@@ -1,0 +1,10 @@
+<Addin	id="DBinding"
+		namespace="MonoDevelop"
+		name           = "D Language Binding"  
+        author         = "Alexander Bothe"  
+        copyright      = ""  
+        description    = "A language binding to the D Programming Language"  
+        category       = "Language Bindings"  
+        version        = "1.0">  
+
+</Addin>
