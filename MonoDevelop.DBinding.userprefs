@@ -1,15 +1,16 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="MonoDevelop.DBinding\MonoDevelop.DBinding.addin.xml">
+  <MonoDevelop.Ide.Workbench ActiveDocument="MonoDevelop.DBinding\DLanguageBinding.cs">
     <Files>
-      <File FileName="MonoDevelop.DBinding\MonoDevelop.DBinding.addin.xml" Line="70" Column="17" />
+      <File FileName="C:\Users\Alexander\Desktop\monodevelop-2.5.91\src\addins\CSharpBinding\MonoDevelop.CSharp\CSharpLanguageBinding.cs" Line="79" Column="4" />
+      <File FileName="MonoDevelop.DBinding\DLanguageBinding.cs" Line="5" Column="1" />
+      <File FileName="MonoDevelop.DBinding\MonoDevelop.D.addin.xml" Line="26" Column="14" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State expanded="True">
-          <Node name="MonoDevelop.DBinding" expanded="True">
-            <Node name="Core" expanded="True" />
-            <Node name="MonoDevelop.DBinding.addin.xml" selected="True" />
+          <Node name="MonoDevelop.D" expanded="True">
+            <Node name="DLanguageBinding.cs" selected="True" />
           </Node>
         </State>
       </Pad>

@@ -16,7 +16,7 @@
 	<Extension path = "/MonoDevelop/ProjectModel/MSBuildItemTypes">
 		<DotNetProject 
 			language="D" 
-			extension="dproj" 
+			extension=".dproj" 
 			resourceHandler="Project.CSharpResourceIdBuilder"
 			/>
 	</Extension>
@@ -81,51 +81,53 @@
 	</Extension>-->
 	
 	<Extension path = "/MonoDevelop/ProjectModel/DomParser">
-		<Parser class = "Parser.NRefactoryParser" fileExtensions=".cs" />
-		<Parser class = "Parser.McsParser" fileExtensions=".cs" />
+		<Parser class = "Parser.NRefactoryParser" fileExtensions=".d,.di" />
+		<Parser class = "Parser.McsParser" fileExtensions=".d,.di" />
 	</Extension>
-	
+	<!--
 	<Extension path = "/MonoDevelop/ProjectModel/Ambiences">
-		<Class id = "C#" class = "MonoDevelop.CSharp.Ast.CSharpAmbience" />
-	</Extension>
+		<Class id = "C#" class = "Ast.DAmbience" />
+	</Extension>-->
 	
 	<Extension path = "/MonoDevelop/Core/StockIcons">
-		<StockIcon stockid = "md-csharp-file" resource = "C#.FileIcon" />
-		<StockIcon stockid = "md-csharp-project" resource = "csharp-project-16.png" />
+		<StockIcon stockid = "d-file" resource = "dfile16.png" />
+		<StockIcon stockid = "d-project" resource = "dproj16.png" />
 	</Extension>
 	
 	<Extension path = "/MonoDevelop/Core/MimeTypes">
-		<MimeType id="text/x-csharp" _description="C# source code" icon="md-csharp-file" isText="true">
-			<File pattern="*.cs" />
+		<MimeType id="text/x-d" _description="D source code" icon="d-file" isText="true">
+			<File pattern="*.d" />
+			<File pattern="*.di" />
 		</MimeType>
 	</Extension>
 	
 	<Extension path = "/MonoDevelop/Ide/CodeFormatters">
-		<Formatter mimeType="text/x-csharp" class="MonoDevelop.CSharp.Formatting.CSharpFormatter" />
+		<Formatter mimeType="text/x-d" class="Formatting.DFormatter" />
 	</Extension>
 	
 	<Extension path = "/MonoDevelop/SourceEditor2/CustomModes">
-		<SyntaxMode mimeTypes="text/x-csharp" class="MonoDevelop.CSharp.Highlighting.CSharpSyntaxMode"/>
+		<SyntaxMode mimeTypes="text/x-d" class="Highlighting.DSyntaxMode"/>
 	</Extension>
 	
 	<Extension path = "/MonoDevelop/ProjectModel/PolicySets/Mono" >
-		<Policies resource="MonoCSharpPolicy.xml" />
+		<Policies resource="MonoDPolicy.xml" />
 	</Extension>
-	
+	<!--
 	<Extension path = "/MonoDevelop/ProjectModel/Gui/MimeTypePolicyPanels">
-		<Panel id = "CSharpFormatting" _label = "C# Format" mimeType="text/x-csharp" class = "MonoDevelop.CSharp.Formatting.CSharpFormattingPolicyPanel" />
-	</Extension>
+		<Panel id = "DFormatting" _label = "D Format" mimeType="text/x-d" class = "Formatting.DFormattingPolicyPanel" />
+	</Extension>-->
 
 	<Extension path = "/MonoDevelop/Refactoring/ASTProvider">
-		<Class class = "MonoDevelop.CSharp.Refactoring.CSharpNRefactoryASTProvider" />
+		<Class class = "Refactoring.DNRefactoryASTProvider" />
 	</Extension>
 	
 	<Extension path = "/MonoDevelop/Ide/TextEditorResolver">
-		<Resolver class = "MonoDevelop.CSharp.Resolver.TextEditorResolverProvider" mimeType="text/x-csharp" />
+		<Resolver class = "Resolver.TextEditorResolverProvider" mimeType="text/x-d" />
 	</Extension>
 	
+	<!--
 	<Extension path = "/MonoDevelop/Ide/Commands/TextEditor">
-		<Command id = "MonoDevelop.CSharp.Highlighting.MoveToUsagesCommand.PrevUsage"
+		<Command id = "Highlighting.MoveToUsagesCommand.PrevUsage"
 		         defaultHandler = "MonoDevelop.CSharp.Highlighting.MoveToPrevUsageHandler"
 		         shortcut = "Ctrl|Shift|Up"
 		         macShortcut = "Meta|Shift|Up"
@@ -135,17 +137,19 @@
 		         shortcut = "Ctrl|Shift|Down"
 		         macShortcut = "Meta|Shift|Down"
 		         _label = "_Move to next usage"/>
-	</Extension>
-	
+	</Extension>-->
+	<!--
 	<Extension path = "/MonoDevelop/ProjectModel/CodeGenerators">
 		<Generator class="MonoDevelop.CSharp.Refactoring.CSharpCodeGenerator" mimeType = "text/x-csharp" />
 	</Extension>
-	
+	-->
+	<!--
 	<Extension path = "/MonoDevelop/Refactoring/Refactorings">
 		<Class id="CreateMethod" class = "MonoDevelop.CSharp.Refactoring.CreateMethod.CreateMethodCodeGenerator" />
 		<Class id="ExtractMethod" class = "MonoDevelop.CSharp.Refactoring.ExtractMethod.ExtractMethodRefactoring" />
 	</Extension>
-	
+	-->
+	<!--
 	<Extension path = "/MonoDevelop/Ide/Commands/Refactoring">
 		<Command id = "MonoDevelop.Refactoring.RefactoryCommands.CreateMethod"
 				defaultHandler = "MonoDevelop.CSharp.Refactoring.CreateMethod.CreateMethodHandler"
@@ -155,4 +159,5 @@
 					_label = "Extract Method"
 					shortcut = "Control|Alt|M"/>
 	</Extension>
+	-->
 </Addin>

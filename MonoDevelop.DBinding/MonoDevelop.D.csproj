@@ -50,6 +50,7 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="Core\main.cs" />
+    <Compile Include="DLanguageBinding.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -60,6 +61,9 @@
     <Folder Include="Formatting\" />
     <Folder Include="Highlighting\" />
     <Folder Include="Parser\" />
+    <Folder Include="icons\" />
+    <Folder Include="templates\" />
+    <Folder Include="Resolver\" />
   </ItemGroup>
   <ProjectExtensions>
     <MonoDevelop>
@@ -73,6 +77,14 @@
     </MonoDevelop>
   </ProjectExtensions>
   <ItemGroup>
-    <EmbeddedResource Include="MonoDevelop.DBinding.addin.xml" />
+    <EmbeddedResource Include="icons\dfile16.png">
+      <LogicalName>dfile16.png</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="icons\dproj16.png">
+      <LogicalName>dproj16.png</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MonoDevelop.D.addin.xml">
+      <LogicalName>MonoDevelop.DBinding.MonoDevelop.DBinding.addin.xml</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>

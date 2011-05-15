@@ -3,7 +3,7 @@ using Gtk;
 using MonoDevelop.Core;
 using MonoDevelop.Ide;
 
-namespace MonoDevelop.DBinding
+namespace MonoDevelop.D
 {
 	public class MyClass
 	{		
