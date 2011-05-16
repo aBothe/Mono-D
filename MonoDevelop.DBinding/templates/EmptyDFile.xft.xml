@@ -1,1 +1,20 @@
+<?xml version="1.0"?>
+<Template
+	Originator="Alexander Bothe"
+	Language="D">
 
+	<TemplateConfiguration>
+		<_Name>Empty D Source File</_Name>
+		<Icon>d-file32</Icon>
+		<_Category>General</_Category>
+		<LanguageName>D</LanguageName>
+		<_Description>Creates an empty D source file.</_Description>
+	</TemplateConfiguration>
+
+	<TemplateFiles>
+		<File DefaultExtension=".d" DefaultName="EmptyDSourceFile" AddStandardHeader="True"/>
+	</TemplateFiles>
+
+	<FileOptions/>
+
+</Template>

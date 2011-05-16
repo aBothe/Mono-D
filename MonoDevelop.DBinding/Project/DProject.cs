@@ -1,0 +1,225 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using MonoDevelop.Projects;
+using MonoDevelop.Core.Serialization;
+using System.Xml;
+using System.IO;
+using MonoDevelop.Core.Execution;
+using MonoDevelop.Core;
+using MonoDevelop.Ide;
+using MonoDevelop.Core.ProgressMonitoring;
+
+namespace MonoDevelop.D
+{
+	[DataInclude(typeof(DProjectConfiguration))]
+	public class DProject:Project
+	{
+		#region Properties
+		public override string ProjectType	{get { return "Native"; }}
+
+		[ItemProperty("Compiler", ValueType = typeof(DMDCompiler))]
+		DMDCompiler dmd;
+
+		public DMDCompiler DmdCompiler
+		{
+			get { return dmd; }
+			set { dmd = value; }
+		}
+
+		[ItemProperty("Target")]
+		DCompileTargetType target = DCompileTargetType.Bin;
+
+		public DCompileTargetType CompileTarget {
+			get { return target; }
+			set { target = value; }
+		}
+
+		#endregion
+
+		#region Init
+		void Init()
+		{
+
+		}
+
+		public DProject() { Init(); }
+
+		public DProject(ProjectCreateInformation info, XmlElement projectOptions)
+		{
+			Init();
+
+			string binPath = ".";
+
+			if (info != null)
+			{
+				Name = info.ProjectName;
+				binPath = info.BinPath;
+			}
+
+			// Create a debug configuration
+			var cfg = CreateConfiguration("Debug") as DProjectConfiguration;
+
+			cfg.DebugMode = true;
+
+			Configurations.Add(cfg);
+
+			// Create a release configuration
+			cfg = CreateConfiguration("Release") as DProjectConfiguration;
+
+			cfg.DebugMode = false;
+			cfg.ExtraCompilerArguments = "-o";
+
+			Configurations.Add(cfg);
+
+			// Prepare all configurations
+			foreach (DProjectConfiguration c in Configurations)
+			{
+				c.OutputDirectory = Path.Combine(binPath, c.Id);
+				c.SourcePath = info.ProjectBasePath;
+				c.Output = Name;
+
+				if (projectOptions != null)
+				{
+					// Set project's target type to the one which has been defined in the project template
+					if (projectOptions.Attributes["Target"] != null)
+					{
+						c.CompileTarget = (DCompileTargetType)Enum.Parse(
+							typeof(DCompileTargetType),
+							projectOptions.Attributes["Target"].InnerText);
+					}
+
+					// Set extra compiler&linker args
+					if (projectOptions.Attributes["CompilerArgs"].InnerText != null)
+					{
+						c.ExtraCompilerArguments = projectOptions.Attributes["CompilerArgs"].InnerText;
+					}
+					if (projectOptions.Attributes["LinkerArgs"].InnerText != null)
+					{
+						c.ExtraLinkerArguments = projectOptions.Attributes["LinkerArgs"].InnerText;
+					}
+
+					if (projectOptions.GetAttribute("ExternalConsole") == "True")
+					{
+						c.ExternalConsole = true;
+						c.PauseConsoleOutput = true;
+					}
+					if (projectOptions.Attributes["PauseConsoleOutput"] != null)
+					{
+						c.PauseConsoleOutput = bool.Parse(
+							projectOptions.Attributes["PauseConsoleOutput"].InnerText);
+					}
+				}
+			}
+		}
+		#endregion
+
+		public override SolutionItemConfiguration CreateConfiguration(string name)
+		{
+			return new DProjectConfiguration() { Name=name};
+		}
+
+
+		#region Building
+		public override bool IsCompileable(string fileName)
+		{
+			return fileName.EndsWith(".d",StringComparison.InvariantCultureIgnoreCase)||
+				fileName.EndsWith(".di",StringComparison.InvariantCultureIgnoreCase);
+		}
+
+		public override FilePath GetOutputFileName(ConfigurationSelector configuration)
+		{
+			var cfg = GetConfiguration(configuration) as DProjectConfiguration;
+			return cfg.OutputDirectory.Combine(cfg.CompiledOutputName);
+		}
+
+		protected override BuildResult DoBuild(IProgressMonitor monitor, ConfigurationSelector configuration)
+		{
+			var cfg = GetConfiguration(configuration) as DProjectConfiguration;
+			cfg.SourcePath = BaseDirectory;
+
+			return DmdCompiler.Compile(this,Files,configuration,monitor);
+		}
+
+		protected override void DoClean(IProgressMonitor monitor, ConfigurationSelector configuration)
+		{
+			
+		}
+		#endregion
+
+		#region Execution
+		protected override bool OnGetCanExecute(ExecutionContext context, ConfigurationSelector configuration)
+		{
+			var cfg = GetConfiguration(configuration) as DProjectConfiguration;
+			if (cfg == null)
+				return false;
+			var cmd = CreateExecutionCommand(cfg);
+
+			return CompileTarget == DCompileTargetType.Bin && context.ExecutionHandler.CanExecute(cmd);
+		}
+
+		protected virtual ExecutionCommand CreateExecutionCommand(DProjectConfiguration conf)
+		{
+			var app = Path.Combine(conf.OutputDirectory, conf.Output);
+			var cmd = new NativeExecutionCommand(app);
+			cmd.Arguments = conf.CommandLineParameters;
+			cmd.WorkingDirectory = Path.GetFullPath(conf.OutputDirectory);
+			cmd.EnvironmentVariables = conf.EnvironmentVariables;
+			return cmd;
+		}
+
+		protected override void DoExecute(IProgressMonitor monitor, ExecutionContext context, ConfigurationSelector configuration)
+		{
+			var conf = GetConfiguration(configuration) as DProjectConfiguration;
+
+			if (conf == null)
+				return;
+
+			bool pause = conf.PauseConsoleOutput;
+			IConsole console;
+
+			if (conf.CompileTarget != DCompileTargetType.Bin)
+			{
+				MessageService.ShowMessage("Compile target is not an executable!");
+				return;
+			}
+
+			monitor.Log.WriteLine("Running project...");
+
+			if (conf.ExternalConsole)
+				console = context.ExternalConsoleFactory.CreateConsole(!pause);
+			else
+				console = context.ConsoleFactory.CreateConsole(!pause);
+
+			var operationMonitor = new AggregatedOperationMonitor(monitor);
+
+			try
+			{
+				var cmd = CreateExecutionCommand(conf);
+				if (!context.ExecutionHandler.CanExecute(cmd))
+				{
+					monitor.ReportError("Cannot execute \"" + conf.Output + "\". The selected execution mode is not supported for D projects.", null);
+					return;
+				}
+
+				var op = context.ExecutionHandler.Execute(cmd, console);
+
+				operationMonitor.AddOperation(op);
+				op.WaitForCompleted();
+
+				monitor.Log.WriteLine("The operation exited with code: {0}", op.ExitCode);
+			}
+			catch (Exception ex)
+			{
+				monitor.ReportError("Cannot execute \"" + conf.Output + "\"", ex);
+			}
+			finally
+			{
+				operationMonitor.Dispose();
+				console.Dispose();
+			}
+		}
+		#endregion
+	}
+}

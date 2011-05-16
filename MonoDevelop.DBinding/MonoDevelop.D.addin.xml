@@ -1,4 +1,4 @@
-<Addin id="DBinding" 
+<Addin id="D" 
 	namespace="MonoDevelop" 
 	name="D Language Binding" 
 	author="Alexander Bothe" 
@@ -8,18 +8,47 @@
 	category="Language bindings" 
 	version="1.0">
 	
+	
+	<!-- Resources -->
+	
 	<Dependencies>
 		<Addin id="Ide" version="2.6" />
 		<Addin id="Core" version="2.6" />
+		<Addin id = "SourceEditor2" version = "2.6" />
 	</Dependencies>
-	<!--
-	<Extension path = "/MonoDevelop/ProjectModel/MSBuildItemTypes">
-		<DotNetProject 
-			language="D" 
-			extension=".dproj" 
-			resourceHandler="Project.DResourceIdBuilder"
-			/>
-	</Extension>-->
+	
+	<Extension path = "/MonoDevelop/Core/StockIcons">
+		<StockIcon stockid = "d-file" resource = "MonoDevelop.D.icons.dfile16.png" />
+		<StockIcon stockid = "d-project" resource = "MonoDevelop.D.icons.dproj16.png" />
+		<StockIcon stockid = "d-file32" resource = "MonoDevelop.D.icons.dfile32.png" />
+		<StockIcon stockid = "d-project32" resource = "MonoDevelop.D.icons.dproj32.png" />
+	</Extension>
+
+	<Extension path = "/MonoDevelop/Ide/FileFilters">
+		<FileFilter id = "D"
+		            insertbefore="AllFiles"
+		            _label = "D Files"
+			    extensions = "*.d,*.di"/>
+	</Extension>
+
+	<Extension path = "/MonoDevelop/Core/MimeTypes">
+		<MimeType id="text/x-d" _description="D source code" icon="d-file" isText="true">
+			<File pattern="*.d" />
+			<File pattern="*.di" />
+		</MimeType>
+	</Extension>
+	
+	
+	<!-- Language Binding -->
+
+	<Extension path = "/MonoDevelop/ProjectModel/LanguageBindings">
+		<LanguageBinding id    = "D"
+		                 supportedextensions = ".d,.di"
+		                 class = "MonoDevelop.D.DLanguageBinding" />
+	</Extension>
+	
+	
+	<!-- File & Project Templates -->
 
 	<Extension path = "/MonoDevelop/Ide/FileTemplates">
 		<FileTemplate id = "DEmptyFile" resource = "EmptyDFile.xft.xml"/>
@@ -28,58 +57,91 @@
 	<Extension path = "/MonoDevelop/Ide/ProjectTemplates">
 		<ProjectTemplate id = "DConsoleProject" resource = "ConsoleProject.xpt.xml"/>
 		<ProjectTemplate id = "DEmptyProject" resource = "EmptyProject.xpt.xml"/>
-		<ProjectTemplate id = "DLibrary" resource = "Library.xpt.xml"/>
+		<ProjectTemplate id = "DSharedLibrary" resource = "MonoDevelop.D.templates.SharedLibrary.xpt.xml"/>
+		<ProjectTemplate id = "DStaticLibrary" resource = "MonoDevelop.D.templates.StaticLibrary.xpt.xml"/>
+	</Extension>
+
+	
+	<!-- Project Binding -->
+	
+	<Extension path = "/MonoDevelop/ProjectModel/ProjectBindings">
+		<ProjectBinding id = "DProject" class = "MonoDevelop.D.DPrjBinding"/>
+	</Extension>
+
+	<Extension path = "/MonoDevelop/ProjectModel/MSBuildItemTypes">
+		<SolutionItem type="MonoDevelop.D.DProject" extension="dproj" guid="{3947E667-4C90-4C3A-BEB9-7148D6FE0D7C}"/>
+	</Extension>
+
+	
+	<!-- Project File Serialization Support -->
+	
+	<Extension path = "/MonoDevelop/ProjectModel/MD1SerializationMaps">
+		<SerializationMap resource="MonoDevelop.D.ProjectFormats.xml" />
+	</Extension>
+
+	<Extension path = "/MonoDevelop/ProjectModel/SerializableClasses">
+		<DataType class = "MonoDevelop.D.DProject" />
+		<DataType class = "MonoDevelop.D.DProjectConfiguration" />
+		<DataType class = "MonoDevelop.D.DMDCompiler" />
 	</Extension>
 	
-	<Extension path = "/MonoDevelop/Ide/FileFilters">
-		<FileFilter id = "D"
-		            insertbefore="AllFiles"
-		            _label = "D Files"
-			    extensions = "*.d,*.di"/>
-	</Extension>
-<!--
+	
+	<!-- Option panels -->
+	
 	<Extension path = "/MonoDevelop/ProjectModel/Gui/ItemOptionPanels/Build/General">
 		<Condition id="ActiveLanguage" value="D">
-			<Panel id = "DCompilerOptionsPanel"
+			<!--<Panel id = "DCompilerOptionsPanel"
 			             _label = "D"
-			             class = "Project.CompilerOptionsPanel"/>
+			             class = "Project.CompilerOptionsPanel"/>-->
 		</Condition>
-	</Extension>-->
+	</Extension>
 
-	<!--<Extension path = "/MonoDevelop/ProjectModel/Gui/ItemOptionPanels/Build/Compiler">
-		<Condition id="ActiveLanguage" value="D">
-			<Panel id = "DCodeGenerationPanel"
-			             _label = "Compiler"
-			             class = "Project.CodeGenerationPanel"/>
+	<Extension path = "/MonoDevelop/ProjectModel/Gui/ItemOptionPanels/Build">
+		<Condition id = "ItemType" value = "MonoDevelop.D.DProject">
+			<!--<Section
+				id = "CompilerPanel"
+			    _label = "Compiler"
+			    insertafter = "Compile"
+			    class = "CBinding.CompilerPanelBinding"/>
+			<Section
+				id = "CodeGenerationPanel"
+			    _label = "Code Generation"
+			    class = "CBinding.CodeGenerationPanelBinding"/>
+			<Section
+				id = "OutputOptionsPanel"
+			    _label = "Output"
+			    class = "CBinding.OutputOptionsPanelBinding"/>-->
 		</Condition>
+	</Extension>
+
+	<!--
+	<Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Other">
+		<Section
+			id = "CBindingOptions"
+			_label = "C/C++"
+			class = "CBinding.GeneralOptionsPanelBinding"/>
 	</Extension>-->
 	
-	<Extension path = "/MonoDevelop/ProjectModel/LanguageBindings">
-		<LanguageBinding id    = "D"
-		                 supportedextensions = ".d,.di"
-		                 class = "DLanguageBinding" />
-	</Extension>
+	<!-- Syntax Highlighting & Formatting -->
+
 	<!--
-	<Extension path = "/MonoDevelop/Ide/ReferenceFinder">
-		<ReferenceFinder supportedmimetypes = "text/x-d"
-		                 class = "Refactoring.DReferenceFinder" />
-	</Extension>-->
-	<!--
-	<Extension path = "/MonoDevelop/ProjectModel/SerializableClasses">
-		<DataType class = "Project.DCompilerParameters" />
-		<DataType class = "Project.DProjectParameters" />
-	</Extension>-->
-<!--
 	<Extension path = "/MonoDevelop/Ide/TextEditorExtensions">
 		<Class fileExtensions = ".d" class = "Completion.DTextEditorCompletion" />
 		<Class fileExtensions = ".d" class = "Formatting.DTextEditorIndentation" />
 		<Class fileExtensions = ".d" class = "Highlighting.HighlightUsagesExtension" />
 	</Extension>-->
 	
+	<!-- Code Completion -->
+	
+	<!-- Code Parsing & Refactoring & Resolving -->
+	
+	
 	<!--
-	<Extension path = "/MonoDevelop/ProjectModel/MD1SerializationMaps">
-		<SerializationMap resource="md1format.xml" />
+	<Extension path = "/MonoDevelop/Ide/ReferenceFinder">
+		<ReferenceFinder supportedmimetypes = "text/x-d"
+		                 class = "Refactoring.DReferenceFinder" />
 	</Extension>-->
+	
 	<!--
 	<Extension path = "/MonoDevelop/ProjectModel/DomParser">
 		<Parser class = "Parser.NRefactoryParser" fileExtensions=".d,.di" />
@@ -90,17 +152,6 @@
 		<Class id = "C#" class = "Ast.DAmbience" />
 	</Extension>-->
 	
-	<Extension path = "/MonoDevelop/Core/StockIcons">
-		<StockIcon stockid = "d-file" resource = "dfile16.png" />
-		<StockIcon stockid = "d-project" resource = "dproj16.png" />
-	</Extension>
-	
-	<Extension path = "/MonoDevelop/Core/MimeTypes">
-		<MimeType id="text/x-d" _description="D source code" icon="d-file" isText="true">
-			<File pattern="*.d" />
-			<File pattern="*.di" />
-		</MimeType>
-	</Extension>
 	<!--
 	<Extension path = "/MonoDevelop/Ide/CodeFormatters">
 		<Formatter mimeType="text/x-d" class="Formatting.DFormatter" />

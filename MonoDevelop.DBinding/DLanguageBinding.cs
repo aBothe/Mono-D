@@ -4,7 +4,6 @@ using System.CodeDom.Compiler;
 using MonoDevelop.Core;
 using System.Xml;
 
-
 namespace MonoDevelop.D
 {
 	public class DLanguageBinding: ILanguageBinding

@@ -7,7 +7,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{5867254F-6B1C-4A4C-BF98-C283740A0470}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>MonoDevelop.DBinding</RootNamespace>
+    <RootNamespace>MonoDevelop.D</RootNamespace>
     <AssemblyName>MonoDevelop.D</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileUpgradeFlags>
@@ -15,7 +15,6 @@
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
     <OldToolsVersion>3.5</OldToolsVersion>
-    <TargetFrameworkProfile />
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -42,6 +41,7 @@
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
     <PlatformTarget>x86</PlatformTarget>
+    <NoStdLib>false</NoStdLib>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
@@ -53,7 +53,8 @@
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" />
+    <Reference Include="System">
+    </Reference>
     <Reference Include="gtk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
       <SpecificVersion>False</SpecificVersion>
     </Reference>
@@ -67,14 +68,21 @@
       <HintPath>..\MonoDevelop.Ide.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml">
+    </Reference>
     <Reference Include="System.Net">
     </Reference>
-    <Reference Include="System.Data" />
+    <Reference Include="System.Data">
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="Compiler\DMDCompiler.cs" />
     <Compile Include="DLanguageBinding.cs" />
+    <Compile Include="Project\DmdConfiguration.cs" />
+    <Compile Include="Project\DPrjBinding.cs" />
+    <Compile Include="Project\DProject.cs" />
+    <Compile Include="Project\DProjectConfiguration.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -82,7 +90,6 @@
     <Folder Include="Formatting\" />
     <Folder Include="Highlighting\" />
     <Folder Include="Parser\" />
-    <Folder Include="Project\" />
     <Folder Include="Refactoring\" />
     <Folder Include="Resolver\" />
   </ItemGroup>
@@ -106,6 +113,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="MonoDevelop.D.addin.xml">
       <LogicalName>MonoDevelop.DBinding.MonoDevelop.DBinding.addin.xml</LogicalName>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="templates\EmptyDFile.xft.xml">
       <LogicalName>EmptyDFile.xft.xml</LogicalName>
@@ -115,9 +123,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="templates\EmptyProject.xpt.xml">
       <LogicalName>EmptyProject.xpt.xml</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="templates\Library.xpt.xml">
-      <LogicalName>Library.xpt.xml</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
@@ -136,5 +141,18 @@
       <ProductName>Windows Installer 3.1</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="icons\dfile32.png" />
+    <EmbeddedResource Include="icons\dproj32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="templates\StaticLibrary.xpt.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="ProjectFormats.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="templates\SharedLibrary.xpt.xml" />
   </ItemGroup>
 </Project>

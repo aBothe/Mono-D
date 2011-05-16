@@ -1,1 +1,23 @@
+<?xml version="1.0"?>
+<Template	originator   = "Alexander Bothe">
 
+	<!-- Template Header -->
+	<TemplateConfiguration>
+		<_Name>Empty D Project</_Name>
+		<_Category>D</_Category>
+		<Icon>d-project32</Icon>
+		<LanguageName>D</LanguageName>
+		<_Description>Creates an empty D solution.</_Description>
+	</TemplateConfiguration>
+
+	<!-- Template Content -->
+	<Combine name = "${ProjectName}" directory = ".">
+		<Project name = "${ProjectName}" directory = "." type = "D">
+			<Options
+				Target = "Bin"
+				PauseConsoleOutput = "True"
+				CompilerArgs = ""
+				LinkerArgs = ""/>
+		</Project>
+	</Combine>
+</Template>

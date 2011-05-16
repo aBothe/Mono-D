@@ -1,32 +1,32 @@
-<?xml version="1.0"?>
+﻿<?xml version="1.0"?>
 <Template	originator   = "Alexander Bothe">
 
 	<!-- Template Header -->
 	<TemplateConfiguration>
-		<_Name>Console Project</_Name>
+		<_Name>Static Library Project</_Name>
 		<_Category>D</_Category>
 		<Icon>d-project32</Icon>
 		<LanguageName>D</LanguageName>
-		<_Description>Creates a simple D Hello World project.</_Description>
+		<_Description>Creates a static library</_Description>
 	</TemplateConfiguration>
 
 	<!-- Template Content -->
 	<Combine name = "${ProjectName}" directory = ".">
 		<Project name = "${ProjectName}" directory = "." type = "D">
 			<Options
-				Target = "Bin"
+				Target = "StaticLibrary"
 				PauseConsoleOutput = "True"
 				CompilerArgs = ""
 				LinkerArgs = ""/>
 		</Project>
 
 		<Files>
-			<File name = "main.d" AddStandardHeader="True">
-				<![CDATA[import std.stdio;
+			<File name = "myclass.d" AddStandardHeader="True">
+				<![CDATA[
 
-void main(string[] args)
+class MyClass
 {
-	writeln("Hello World!");
+
 }
 ]]>
 			</File>
@@ -34,4 +34,3 @@ void main(string[] args)
 
 	</Combine>
 </Template>
-
