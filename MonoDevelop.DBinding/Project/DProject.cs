@@ -18,6 +18,13 @@ namespace MonoDevelop.D
 	{
 		#region Properties
 		public override string ProjectType	{get { return "Native"; }}
+		public override string[] SupportedLanguages
+		{
+			get
+			{
+				return new[]{"D"};
+			}
+		}
 
 		[ItemProperty("Compiler", ValueType = typeof(DMDCompiler))]
 		DMDCompiler dmd;
@@ -47,7 +54,7 @@ namespace MonoDevelop.D
 		public DProject() { Init(); }
 
 		public DProject(ProjectCreateInformation info, XmlElement projectOptions)
-		{
+		{			
 			Init();
 
 			string binPath = ".";

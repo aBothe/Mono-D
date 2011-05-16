@@ -3,7 +3,7 @@
 
 	<!-- Template Header -->
 	<TemplateConfiguration>
-		<_Name>Static Library Project</_Name>
+		<_Name>Shared Library Project</_Name>
 		<_Category>D</_Category>
 		<Icon>d-project32</Icon>
 		<LanguageName>D</LanguageName>
@@ -18,7 +18,6 @@
 				PauseConsoleOutput = "True"
 				CompilerArgs = ""
 				LinkerArgs = ""/>
-		</Project>
 
 		<Files>
 			<File name = "myclass.d" AddStandardHeader="True">
@@ -31,6 +30,6 @@ class MyClass
 ]]>
 			</File>
 		</Files>
-
+		</Project>
 	</Combine>
 </Template>

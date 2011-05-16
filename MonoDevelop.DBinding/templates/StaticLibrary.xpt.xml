@@ -18,7 +18,6 @@
 				PauseConsoleOutput = "True"
 				CompilerArgs = ""
 				LinkerArgs = ""/>
-		</Project>
 
 		<Files>
 			<File name = "myclass.d" AddStandardHeader="True">
@@ -31,6 +30,6 @@ class MyClass
 ]]>
 			</File>
 		</Files>
-
+		</Project>
 	</Combine>
 </Template>

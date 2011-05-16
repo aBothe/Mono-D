@@ -18,8 +18,8 @@
 	</Dependencies>
 	
 	<Extension path = "/MonoDevelop/Core/StockIcons">
-		<StockIcon stockid = "d-file" resource = "MonoDevelop.D.icons.dfile16.png" />
-		<StockIcon stockid = "d-project" resource = "MonoDevelop.D.icons.dproj16.png" />
+		<StockIcon stockid = "d-file" resource = "dfile16.png" />
+		<StockIcon stockid = "d-project" resource = "dproj16.png" />
 		<StockIcon stockid = "d-file32" resource = "MonoDevelop.D.icons.dfile32.png" />
 		<StockIcon stockid = "d-project32" resource = "MonoDevelop.D.icons.dproj32.png" />
 	</Extension>
