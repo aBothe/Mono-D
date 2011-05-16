@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonoDevelop.D", "MonoDevelop.DBinding\MonoDevelop.D.csproj", "{5867254F-6B1C-4A4C-BF98-C283740A0470}"
 EndProject
 Global
@@ -13,6 +13,9 @@ Global
 		{5867254F-6B1C-4A4C-BF98-C283740A0470}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5867254F-6B1C-4A4C-BF98-C283740A0470}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5867254F-6B1C-4A4C-BF98-C283740A0470}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = MonoDevelop.DBinding\MonoDevelop.D.csproj

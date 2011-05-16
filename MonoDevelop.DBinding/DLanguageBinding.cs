@@ -2,36 +2,62 @@ using System;
 using MonoDevelop.Projects;
 using System.CodeDom.Compiler;
 using MonoDevelop.Core;
+using System.Xml;
+
 
 namespace MonoDevelop.D
 {
-	public class DLanguageBinding: IDotNetLanguageBinding
+	public class DLanguageBinding: ILanguageBinding
 	{
 		public DLanguageBinding ()
 		{
 		}
-		
-		// Methods
-		public ConfigurationParameters CreateCompilationParameters (XmlElement projectOptions);
 
-		public ProjectParameters CreateProjectParameters (XmlElement projectOptions);
-
-		public BuildResult Compile (ProjectItemCollection items, DotNetProjectConfiguration configuration, ConfigurationSelector configSelector, IProgressMonitor monitor)
+		public bool IsSourceCodeFile (string fileName)
 		{
-			return new BuildResult ("lol",1);
+			return fileName.EndsWith (".d") || fileName.EndsWith (".di");
 		}
 
-		public ClrVersion[] GetSupportedClrVersions ()
-			{return null;}
-
-		public CodeDomProvider GetCodeDomProvider ()
+		public string GetFileName (string fileNameWithoutExtension)
 		{
-			return null;
+			return fileNameWithoutExtension + ".d";
 		}
 
-		// Properties
-		public string ProjectStockIcon {
-			get {return "d-project";} }
+		public string Language {
+			get {
+				return "D";
+			}
+		}
+
+		public string SingleLineCommentTag {
+			get {
+				return "//";
+			}
+		}
+
+		public string BlockCommentStartTag {
+			get {
+				return "/*";
+			}
+		}
+
+		public string BlockCommentEndTag {
+			get {
+				return "*/";
+			}
+		}
+
+		public MonoDevelop.Projects.Dom.Parser.IParser Parser {
+			get {
+				return null;
+			}
+		}
+
+		public MonoDevelop.Projects.CodeGeneration.IRefactorer Refactorer {
+			get {
+				return null;
+			}
+		}
 	}
 }
 

@@ -5,21 +5,21 @@
 	url="http://mono-d.sourceforge.net"
 	copyright="" 
 	description="A language binding to the D Programming Language" 
-	category="Language Bindings" 
+	category="Language bindings" 
 	version="1.0">
 	
 	<Dependencies>
 		<Addin id="Ide" version="2.6" />
 		<Addin id="Core" version="2.6" />
 	</Dependencies>
-	
+	<!--
 	<Extension path = "/MonoDevelop/ProjectModel/MSBuildItemTypes">
 		<DotNetProject 
 			language="D" 
 			extension=".dproj" 
-			resourceHandler="Project.CSharpResourceIdBuilder"
+			resourceHandler="Project.DResourceIdBuilder"
 			/>
-	</Extension>
+	</Extension>-->
 
 	<Extension path = "/MonoDevelop/Ide/FileTemplates">
 		<FileTemplate id = "DEmptyFile" resource = "EmptyDFile.xft.xml"/>
@@ -37,14 +37,14 @@
 		            _label = "D Files"
 			    extensions = "*.d,*.di"/>
 	</Extension>
-
+<!--
 	<Extension path = "/MonoDevelop/ProjectModel/Gui/ItemOptionPanels/Build/General">
 		<Condition id="ActiveLanguage" value="D">
 			<Panel id = "DCompilerOptionsPanel"
 			             _label = "D"
 			             class = "Project.CompilerOptionsPanel"/>
 		</Condition>
-	</Extension>
+	</Extension>-->
 
 	<!--<Extension path = "/MonoDevelop/ProjectModel/Gui/ItemOptionPanels/Build/Compiler">
 		<Condition id="ActiveLanguage" value="D">
@@ -59,31 +59,32 @@
 		                 supportedextensions = ".d,.di"
 		                 class = "DLanguageBinding" />
 	</Extension>
-	
+	<!--
 	<Extension path = "/MonoDevelop/Ide/ReferenceFinder">
 		<ReferenceFinder supportedmimetypes = "text/x-d"
 		                 class = "Refactoring.DReferenceFinder" />
-	</Extension>
-	
+	</Extension>-->
+	<!--
 	<Extension path = "/MonoDevelop/ProjectModel/SerializableClasses">
 		<DataType class = "Project.DCompilerParameters" />
 		<DataType class = "Project.DProjectParameters" />
-	</Extension>
-
+	</Extension>-->
+<!--
 	<Extension path = "/MonoDevelop/Ide/TextEditorExtensions">
 		<Class fileExtensions = ".d" class = "Completion.DTextEditorCompletion" />
 		<Class fileExtensions = ".d" class = "Formatting.DTextEditorIndentation" />
 		<Class fileExtensions = ".d" class = "Highlighting.HighlightUsagesExtension" />
-	</Extension>
+	</Extension>-->
+	
 	<!--
 	<Extension path = "/MonoDevelop/ProjectModel/MD1SerializationMaps">
 		<SerializationMap resource="md1format.xml" />
 	</Extension>-->
-	
+	<!--
 	<Extension path = "/MonoDevelop/ProjectModel/DomParser">
 		<Parser class = "Parser.NRefactoryParser" fileExtensions=".d,.di" />
 		<Parser class = "Parser.McsParser" fileExtensions=".d,.di" />
-	</Extension>
+	</Extension>-->
 	<!--
 	<Extension path = "/MonoDevelop/ProjectModel/Ambiences">
 		<Class id = "C#" class = "Ast.DAmbience" />
@@ -100,30 +101,36 @@
 			<File pattern="*.di" />
 		</MimeType>
 	</Extension>
-	
+	<!--
 	<Extension path = "/MonoDevelop/Ide/CodeFormatters">
 		<Formatter mimeType="text/x-d" class="Formatting.DFormatter" />
-	</Extension>
-	
+	</Extension>-->
+	<!--
 	<Extension path = "/MonoDevelop/SourceEditor2/CustomModes">
 		<SyntaxMode mimeTypes="text/x-d" class="Highlighting.DSyntaxMode"/>
-	</Extension>
-	
+	</Extension>-->
+	<!--
 	<Extension path = "/MonoDevelop/ProjectModel/PolicySets/Mono" >
 		<Policies resource="MonoDPolicy.xml" />
-	</Extension>
+	</Extension>-->
 	<!--
 	<Extension path = "/MonoDevelop/ProjectModel/Gui/MimeTypePolicyPanels">
 		<Panel id = "DFormatting" _label = "D Format" mimeType="text/x-d" class = "Formatting.DFormattingPolicyPanel" />
 	</Extension>-->
-
+<!--
 	<Extension path = "/MonoDevelop/Refactoring/ASTProvider">
 		<Class class = "Refactoring.DNRefactoryASTProvider" />
-	</Extension>
-	
+	</Extension>-->
+	<!--
 	<Extension path = "/MonoDevelop/Ide/TextEditorResolver">
 		<Resolver class = "Resolver.TextEditorResolverProvider" mimeType="text/x-d" />
-	</Extension>
+	</Extension>-->
+	
+	
+	
+	
+	
+	
 	
 	<!--
 	<Extension path = "/MonoDevelop/Ide/Commands/TextEditor">
