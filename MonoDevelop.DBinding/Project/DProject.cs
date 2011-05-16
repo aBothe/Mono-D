@@ -17,14 +17,14 @@ namespace MonoDevelop.D
 	public class DProject:Project
 	{
 		#region Properties
+		/// <summary>
+		/// Used for incremental compiling&linking
+		/// </summary>
+		public readonly Dictionary<ProjectFile, DateTime> LastModificationTimes = new Dictionary<ProjectFile, DateTime>();
+		public DateTime LastLinkTime;
+
 		public override string ProjectType	{get { return "Native"; }}
-		public override string[] SupportedLanguages
-		{
-			get
-			{
-				return new[]{"D"};
-			}
-		}
+		public override string[] SupportedLanguages	{get{return new[]{"D"};}}
 
 		[ItemProperty("Compiler", ValueType = typeof(DMDCompiler))]
 		DMDCompiler dmd;
@@ -32,7 +32,12 @@ namespace MonoDevelop.D
 		public DMDCompiler DmdCompiler
 		{
 			get { return dmd; }
-			set { dmd = value; }
+			set {
+				if (value != null)
+					dmd = value;
+				else
+					dmd = new DMDCompiler();
+			}
 		}
 
 		[ItemProperty("Target")]
@@ -56,6 +61,8 @@ namespace MonoDevelop.D
 		public DProject(ProjectCreateInformation info, XmlElement projectOptions)
 		{			
 			Init();
+
+			DmdCompiler = null; // Set to default compiler
 
 			string binPath = ".";
 
@@ -143,10 +150,13 @@ namespace MonoDevelop.D
 
 		protected override BuildResult DoBuild(IProgressMonitor monitor, ConfigurationSelector configuration)
 		{
+			if (DmdCompiler == null)
+				DmdCompiler = null; //HACK: Re-init dmd again
+
 			var cfg = GetConfiguration(configuration) as DProjectConfiguration;
 			cfg.SourcePath = BaseDirectory;
 
-			return DmdCompiler.Compile(this,Files,configuration,monitor);
+			return DmdCompiler.Compile(this,Files,cfg,monitor);
 		}
 
 		protected override void DoClean(IProgressMonitor monitor, ConfigurationSelector configuration)

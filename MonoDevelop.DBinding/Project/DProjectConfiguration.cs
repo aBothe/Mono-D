@@ -132,7 +132,7 @@ namespace MonoDevelop.D
 								ext = ".app";
 								break;
 							case DCompileTargetType.SharedLibrary:
-								ext = null;
+								ext = ".dylib";
 								break;
 							case DCompileTargetType.StaticLibrary:
 								ext = ".a";
