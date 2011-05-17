@@ -126,7 +126,7 @@
 	<!-- Syntax Highlighting & Formatting -->
 	
 	<Extension path="/MonoDevelop/SourceEditor2/SyntaxModes">
-		<Template resource="MonoDevelop.D.DSyntaxHighlightingMode.xml"/>
+		<Templates resource="MonoDevelop.D.DSyntaxHighlightingMode.xml"/>
 	</Extension>
 	
 	<Extension path = "/MonoDevelop/Ide/TextEditorExtensions">
