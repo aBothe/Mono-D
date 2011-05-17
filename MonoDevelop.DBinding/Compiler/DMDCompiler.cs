@@ -13,8 +13,8 @@ namespace MonoDevelop.D
 {
 	public class DMDCompiler
 	{
-		protected string compilerCommand = "dmd.exe";
-		protected string linkerCommand = "dmd.exe";
+		protected string compilerCommand = "dmd";
+		protected string linkerCommand = "dmd";
 
 		// Arguments that are inserted additionally (by default!)
 		protected string compilerDebugArgs = "-g -debug";

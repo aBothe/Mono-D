@@ -41,7 +41,6 @@
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
     <PlatformTarget>x86</PlatformTarget>
-    <NoStdLib>false</NoStdLib>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
@@ -53,6 +52,10 @@
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Mono.TextEditor">
+      <HintPath>..\Mono.TextEditor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="System">
     </Reference>
     <Reference Include="gtk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
@@ -88,7 +91,6 @@
   <ItemGroup>
     <Folder Include="Completion\" />
     <Folder Include="Formatting\" />
-    <Folder Include="Highlighting\" />
     <Folder Include="Parser\" />
     <Folder Include="Refactoring\" />
     <Folder Include="Resolver\" />
@@ -112,7 +114,6 @@
       <LogicalName>dproj16.png</LogicalName>
     </EmbeddedResource>
     <EmbeddedResource Include="MonoDevelop.D.addin.xml">
-      <LogicalName>MonoDevelop.DBinding.MonoDevelop.DBinding.addin.xml</LogicalName>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="templates\EmptyDFile.xft.xml">
@@ -147,12 +148,19 @@
     <EmbeddedResource Include="icons\dproj32.png" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="templates\StaticLibrary.xpt.xml" />
+    <EmbeddedResource Include="templates\StaticLibrary.xpt.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="ProjectFormats.xml" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="templates\SharedLibrary.xpt.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="DSyntaxHighlightingMode.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>

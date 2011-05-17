@@ -21,7 +21,7 @@ namespace MonoDevelop.D
 		/// Used for incremental compiling&linking
 		/// </summary>
 		public readonly Dictionary<ProjectFile, DateTime> LastModificationTimes = new Dictionary<ProjectFile, DateTime>();
-		public DateTime LastLinkTime;
+		public readonly List<string> BuiltObjects = new List<string>();
 
 		public override string ProjectType	{get { return "Native"; }}
 		public override string[] SupportedLanguages	{get{return new[]{"D"};}}

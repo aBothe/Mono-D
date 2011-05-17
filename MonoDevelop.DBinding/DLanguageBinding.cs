@@ -10,6 +10,7 @@ namespace MonoDevelop.D
 	{
 		public DLanguageBinding ()
 		{
+			
 		}
 
 		public bool IsSourceCodeFile (string fileName)

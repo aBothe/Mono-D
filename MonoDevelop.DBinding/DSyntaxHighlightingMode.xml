@@ -1,0 +1,246 @@
+﻿<SyntaxMode name = "D" mimeTypes="text/x-d">
+	
+	<Property name="LineComment">//</Property>
+	<Property name="BlockCommentStart">/*</Property>
+	<Property name="BlockCommentEnd">*/</Property>
+	<Property name="NestedCommentStart">/+</Property>
+	<Property name="NestedCommentEnd">+/</Property>
+	<Property name="StringQuote">"</Property>
+	<Property name="StringQuote">'</Property>
+
+	<!-- Comment & String spans -->
+
+	<EolSpan color = "comment" rule="DoxDocumentation" tagColor="comment.tag">///</EolSpan>
+	<EolSpan color = "comment.line" rule="Comment" tagColor="comment.tag.line">//</EolSpan>
+
+	<Span color = "comment" rule="DoxDocumentation" tagColor="comment.tag" >
+		<Begin>/**</Begin>
+		<End>*/</End>
+	</Span>
+
+	<Span color = "comment.block" rule="Comment" tagColor="comment.tag.block">
+		<Begin>/*</Begin>
+		<End>*/</End>
+	</Span>
+
+	<Span color = "comment.block" rule="Comment" tagColor="comment.tag.block">
+		<Begin>/+</Begin>
+		<End>+/</End>
+	</Span>
+
+	<Span color = "string.other" rule="String" stopateol = "false" escape='""'>
+		<Begin>r"</Begin>
+		<End>"</End>
+	</Span>
+
+	<Span color = "string.double" rule="String" stopateol = "true" escape='\'>
+		<Begin>"</Begin>
+		<End>"</End>
+	</Span>
+
+	<Span color = "string.single" rule="String" stopateol = "true" escape="\">
+		<Begin>&apos;</Begin>
+		<End>&apos;</End>
+	</Span>
+
+	<Match color = "constant.digit">CSharpNumber</Match>
+
+	<!-- Keywords -->
+
+	<Keywords color="keyword.access">
+		<Word>this</Word>
+		<Word>super</Word>
+	</Keywords>
+
+	<Keywords color = "keyword.operator">
+		<Word>cast</Word>
+		<Word>is</Word>
+		<Word>new</Word>
+		<Word>typeid</Word>
+		<Word>typeof</Word>
+	</Keywords>
+
+	<Keywords color = "keyword.selection">
+		<Word>else</Word>
+		<Word>if</Word>
+		<Word>switch</Word>
+		<Word>case</Word>
+		<Word>default</Word>
+	</Keywords>
+
+	<Keywords color = "keyword.iteration">
+		<Word>do</Word>
+		<Word>for</Word>
+		<Word>foreach</Word>
+		<Word>foreach_reverse</Word>
+		<Word>while</Word>
+	</Keywords>
+
+	<Keywords color = "keyword.jump">
+		<Word>break</Word>
+		<Word>continue</Word>
+		<Word>goto</Word>
+		<Word>return</Word>
+	</Keywords>
+
+	<Keywords color = "keyword.exceptions">
+		<Word>try</Word>
+		<Word>throw</Word>
+		<Word>catch</Word>
+		<Word>finally</Word>
+	</Keywords>
+
+	<Keywords color = "constant.language">
+		<Word>true</Word>
+		<Word>false</Word>
+		<Word>null</Word>
+	</Keywords>
+
+	<Keywords color = "keyword.modifier">
+		<Word>abstract</Word>
+		<Word>const</Word>
+		<Word>export</Word>
+		<Word>extern</Word>
+		<Word>final</Word>
+		<Word>deprecated</Word>
+		<Word>immutable</Word>
+		<Word>invariant</Word>
+		<Word>nothrow</Word>
+		<Word>lazy</Word>
+		<Word>override</Word>
+		<Word>package</Word>
+		<Word>private</Word>
+		<Word>protected</Word>
+		<Word>public</Word>
+		<Word>pure</Word>
+		<Word>scope</Word>
+		<Word>shared</Word>
+		<Word>static</Word>
+		<Word>synchronized</Word>
+		<Word>volatile</Word>
+		<Word>__gshared</Word>
+	</Keywords>
+
+	<Keywords color = "keyword.misc">
+		<Word>alias</Word>
+		<Word>align</Word>
+		<Word>asm</Word>
+		<Word>assert</Word>
+		<Word>debug</Word>
+		<Word>delete</Word>
+		<Word>macro</Word>
+		<Word>mixin</Word>
+		<Word>pragma</Word>
+		<Word>typedef</Word>
+		<Word>unittest</Word>
+		<Word>version</Word>
+		<Word>with</Word>
+		<Word>__FILE__</Word>
+		<Word>__LINE__</Word>
+		<Word>__thread</Word>
+		<Word>__traits</Word>
+	</Keywords>
+
+	<Keywords color="keyword.type">
+		<Word>auto</Word>
+		<Word>bool</Word>
+		<Word>byte</Word>
+		<Word>cdouble</Word>
+		<Word>cent</Word>
+		<Word>cfloat</Word>
+		<Word>char</Word>
+		<Word>creal</Word>
+		<Word>dchar</Word>
+		<Word>double</Word>
+		<Word>float</Word>
+		<Word>idouble</Word>
+		<Word>ifloat</Word>
+		<Word>int</Word>
+		<Word>ireal</Word>
+		<Word>long</Word>
+		<Word>real</Word>
+		<Word>short</Word>
+		<Word>ubyte</Word>
+		<Word>ucent</Word>
+		<Word>uint</Word>
+		<Word>ulong</Word>
+		<Word>ushort</Word>
+		<Word>wchar</Word>
+	</Keywords>
+
+	<Keywords color = "constant.language.void">
+		<Word>void</Word>
+	</Keywords>
+
+	<Keywords color = "keyword.namespace">
+		<Word>import</Word>
+		<Word>module</Word>
+	</Keywords>
+
+	<Keywords color = "keyword.declaration">
+		<Word>class</Word>
+		<Word>enum</Word>
+		<Word>interface</Word>
+		<Word>struct</Word>
+		<Word>template</Word>
+		<Word>union</Word>
+
+		<Word>delegate</Word>
+		<Word>function</Word>
+	</Keywords>
+
+	<Keywords color = "keyword.parameter">
+		<Word>in</Word>
+		<Word>inout</Word>
+		<Word>ref</Word>
+		<Word>out</Word>
+		<Word>body</Word>
+	</Keywords>
+	
+	
+	<!-- Style rules -->
+
+	<Rule name = "Comment">
+		<Keywords color="comment.keyword.todo" ignorecase="True">
+			<Word>TODO</Word>
+			<Word>FIXME</Word>
+			<Word>HACK</Word>
+			<Word>UNDONE</Word>
+		</Keywords>
+	</Rule>
+
+	<Rule name = "String">
+	</Rule>
+
+	<Rule name = "DoxDocumentation">
+		<Span color = "string" stopateol = "true" escape="\">
+			<Begin>"</Begin>
+			<End>"</End>
+		</Span>
+		<Keywords color="comment.keyword">
+			<Word>c</Word>
+			<Word>code</Word>
+			<Word>example</Word>
+			<Word>exception</Word>
+			<Word>list</Word>
+			<Word>para</Word>
+			<Word>param</Word>
+			<Word>paramref</Word>
+			<Word>permission</Word>
+			<Word>remarks</Word>
+			<Word>return</Word>
+			<Word>see</Word>
+			<Word>seealso</Word>
+			<Word>summary</Word>
+			<Word>value</Word>
+			<Word>type</Word>
+			<Word>name</Word>
+			<Word>cref</Word>
+			<Word>item</Word>
+			<Word>term</Word>
+			<Word>description</Word>
+			<Word>listheader</Word>
+		</Keywords>
+	</Rule>
+
+</SyntaxMode>
