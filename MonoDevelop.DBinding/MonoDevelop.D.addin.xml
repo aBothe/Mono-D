@@ -128,6 +128,10 @@
 	<Extension path="/MonoDevelop/SourceEditor2/SyntaxModes">
 		<Templates resource="MonoDevelop.D.DSyntaxHighlightingMode.xml"/>
 	</Extension>
+<!--
+	<Extension path = "/MonoDevelop/Ide/CodeFormatters">
+		<Formatter mimeType="text/x-d" class="MonoDevelop.D.DFormatter" />
+	</Extension>-->
 	
 	<Extension path = "/MonoDevelop/Ide/TextEditorExtensions">
 		<!--<Class fileExtensions = ".d" class = "Completion.DTextEditorCompletion" />
@@ -147,24 +151,14 @@
 		                 class = "Refactoring.DReferenceFinder" />
 	</Extension>-->
 	
-	<!--
 	<Extension path = "/MonoDevelop/ProjectModel/DomParser">
-		<Parser class = "Parser.NRefactoryParser" fileExtensions=".d,.di" />
-		<Parser class = "Parser.McsParser" fileExtensions=".d,.di" />
-	</Extension>-->
+		<Parser class = "MonoDevelop.D.Parser.DParser" fileExtensions=".d,.di" />
+	</Extension>
 	<!--
 	<Extension path = "/MonoDevelop/ProjectModel/Ambiences">
 		<Class id = "C#" class = "Ast.DAmbience" />
 	</Extension>-->
 	
-	<!--
-	<Extension path = "/MonoDevelop/Ide/CodeFormatters">
-		<Formatter mimeType="text/x-d" class="Formatting.DFormatter" />
-	</Extension>-->
-	<!--
-	<Extension path = "/MonoDevelop/SourceEditor2/CustomModes">
-		<SyntaxMode mimeTypes="text/x-d" class="Highlighting.DSyntaxMode"/>
-	</Extension>-->
 	<!--
 	<Extension path = "/MonoDevelop/ProjectModel/PolicySets/Mono" >
 		<Policies resource="MonoDPolicy.xml" />

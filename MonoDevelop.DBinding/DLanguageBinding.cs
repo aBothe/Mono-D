@@ -3,6 +3,8 @@ using MonoDevelop.Projects;
 using System.CodeDom.Compiler;
 using MonoDevelop.Core;
 using System.Xml;
+using MonoDevelop.Projects.Dom.Parser;
+using MonoDevelop.Projects.CodeGeneration;
 
 namespace MonoDevelop.D
 {
@@ -47,13 +49,13 @@ namespace MonoDevelop.D
 			}
 		}
 
-		public MonoDevelop.Projects.Dom.Parser.IParser Parser {
+		public IParser Parser {
 			get {
 				return null;
 			}
 		}
 
-		public MonoDevelop.Projects.CodeGeneration.IRefactorer Refactorer {
+		public IRefactorer Refactorer {
 			get {
 				return null;
 			}

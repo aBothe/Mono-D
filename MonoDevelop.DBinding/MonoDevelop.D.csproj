@@ -82,6 +82,14 @@
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="Compiler\DMDCompiler.cs" />
     <Compile Include="DLanguageBinding.cs" />
+    <Compile Include="Formatting\DFormatter.cs" />
+    <Compile Include="Parser\DNodeTypes.cs" />
+    <Compile Include="Parser\DParser.cs" />
+    <Compile Include="Parser\DParser.Implementation.cs" />
+    <Compile Include="Parser\DExpressionTypes.cs" />
+    <Compile Include="Parser\Lexer\DLexer.cs" />
+    <Compile Include="Parser\Lexer\DTokens.cs" />
+    <Compile Include="Parser\Lexer\ParserUtil.cs" />
     <Compile Include="Project\DmdConfiguration.cs" />
     <Compile Include="Project\DPrjBinding.cs" />
     <Compile Include="Project\DProject.cs" />
@@ -90,8 +98,6 @@
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <Folder Include="Completion\" />
-    <Folder Include="Formatting\" />
-    <Folder Include="Parser\" />
     <Folder Include="Refactoring\" />
     <Folder Include="Resolver\" />
   </ItemGroup>
