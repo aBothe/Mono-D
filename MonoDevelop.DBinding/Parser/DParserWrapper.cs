@@ -37,39 +37,43 @@ namespace MonoDevelop.D.Parser
 
 		public ParsedDocument Parse(ProjectDom dom, string fileName, TextReader content)
 		{
+			
 			var doc = new ParsedDocument(fileName);
 			doc.Flags |= ParsedDocumentFlags.NonSerializable;
 
-			var p = (null == dom || null == dom.Project) ?
-				IdeApp.Workspace.GetProjectContainingFile(fileName) :
-				dom.Project;
-
-			var parser = D_Parser.DParser.Create(content);
-			var ast = parser.Parse();
-
-			var cu = new CompilationUnit(fileName);
-			doc.CompilationUnit = cu;
-
-			//TODO: Usings
-
-			var globalScope = new DomType(cu, ClassType.Unknown, Modifiers.None,
-				GettextCatalog.GetString("(Global Scope)"), 
-				new DomLocation(1, 1), 
-				string.Empty, 
-				new DomRegion(1, int.MaxValue));
-
-			cu.Add(globalScope);
-
-			foreach (var n in ast)
+			try
 			{
-				var ch = ConvertDParserToDomNode(cu, n, p, doc);
+				var p = (null == dom || null == dom.Project) ?
+					IdeApp.Workspace.GetProjectContainingFile(fileName) :
+					dom.Project;
 
-				if (ch is DomField || ch is DomMethod)
-					globalScope.Add(ch as IMember);
-				else
-					cu.Add(ch as IType);
+				var parser = D_Parser.DParser.Create(content);
+				var ast = parser.Parse();
+
+				var cu = new CompilationUnit(fileName);
+				doc.CompilationUnit = cu;
+
+				//TODO: Usings
+
+				var globalScope = new DomType(cu, ClassType.Unknown, Modifiers.None, "(Global Scope)", new DomLocation(1, 1), string.Empty, new DomRegion(1, int.MaxValue-2));
+
+				cu.Add(globalScope);
+
+				foreach (var n in ast)
+				{
+					var ch = ConvertDParserToDomNode(n, p, doc);
+
+					if (ch is DomField || ch is DomMethod)
+						globalScope.Add(ch as IMember);
+					else
+						cu.Add(ch as IType);
+				}
+
 			}
+			catch (Exception ex)
+			{
 
+			}
 			return doc;
 		}
 
@@ -80,11 +84,9 @@ namespace MonoDevelop.D.Parser
 
 		#region Converter methods
 
-		public static MonoDevelop.Projects.Dom.INode ConvertDParserToDomNode(MonoDevelop.Projects.Dom.INode parentDomNode, D_Parser.Core.INode n, Project prj, ParsedDocument doc)
+		public static MonoDevelop.Projects.Dom.INode ConvertDParserToDomNode(D_Parser.Core.INode n, Project prj, ParsedDocument doc)
 		{
 			//TODO: DDoc comments!
-
-			MonoDevelop.Projects.Dom.INode ret=null;
 
 			if (n is DMethod)
 			{
@@ -103,7 +105,10 @@ namespace MonoDevelop.D.Parser
 
 				
 				domMethod.AddTypeParameter(GetTypeParameters(dm));
-				ret = domMethod;
+
+				foreach(var subNode in dm)	domMethod.AddChild(ConvertDParserToDomNode(subNode,prj,doc));
+
+				return domMethod;
 			}
 			else if (n is DEnum)
 			{
@@ -116,7 +121,10 @@ namespace MonoDevelop.D.Parser
 					n.Name,
 					FromCodeLocation(n.StartLocation),
 					BuildTypeNamespace(n), GetBlockBodyRegion(de));
-				ret = domType;
+				
+				foreach(var subNode in de)
+					domType.Add(ConvertDParserToDomNode(subNode, prj, doc) as IMember);
+				return domType;
 			}
 			else if (n is DClassLike)
 			{
@@ -150,32 +158,21 @@ namespace MonoDevelop.D.Parser
 					GetBlockBodyRegion(dc));
 				
 				domType.AddTypeParameter(GetTypeParameters(dc));
-				ret = domType;
+					foreach (var subNode in dc)
+						domType.Add(ConvertDParserToDomNode(subNode, prj, doc) as IMember);
+				return domType;
 			}
 			else if (n is DVariable)
 			{
 				var dv = n as DVariable;
-				ret = new DomField(n.Name, GetNodeModifiers(dv), FromCodeLocation(n.StartLocation), GetReturnType(n));
+				return new DomField(n.Name, GetNodeModifiers(dv), FromCodeLocation(n.StartLocation), GetReturnType(n));
 			}
 			else if (n is DStatementBlock)
 			{
 				var ds = n as DStatementBlock;
 				//doc.ConditionalRegions.Add(new ConditionalRegion("") { Region=GetBlockBodyRegion(ds)});
 			}
-
-			if (n is IBlockNode && ret is MonoDevelop.Projects.Dom.AbstractNode) // Usually, ret should always be a DomType
-			{
-				var bn = n as IBlockNode;
-
-				foreach (var subNode in bn)
-				{
-					var an = (ret as MonoDevelop.Projects.Dom.AbstractNode);
-					var ch = ConvertDParserToDomNode(ret, subNode, prj, doc);
-					an.AddChild(ch);
-				}
-			}
-
-			return ret;
+			return null;
 		}
 
 		public static string BuildTypeNamespace(D_Parser.Core.INode n)
