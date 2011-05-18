@@ -9,6 +9,7 @@ using System.IO;
 using MonoDevelop.Ide;
 using MonoDevelop.Projects;
 using D_Parser.Core;
+using MonoDevelop.Core;
 
 namespace MonoDevelop.D.Parser
 {
@@ -51,9 +52,22 @@ namespace MonoDevelop.D.Parser
 
 			//TODO: Usings
 
+			var globalScope = new DomType(cu, ClassType.Unknown, Modifiers.None,
+				GettextCatalog.GetString("(Global Scope)"), 
+				new DomLocation(1, 1), 
+				string.Empty, 
+				new DomRegion(1, int.MaxValue));
+
+			cu.Add(globalScope);
+
 			foreach (var n in ast)
 			{
-				cu.AddChild(ConvertDParserToDomNode(cu,n, p, doc));
+				var ch = ConvertDParserToDomNode(cu, n, p, doc);
+
+				if (ch is DomField || ch is DomMethod)
+					globalScope.Add(ch as IMember);
+				else
+					cu.Add(ch as IType);
 			}
 
 			return doc;
@@ -153,8 +167,12 @@ namespace MonoDevelop.D.Parser
 			{
 				var bn = n as IBlockNode;
 
-					foreach(var subNode in bn)
-						(ret as MonoDevelop.Projects.Dom.AbstractNode).AddChild(ConvertDParserToDomNode(ret,subNode,prj,doc));
+				foreach (var subNode in bn)
+				{
+					var an = (ret as MonoDevelop.Projects.Dom.AbstractNode);
+					var ch = ConvertDParserToDomNode(ret, subNode, prj, doc);
+					an.AddChild(ch);
+				}
 			}
 
 			return ret;
@@ -164,10 +182,15 @@ namespace MonoDevelop.D.Parser
 		{
 			var path = "";
 
-			var curNode = n;
-			while (curNode!=n.Parent&& (curNode = n.Parent) != null)
+			var curNode = n.Parent;
+			while (curNode != null)
 			{
 				path = curNode.Name + "." + path;
+
+				if (curNode == curNode.Parent)
+					break;
+
+				curNode = curNode.Parent;
 			}
 
 			return path.TrimEnd('.');
