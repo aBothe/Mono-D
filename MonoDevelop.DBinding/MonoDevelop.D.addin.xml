@@ -152,7 +152,7 @@
 	</Extension>-->
 	
 	<Extension path = "/MonoDevelop/ProjectModel/DomParser">
-		<Parser class = "MonoDevelop.D.Parser.DParser" fileExtensions=".d,.di" />
+		<Parser class = "MonoDevelop.D.Parser.DParserWrapper" fileExtensions=".d,.di" />
 	</Extension>
 	<!--
 	<Extension path = "/MonoDevelop/ProjectModel/Ambiences">

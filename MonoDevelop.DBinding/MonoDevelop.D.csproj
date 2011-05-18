@@ -52,6 +52,10 @@
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="D_Parser">
+      <HintPath>..\D_Parser.dll</HintPath>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+    </Reference>
     <Reference Include="Mono.TextEditor">
       <HintPath>..\Mono.TextEditor.dll</HintPath>
       <Private>False</Private>
@@ -83,13 +87,7 @@
     <Compile Include="Compiler\DMDCompiler.cs" />
     <Compile Include="DLanguageBinding.cs" />
     <Compile Include="Formatting\DFormatter.cs" />
-    <Compile Include="Parser\DNodeTypes.cs" />
-    <Compile Include="Parser\DParser.cs" />
-    <Compile Include="Parser\DParser.Implementation.cs" />
-    <Compile Include="Parser\DExpressionTypes.cs" />
-    <Compile Include="Parser\Lexer\DLexer.cs" />
-    <Compile Include="Parser\Lexer\DTokens.cs" />
-    <Compile Include="Parser\Lexer\ParserUtil.cs" />
+    <Compile Include="Parser\DParserWrapper.cs" />
     <Compile Include="Project\DmdConfiguration.cs" />
     <Compile Include="Project\DPrjBinding.cs" />
     <Compile Include="Project\DProject.cs" />

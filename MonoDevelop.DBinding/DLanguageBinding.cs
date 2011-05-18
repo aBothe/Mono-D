@@ -5,16 +5,12 @@ using MonoDevelop.Core;
 using System.Xml;
 using MonoDevelop.Projects.Dom.Parser;
 using MonoDevelop.Projects.CodeGeneration;
+using MonoDevelop.D.Parser;
 
 namespace MonoDevelop.D
 {
 	public class DLanguageBinding: ILanguageBinding
 	{
-		public DLanguageBinding ()
-		{
-			
-		}
-
 		public bool IsSourceCodeFile (string fileName)
 		{
 			return fileName.EndsWith (".d") || fileName.EndsWith (".di");
@@ -49,9 +45,10 @@ namespace MonoDevelop.D
 			}
 		}
 
+		DParserWrapper parser = new DParserWrapper();
 		public IParser Parser {
 			get {
-				return null;
+				return parser;
 			}
 		}
 
