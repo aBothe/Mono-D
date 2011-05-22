@@ -74,6 +74,7 @@ namespace MonoDevelop.D.Parser
 			{
 
 			}
+
 			return doc;
 		}
 

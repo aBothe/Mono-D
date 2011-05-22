@@ -11,9 +11,14 @@ namespace MonoDevelop.D
 {
 	public class DLanguageBinding: ILanguageBinding
 	{
+		public static bool IsDFile(string fileName)
+		{
+			return fileName.EndsWith(".d") || fileName.EndsWith(".di");
+		}
+
 		public bool IsSourceCodeFile (string fileName)
 		{
-			return fileName.EndsWith (".d") || fileName.EndsWith (".di");
+			return IsDFile(fileName);
 		}
 
 		public string GetFileName (string fileNameWithoutExtension)

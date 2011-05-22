@@ -134,8 +134,8 @@
 	</Extension>-->
 	
 	<Extension path = "/MonoDevelop/Ide/TextEditorExtensions">
-		<!--<Class fileExtensions = ".d" class = "Completion.DTextEditorCompletion" />
-		<Class fileExtensions = ".d" class = "Formatting.DTextEditorIndentation" />
+		<Class fileExtensions = ".d,.di" class = "MonoDevelop.D.DEditorCompletionExtension" />
+		<!--<Class fileExtensions = ".d" class = "Formatting.DTextEditorIndentation" />
 		<Class fileExtensions = ".d" class = "Highlighting.HighlightUsagesExtension" />-->
 	</Extension>
 	
