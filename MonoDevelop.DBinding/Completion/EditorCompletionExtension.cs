@@ -13,7 +13,7 @@ namespace MonoDevelop.D
 	{
 		#region Properties / Init
 		public override bool CanRunCompletionCommand(){		return true;	}
-		public override bool CanRunParameterCompletionCommand(){	return false;	}
+		public override bool CanRunParameterCompletionCommand(){	return true;	}
 
 		public override void Initialize()
 		{
@@ -21,8 +21,6 @@ namespace MonoDevelop.D
 		}
 
 		#endregion
-
-		#region
 
 		#region Code completion
 
@@ -108,7 +106,7 @@ namespace MonoDevelop.D
 
 		public override bool ExtendsEditor(Document doc, IEditableTextBuffer editor)
 		{
-			return DLanguageBinding.IsDFile(doc.FileName);
+			return true;
 		}
 
 		public override bool KeyPress(Gdk.Key key, char keyChar, Gdk.ModifierType modifier)

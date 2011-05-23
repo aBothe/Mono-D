@@ -15,6 +15,7 @@
 		<Addin id="Ide" version="2.6" />
 		<Addin id="Core" version="2.6" />
 		<Addin id = "SourceEditor2" version = "2.6" />
+		<Addin id = "DesignerSupport" version = "2.6" />
 	</Dependencies>
 	
 	<Extension path = "/MonoDevelop/Core/StockIcons">
@@ -96,9 +97,9 @@
 		</Condition>
 	</Extension>
 
-	<Extension path = "/MonoDevelop/ProjectModel/Gui/ItemOptionPanels/Build">
+	<!--<Extension path = "/MonoDevelop/ProjectModel/Gui/ItemOptionPanels/Build">
 		<Condition id = "ItemType" value = "MonoDevelop.D.DProject">
-			<!--<Section
+			<Section
 				id = "CompilerPanel"
 			    _label = "Compiler"
 			    insertafter = "Compile"
@@ -110,9 +111,9 @@
 			<Section
 				id = "OutputOptionsPanel"
 			    _label = "Output"
-			    class = "CBinding.OutputOptionsPanelBinding"/>-->
+			    class = "CBinding.OutputOptionsPanelBinding"/>
 		</Condition>
-	</Extension>
+	</Extension>-->
 
 	<!--
 	<Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Other">
@@ -128,22 +129,22 @@
 	<Extension path="/MonoDevelop/SourceEditor2/SyntaxModes">
 		<Templates resource="MonoDevelop.D.DSyntaxHighlightingMode.xml"/>
 	</Extension>
-<!--
-	<Extension path = "/MonoDevelop/Ide/CodeFormatters">
+	
+<!--<Extension path = "/MonoDevelop/Ide/CodeFormatters">
 		<Formatter mimeType="text/x-d" class="MonoDevelop.D.DFormatter" />
 	</Extension>-->
-	
+		
+	<!-- Code Completion -->
+
 	<Extension path = "/MonoDevelop/Ide/TextEditorExtensions">
-		<Class fileExtensions = ".d,.di" class = "MonoDevelop.D.DEditorCompletionExtension" />
-		<!--<Class fileExtensions = ".d" class = "Formatting.DTextEditorIndentation" />
-		<Class fileExtensions = ".d" class = "Highlighting.HighlightUsagesExtension" />-->
+		<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.DEditorCompletionExtension" />
 	</Extension>
 	
-	<!-- Code Completion -->
-	
-	
-	<!-- Code Parsing & Refactoring & Resolving -->
-	
+	<!-- Code Parsing, Refactoring, Resolving -->
+
+	<Extension path = "/MonoDevelop/ProjectModel/DomParser">
+		<Parser class = "MonoDevelop.D.Parser.DParserWrapper" fileExtensions=".d,.di" />
+	</Extension>
 	
 	<!--
 	<Extension path = "/MonoDevelop/Ide/ReferenceFinder">
@@ -151,9 +152,6 @@
 		                 class = "Refactoring.DReferenceFinder" />
 	</Extension>-->
 	
-	<Extension path = "/MonoDevelop/ProjectModel/DomParser">
-		<Parser class = "MonoDevelop.D.Parser.DParserWrapper" fileExtensions=".d,.di" />
-	</Extension>
 	<!--
 	<Extension path = "/MonoDevelop/ProjectModel/Ambiences">
 		<Class id = "C#" class = "Ast.DAmbience" />
