@@ -1,0 +1,100 @@
+﻿	<!--<Extension path = "/MonoDevelop/ProjectModel/Gui/ItemOptionPanels/Build/General">
+		<Condition id="ActiveLanguage" value="D">
+			<Panel id = "DCompilerOptionsPanel"
+			             _label = "D"
+			             class = "Project.CompilerOptionsPanel"/>
+		</Condition>
+	</Extension>-->
+
+	<!--<Extension path = "/MonoDevelop/ProjectModel/Gui/ItemOptionPanels/Build">
+		<Condition id = "ItemType" value = "MonoDevelop.D.DProject">
+			<Section
+				id = "CompilerPanel"
+			    _label = "Compiler"
+			    insertafter = "Compile"
+			    class = "CBinding.CompilerPanelBinding"/>
+			<Section
+				id = "CodeGenerationPanel"
+			    _label = "Code Generation"
+			    class = "CBinding.CodeGenerationPanelBinding"/>
+			<Section
+				id = "OutputOptionsPanel"
+			    _label = "Output"
+			    class = "CBinding.OutputOptionsPanelBinding"/>
+		</Condition>
+	</Extension>-->
+
+	<!--
+	<Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Other">
+		<Section
+			id = "CBindingOptions"
+			_label = "C/C++"
+			class = "CBinding.GeneralOptionsPanelBinding"/>
+	</Extension>-->
+	
+	<!--
+	<Extension path = "/MonoDevelop/Ide/ReferenceFinder">
+		<ReferenceFinder supportedmimetypes = "text/x-d"
+		                 class = "Refactoring.DReferenceFinder" />
+	</Extension>-->
+	
+	<!--
+	<Extension path = "/MonoDevelop/ProjectModel/Ambiences">
+		<Class id = "C#" class = "Ast.DAmbience" />
+	</Extension>-->
+	
+	<!--
+	<Extension path = "/MonoDevelop/ProjectModel/PolicySets/Mono" >
+		<Policies resource="MonoDPolicy.xml" />
+	</Extension>-->
+	<!--
+	<Extension path = "/MonoDevelop/ProjectModel/Gui/MimeTypePolicyPanels">
+		<Panel id = "DFormatting" _label = "D Format" mimeType="text/x-d" class = "Formatting.DFormattingPolicyPanel" />
+	</Extension>-->
+<!--
+	<Extension path = "/MonoDevelop/Refactoring/ASTProvider">
+		<Class class = "Refactoring.DNRefactoryASTProvider" />
+	</Extension>-->
+	<!--
+	<Extension path = "/MonoDevelop/Ide/TextEditorResolver">
+		<Resolver class = "Resolver.TextEditorResolverProvider" mimeType="text/x-d" />
+	</Extension>-->
+	
+	
+
+	
+	<!--
+	<Extension path = "/MonoDevelop/Ide/Commands/TextEditor">
+		<Command id = "Highlighting.MoveToUsagesCommand.PrevUsage"
+		         defaultHandler = "MonoDevelop.CSharp.Highlighting.MoveToPrevUsageHandler"
+		         shortcut = "Ctrl|Shift|Up"
+		         macShortcut = "Meta|Shift|Up"
+		         _label = "_Move to prev usage"/>
+		<Command id = "MonoDevelop.CSharp.Highlighting.MoveToUsagesCommand.NextUsage"
+		         defaultHandler = "MonoDevelop.CSharp.Highlighting.MoveToNextUsageHandler"
+		         shortcut = "Ctrl|Shift|Down"
+		         macShortcut = "Meta|Shift|Down"
+		         _label = "_Move to next usage"/>
+	</Extension>-->
+	<!--
+	<Extension path = "/MonoDevelop/ProjectModel/CodeGenerators">
+		<Generator class="MonoDevelop.CSharp.Refactoring.CSharpCodeGenerator" mimeType = "text/x-csharp" />
+	</Extension>
+	-->
+	<!--
+	<Extension path = "/MonoDevelop/Refactoring/Refactorings">
+		<Class id="CreateMethod" class = "MonoDevelop.CSharp.Refactoring.CreateMethod.CreateMethodCodeGenerator" />
+		<Class id="ExtractMethod" class = "MonoDevelop.CSharp.Refactoring.ExtractMethod.ExtractMethodRefactoring" />
+	</Extension>
+	-->
+	<!--
+	<Extension path = "/MonoDevelop/Ide/Commands/Refactoring">
+		<Command id = "MonoDevelop.Refactoring.RefactoryCommands.CreateMethod"
+				defaultHandler = "MonoDevelop.CSharp.Refactoring.CreateMethod.CreateMethodHandler"
+				_label = "Create Method"/>
+		<Command id = "MonoDevelop.Refactoring.RefactoryCommands.ExtractMethod"
+					defaultHandler = "MonoDevelop.CSharp.Refactoring.ExtractMethod.ExtractMethodHandler"
+					_label = "Extract Method"
+					shortcut = "Control|Alt|M"/>
+	</Extension>
+	-->

@@ -6,11 +6,17 @@ using System.Xml;
 using MonoDevelop.Projects.Dom.Parser;
 using MonoDevelop.Projects.CodeGeneration;
 using MonoDevelop.D.Parser;
+using System.Reflection;
 
 namespace MonoDevelop.D
 {
 	public class DLanguageBinding: ILanguageBinding
 	{
+		public DLanguageBinding()
+		{
+			
+		}
+
 		public static bool IsDFile(string fileName)
 		{
 			return fileName.EndsWith(".d") || fileName.EndsWith(".di");
@@ -61,6 +67,36 @@ namespace MonoDevelop.D
 			get {
 				return null;
 			}
+		}
+
+		public BuildResult Compile(ProjectItemCollection items, DotNetProjectConfiguration configuration, ConfigurationSelector configSelector, IProgressMonitor monitor)
+		{
+			throw new NotImplementedException();
+		}
+
+		public ConfigurationParameters CreateCompilationParameters(XmlElement projectOptions)
+		{
+			throw new NotImplementedException();
+		}
+
+		public ProjectParameters CreateProjectParameters(XmlElement projectOptions)
+		{
+			throw new NotImplementedException();
+		}
+
+		public CodeDomProvider GetCodeDomProvider()
+		{
+			throw new Exception();
+		}
+
+		public ClrVersion[] GetSupportedClrVersions()
+		{
+			return null;
+		}
+
+		public string ProjectStockIcon
+		{
+			get { throw new NotImplementedException(); }
 		}
 	}
 }

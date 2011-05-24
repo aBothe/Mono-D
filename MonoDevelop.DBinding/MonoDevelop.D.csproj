@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -35,7 +35,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\MonoDevelop\main\build\AddIns\BackendBindings\</OutputPath>
+    <OutputPath>C:\Program Files %28x86%29\MonoDevelop\AddIns\BackendBindings\</OutputPath>
     <DefineConstants>DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -54,23 +54,15 @@
   <ItemGroup>
     <Reference Include="atk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Program Files (x86)\GtkSharp\2.12\lib\gtk-sharp-2.0\atk-sharp.dll</HintPath>
-    </Reference>
-    <Reference Include="D_Parser">
-      <HintPath>..\D_Parser.dll</HintPath>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
+      <HintPath>C:\Program Files %28x86%29\GtkSharp\2.12\lib\gtk-sharp-2.0\atk-sharp.dll</HintPath>
     </Reference>
     <Reference Include="gdk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Program Files (x86)\GtkSharp\2.12\lib\gtk-sharp-2.0\gdk-sharp.dll</HintPath>
+      <HintPath>C:\Program Files %28x86%29\GtkSharp\2.12\lib\gtk-sharp-2.0\gdk-sharp.dll</HintPath>
     </Reference>
     <Reference Include="glib-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Program Files (x86)\GtkSharp\2.12\lib\gtk-sharp-2.0\glib-sharp.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.TextEditor">
-      <HintPath>..\Mono.TextEditor.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>C:\Program Files %28x86%29\GtkSharp\2.12\lib\gtk-sharp-2.0\glib-sharp.dll</HintPath>
     </Reference>
     <Reference Include="System">
     </Reference>
@@ -92,6 +84,13 @@
     <Reference Include="System.Net">
     </Reference>
     <Reference Include="System.Data">
+    </Reference>
+    <Reference Include="D_Parser, Version=1.0.4155.21875, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\D_Parser.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.TextEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\Mono.TextEditor.dll</HintPath>
+      <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -131,6 +130,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="MonoDevelop.D.addin.xml">
       <SubType>Designer</SubType>
+      <LogicalName>MonoDevelop.D.addin.xml</LogicalName>
     </EmbeddedResource>
     <EmbeddedResource Include="templates\EmptyDFile.xft.xml">
       <LogicalName>EmptyDFile.xft.xml</LogicalName>
@@ -178,5 +178,8 @@
     <EmbeddedResource Include="DSyntaxHighlightingMode.xml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="unused extensions.txt" />
   </ItemGroup>
 </Project>
