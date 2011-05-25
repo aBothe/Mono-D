@@ -48,10 +48,7 @@ namespace MonoDevelop.D
 
 			if (dom == null)
 			{
-				Document.UpdateParseDocument();
-				dom = base.Document.ParsedDocument as DParserWrapper.ParsedDSource;
-				if(dom==null)
-					return null;
+				return null;
 			}
 
 			// Check if in comment or string literal
