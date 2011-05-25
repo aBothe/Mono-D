@@ -10,12 +10,16 @@ using MonoDevelop.Core.Execution;
 using MonoDevelop.Core;
 using MonoDevelop.Ide;
 using MonoDevelop.Core.ProgressMonitoring;
+using D_Parser.Core;
+using MonoDevelop.D.Parser;
 
 namespace MonoDevelop.D
 {
 	[DataInclude(typeof(DProjectConfiguration))]
 	public class DProject:Project
 	{
+		public const string DParserPropertyKey="dom";
+
 		#region Properties
 		/// <summary>
 		/// Used for incremental compiling&linking
@@ -48,12 +52,41 @@ namespace MonoDevelop.D
 			set { target = value; }
 		}
 
+		#region Parsing cache
+		public IEnumerable<IAbstractSyntaxTree> ParsedModules
+		{
+			get
+			{
+				foreach (ProjectFile pf in Items)
+					if (pf != null && pf.ExtendedProperties.Contains(DParserPropertyKey))
+						yield return pf.ExtendedProperties[DParserPropertyKey] as IAbstractSyntaxTree;
+			}
+		}
+
+		/// <summary>
+		/// Updates the project's parse cache and reparses all of its D sources
+		/// </summary>
+		public void UpdateParseCache()
+		{
+			foreach (ProjectFile pf in Items)
+				if (pf != null && DLanguageBinding.IsDFile(pf.FilePath.FileName))
+				{
+					try{
+					pf.ExtendedProperties[DParserPropertyKey]=D_Parser.DParser.ParseFile(pf.FilePath.ToAbsolute(BaseDirectory));
+					}catch(Exception ex)
+					{
+						LoggingService.LogError("Error while parsing "+pf.FilePath.ToString(),ex);
+					}
+				}
+		}
+		#endregion
+
 		#endregion
 
 		#region Init
 		void Init()
 		{
-
+			
 		}
 
 		public DProject() { Init(); }

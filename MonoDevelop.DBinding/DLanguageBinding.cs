@@ -7,14 +7,23 @@ using MonoDevelop.Projects.Dom.Parser;
 using MonoDevelop.Projects.CodeGeneration;
 using MonoDevelop.D.Parser;
 using System.Reflection;
+using MonoDevelop.D.Completion;
 
 namespace MonoDevelop.D
 {
 	public class DLanguageBinding: ILanguageBinding
 	{
+		#region Properties
+
+		public static DLanguageBinding Instance { get; private set; }
+		public static ASTStorage GlobalParseCache { get; private set; }
+
+		#endregion
+
 		public DLanguageBinding()
 		{
-			
+			Instance = this;
+			GlobalParseCache = new ASTStorage();
 		}
 
 		public static bool IsDFile(string fileName)
@@ -67,36 +76,6 @@ namespace MonoDevelop.D
 			get {
 				return null;
 			}
-		}
-
-		public BuildResult Compile(ProjectItemCollection items, DotNetProjectConfiguration configuration, ConfigurationSelector configSelector, IProgressMonitor monitor)
-		{
-			throw new NotImplementedException();
-		}
-
-		public ConfigurationParameters CreateCompilationParameters(XmlElement projectOptions)
-		{
-			throw new NotImplementedException();
-		}
-
-		public ProjectParameters CreateProjectParameters(XmlElement projectOptions)
-		{
-			throw new NotImplementedException();
-		}
-
-		public CodeDomProvider GetCodeDomProvider()
-		{
-			throw new Exception();
-		}
-
-		public ClrVersion[] GetSupportedClrVersions()
-		{
-			return null;
-		}
-
-		public string ProjectStockIcon
-		{
-			get { throw new NotImplementedException(); }
 		}
 	}
 }

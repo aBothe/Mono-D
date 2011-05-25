@@ -6,6 +6,9 @@ using MonoDevelop.Ide.Gui.Content;
 using MonoDevelop.Ide.CodeCompletion;
 using MonoDevelop.Ide.Gui;
 using Gtk;
+using MonoDevelop.D.Completion;
+using MonoDevelop.D.Parser;
+using D_Parser;
 
 namespace MonoDevelop.D
 {
@@ -13,7 +16,7 @@ namespace MonoDevelop.D
 	{
 		#region Properties / Init
 		public override bool CanRunCompletionCommand(){		return true;	}
-		public override bool CanRunParameterCompletionCommand(){	return true;	}
+		public override bool CanRunParameterCompletionCommand(){	return false;	}
 
 		public override void Initialize()
 		{
@@ -26,31 +29,40 @@ namespace MonoDevelop.D
 
 		public override ICompletionDataList CodeCompletionCommand(CodeCompletionContext completionContext)
 		{
-			var l = new CompletionDataList();
-
-			l.Add("An item", Core.IconId.Null, "description", "itemId");
-
-			return l;
-		}
-
-		public override bool GetCompletionCommandOffset(out int cpos, out int wlen)
-		{
-			return base.GetCompletionCommandOffset(out cpos, out wlen);
+			int i = 0;
+			return HandleCodeCompletion(completionContext,'\0',ref i);
 		}
 
 		public override ICompletionDataList HandleCodeCompletion(CodeCompletionContext completionContext, char completionChar)
 		{
-			return base.HandleCodeCompletion(completionContext, completionChar);
+			int i = 0;
+			return HandleCodeCompletion(completionContext, completionChar, ref i);
 		}
 
-		public override ICompletionDataList HandleCodeCompletion(CodeCompletionContext completionContext, char completionChar, ref int triggerWordLength)
+		public override ICompletionDataList HandleCodeCompletion(CodeCompletionContext completionContext, char triggerChar, ref int triggerWordLength)
 		{
-			return base.HandleCodeCompletion(completionContext, completionChar, ref triggerWordLength);
-		}
+			triggerWordLength = DCodeCompletionSupport.IsIdentifierChar(triggerChar) ? 1 : 0;
 
-		public override void RunCompletionCommand()
-		{
-			base.RunCompletionCommand();
+			// Require a parsed D source
+			var dom = base.Document.ParsedDocument as DParserWrapper.ParsedDSource;
+
+			if (dom == null)
+			{
+				Document.UpdateParseDocument();
+				dom = base.Document.ParsedDocument as DParserWrapper.ParsedDSource;
+				if(dom==null)
+					return null;
+			}
+
+			// Check if in comment or string literal
+			if (DCodeResolver.Commenting.IsInCommentAreaOrString(Document.Editor.Text, completionContext.TriggerOffset))
+				return null;
+
+			var l = new CompletionDataList();
+
+			DCodeCompletionSupport.Instance.BuildCompletionData(Document,dom.DDom,completionContext,l,triggerChar.ToString());
+
+			return l;
 		}
 
 

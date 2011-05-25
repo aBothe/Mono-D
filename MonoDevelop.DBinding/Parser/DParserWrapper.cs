@@ -35,33 +35,51 @@ namespace MonoDevelop.D.Parser
 			return null;
 		}
 
-		public ParsedDocument Parse(ProjectDom dom, string fileName, TextReader content)
+		public class ParsedDSource : ParsedDocument
 		{
-			
-			var doc = new ParsedDocument(fileName);
-			doc.Flags |= ParsedDocumentFlags.NonSerializable;
+			public ParsedDSource(string fileName) : base(fileName) {}
 
-			try
+			public IAbstractSyntaxTree DDom { get; protected set; }
+
+			public static ParsedDSource CreateFromDFile(ProjectDom prjDom,string file,TextReader content)
 			{
-				var p = (null == dom || null == dom.Project) ?
-					IdeApp.Workspace.GetProjectContainingFile(fileName) :
-					dom.Project;
+				var doc = new ParsedDSource(file);
+				doc.Flags |= ParsedDocumentFlags.NonSerializable;
 
 				var parser = D_Parser.DParser.Create(content);
-				var ast = parser.Parse();
+				
+				// Parse the code
+				var ast=doc.DDom = parser.Parse();
+				
+				ast.FileName = file;
 
-				var cu = new CompilationUnit(fileName);
+				// Update project owner information
+				if (prjDom.Project is DProject)
+				{
+					var prj = prjDom.Project as DProject;
+					var pf=prj.GetProjectFile(file);
+
+					// Build appropriate module name
+					var modName = pf.ProjectVirtualPath.ChangeExtension(null).ToString().Replace(Path.DirectorySeparatorChar,'.');
+
+					ast.ModuleName = modName;
+
+					if (pf != null)
+						pf.ExtendedProperties[DProject.DParserPropertyKey] = ast;
+				}
+
+				var cu = new CompilationUnit(file);
 				doc.CompilationUnit = cu;
 
 				//TODO: Usings
 
-				var globalScope = new DomType(cu, ClassType.Unknown, Modifiers.None, "(Global Scope)", new DomLocation(1, 1), string.Empty, new DomRegion(1, int.MaxValue-2));
+				var globalScope = new DomType(cu, ClassType.Unknown, Modifiers.None, "(Global Scope)", new DomLocation(1, 1), string.Empty, new DomRegion(1, int.MaxValue - 2));
 
 				cu.Add(globalScope);
 
 				foreach (var n in ast)
 				{
-					var ch = ConvertDParserToDomNode(n, p, doc);
+					var ch = ConvertDParserToDomNode(n, doc);
 
 					if (ch is DomField || ch is DomMethod)
 						globalScope.Add(ch as IMember);
@@ -69,13 +87,13 @@ namespace MonoDevelop.D.Parser
 						cu.Add(ch as IType);
 				}
 
+				return doc;
 			}
-			catch (Exception ex)
-			{
+		}
 
-			}
-
-			return doc;
+		public ParsedDocument Parse(ProjectDom dom, string fileName, TextReader content)
+		{
+			return ParsedDSource.CreateFromDFile(dom,fileName, content);
 		}
 
 		public Projects.Dom.ParsedDocument Parse(ProjectDom dom, string fileName, string content)
@@ -85,7 +103,7 @@ namespace MonoDevelop.D.Parser
 
 		#region Converter methods
 
-		public static MonoDevelop.Projects.Dom.INode ConvertDParserToDomNode(D_Parser.Core.INode n, Project prj, ParsedDocument doc)
+		public static MonoDevelop.Projects.Dom.INode ConvertDParserToDomNode(D_Parser.Core.INode n, ParsedDocument doc)
 		{
 			//TODO: DDoc comments!
 
@@ -107,7 +125,7 @@ namespace MonoDevelop.D.Parser
 				
 				domMethod.AddTypeParameter(GetTypeParameters(dm));
 
-				foreach(var subNode in dm)	domMethod.AddChild(ConvertDParserToDomNode(subNode,prj,doc));
+				foreach(var subNode in dm)	domMethod.AddChild(ConvertDParserToDomNode(subNode,doc));
 
 				return domMethod;
 			}
@@ -124,7 +142,7 @@ namespace MonoDevelop.D.Parser
 					BuildTypeNamespace(n), GetBlockBodyRegion(de));
 				
 				foreach(var subNode in de)
-					domType.Add(ConvertDParserToDomNode(subNode, prj, doc) as IMember);
+					domType.Add(ConvertDParserToDomNode(subNode, doc) as IMember);
 				return domType;
 			}
 			else if (n is DClassLike)
@@ -146,7 +164,6 @@ namespace MonoDevelop.D.Parser
 					case DTokens.Struct:
 						ct = ClassType.Struct;
 						break;
-
 				}
 
 				var domType = new DomType(
@@ -160,7 +177,7 @@ namespace MonoDevelop.D.Parser
 				
 				domType.AddTypeParameter(GetTypeParameters(dc));
 					foreach (var subNode in dc)
-						domType.Add(ConvertDParserToDomNode(subNode, prj, doc) as IMember);
+						domType.Add(ConvertDParserToDomNode(subNode, doc) as IMember);
 				return domType;
 			}
 			else if (n is DVariable)
@@ -171,7 +188,7 @@ namespace MonoDevelop.D.Parser
 			else if (n is DStatementBlock)
 			{
 				var ds = n as DStatementBlock;
-				//doc.ConditionalRegions.Add(new ConditionalRegion("") { Region=GetBlockBodyRegion(ds)});
+				//TODO
 			}
 			return null;
 		}
@@ -211,7 +228,7 @@ namespace MonoDevelop.D.Parser
 
 		public static IReturnType ToDomType(ITypeDeclaration td)
 		{
-			return new DomReturnType(td.ToString());
+			return td==null?null: new DomReturnType(td.ToString());
 		}
 
 		public static IEnumerable<IAttribute> TransferAttributes(DNode n)
