@@ -13,10 +13,11 @@
     <Pads>
       <Pad Id="ProjectPad">
         <State expanded="True">
-          <Node name="MonoDevelop.D" expanded="True" selected="True">
+          <Node name="MonoDevelop.D" expanded="True">
             <Node name="References" expanded="True" />
             <Node name="icons" expanded="True" />
             <Node name="templates" expanded="True" />
+            <Node name="MonoDevelop.D.addin.xml" selected="True" />
           </Node>
         </State>
       </Pad>

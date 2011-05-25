@@ -65,6 +65,7 @@ namespace MonoDevelop.D
 			return l;
 		}
 
+		// Taken from CSharpTextEditorCompletion.cs
 		public override bool GetCompletionCommandOffset(out int cpos, out int wlen)
 		{
 			cpos = wlen = 0;
