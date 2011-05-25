@@ -35,7 +35,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>C:\Program Files %28x86%29\MonoDevelop\AddIns\BackendBindings\</OutputPath>
+    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -102,6 +102,7 @@
     <Compile Include="Completion\EditorCompletionExtension.cs" />
     <Compile Include="DLanguageBinding.cs" />
     <Compile Include="Formatting\DFormatter.cs" />
+    <Compile Include="OptionPanels\DGenericOptions.cs" />
     <Compile Include="Parser\DParserWrapper.cs" />
     <Compile Include="Project\DmdConfiguration.cs" />
     <Compile Include="Project\DPrjBinding.cs" />
@@ -183,6 +184,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="addin-project.xml" />
     <Content Include="unused extensions.txt" />
   </ItemGroup>
 </Project>

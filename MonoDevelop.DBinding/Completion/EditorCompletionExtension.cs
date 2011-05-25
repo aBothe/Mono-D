@@ -41,6 +41,9 @@ namespace MonoDevelop.D
 
 		public override ICompletionDataList HandleCodeCompletion(CodeCompletionContext completionContext, char triggerChar, ref int triggerWordLength)
 		{
+			if (!(char.IsLetter(triggerChar) || triggerChar == '_' || triggerChar == '.' || triggerChar == '\0'))
+				return null;
+
 			triggerWordLength = DCodeCompletionSupport.IsIdentifierChar(triggerChar) ? 1 : 0;
 
 			// Require a parsed D source
@@ -57,11 +60,39 @@ namespace MonoDevelop.D
 
 			var l = new CompletionDataList();
 
-			DCodeCompletionSupport.Instance.BuildCompletionData(Document,dom.DDom,completionContext,l,triggerChar.ToString());
+			DCodeCompletionSupport.Instance.BuildCompletionData(Document,dom.DDom,completionContext,l,triggerChar=='\0'?"":triggerChar.ToString());
 
 			return l;
 		}
 
+		public override bool GetCompletionCommandOffset(out int cpos, out int wlen)
+		{
+			cpos = wlen = 0;
+			int pos = Editor.Caret.Offset - 1;
+			while (pos >= 0)
+			{
+				char c = Editor.GetCharAt(pos);
+				if (!char.IsLetterOrDigit(c) && c != '_')
+					break;
+				pos--;
+			}
+			if (pos == -1)
+				return false;
+
+			pos++;
+			cpos = pos;
+			int len = Editor.Length;
+
+			while (pos < len)
+			{
+				char c = Editor.GetCharAt(pos);
+				if (!char.IsLetterOrDigit(c) && c != '_')
+					break;
+				pos++;
+			}
+			wlen = pos - cpos;
+			return true;
+		}
 
 		#endregion
 
