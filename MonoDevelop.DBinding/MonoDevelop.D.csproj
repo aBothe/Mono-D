@@ -203,4 +203,7 @@
   <ItemGroup>
     <Content Include="unused extensions.txt" />
   </ItemGroup>
+  <PropertyGroup>
+    <PostBuildEvent>xcopy "$(TargetDir)*" "C:\Users\Alexander\AppData\Local\MonoDevelop-2.6\Addins" /Y</PostBuildEvent>
+  </PropertyGroup>
 </Project>

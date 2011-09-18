@@ -28,7 +28,7 @@
 		<End>+/</End>
 	</Span>
 
-	<Span color = "string.other" rule="String" stopateol = "false" escape='""'>
+	<Span color = "string.double" rule="String" stopateol = "false" escape='""'>
 		<Begin>r"</Begin>
 		<End>"</End>
 	</Span>

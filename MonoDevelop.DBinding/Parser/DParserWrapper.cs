@@ -54,7 +54,7 @@ namespace MonoDevelop.D.Parser
 				ast.FileName = file;
 
 				// Update project owner information
-				if (prjDom.Project is DProject)
+				if (prjDom!=null && prjDom.Project is DProject)
 				{
 					var prj = prjDom.Project as DProject;
 					var pf=prj.GetProjectFile(file);
