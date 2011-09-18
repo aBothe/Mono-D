@@ -14,14 +14,36 @@ namespace MonoDevelop.D
 	public class DMDCompiler
 	{
 		protected string compilerCommand = "dmd";
-		protected string linkerCommand = "dmd";
+		protected string linkerCommand;
+		protected string linkerCommand_windows = "dmd";
+		protected string linkerCommand_linux = "gcc";		
+		
 
 		// Arguments that are inserted additionally (by default!)
 		protected string compilerDebugArgs = "-g -debug";
 		protected string compilerReleaseArgs = "-O -release -inline";
-
-		protected string linkerDebugArgs = "-g -debug";
-		protected string linkerReleaseArgs = "-O -release -inline";
+		
+		protected string linkerDebugArgs;
+		protected string linkerReleaseArgs;		
+		protected string linkerDebugArgs_windows = "-g -debug";
+		protected string linkerReleaseArgs_windows = "-O -release -inline";
+		
+		protected string linkerDebugArgs_linux = "-g -debug"; //not sure about theses for gcc
+		protected string linkerReleaseArgs_linux = "-O -release -inline"; //not about these for gcc
+			
+		public DMDCompiler()
+		{						
+			if ((Environment.OSVersion.Platform == PlatformID.Unix) || (Environment.OSVersion.Platform == PlatformID.MacOSX))
+			{
+				linkerCommand = linkerCommand_linux;				
+				linkerDebugArgs = linkerDebugArgs_linux;
+				linkerReleaseArgs = linkerDebugArgs_linux;
+			} else {
+				linkerCommand = linkerCommand_windows;
+				linkerDebugArgs = linkerDebugArgs_windows;
+				linkerReleaseArgs = linkerReleaseArgs_windows;
+			}						
+		}
 
 		public string CompilerCommand
 		{
@@ -41,7 +63,7 @@ namespace MonoDevelop.D
 				objExt = ".o";
 
 			var relObjDir = "objs";
-			var objDir = prj.BaseDirectory +"\\"+relObjDir;
+			var objDir = Path.Combine(prj.BaseDirectory, relObjDir);
 
 			if(!Directory.Exists(objDir))
 				Directory.CreateDirectory(objDir);
@@ -75,7 +97,7 @@ namespace MonoDevelop.D
 					continue;
 
 				// Create object file path
-				var obj = objDir +"\\"+ Path.GetFileNameWithoutExtension(f.FilePath) + objExt;
+				var obj = Path.Combine(objDir, Path.GetFileNameWithoutExtension(f.FilePath)) + objExt;
 				
 				// a.Check if source file was modified and if object file still exists
 				if (prj.LastModificationTimes.ContainsKey(f) &&
@@ -101,14 +123,21 @@ namespace MonoDevelop.D
 				while(File.Exists(obj))
 				{
 					// Simply add a number between the obj name and its extension
-					obj= objDir+"\\" + Path.GetFileNameWithoutExtension(f.FilePath)+i + objExt;
+					obj= Path.Combine(objDir, Path.GetFileNameWithoutExtension(f.FilePath))+i + objExt;
 					i++;
 				}
-
+				
+				var dmdincludes = new StringBuilder();
+				if (cfg.Includes != null)
+					foreach (string inc in cfg.Includes)
+						dmdincludes.AppendFormat(" -I\"{0}\"", inc);	
+				
 				// b.Build argument string
 				var dmdArgs = "-c \"" + f.FilePath + "\" -of\"" + obj + "\" " + 
 					(cfg.DebugMode?compilerDebugArgs:compilerReleaseArgs) + 
-					cfg.ExtraCompilerArguments;
+					cfg.ExtraCompilerArguments + dmdincludes.ToString();
+				
+			
 				
 				// b.Execute compiler
 				string dmdOutput;
@@ -160,11 +189,25 @@ namespace MonoDevelop.D
 					objsArg += "\"" + o_ + "\" ";
 				}
 				
-				var linkArgs = 
-					objsArg.TrimEnd()+ " -L/NOLOGO "+
-					(cfg.DebugMode?linkerDebugArgs:linkerReleaseArgs) +
-					" -of\""+cfg.OutputDirectory+"\\"+cfg.CompiledOutputName+"\"";
-
+				var linkArgs = ""; 				
+				if ((Environment.OSVersion.Platform == PlatformID.Unix) || (Environment.OSVersion.Platform == PlatformID.MacOSX))
+				{
+					StringBuilder formattedlibs = new StringBuilder();
+					if (cfg.Libs != null)
+						foreach (var lib in cfg.Libs)
+							formattedlibs.AppendFormat (" -\"{0}\"", lib);					
+					
+					linkArgs =
+						string.Format ("-o {0} -B {1} {2} {3} " +
+						(cfg.DebugMode?linkerDebugArgs:linkerReleaseArgs),
+						Path.Combine(cfg.OutputDirectory,cfg.CompiledOutputName), cfg.OutputDirectory, objsArg, formattedlibs.ToString());										
+				}else{
+					linkArgs =
+						objsArg.TrimEnd()+ " -L/NOLOGO "+
+						(cfg.DebugMode?linkerDebugArgs:linkerReleaseArgs) +
+						" -of\""+Path.Combine(cfg.OutputDirectory,cfg.CompiledOutputName)+"\"";					
+				}
+				
 				switch (cfg.CompileTarget)
 				{
 					case DCompileTargetType.SharedLibrary:
@@ -198,14 +241,24 @@ namespace MonoDevelop.D
 		#region Compiler Error Parsing
 		private static Regex withColRegex = new Regex(
 			@"^\s*(?<file>.*):(?<line>\d*):(?<column>\d*):\s*(?<level>.*)\s*:\s(?<message>.*)",
-			RegexOptions.Compiled | RegexOptions.ExplicitCapture);
+			RegexOptions.Compiled | RegexOptions.ExplicitCapture);	
 		private static Regex noColRegex = new Regex(
 			@"^\s*(?<file>.*):(?<line>\d*):\s*(?<level>.*)\s*:\s(?<message>.*)",
-			RegexOptions.Compiled | RegexOptions.ExplicitCapture);
+			RegexOptions.Compiled | RegexOptions.ExplicitCapture);		
 		private static Regex linkerRegex = new Regex(
 			@"^\s*(?<file>[^:]*):(?<line>\d*):\s*(?<message>.*)",
 			RegexOptions.Compiled | RegexOptions.ExplicitCapture);
-
+		
+		//additional regex parsers
+		private static Regex noColRegex_2 = new Regex (
+			@"^\s*((?<file>.*)(\()(?<line>\d*)(\)):\s*(?<message>.*))|(Error:)",
+			RegexOptions.Compiled | RegexOptions.ExplicitCapture);			
+		
+		private static Regex gcclinkerRegex = new Regex (
+		    @"^\s*(?<file>.*):(?<line>\d*):((?<column>\d*):)?\s*(?<level>.*)\s*:\s(?<message>.*)",
+			RegexOptions.Compiled | RegexOptions.ExplicitCapture);
+		
+		
 		CompilerError CreateErrorFromErrorString(string errorString, TextReader reader)
 		{
 			var error = new CompilerError();
@@ -248,6 +301,33 @@ namespace MonoDevelop.D
 					} while ((error_continued = reader.ReadLine()) != null);
 				}
 
+				return error;
+			}
+			
+			match = noColRegex_2.Match(errorString);
+			if (match.Success)
+			{
+				error.FileName = match.Groups["file"].Value;
+				error.Line = int.Parse(match.Groups["line"].Value);
+				
+				error.IsWarning = (match.Groups["level"].Value.Equals(warning, StringComparison.Ordinal) ||
+								   match.Groups["level"].Value.Equals(note, StringComparison.Ordinal));
+				error.ErrorText = match.Groups["message"].Value;
+
+				return error;
+			}
+			
+			match = gcclinkerRegex.Match(errorString);
+			if (match.Success)
+			{
+				error.FileName = match.Groups["file"].Value;
+				error.Line = int.Parse(match.Groups["line"].Value);
+				
+				error.IsWarning = (match.Groups["level"].Value.Equals(warning, StringComparison.Ordinal) ||
+								   match.Groups["level"].Value.Equals(note, StringComparison.Ordinal));
+				error.ErrorText = match.Groups["message"].Value;
+					
+				
 				return error;
 			}
 

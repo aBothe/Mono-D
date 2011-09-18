@@ -88,7 +88,16 @@
 	
 	
 	<!-- Option panels -->
-		
+	<Extension path = "/MonoDevelop/ProjectModel/Gui/ItemOptionPanels/Build">
+		<Condition id = "ItemType" value = "MonoDevelop.D.DProject">
+			<Section
+				id = "DGenericOptions"
+			    _label = "Generic Options"
+			    insertafter = "Compile"
+			    class = "MonoDevelop.D.OptionPanels.DGenericOptionsBinding"/>
+		</Condition>
+	</Extension>
+				
 	<!-- Syntax Highlighting and Formatting -->
 
 	<Extension path="/MonoDevelop/SourceEditor2/SyntaxModes">

@@ -57,8 +57,7 @@
       <HintPath>C:\Program Files %28x86%29\GtkSharp\2.12\lib\gtk-sharp-2.0\atk-sharp.dll</HintPath>
     </Reference>
     <Reference Include="gdk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Program Files %28x86%29\GtkSharp\2.12\lib\gtk-sharp-2.0\gdk-sharp.dll</HintPath>
+      <Package>gtk-sharp-2.0</Package>
     </Reference>
     <Reference Include="glib-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
       <SpecificVersion>False</SpecificVersion>
@@ -68,6 +67,7 @@
     </Reference>
     <Reference Include="gtk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
       <SpecificVersion>False</SpecificVersion>
+      <Package>gtk-sharp-2.0</Package>
     </Reference>
     <Reference Include="MonoDevelop.Core, Version=2.6.0.0, Culture=neutral, PublicKeyToken=null">
       <SpecificVersion>False</SpecificVersion>
@@ -92,9 +92,15 @@
       <HintPath>..\Mono.TextEditor.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="gtk-dotnet, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <Package>gtk-dotnet-2.0</Package>
+    </Reference>
+    <Reference Include="Mono.Posix" />
+    <Reference Include="Mono.Addins, Version=0.5.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="gtk-gui\generated.cs" />
     <Compile Include="Compiler\DMDCompiler.cs" />
     <Compile Include="Completion\ASTStorage.cs" />
     <Compile Include="Completion\BinaryDataTypeStorage.cs" />
@@ -108,11 +114,17 @@
     <Compile Include="Project\DPrjBinding.cs" />
     <Compile Include="Project\DProject.cs" />
     <Compile Include="Project\DProjectConfiguration.cs" />
+    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.DGenericOptions.cs" />
+    <Compile Include="Gui\AddLibraryDialog.cs" />
+    <Compile Include="Gui\AddPathDialog.cs" />
+    <Compile Include="gtk-gui\MonoDevelop.D.AddLibraryDialog.cs" />
+    <Compile Include="gtk-gui\MonoDevelop.D.AddPathDialog.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <Folder Include="Refactoring\" />
     <Folder Include="Resolver\" />
+    <Folder Include="Gui\" />
   </ItemGroup>
   <ProjectExtensions>
     <MonoDevelop>
@@ -144,6 +156,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="templates\EmptyProject.xpt.xml">
       <LogicalName>EmptyProject.xpt.xml</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="gtk-gui\gui.stetic">
+      <LogicalName>gui.stetic</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
