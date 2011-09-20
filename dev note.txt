@@ -1,4 +1,0 @@
-Note for MonoDevelop on Windows:
-
-In the MonoDev root, there's a MonoDevelop.exe.addins file.
-Within that file, you can put in the Mono-D's output directory, to create a link between a local installation and the Mono-D project!
