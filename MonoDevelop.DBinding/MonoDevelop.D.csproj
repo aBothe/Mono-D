@@ -104,8 +104,6 @@
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="gtk-gui\generated.cs" />
     <Compile Include="Compiler\DMDCompiler.cs" />
-    <Compile Include="Completion\ASTStorage.cs" />
-    <Compile Include="Completion\BinaryDataTypeStorage.cs" />
     <Compile Include="Completion\DCodeCompletionSupport.cs" />
     <Compile Include="Completion\EditorCompletionExtension.cs" />
     <Compile Include="DLanguageBinding.cs" />

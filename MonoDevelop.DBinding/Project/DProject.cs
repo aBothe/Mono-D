@@ -10,8 +10,9 @@ using MonoDevelop.Core.Execution;
 using MonoDevelop.Core;
 using MonoDevelop.Ide;
 using MonoDevelop.Core.ProgressMonitoring;
-using D_Parser.Core;
 using MonoDevelop.D.Parser;
+using D_Parser.Dom;
+using D_Parser.Parser;
 
 namespace MonoDevelop.D
 {
@@ -72,7 +73,7 @@ namespace MonoDevelop.D
 				if (pf != null && DLanguageBinding.IsDFile(pf.FilePath.FileName))
 				{
 					try{
-					pf.ExtendedProperties[DParserPropertyKey]=D_Parser.DParser.ParseFile(pf.FilePath.ToAbsolute(BaseDirectory));
+					pf.ExtendedProperties[DParserPropertyKey]=DParser.ParseFile(pf.FilePath.ToAbsolute(BaseDirectory));
 					}catch(Exception ex)
 					{
 						LoggingService.LogError("Error while parsing "+pf.FilePath.ToString(),ex);

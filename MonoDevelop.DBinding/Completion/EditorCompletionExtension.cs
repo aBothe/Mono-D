@@ -9,6 +9,7 @@ using Gtk;
 using MonoDevelop.D.Completion;
 using MonoDevelop.D.Parser;
 using D_Parser;
+using D_Parser.Resolver;
 
 namespace MonoDevelop.D
 {
@@ -55,12 +56,12 @@ namespace MonoDevelop.D
 			}
 
 			// Check if in comment or string literal
-			if (DCodeResolver.Commenting.IsInCommentAreaOrString(Document.Editor.Text, completionContext.TriggerOffset))
+			if (DResolver.CommentSearching.IsInCommentAreaOrString(Document.Editor.Text, completionContext.TriggerOffset))
 				return null;
 
 			var l = new CompletionDataList();
 
-			DCodeCompletionSupport.Instance.BuildCompletionData(Document,dom.DDom,completionContext,l,triggerChar=='\0'?"":triggerChar.ToString());
+			DCodeCompletionSupport.BuildCompletionData(Document,dom.DDom,completionContext,l,triggerChar=='\0'?"":triggerChar.ToString());
 
 			return l;
 		}

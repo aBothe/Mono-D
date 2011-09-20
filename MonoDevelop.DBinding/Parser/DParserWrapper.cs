@@ -8,8 +8,9 @@ using MonoDevelop.Projects.Dom;
 using System.IO;
 using MonoDevelop.Ide;
 using MonoDevelop.Projects;
-using D_Parser.Core;
 using MonoDevelop.Core;
+using D_Parser.Dom;
+using D_Parser.Parser;
 
 namespace MonoDevelop.D.Parser
 {
@@ -46,7 +47,7 @@ namespace MonoDevelop.D.Parser
 				var doc = new ParsedDSource(file);
 				doc.Flags |= ParsedDocumentFlags.NonSerializable;
 
-				var parser = D_Parser.DParser.Create(content);
+				var parser = DParser.Create(content);
 				
 				// Parse the code
 				var ast=doc.DDom = parser.Parse();
@@ -103,7 +104,7 @@ namespace MonoDevelop.D.Parser
 
 		#region Converter methods
 
-		public static MonoDevelop.Projects.Dom.INode ConvertDParserToDomNode(D_Parser.Core.INode n, ParsedDocument doc)
+		public static MonoDevelop.Projects.Dom.INode ConvertDParserToDomNode(D_Parser.Dom.INode n, ParsedDocument doc)
 		{
 			//TODO: DDoc comments!
 
@@ -185,15 +186,10 @@ namespace MonoDevelop.D.Parser
 				var dv = n as DVariable;
 				return new DomField(n.Name, GetNodeModifiers(dv), FromCodeLocation(n.StartLocation), GetReturnType(n));
 			}
-			else if (n is DStatementBlock)
-			{
-				var ds = n as DStatementBlock;
-				//TODO
-			}
 			return null;
 		}
 
-		public static string BuildTypeNamespace(D_Parser.Core.INode n)
+		public static string BuildTypeNamespace(D_Parser.Dom.INode n)
 		{
 			var path = "";
 
@@ -221,7 +217,7 @@ namespace MonoDevelop.D.Parser
 					yield return new TypeParameter(tpar.Name); //TODO: Constraints'n'Stuff
 		}
 
-		public static IReturnType GetReturnType(D_Parser.Core.INode n)
+		public static IReturnType GetReturnType(D_Parser.Dom.INode n)
 		{
 			return ToDomType(n.Type);
 		}
