@@ -2,13 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using D_Parser.Core;
 using D_Parser;
 using D_IDE.D.CodeCompletion;
 using MonoDevelop.Ide.CodeCompletion;
 using MonoDevelop.Ide.Gui;
 using MonoDevelop.Core;
 using System.IO;
+using D_Parser.Dom;
+using D_Parser.Resolver;
+using D_Parser.Dom.Statements;
 
 namespace MonoDevelop.D.Completion
 {
@@ -31,7 +33,8 @@ namespace MonoDevelop.D.Completion
 			var caretOffset = ctx.TriggerOffset;
 			var caretLocation = new CodeLocation(ctx.TriggerLineOffset,ctx.TriggerLine);
 
-			var curBlock = DCodeResolver.SearchBlockAt(SyntaxTree,caretLocation);
+			IStatement stmt = null;
+			var curBlock = DResolver.SearchBlockAt(SyntaxTree,caretLocation,out stmt);
 
 			if (curBlock == null)
 				return;
@@ -44,7 +47,7 @@ namespace MonoDevelop.D.Completion
 			{
 				ITypeDeclaration id = null;
 				DToken tk = null;
-				var accessedItems=DCodeResolver.ResolveTypeDeclarations(SyntaxTree,
+				var accessedItems=DResolver.ResolveTypeDeclarations(SyntaxTree,
 					EditorDocument.Editor.Text.Substring(0,caretOffset-1),
 					caretOffset-2,
 					caretLocation,

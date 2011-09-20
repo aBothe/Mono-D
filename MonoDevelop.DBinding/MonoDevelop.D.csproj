@@ -56,6 +56,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>C:\Program Files %28x86%29\GtkSharp\2.12\lib\gtk-sharp-2.0\atk-sharp.dll</HintPath>
     </Reference>
+    <Reference Include="D_Parser, Version=1.0.4155.21875, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\D_Parser.dll</HintPath>
+    </Reference>
     <Reference Include="gdk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
       <Package>gtk-sharp-2.0</Package>
     </Reference>
@@ -67,34 +71,29 @@
       <HintPath>..\ext\Mono.Addins.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Mono.TextEditor">
+      <HintPath>..\Mono.TextEditor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="MonoDevelop.Core">
+      <HintPath>..\MonoDevelop.Core.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="MonoDevelop.Ide">
+      <HintPath>..\MonoDevelop.Ide.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="System">
     </Reference>
     <Reference Include="gtk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
       <SpecificVersion>False</SpecificVersion>
       <Package>gtk-sharp-2.0</Package>
     </Reference>
-    <Reference Include="MonoDevelop.Core, Version=2.6.0.0, Culture=neutral, PublicKeyToken=null">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\MonoDevelop.Core.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="MonoDevelop.Ide, Version=2.6.0.0, Culture=neutral, PublicKeyToken=null">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\MonoDevelop.Ide.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="System.Xml">
     </Reference>
     <Reference Include="System.Net">
     </Reference>
     <Reference Include="System.Data">
-    </Reference>
-    <Reference Include="D_Parser, Version=1.0.4155.21875, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\D_Parser.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.TextEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\Mono.TextEditor.dll</HintPath>
-      <Private>False</Private>
     </Reference>
     <Reference Include="gtk-dotnet, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
       <Package>gtk-dotnet-2.0</Package>
@@ -204,6 +203,6 @@
     <Content Include="unused extensions.txt" />
   </ItemGroup>
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(TargetDir)*" "C:\Users\Alexander\AppData\Local\MonoDevelop-2.6\Addins" /Y</PostBuildEvent>
+    <PostBuildEvent>xcopy "$(TargetDir)*" "$(SolutionDir)..\tutorial;lib\MonoDevelop\main\build\AddIns\BackendBindings" /Y</PostBuildEvent>
   </PropertyGroup>
 </Project>
