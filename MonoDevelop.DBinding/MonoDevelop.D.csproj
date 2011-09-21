@@ -30,6 +30,8 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <SignAssembly>False</SignAssembly>
+    <DelaySign>False</DelaySign>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -113,6 +115,7 @@
     <Compile Include="DLanguageBinding.cs" />
     <Compile Include="Formatting\DFormatter.cs" />
     <Compile Include="Gui\DModuleOutlineExtension.cs" />
+    <Compile Include="Gui\DToolTipProvider.cs" />
     <Compile Include="OptionPanels\DGenericOptions.cs" />
     <Compile Include="Parser\DParserWrapper.cs" />
     <Compile Include="Parser\ParsedDModule.cs" />
@@ -208,5 +211,9 @@
   </ItemGroup>
   <PropertyGroup>
     <PostBuildEvent>xcopy "$(TargetDir)*" "$(SolutionDir)..\tutorial;lib\MonoDevelop\main\build\AddIns\BackendBindings" /Y</PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <StartAction>Program</StartAction>
+    <StartProgram>..\..\tutorial%3blib\MonoDevelop\main\build\bin\MonoDevelop.exe</StartProgram>
   </PropertyGroup>
 </Project>

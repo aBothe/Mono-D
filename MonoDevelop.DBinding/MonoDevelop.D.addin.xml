@@ -117,6 +117,10 @@
 		<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.Gui.DModuleOutlineExtension" />
 	</Extension>
 	
+	<Extension path = "/MonoDevelop/SourceEditor2/TooltipProviders">
+		<Class id="DToolTips" class="MonoDevelop.D.Gui.DToolTipProvider" />
+	</Extension>
+	
 	<!-- Code Parsing, Refactoring, Resolving -->
 
 	<Extension path = "/MonoDevelop/ProjectModel/DomParser">
