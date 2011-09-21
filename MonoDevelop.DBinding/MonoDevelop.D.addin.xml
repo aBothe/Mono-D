@@ -112,6 +112,7 @@
 
 	<Extension path = "/MonoDevelop/Ide/TextEditorExtensions">
 		<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.DEditorCompletionExtension" />
+		<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.Gui.DModuleOutlineExtension" />
 	</Extension>
 	
 	<!-- Code Parsing, Refactoring, Resolving -->

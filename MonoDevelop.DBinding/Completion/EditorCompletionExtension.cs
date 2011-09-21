@@ -48,7 +48,7 @@ namespace MonoDevelop.D
 			triggerWordLength = DCodeCompletionSupport.IsIdentifierChar(triggerChar) ? 1 : 0;
 
 			// Require a parsed D source
-			var dom = base.Document.ParsedDocument as DParserWrapper.ParsedDSource;
+			var dom = base.Document.ParsedDocument as ParsedDModule;
 
 			if (dom == null)
 			{
@@ -148,7 +148,7 @@ namespace MonoDevelop.D
 
 		public override bool ExtendsEditor(Document doc, IEditableTextBuffer editor)
 		{
-			return true;
+			return doc.IsFile && DLanguageBinding.IsDFile(doc.FileName);
 		}
 
 		public override bool KeyPress(Gdk.Key key, char keyChar, Gdk.ModifierType modifier)

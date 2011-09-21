@@ -79,6 +79,10 @@
       <HintPath>..\MonoDevelop.Core.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="MonoDevelop.DesignerSupport">
+      <HintPath>..\..\tutorial;lib\MonoDevelop\main\build\AddIns\MonoDevelop.DesignerSupport\MonoDevelop.DesignerSupport.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="MonoDevelop.Ide">
       <HintPath>..\MonoDevelop.Ide.dll</HintPath>
       <Private>False</Private>
@@ -108,8 +112,10 @@
     <Compile Include="Completion\EditorCompletionExtension.cs" />
     <Compile Include="DLanguageBinding.cs" />
     <Compile Include="Formatting\DFormatter.cs" />
+    <Compile Include="Gui\DModuleOutlineExtension.cs" />
     <Compile Include="OptionPanels\DGenericOptions.cs" />
     <Compile Include="Parser\DParserWrapper.cs" />
+    <Compile Include="Parser\ParsedDModule.cs" />
     <Compile Include="Project\DmdConfiguration.cs" />
     <Compile Include="Project\DPrjBinding.cs" />
     <Compile Include="Project\DProject.cs" />

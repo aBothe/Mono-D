@@ -21,11 +21,12 @@
 
 			<Files>
 				<File name = "main.d" AddStandardHeader="True">
-					<![CDATA[import std.stdio;
+					<![CDATA[import std.stdio, std.cstream;
 
 void main(string[] args)
 {
 	writeln("Hello World!");
+	din.getc();
 }
 ]]>
 				</File>
