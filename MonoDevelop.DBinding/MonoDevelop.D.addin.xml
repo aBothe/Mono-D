@@ -118,7 +118,7 @@
 	</Extension>
 	
 	<Extension path = "/MonoDevelop/SourceEditor2/TooltipProviders">
-		<Class id="DToolTips" class="MonoDevelop.D.Gui.DToolTipProvider" />
+		<Class id="DToolTipProvider" class="MonoDevelop.D.Gui.DToolTipProvider" />
 	</Extension>
 	
 	<!-- Code Parsing, Refactoring, Resolving -->

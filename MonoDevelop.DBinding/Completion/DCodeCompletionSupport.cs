@@ -15,30 +15,35 @@ using MonoDevelop.Ide.Gui;
 
 namespace MonoDevelop.D.Completion
 {
-	public class DCodeCompletionSupport:AbstractCompletionSupport
+	public class DCodeCompletionSupport : AbstractCompletionSupport
 	{
 		public DCodeCompletionSupport(ICompletionDataGenerator gen) : base(gen) { }
 
-		public static void BuildCompletionData(Document EditorDocument,IAbstractSyntaxTree SyntaxTree,CodeCompletionContext ctx, CompletionDataList l, string EnteredText)
+		public static void BuildCompletionData(Document EditorDocument, IAbstractSyntaxTree SyntaxTree, CodeCompletionContext ctx, CompletionDataList l, string EnteredText)
 		{
 			var caretOffset = ctx.TriggerOffset;
-			var caretLocation = new CodeLocation(ctx.TriggerLineOffset,ctx.TriggerLine);
+			var caretLocation = new CodeLocation(ctx.TriggerLineOffset, ctx.TriggerLine);
 
 			IStatement stmt = null;
-			var curBlock = DResolver.SearchBlockAt(SyntaxTree,caretLocation,out stmt);
+			var curBlock = DResolver.SearchBlockAt(SyntaxTree, caretLocation, out stmt);
 
 			if (curBlock == null)
 				return;
 
-			string lastCompletionResultPath="";
+			string lastCompletionResultPath = "";
 
 			var codeCache = EnumAvailableModules(EditorDocument);
 
-			var ccs=new DCodeCompletionSupport(new CompletionDataGenerator { CompletionDataList=l });
+			var ccs = new DCodeCompletionSupport(new CompletionDataGenerator { CompletionDataList = l });
 
-			ccs.BuildCompletionData(caretOffset, caretLocation, SyntaxTree, EditorDocument.Editor.Text,
-				codeCache,
-				DResolver.ResolveImports(SyntaxTree as DModule, codeCache),
+			ccs.BuildCompletionData(new EditorDataAccessor {
+					CaretLocation=caretLocation,
+					CaretOffset=ctx.TriggerOffset,
+					ModuleCode=EditorDocument.Editor.Text,
+					SyntaxTree=SyntaxTree as DModule,
+					ParseCache=codeCache,
+					ImportCache= DResolver.ResolveImports(SyntaxTree as DModule, codeCache)
+				},
 				EnteredText,
 				out lastCompletionResultPath);
 
@@ -52,8 +57,8 @@ namespace MonoDevelop.D.Completion
 
 		public static IEnumerable<IAbstractSyntaxTree> EnumAvailableModules(DProject Project)
 		{
-			var ret =new List<IAbstractSyntaxTree>();
-			
+			var ret = new List<IAbstractSyntaxTree>();
+
 			if (Project != null)
 			{
 				// Add the project's parsed modules to the reachable-packages list
@@ -88,7 +93,7 @@ namespace MonoDevelop.D.Completion
 				images["struct_internal"] = new IconId("md-internal-struct");
 				images["struct_private"] = new IconId("md-private-struct");
 				images["struct_protected"] = new IconId("md-protected-struct");
-				
+
 				images["interface"] = new IconId("md-interface");
 				images["interface_internal"] = new IconId("md-internal-interface");
 				images["interface_private"] = new IconId("md-private-interface");
@@ -106,13 +111,13 @@ namespace MonoDevelop.D.Completion
 
 				images["parameter"] = new IconId("md-field");
 				images["local"] = new IconId("md-field");
-				
+
 				images["field"] = new IconId("md-field");
 				images["field_internal"] = new IconId("md-internal-field");
 				images["field_private"] = new IconId("md-private-field");
 				images["field_protected"] = new IconId("md-protected-field");
 
-				images["property"] =new IconId("md-property");
+				images["property"] = new IconId("md-property");
 				images["property_internal"] = new IconId("md-internal-property");
 				images["property_private"] = new IconId("m-privated-property");
 				images["property_protected"] = new IconId("md-protected-property");
@@ -126,7 +131,7 @@ namespace MonoDevelop.D.Completion
 			}
 			catch (Exception ex)
 			{
-				LoggingService.LogError("Error while filling icon array",ex);
+				LoggingService.LogError("Error while filling icon array", ex);
 			}
 
 			wasInitialized = true;
@@ -171,7 +176,7 @@ namespace MonoDevelop.D.Completion
 		public TokenCompletionData(int Token)
 		{
 			this.Token = Token;
-			CompletionText=DisplayText = DTokens.GetTokenString(Token);
+			CompletionText = DisplayText = DTokens.GetTokenString(Token);
 			Description = DTokens.GetDescription(Token);
 		}
 
@@ -181,7 +186,7 @@ namespace MonoDevelop.D.Completion
 			{
 				return new IconId("md-keyword");
 			}
-			set{}
+			set { }
 		}
 	}
 
@@ -216,7 +221,7 @@ namespace MonoDevelop.D.Completion
 			}
 
 			Description = descString;
-				//ToolTipContentHelper.CreateToolTipContent(IsPackage ? ModuleName : AssociatedModule.ModuleName, descString);
+			//ToolTipContentHelper.CreateToolTipContent(IsPackage ? ModuleName : AssociatedModule.ModuleName, descString);
 		}
 
 		public override Core.IconId Icon
@@ -227,7 +232,8 @@ namespace MonoDevelop.D.Completion
 			}
 		}
 
-		public override string DisplayText{
+		public override string DisplayText
+		{
 			get { return ModuleName; }
 		}
 
@@ -378,14 +384,19 @@ namespace MonoDevelop.D.Completion
 						return DCodeCompletionSupport.GetNodeImage("parameter");
 				}
 			}
-			catch (Exception ex) { LoggingService.LogError("Error while getting node icon",ex); }
+			catch (Exception ex) { LoggingService.LogError("Error while getting node icon", ex); }
 			return null;
 		}
 
-		public string NodeString { get {
-			if (Node is DNode)
-				return (Node as DNode).ToString();
-			return Node.ToString(); } }
+		public string NodeString
+		{
+			get
+			{
+				if (Node is DNode)
+					return (Node as DNode).ToString();
+				return Node.ToString();
+			}
+		}
 
 		/// <summary>
 		/// Returns node string without attributes and without node path
@@ -395,27 +406,30 @@ namespace MonoDevelop.D.Completion
 			get
 			{
 				if (Node is DNode)
-					return (Node as DNode).ToString(false,false);
+					return (Node as DNode).ToString(false, false);
 				return Node.ToString();
 			}
 		}
 
 		public INode Node { get; protected set; }
 
-		public override string CompletionText		{			
-			get			{				return Node.Name;			}
-			set	{}
+		public override string CompletionText
+		{
+			get { return Node.Name; }
+			set { }
 		}
 
-		public override string DisplayText		{		
-			get	{	return CompletionText;	}
-			set	{}
+		public override string DisplayText
+		{
+			get { return CompletionText; }
+			set { }
 		}
 
 		public override string Description
 		{
 			// If an empty description was given, do not show an empty decription tool tip
-			get {
+			get
+			{
 				try
 				{
 					return NodeString;

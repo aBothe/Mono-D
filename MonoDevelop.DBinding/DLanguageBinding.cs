@@ -8,7 +8,7 @@ using MonoDevelop.Projects.CodeGeneration;
 using MonoDevelop.D.Parser;
 using System.Reflection;
 using MonoDevelop.D.Completion;
-using D_Parser.CodeCompletion;
+using D_Parser.Completion;
 
 namespace MonoDevelop.D
 {

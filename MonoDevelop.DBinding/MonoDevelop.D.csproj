@@ -89,6 +89,10 @@
       <HintPath>..\MonoDevelop.Ide.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="pango-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files (x86)\GtkSharp\2.12\lib\gtk-sharp-2.0\pango-sharp.dll</HintPath>
+    </Reference>
     <Reference Include="System">
     </Reference>
     <Reference Include="gtk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
@@ -108,6 +112,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="Completion\EditorDataAccessor.cs" />
     <Compile Include="gtk-gui\generated.cs" />
     <Compile Include="Compiler\DMDCompiler.cs" />
     <Compile Include="Completion\DCodeCompletionSupport.cs" />
@@ -116,6 +121,7 @@
     <Compile Include="Formatting\DFormatter.cs" />
     <Compile Include="Gui\DModuleOutlineExtension.cs" />
     <Compile Include="Gui\DToolTipProvider.cs" />
+    <Compile Include="Gui\DToolTipWindow.cs" />
     <Compile Include="OptionPanels\DGenericOptions.cs" />
     <Compile Include="Parser\DParserWrapper.cs" />
     <Compile Include="Parser\ParsedDModule.cs" />
