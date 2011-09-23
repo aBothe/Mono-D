@@ -36,7 +36,7 @@ namespace MonoDevelop.D.Completion
 
 			var ccs = new DCodeCompletionSupport(new CompletionDataGenerator { CompletionDataList = l });
 
-			ccs.BuildCompletionData(new EditorDataAccessor {
+			ccs.BuildCompletionData(new EditorData {
 					CaretLocation=caretLocation,
 					CaretOffset=ctx.TriggerOffset,
 					ModuleCode=EditorDocument.Editor.Text,

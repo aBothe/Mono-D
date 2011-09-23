@@ -112,7 +112,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
-    <Compile Include="Completion\EditorDataAccessor.cs" />
     <Compile Include="gtk-gui\generated.cs" />
     <Compile Include="Compiler\DMDCompiler.cs" />
     <Compile Include="Completion\DCodeCompletionSupport.cs" />

@@ -39,7 +39,7 @@ namespace MonoDevelop.D.Gui
 			var codeCache = DCodeCompletionSupport.EnumAvailableModules(doc);
 
 			// Create editor context
-			var EditorContext = new EditorDataAccessor {
+			var EditorContext = new EditorData {
 				CaretOffset=offset,
 				CaretLocation=new CodeLocation(editor.Caret.Column,editor.Caret.Line),
 				ModuleCode = editor.Text,
