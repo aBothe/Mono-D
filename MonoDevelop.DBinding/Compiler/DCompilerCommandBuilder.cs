@@ -197,7 +197,7 @@ namespace MonoDevelop.D
 			if (!((Environment.OSVersion.Platform == PlatformID.Unix) || (Environment.OSVersion.Platform == PlatformID.MacOSX)))				
 				nologo = " -L/NOLOGO";
 			var linkArgs =
-					objsArg.TrimEnd()+ nologo +
+					objsArg.TrimEnd()+ nologo + " " +
 					(config.DebugMode?linkerDebugArgs:linkerReleaseArgs) +
 					" -of\""+Path.Combine(config.OutputDirectory,config.CompiledOutputName)+"\"";					
 			
