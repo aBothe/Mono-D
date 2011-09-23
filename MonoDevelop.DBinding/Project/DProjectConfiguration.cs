@@ -9,6 +9,7 @@ using System.IO;
 
 namespace MonoDevelop.D
 {
+
 	public enum DCompileTargetType
 	{
 		Bin,
@@ -16,6 +17,13 @@ namespace MonoDevelop.D
 		StaticLibrary
 	}
 
+	public enum DCompiler
+	{
+		DMD,
+		GDC,
+		LDC
+	}
+	
 	public class DProjectConfiguration:ProjectConfiguration
 	{
 		[ItemProperty("OutputName")]
@@ -23,6 +31,9 @@ namespace MonoDevelop.D
 
 		[ItemProperty("CompileTarget")]
 		DCompileTargetType target = DCompileTargetType.Bin;
+		
+		[ItemProperty("Compiler")]
+		DCompiler compiler = DCompiler.DMD;
 
 		[ItemProperty("Includes")]
 		[ItemProperty("Include", Scope = "*", ValueType = typeof(string))]
@@ -59,7 +70,13 @@ namespace MonoDevelop.D
 			get { return target; }
 			set { target = value; }
 		}
-
+		
+		public DCompiler Compiler
+		{
+			get { return compiler; }
+			set { compiler = value; }
+		}
+		
 		public ArrayList Includes
 		{
 			get { return includes; }
@@ -108,6 +125,7 @@ namespace MonoDevelop.D
 
 			output = conf.output;
 			target = conf.target;
+			compiler = conf.compiler;
 			includes = conf.includes;
 			libpaths = conf.libpaths;
 			libs = conf.libs;

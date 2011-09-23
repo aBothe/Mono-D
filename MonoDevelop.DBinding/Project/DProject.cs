@@ -31,7 +31,14 @@ namespace MonoDevelop.D
 		public override string ProjectType	{get { return "Native"; }}
 		public override string[] SupportedLanguages	{get{return new[]{"D"};}}
 
-		[ItemProperty("Compiler", ValueType = typeof(DMDCompiler))]
+		[ItemProperty("Compiler")]
+		DCompiler compiler = DCompiler.DMD;
+		
+		public DCompiler Compiler {
+			get { return compiler; }
+			set { compiler = value; }
+		}
+			
 		DMDCompiler dmd;
 
 		public DMDCompiler DmdCompiler
@@ -136,6 +143,14 @@ namespace MonoDevelop.D
 						c.CompileTarget = (DCompileTargetType)Enum.Parse(
 							typeof(DCompileTargetType),
 							projectOptions.Attributes["Target"].InnerText);
+					}
+					
+					// Set project's compiler
+					if (projectOptions.Attributes["Compiler"] != null)
+					{
+						c.Compiler = (DCompiler)Enum.Parse(
+							typeof(DCompiler), 
+							projectOptions.Attributes["Compiler"].InnerText);
 					}
 
 					// Set extra compiler&linker args

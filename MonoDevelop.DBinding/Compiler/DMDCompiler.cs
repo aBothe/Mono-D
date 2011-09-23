@@ -7,49 +7,14 @@ using MonoDevelop.Core;
 using System.IO;
 using MonoDevelop.Core.ProgressMonitoring;
 using System.CodeDom.Compiler;
-using System.Text.RegularExpressions;
+
 
 namespace MonoDevelop.D
 {
 	public class DMDCompiler
 	{
-		protected string compilerCommand = "dmd";
-		protected string linkerCommand;
-		protected string linkerCommand_windows = "dmd";
-		protected string linkerCommand_linux = "gcc";		
+		private DCompilerCommandBuilder compilerCommands;
 		
-
-		// Arguments that are inserted additionally (by default!)
-		protected string compilerDebugArgs = "-g -debug";
-		protected string compilerReleaseArgs = "-O -release -inline";
-		
-		protected string linkerDebugArgs;
-		protected string linkerReleaseArgs;		
-		protected string linkerDebugArgs_windows = "-g -debug";
-		protected string linkerReleaseArgs_windows = "-O -release -inline";
-		
-		protected string linkerDebugArgs_linux = "-g -debug"; //not sure about theses for gcc
-		protected string linkerReleaseArgs_linux = "-O -release -inline"; //not about these for gcc
-			
-		public DMDCompiler()
-		{						
-			if ((Environment.OSVersion.Platform == PlatformID.Unix) || (Environment.OSVersion.Platform == PlatformID.MacOSX))
-			{
-				linkerCommand = linkerCommand_linux;				
-				linkerDebugArgs = linkerDebugArgs_linux;
-				linkerReleaseArgs = linkerDebugArgs_linux;
-			} else {
-				linkerCommand = linkerCommand_windows;
-				linkerDebugArgs = linkerDebugArgs_windows;
-				linkerReleaseArgs = linkerReleaseArgs_windows;
-			}						
-		}
-
-		public string CompilerCommand
-		{
-			get { return compilerCommand; }
-		}
-
 		public BuildResult Compile(
 			DProject prj, 
 			ProjectFileCollection files, 
@@ -83,7 +48,20 @@ namespace MonoDevelop.D
 			var buildResult = new BuildResult(compilerResults, "");
 			bool succesfullyBuilt = true;
 			bool modificationsDone = false;
-
+			
+			switch(cfg.Compiler)
+			{
+				case DCompiler.GDC:
+					compilerCommands = new GDCCompilerCommandBuilder(prj, cfg);
+					break;
+				case DCompiler.LDC:	
+					compilerCommands = new LDCCompilerCommandBuilder(prj, cfg);
+					break;
+				default:
+					compilerCommands = new DMDCompilerCommandBuilder(prj, cfg);
+					break;
+			}
+				
 			monitor.BeginTask("Build Project", files.Count + 1);
 
 			// 1)
@@ -127,21 +105,12 @@ namespace MonoDevelop.D
 					i++;
 				}
 				
-				var dmdincludes = new StringBuilder();
-				if (cfg.Includes != null)
-					foreach (string inc in cfg.Includes)
-						dmdincludes.AppendFormat(" -I\"{0}\"", inc);	
-				
-				// b.Build argument string
-				var dmdArgs = "-c \"" + f.FilePath + "\" -of\"" + obj + "\" " + 
-					(cfg.DebugMode?compilerDebugArgs:compilerReleaseArgs) + 
-					cfg.ExtraCompilerArguments + dmdincludes.ToString();
-				
 			
+				var dmdArgs = compilerCommands.BuildCompilerArguments(f.FilePath, obj);			
 				
 				// b.Execute compiler
 				string dmdOutput;
-				int exitCode = ExecuteCommand(compilerCommand, dmdArgs, prj.BaseDirectory, monitor, out dmdOutput);
+				int exitCode = ExecuteCommand(compilerCommands.CompilerCommand, dmdArgs, prj.BaseDirectory, monitor, out dmdOutput);
 
 				ParseCompilerOutput(dmdOutput, compilerResults);
 				CheckReturnCode(exitCode, compilerResults);
@@ -178,50 +147,9 @@ namespace MonoDevelop.D
 				}
 
 				// b.Build linker argument string
-				var objsArg = "";
-				foreach (var o in objs)
-				{
-					var o_ = o;
-
-					if (o_.StartsWith(prj.BaseDirectory))
-						o_ = o_.Substring(prj.BaseDirectory.ToString().Length).TrimStart('/','\\');
-
-					objsArg += "\"" + o_ + "\" ";
-				}
-				
-				var linkArgs = ""; 				
-				if ((Environment.OSVersion.Platform == PlatformID.Unix) || (Environment.OSVersion.Platform == PlatformID.MacOSX))
-				{
-					StringBuilder formattedlibs = new StringBuilder();
-					if (cfg.Libs != null)
-						foreach (var lib in cfg.Libs)
-							formattedlibs.AppendFormat (" -\"{0}\"", lib);					
-					
-					linkArgs =
-						string.Format ("-o {0} -B {1} {2} {3} " +
-						(cfg.DebugMode?linkerDebugArgs:linkerReleaseArgs),
-						Path.Combine(cfg.OutputDirectory,cfg.CompiledOutputName), cfg.OutputDirectory, objsArg, formattedlibs.ToString());										
-				}else{
-					linkArgs =
-						objsArg.TrimEnd()+ " -L/NOLOGO "+
-						(cfg.DebugMode?linkerDebugArgs:linkerReleaseArgs) +
-						" -of\""+Path.Combine(cfg.OutputDirectory,cfg.CompiledOutputName)+"\"";					
-				}
-				
-				switch (cfg.CompileTarget)
-				{
-					case DCompileTargetType.SharedLibrary:
-						if (cfg.CompiledOutputName.EndsWith(".dll"))
-							linkArgs += " -L/IMPLIB:\""+Path.GetFileNameWithoutExtension(cfg.Output)+".lib\"";
-						//TODO: Are there import libs on other platforms?
-						break;
-					case DCompileTargetType.StaticLibrary:
-						linkArgs += "-lib";
-						break;
-				}
-
+				var linkArgs = compilerCommands.BuildLinkerArguments(objs);
 				var linkerOutput = "";
-				int exitCode = ExecuteCommand(linkerCommand,linkArgs,prj.BaseDirectory,monitor,out linkerOutput);
+				int exitCode = ExecuteCommand(compilerCommands.LinkerCommand,linkArgs,prj.BaseDirectory,monitor,out linkerOutput);
 
 				compilerResults.NativeCompilerReturnValue = exitCode;
 
@@ -236,102 +164,11 @@ namespace MonoDevelop.D
 
 			return new BuildResult(compilerResults,"");
 		}
-
-
-		#region Compiler Error Parsing
-		private static Regex withColRegex = new Regex(
-			@"^\s*(?<file>.*):(?<line>\d*):(?<column>\d*):\s*(?<level>.*)\s*:\s(?<message>.*)",
-			RegexOptions.Compiled | RegexOptions.ExplicitCapture);	
-		private static Regex noColRegex = new Regex(
-			@"^\s*(?<file>.*):(?<line>\d*):\s*(?<level>.*)\s*:\s(?<message>.*)",
-			RegexOptions.Compiled | RegexOptions.ExplicitCapture);		
-		private static Regex linkerRegex = new Regex(
-			@"^\s*(?<file>[^:]*):(?<line>\d*):\s*(?<message>.*)",
-			RegexOptions.Compiled | RegexOptions.ExplicitCapture);
-		
-		//additional regex parsers
-		private static Regex noColRegex_2 = new Regex (
-			@"^\s*((?<file>.*)(\()(?<line>\d*)(\)):\s*(?<message>.*))|(Error:)",
-			RegexOptions.Compiled | RegexOptions.ExplicitCapture);			
-		
-		private static Regex gcclinkerRegex = new Regex (
-		    @"^\s*(?<file>.*):(?<line>\d*):((?<column>\d*):)?\s*(?<level>.*)\s*:\s(?<message>.*)",
-			RegexOptions.Compiled | RegexOptions.ExplicitCapture);
-		
+	
 		
 		CompilerError CreateErrorFromErrorString(string errorString, TextReader reader)
 		{
-			var error = new CompilerError();
-			string warning = GettextCatalog.GetString("warning");
-			string note = GettextCatalog.GetString("note");
-
-			var match = withColRegex.Match(errorString);
-
-			if (match.Success)
-			{
-				error.FileName = match.Groups["file"].Value;
-				error.Line = int.Parse(match.Groups["line"].Value);
-				error.Column = int.Parse(match.Groups["column"].Value);
-				error.IsWarning = (match.Groups["level"].Value.Equals(warning, StringComparison.Ordinal) ||
-								   match.Groups["level"].Value.Equals(note, StringComparison.Ordinal));
-				error.ErrorText = match.Groups["message"].Value;
-
-				return error;
-			}
-
-			match = noColRegex.Match(errorString);
-
-			if (match.Success)
-			{
-				error.FileName = match.Groups["file"].Value;
-				error.Line = int.Parse(match.Groups["line"].Value);
-				error.IsWarning = (match.Groups["level"].Value.Equals(warning, StringComparison.Ordinal) ||
-								   match.Groups["level"].Value.Equals(note, StringComparison.Ordinal));
-				error.ErrorText = match.Groups["message"].Value;
-
-				// Skip messages that begin with ( and end with ), since they're generic.
-				//Attempt to capture multi-line versions too.
-				if (error.ErrorText.StartsWith("("))
-				{
-					string error_continued = error.ErrorText;
-					do
-					{
-						if (error_continued.EndsWith(")"))
-							return null;
-					} while ((error_continued = reader.ReadLine()) != null);
-				}
-
-				return error;
-			}
-			
-			match = noColRegex_2.Match(errorString);
-			if (match.Success)
-			{
-				error.FileName = match.Groups["file"].Value;
-				error.Line = int.Parse(match.Groups["line"].Value);
-				
-				error.IsWarning = (match.Groups["level"].Value.Equals(warning, StringComparison.Ordinal) ||
-								   match.Groups["level"].Value.Equals(note, StringComparison.Ordinal));
-				error.ErrorText = match.Groups["message"].Value;
-
-				return error;
-			}
-			
-			match = gcclinkerRegex.Match(errorString);
-			if (match.Success)
-			{
-				error.FileName = match.Groups["file"].Value;
-				error.Line = int.Parse(match.Groups["line"].Value);
-				
-				error.IsWarning = (match.Groups["level"].Value.Equals(warning, StringComparison.Ordinal) ||
-								   match.Groups["level"].Value.Equals(note, StringComparison.Ordinal));
-				error.ErrorText = match.Groups["message"].Value;
-					
-				
-				return error;
-			}
-
-			return null;
+			return compilerCommands.FindError(errorString, reader);
 		}
 
 		protected void ParseCompilerOutput(string errorString, CompilerResults cr)
@@ -369,7 +206,7 @@ namespace MonoDevelop.D
 												  GettextCatalog.GetString("Build failed - check build output for details")));
 			}
 		}
-		#endregion
+
 
 		int ExecuteCommand(string command, string args, string baseDirectory, IProgressMonitor monitor, out string errorOutput)
 		{

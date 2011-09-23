@@ -134,6 +134,7 @@
     <Compile Include="Gui\AddPathDialog.cs" />
     <Compile Include="gtk-gui\MonoDevelop.D.AddLibraryDialog.cs" />
     <Compile Include="gtk-gui\MonoDevelop.D.AddPathDialog.cs" />
+    <Compile Include="Compiler\DCompilerCommandBuilder.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

@@ -36,6 +36,8 @@ namespace MonoDevelop.D.OptionPanels
 		public void Load (DProjectConfiguration config)
 		{
 			configuration = config;
+			
+			cmbCompiler.Active = (int)config.Compiler;
 		
 			extraCompilerTextView.Buffer.Text = config.ExtraCompilerArguments;
 			extraLinkerTextView.Buffer.Text = config.ExtraLinkerArguments;			
@@ -99,6 +101,7 @@ namespace MonoDevelop.D.OptionPanels
 			string line;
 			Gtk.TreeIter iter;
 			
+			configuration.Compiler = (DCompiler)cmbCompiler.Active;
 			configuration.ExtraCompilerArguments = extraCompilerTextView.Buffer.Text;
 			configuration.ExtraLinkerArguments = extraLinkerTextView.Buffer.Text;
 			
