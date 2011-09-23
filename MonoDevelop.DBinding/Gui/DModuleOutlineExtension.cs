@@ -164,7 +164,8 @@ namespace MonoDevelop.D.Gui
 				JumpToDeclaration(true);
 			};
 
-			SyntaxTree = (Document.ParsedDocument as ParsedDModule).DDom;
+			if(Document.ParsedDocument is ParsedDModule)
+				SyntaxTree = (Document.ParsedDocument as ParsedDModule).DDom;
 
 			outlineTreeView.Realized += delegate { RefillOutlineStore(); };
 			//UpdateSorting();
