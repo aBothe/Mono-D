@@ -192,12 +192,19 @@ namespace MonoDevelop.D
 
 				objsArg += "\"" + o_ + "\" ";
 			}			
+			
+			var libs = "";
+			foreach(var lib in config.Libs)
+			{
+				libs += "-L-" + lib + " "; 
+			}
 				
 			var nologo = "";
 			if (!((Environment.OSVersion.Platform == PlatformID.Unix) || (Environment.OSVersion.Platform == PlatformID.MacOSX)))				
 				nologo = " -L/NOLOGO";
 			var linkArgs =
 					objsArg.TrimEnd()+ nologo + " " +
+					libs + " " +
 					(config.DebugMode?linkerDebugArgs:linkerReleaseArgs) +
 					" -of\""+Path.Combine(config.OutputDirectory,config.CompiledOutputName)+"\"";					
 			
