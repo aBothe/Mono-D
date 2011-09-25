@@ -88,6 +88,13 @@
 	
 	
 	<!-- Option panels -->
+	<Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Other">
+		<Section
+			id = "DGlobalOptions"
+			_label = "D"
+			class = "MonoDevelop.D.OptionPanels.DGlobalOptionsBinding"/>
+	</Extension>	
+	
 	<Extension path = "/MonoDevelop/ProjectModel/Gui/ItemOptionPanels/Build">
 		<Condition id = "ItemType" value = "MonoDevelop.D.DProject">
 			<Section
