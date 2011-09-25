@@ -196,7 +196,7 @@ namespace MonoDevelop.D
 			var libs = "";
 			foreach(var lib in config.Libs)
 			{
-				libs += "-L-" + lib + " "; 
+				libs += lib + " "; 
 			}
 				
 			var nologo = "";
@@ -205,6 +205,7 @@ namespace MonoDevelop.D
 			var linkArgs =
 					objsArg.TrimEnd()+ nologo + " " +
 					libs + " " +
+					config.ExtraLinkerArguments + " " + 
 					(config.DebugMode?linkerDebugArgs:linkerReleaseArgs) +
 					" -of\""+Path.Combine(config.OutputDirectory,config.CompiledOutputName)+"\"";					
 			
