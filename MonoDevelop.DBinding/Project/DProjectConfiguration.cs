@@ -56,9 +56,8 @@ namespace MonoDevelop.D
 		[ItemProperty("ExtraLinkerArguments", DefaultValue = "")]
 		private string extra_linker_args = string.Empty;
 
-
-
-
+		public event EventHandler Changed;
+		
 		public string Output
 		{
 			get { return output; }
@@ -131,6 +130,10 @@ namespace MonoDevelop.D
 			libs = conf.libs;
 			extra_compiler_args = conf.extra_compiler_args;
 			extra_linker_args = conf.extra_linker_args;
+			
+			if (Changed != null)
+				Changed(this, new EventArgs());
+			
 		}
 
 		/// <summary>

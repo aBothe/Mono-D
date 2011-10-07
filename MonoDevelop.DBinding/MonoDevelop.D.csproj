@@ -136,6 +136,8 @@
     <Compile Include="Compiler\DCompilerCommandBuilder.cs" />
     <Compile Include="OptionPanels\DGlobalOptions.cs" />
     <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.DGlobalOptions.cs" />
+    <Compile Include="Completion\DParameterDataProvider.cs" />
+    <Compile Include="Parser\DIncludesParser.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

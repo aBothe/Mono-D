@@ -44,7 +44,9 @@ namespace MonoDevelop.D
 		{
 			if (!(triggerChar==' ' || char.IsLetter(triggerChar) || triggerChar == '_' || triggerChar == '.' || triggerChar == '\0'))
 				return null;
-
+			else if ((char.IsLetter(triggerChar) && !DResolver.IsTypeIdentifier(Document.Editor.Text, Document.Editor.Caret.Offset)))
+				return null; 
+							
 			triggerWordLength = DCodeCompletionSupport.IsIdentifierChar(triggerChar) ? 1 : 0;
 
 			// Require a parsed D source
@@ -112,7 +114,20 @@ namespace MonoDevelop.D
 
 		public override IParameterDataProvider HandleParameterCompletion(CodeCompletionContext completionContext, char completionChar)
 		{
-			return base.HandleParameterCompletion(completionContext, completionChar);
+			if (!(((completionChar == ',') && (!ParameterInformationWindowManager.IsWindowVisible)) || completionChar == '('))
+				return null;
+						
+			// Require a parsed D source
+			var dom = base.Document.ParsedDocument as ParsedDModule;
+
+			if (dom == null)
+				return null;
+
+			// Check if in comment or string literal
+			if (DResolver.CommentSearching.IsInCommentAreaOrString(Document.Editor.Text, completionContext.TriggerOffset))
+				return null;
+			
+			return DParameterDataProvider.Create(Document, dom.DDom, completionContext);
 		}
 
 		public override void RunParameterCompletionCommand()

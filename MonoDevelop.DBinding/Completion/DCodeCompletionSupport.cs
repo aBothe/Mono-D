@@ -63,11 +63,21 @@ namespace MonoDevelop.D.Completion
 			{
 				// Add the project's parsed modules to the reachable-packages list
 				ret.AddRange(Project.ParsedModules);
+				
+				// Add all parsed project include modules that belong to the project's configuration
+				lock(Project.ParseCache)
+				{
+					foreach (var astColl in Project.ParseCache)
+					ret.AddRange(astColl);
+				}				
 			}
 
 			// Add all parsed global modules that belong to the project's compiler configuration
-			foreach (var astColl in DLanguageBinding.GlobalParseCache)
-				ret.AddRange(astColl);
+			lock(DLanguageBinding.GlobalParseCache)
+			{
+				foreach (var astColl in DLanguageBinding.GlobalParseCache)
+					ret.AddRange(astColl);
+			}
 
 			return ret;
 		}

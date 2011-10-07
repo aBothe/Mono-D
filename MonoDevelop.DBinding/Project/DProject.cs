@@ -13,6 +13,7 @@ using MonoDevelop.Core.ProgressMonitoring;
 using MonoDevelop.D.Parser;
 using D_Parser.Dom;
 using D_Parser.Parser;
+using D_Parser.Completion;
 
 namespace MonoDevelop.D
 {
@@ -30,7 +31,9 @@ namespace MonoDevelop.D
 
 		public override string ProjectType	{get { return "Native"; }}
 		public override string[] SupportedLanguages	{get{return new[]{"D"};}}
-
+		
+		public ASTStorage ParseCache { get; private set; }		
+		
 		[ItemProperty("Compiler")]
 		DCompiler compiler = DCompiler.DMD;
 		
@@ -94,7 +97,7 @@ namespace MonoDevelop.D
 		#region Init
 		void Init()
 		{
-			
+			ParseCache = new ASTStorage();	
 		}
 
 		public DProject() { Init(); }
@@ -106,7 +109,7 @@ namespace MonoDevelop.D
 			DmdCompiler = null; // Set to default compiler
 
 			string binPath = ".";
-
+			
 			if (info != null)
 			{
 				Name = info.ProjectName;
@@ -127,7 +130,7 @@ namespace MonoDevelop.D
 			cfg.ExtraCompilerArguments = "-o";
 
 			Configurations.Add(cfg);
-
+			
 			// Prepare all configurations
 			foreach (DProjectConfiguration c in Configurations)
 			{
@@ -172,15 +175,34 @@ namespace MonoDevelop.D
 					{
 						c.PauseConsoleOutput = bool.Parse(
 							projectOptions.Attributes["PauseConsoleOutput"].InnerText);
-					}
+					}			
 				}
 			}
+
+
+						
 		}
 		#endregion
 
 		public override SolutionItemConfiguration CreateConfiguration(string name)
 		{
-			return new DProjectConfiguration() { Name=name};
+			DProjectConfiguration config = new DProjectConfiguration() { Name=name};
+			config.Changed += new EventHandler(config_Changed);				
+			
+			return config;			
+		}
+
+		private void config_Changed(object sender, EventArgs e)
+		{
+			List<string> includepaths = new List<string>();	
+			foreach (DProjectConfiguration c in Configurations)					
+				foreach(string dir in c.Includes)
+						includepaths.Add(dir);					
+			
+			lock (ParseCache) {
+				ParseCache.ParsedGlobalDictionaries.Clear();			
+				DLanguageBinding.DIncludesParser.AddDirectoryRange(includepaths, ParseCache);
+			}			
 		}
 
 
@@ -211,6 +233,21 @@ namespace MonoDevelop.D
 		protected override void DoClean(IProgressMonitor monitor, ConfigurationSelector configuration)
 		{
 			
+		}
+
+		protected override void OnEndLoad ()
+		{
+			base.OnEndLoad();
+			
+			List<string> includepaths = new List<string>();	
+			foreach (DProjectConfiguration c in Configurations)
+				foreach(string dir in c.Includes)
+						includepaths.Add(dir);
+			
+			lock (ParseCache) {
+				ParseCache.ParsedGlobalDictionaries.Clear();
+				DLanguageBinding.DIncludesParser.AddDirectoryRange(includepaths, ParseCache);
+			}
 		}
 		#endregion
 

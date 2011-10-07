@@ -18,7 +18,9 @@ namespace MonoDevelop.D
 
 		public static DLanguageBinding Instance { get; private set; }
 		public static ASTStorage GlobalParseCache { get; private set; }
-
+		
+		private static DIncludesParser dIncludesParser=null;
+		public static DIncludesParser DIncludesParser { get{ return (dIncludesParser == null)? dIncludesParser = new DIncludesParser(): dIncludesParser;}}
 		#endregion
 
 		public DLanguageBinding()
