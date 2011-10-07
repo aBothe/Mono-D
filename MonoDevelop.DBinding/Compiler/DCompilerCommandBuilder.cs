@@ -25,7 +25,7 @@ namespace MonoDevelop.D
 		protected string linkerDebugArgs = "-g -debug";
 		protected string linkerReleaseArgs = "-O -release -inline";		
 		
-		
+		protected string linkerOutputFileSwitch = "-of";
 		
 		protected DProject prj; 		
 		protected DProjectConfiguration config;
@@ -207,7 +207,7 @@ namespace MonoDevelop.D
 					libs + " " +
 					config.ExtraLinkerArguments + " " + 
 					(config.DebugMode?linkerDebugArgs:linkerReleaseArgs) +
-					" -of\""+Path.Combine(config.OutputDirectory,config.CompiledOutputName)+"\"";					
+					" " + linkerOutputFileSwitch + "\""+Path.Combine(config.OutputDirectory,config.CompiledOutputName)+"\"";					
 			
 			
 			switch (config.CompileTarget)
@@ -232,6 +232,7 @@ namespace MonoDevelop.D
 		{
 			this.compilerCommand = "gdc";	
 			this.linkerCommand = "gdc";
+			this.linkerOutputFileSwitch = "-o ";			
 		}		
 	}
 	
@@ -242,6 +243,7 @@ namespace MonoDevelop.D
 			this.compilerCommand = "ldc";	
 			this.linkerCommand = "ldc";
 			this.compilerDebugArgs = "-g";
+			this.linkerDebugArgs = "-g";
 		}
 	}
 }
