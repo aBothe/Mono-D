@@ -112,18 +112,34 @@ namespace MonoDevelop.D.Completion
 			string result = "";
 			if (CurrentResult is MemberResult)
 			{
-				result += " " + (CurrentResult as MemberResult).ResolvedMember.Type.ToString();
-				result += " " + (CurrentResult as MemberResult).ResolvedMember.Name;
+				MemberResult mr = (CurrentResult as MemberResult);
+				if (mr.ResolvedMember.Type != null){
+					result += " " + mr.ResolvedMember.Type.ToString();
+				}else if (mr.ResolvedMember is DMethod)	
+				{
+					if ((mr.ResolvedMember as DMethod).SpecialType == DMethod.MethodType.Constructor)
+						result += " constructor";
+					else if ((mr.ResolvedMember as DMethod).SpecialType == DMethod.MethodType.Destructor)
+						result += " destructor";					
+				}
+				result += " " + mr.ResolvedMember.Name;					
 				result += " (" + string.Join(",", parameterMarkup) + ")";
-				result += "\r\n " + (CurrentResult as MemberResult).ResolvedMember.Description;
+				result += "\r\n " + mr.ResolvedMember.Description;
 			}
 			
 			if (CurrentResult is TypeResult)
-			{
-				result += " " + (CurrentResult as TypeResult).ResolvedTypeDefinition.Type.ToString();
-				result += " " + (CurrentResult as TypeResult).ResolvedTypeDefinition.Name;
+			{				
+				TypeResult tr = (CurrentResult as TypeResult);
+				if (tr.ResolvedTypeDefinition.Type != null)
+				{
+					result += " " + tr.ResolvedTypeDefinition.Type.ToString();
+					result += " " + tr.ResolvedTypeDefinition.Name;									
+				}else{
+					result += " " + tr.ResolvedTypeDefinition.ToString();
+				}
+				
 				result += " (" + string.Join(",", parameterMarkup) + ")";
-				result += "\r\n " + (CurrentResult as TypeResult).ResolvedTypeDefinition.Description;	
+				result += "\r\n " + tr.ResolvedTypeDefinition.Description;	
 			}					
 			
 			return result;	
