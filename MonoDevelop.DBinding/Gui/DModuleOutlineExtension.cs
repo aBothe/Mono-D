@@ -69,6 +69,9 @@ namespace MonoDevelop.D.Gui
 		uint refillOutlineStoreId;
 		void UpdateDocumentOutline(object sender, EventArgs args)
 		{
+			if (!(Document.ParsedDocument is ParsedDModule))
+				return;
+
 			SyntaxTree = (Document.ParsedDocument as ParsedDModule).DDom;
 
 			//limit update rate to 3s
