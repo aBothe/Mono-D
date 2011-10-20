@@ -22,6 +22,8 @@ namespace MonoDevelop.D
 		protected string compilerDebugArgs = "-g -debug";
 		protected string compilerReleaseArgs = "-O -release -inline";
 		
+		protected string compilerOutputFileSwitch = "-of";		
+		
 		protected string linkerDebugArgs = "-g -debug";
 		protected string linkerReleaseArgs = "-O -release -inline";		
 		
@@ -172,12 +174,13 @@ namespace MonoDevelop.D
 			//(cfg.DebugMode?compilerDebugArgs:compilerReleaseArgs) + " " + 
 			//cfg.ExtraCompilerArguments + dmdincludes.ToString();		
 						
-			return  string.Format("-c \"{0}\" -of\"{1}\" {2} {3} {4}",
+			return  string.Format("-c \"{0}\" {5}\"{1}\" {2} {3} {4}",
 												srcfile,
 												outputFile,
 												(config.DebugMode?compilerDebugArgs:compilerReleaseArgs),
 												config.ExtraCompilerArguments,
-												dmdincludes.ToString());
+												dmdincludes.ToString(),
+												compilerOutputFileSwitch);
 		}
 			
 		public override string BuildLinkerArguments(List<string> objFiles)			
@@ -232,6 +235,8 @@ namespace MonoDevelop.D
 		{
 			this.compilerCommand = "gdc";	
 			this.linkerCommand = "gdc";
+			this.compilerDebugArgs = "-g";			
+			this.compilerOutputFileSwitch = "-o ";
 			this.linkerOutputFileSwitch = "-o ";			
 		}		
 	}
@@ -242,8 +247,8 @@ namespace MonoDevelop.D
 		{
 			this.compilerCommand = "ldc";	
 			this.linkerCommand = "ldc";
-			this.compilerDebugArgs = "-g";
-			this.linkerDebugArgs = "-g";
+			this.compilerDebugArgs = "-gc";
+			this.linkerDebugArgs = "-gc";			
 		}
 	}
 }
