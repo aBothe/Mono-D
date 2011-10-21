@@ -22,6 +22,8 @@ namespace MonoDevelop.D
 		public override void Initialize()
 		{
 			base.Initialize();
+
+			
 		}
 
 		#endregion

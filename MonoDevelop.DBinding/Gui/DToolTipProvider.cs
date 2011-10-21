@@ -39,11 +39,14 @@ namespace MonoDevelop.D.Gui
 			var codeCache = DCodeCompletionSupport.EnumAvailableModules(doc);
 
 			// Create editor context
+			var line=editor.GetLineByOffset(offset);
+
 			var EditorContext = new EditorData {
 				CaretOffset=offset,
-				CaretLocation=new CodeLocation(editor.Caret.Column,editor.Caret.Line),
+				CaretLocation = new CodeLocation(offset - line.Offset, editor.OffsetToLineNumber(offset)),
 				ModuleCode = editor.Text,
 				ParseCache = codeCache,
+				SyntaxTree=ast as DModule,
 				ImportCache = DResolver.ResolveImports(ast as DModule, codeCache)
 			};
 
@@ -62,20 +65,30 @@ namespace MonoDevelop.D.Gui
 			var results = item.Item as AbstractTooltipContent[];
 
 			var win = new DToolTipWindow();
+			
+			// Set white background
+			win.ModifyBg(StateType.Normal,new Gdk.Color(0xff,0xff,0xff));
 
 			var pack = new Gtk.VBox();
-
+			
 			foreach (var r in results)
 			{
 				var titleLabel = new Label(r.Title);
 
-				titleLabel.ModifyFont(new Pango.FontDescription() { Weight=Weight.Bold});
+				// Make left-bound
+				titleLabel.SetAlignment(0, 0);
+
+				// Set bold font
+				titleLabel.ModifyFont(new Pango.FontDescription() {Weight=Weight.Bold, AbsoluteSize=12*(int)Pango.Scale.PangoScale});
 
 				pack.Add(titleLabel);
 
-				if (r.Description != null)
+				if (!string.IsNullOrEmpty( r.Description))
 				{
 					var descLabel = new Label(r.Description);
+
+					descLabel.ModifyFont(new Pango.FontDescription() { AbsoluteSize = 10 * (int)Pango.Scale.PangoScale });
+					descLabel.SetAlignment(0, 0);
 
 					pack.Add(descLabel);
 				}
@@ -91,12 +104,11 @@ namespace MonoDevelop.D.Gui
 			var win = (TooltipWindow)tipWindow;
 
 			// Code taken from LanugageItemWindow (public int SetMaxWidth (int maxWidth))
-			var label = win.Child as MonoDevelop.Components.FixedWidthWrapLabel;
+			var label = win.Child as VBox;
 			if (label == null)
 				requiredWidth= win.Allocation.Width;
-			label.MaxWidth = win.Screen.Width;
 
-			requiredWidth = label.RealWidth;
+			requiredWidth = label.WidthRequest;
 			xalign = 0.5;
 		}
 		
