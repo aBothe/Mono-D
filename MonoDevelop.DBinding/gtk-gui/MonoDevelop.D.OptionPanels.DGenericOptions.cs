@@ -45,7 +45,7 @@ namespace MonoDevelop.D.OptionPanels
 		private global::Gtk.Button includePathBrowseButton;
 		private global::Gtk.Button includePathRemoveButton;
 		private global::Gtk.Label label3;
-        
+		
 		protected virtual void Build ()
 		{
 			global::Stetic.Gui.Initialize (this);
@@ -123,7 +123,8 @@ namespace MonoDevelop.D.OptionPanels
 			this.scrolledwindow4.ShadowType = ((global::Gtk.ShadowType)(1));
 			// Container child scrolledwindow4.Gtk.Container+ContainerChild
 			this.extraCompilerTextView = new global::Gtk.TextView ();
-			this.extraCompilerTextView.TooltipMarkup = "A newline-separated list of extra options to send to the compiler.\r\nOne option can be in more than one line.\r\nExample:\r\n\t`--pkg\r\n\tcairo`";
+			this.extraCompilerTextView.TooltipMarkup = "A newline-separated list of extra options to send to the compiler.\nOne option can" +
+				" be in more than one line.\nExample:\n\t`--pkg\n\tcairo`";
 			this.extraCompilerTextView.CanFocus = true;
 			this.extraCompilerTextView.Name = "extraCompilerTextView";
 			this.scrolledwindow4.Add (this.extraCompilerTextView);
@@ -172,7 +173,8 @@ namespace MonoDevelop.D.OptionPanels
 			this.scrolledwindow5.ShadowType = ((global::Gtk.ShadowType)(1));
 			// Container child scrolledwindow5.Gtk.Container+ContainerChild
 			this.extraLinkerTextView = new global::Gtk.TextView ();
-			this.extraLinkerTextView.TooltipMarkup = "A newline-separated list of extra options to send to the compiler.\r\nOne option can be in more than one line.\r\nExample:\r\n\t`--pkg\r\n\tcairo`";
+			this.extraLinkerTextView.TooltipMarkup = "A newline-separated list of extra options to send to the compiler.\nOne option can" +
+				" be in more than one line.\nExample:\n\t`--pkg\n\tcairo`";
 			this.extraLinkerTextView.CanFocus = true;
 			this.extraLinkerTextView.Name = "extraLinkerTextView";
 			this.scrolledwindow5.Add (this.extraLinkerTextView);

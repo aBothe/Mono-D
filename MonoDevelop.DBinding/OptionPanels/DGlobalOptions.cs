@@ -10,7 +10,9 @@ using MonoDevelop.Ide.Gui.Dialogs;
 
 namespace MonoDevelop.D.OptionPanels
 {
-	
+	/// <summary>
+	/// This panel provides UI access to project independent D settings such as generic compiler configurations, library and import paths etc.
+	/// </summary>
 	public partial class DGlobalOptions : Gtk.Bin
 	{
 		private DProjectConfiguration configuration;
@@ -18,7 +20,6 @@ namespace MonoDevelop.D.OptionPanels
 		public DGlobalOptions () 
 		{
 			this.Build ();
-			
 		}
 		
 		public void Load (DProjectConfiguration config)

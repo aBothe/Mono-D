@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -9,7 +9,6 @@
     <OutputType>Library</OutputType>
     <RootNamespace>MonoDevelop.D</RootNamespace>
     <AssemblyName>MonoDevelop.D</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
@@ -30,7 +29,7 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <SignAssembly>False</SignAssembly>
+    <SignAssembly>false</SignAssembly>
     <DelaySign>False</DelaySign>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -43,6 +42,8 @@
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
     <PlatformTarget>x86</PlatformTarget>
+    <StartAction>Program</StartAction>
+    <StartProgram>..\..\tutorial%3blib\MonoDevelop\main\build\bin\MonoDevelop.exe</StartProgram>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
@@ -54,20 +55,9 @@
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="atk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Program Files %28x86%29\GtkSharp\2.12\lib\gtk-sharp-2.0\atk-sharp.dll</HintPath>
-    </Reference>
-    <Reference Include="D_Parser, Version=1.0.4155.21875, Culture=neutral, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\D_Parser.dll</HintPath>
-    </Reference>
     <Reference Include="gdk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
-      <Package>gtk-sharp-2.0</Package>
-    </Reference>
-    <Reference Include="glib-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <Private>False</Private>
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Program Files %28x86%29\GtkSharp\2.12\lib\gtk-sharp-2.0\glib-sharp.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Addins">
       <HintPath>..\ext\Mono.Addins.dll</HintPath>
@@ -89,26 +79,36 @@
       <HintPath>..\MonoDevelop.Ide.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="pango-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Program Files (x86)\GtkSharp\2.12\lib\gtk-sharp-2.0\pango-sharp.dll</HintPath>
-    </Reference>
-    <Reference Include="System">
-    </Reference>
+    <Reference Include="System" />
     <Reference Include="gtk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
       <SpecificVersion>False</SpecificVersion>
-      <Package>gtk-sharp-2.0</Package>
+      <Private>False</Private>
     </Reference>
-    <Reference Include="System.Xml">
-    </Reference>
-    <Reference Include="System.Net">
-    </Reference>
-    <Reference Include="System.Data">
-    </Reference>
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Net" />
+    <Reference Include="System.Data" />
     <Reference Include="gtk-dotnet, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
-      <Package>gtk-dotnet-2.0</Package>
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
     </Reference>
-    <Reference Include="Mono.Posix" />
+    <Reference Include="Mono.Posix">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="atk-sharp">
+      <HintPath>C:\Program Files %28x86%29\GtkSharp\2.12\lib\gtk-sharp-2.0\atk-sharp.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="D_Parser">
+      <HintPath>..\D_Parser.dll</HintPath>
+    </Reference>
+    <Reference Include="glib-sharp">
+      <HintPath>C:\Program Files %28x86%29\GtkSharp\2.12\lib\gtk-sharp-2.0\glib-sharp.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="pango-sharp">
+      <HintPath>C:\Program Files %28x86%29\GtkSharp\2.12\lib\gtk-sharp-2.0\pango-sharp.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />

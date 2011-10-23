@@ -1,14 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-
 using D_Parser.Completion;
-
 
 namespace MonoDevelop.D
 {
-
-	
 	public class DIncludesParser
 	{
 		#region DDirectoryParserItem
@@ -24,7 +20,6 @@ namespace MonoDevelop.D
 		}	
 		
 		#endregion
-		
 		
 		Queue<DDirectoryParserItem> directoriesToParse;
 		Thread thread;

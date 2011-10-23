@@ -7,7 +7,7 @@ namespace MonoDevelop.D
 		private global::Gtk.FileChooserWidget file_chooser_widget;
 		private global::Gtk.Button buttonCancel;
 		private global::Gtk.Button buttonOk;
-        
+		
 		protected virtual void Build ()
 		{
 			global::Stetic.Gui.Initialize (this);

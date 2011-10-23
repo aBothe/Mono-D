@@ -10,7 +10,9 @@ using MonoDevelop.Ide.Gui.Dialogs;
 
 namespace MonoDevelop.D.OptionPanels
 {
-	
+	/// <summary>
+	/// This is the option panel which occurs in D Project settings.
+	/// </summary>
 	public partial class DGenericOptions : Gtk.Bin
 	{
 		private DProjectConfiguration configuration;

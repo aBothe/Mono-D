@@ -124,7 +124,6 @@
 		<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.Gui.DModuleOutlineExtension" />
 	</Extension>
 	
-	<!-- Doesn't work - we have to put the DToolTipProvider at a more priorised rank in the TooltipProviders list-->
 	<Extension path = "/MonoDevelop/SourceEditor2/TooltipProviders">
 		<Class mimeTypes="text/x-d" id="DToolTipProvider" class="MonoDevelop.D.Gui.DToolTipProvider" />
 	</Extension>
