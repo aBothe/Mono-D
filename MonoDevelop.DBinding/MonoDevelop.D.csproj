@@ -97,9 +97,6 @@
       <Private>False</Private>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
-    <Reference Include="D_Parser">
-      <HintPath>..\D_Parser.dll</HintPath>
-    </Reference>
     <Reference Include="glib-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
       <Private>False</Private>
       <SpecificVersion>False</SpecificVersion>
@@ -217,6 +214,12 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="unused extensions.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DParser2\DParser2.csproj">
+      <Project>{0290A229-9AA1-41C3-B525-CAFB86D8BC42}</Project>
+      <Name>DParser2</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
     <PostBuildEvent>xcopy "$(TargetDir)*" "$(SolutionDir)..\tutorial.lib\MonoDevelop\main\build\AddIns\BackendBindings" /Y</PostBuildEvent>
