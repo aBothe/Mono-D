@@ -108,8 +108,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="Building\ArgumentMacroProvider.cs" />
+    <Compile Include="Building\DefaultArgumentProviders.cs" />
     <Compile Include="gtk-gui\generated.cs" />
-    <Compile Include="Compiler\DMDCompiler.cs" />
+    <Compile Include="Building\DCompiler.cs" />
     <Compile Include="Completion\DCodeCompletionSupport.cs" />
     <Compile Include="Completion\EditorCompletionExtension.cs" />
     <Compile Include="DLanguageBinding.cs" />
@@ -120,8 +122,7 @@
     <Compile Include="OptionPanels\DGenericOptions.cs" />
     <Compile Include="Parser\DParserWrapper.cs" />
     <Compile Include="Parser\ParsedDModule.cs" />
-    <Compile Include="Project\DmdConfiguration.cs" />
-    <Compile Include="Project\DPrjBinding.cs" />
+    <Compile Include="Project\DProjectBinding.cs" />
     <Compile Include="Project\DProject.cs" />
     <Compile Include="Project\DProjectConfiguration.cs" />
     <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.DGenericOptions.cs" />
@@ -129,7 +130,7 @@
     <Compile Include="Gui\AddPathDialog.cs" />
     <Compile Include="gtk-gui\MonoDevelop.D.AddLibraryDialog.cs" />
     <Compile Include="gtk-gui\MonoDevelop.D.AddPathDialog.cs" />
-    <Compile Include="Compiler\DCompilerCommandBuilder.cs" />
+    <Compile Include="Building\DCompilerConfiguration.cs" />
     <Compile Include="OptionPanels\DGlobalOptions.cs" />
     <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.DGlobalOptions.cs" />
     <Compile Include="Completion\DParameterDataProvider.cs" />

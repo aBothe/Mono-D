@@ -7,6 +7,7 @@ using Mono.Addins;
 using MonoDevelop.Core;
 using MonoDevelop.Ide.Projects;
 using MonoDevelop.Ide.Gui.Dialogs;
+using MonoDevelop.D.Building;
 
 namespace MonoDevelop.D.OptionPanels
 {
@@ -103,7 +104,7 @@ namespace MonoDevelop.D.OptionPanels
 			string line;
 			Gtk.TreeIter iter;
 			
-			configuration.Compiler = (DCompiler)cmbCompiler.Active;
+			configuration.Compiler = (DCompilerVendor)cmbCompiler.Active;
 			configuration.ExtraCompilerArguments = extraCompilerTextView.Buffer.Text;
 			configuration.ExtraLinkerArguments = extraLinkerTextView.Buffer.Text;
 			

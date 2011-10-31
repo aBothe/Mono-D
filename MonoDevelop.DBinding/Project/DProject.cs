@@ -14,6 +14,7 @@ using MonoDevelop.D.Parser;
 using D_Parser.Dom;
 using D_Parser.Parser;
 using D_Parser.Completion;
+using MonoDevelop.D.Building;
 
 namespace MonoDevelop.D
 {
@@ -35,30 +36,12 @@ namespace MonoDevelop.D
 		public ASTStorage ParseCache { get; private set; }		
 		
 		[ItemProperty("Compiler")]
-		DCompiler compiler = DCompiler.DMD;
-		
-		public DCompiler Compiler {
-			get { return compiler; }
-			set { compiler = value; }
-		}
-			
-		DMDCompiler dmd;
-
-		public DMDCompiler DmdCompiler
-		{
-			get { return dmd; }
-			set {
-				if (value != null)
-					dmd = value;
-				else
-					dmd = new DMDCompiler();
-			}
-		}
+		DCompilerVendor compiler = DCompilerVendor.DMD;
 
 		[ItemProperty("Target")]
-		DCompileTargetType target = DCompileTargetType.Bin;
+		DCompileTarget target = DCompileTarget.Executable;
 
-		public DCompileTargetType CompileTarget {
+		public DCompileTarget CompileTarget {
 			get { return target; }
 			set { target = value; }
 		}
@@ -106,8 +89,6 @@ namespace MonoDevelop.D
 		{			
 			Init();
 
-			DmdCompiler = null; // Set to default compiler
-
 			string binPath = ".";
 			
 			if (info != null)
@@ -143,16 +124,16 @@ namespace MonoDevelop.D
 					// Set project's target type to the one which has been defined in the project template
 					if (projectOptions.Attributes["Target"] != null)
 					{
-						c.CompileTarget = (DCompileTargetType)Enum.Parse(
-							typeof(DCompileTargetType),
+						c.CompileTarget = (DCompileTarget)Enum.Parse(
+							typeof(DCompileTarget),
 							projectOptions.Attributes["Target"].InnerText);
 					}
 					
 					// Set project's compiler
 					if (projectOptions.Attributes["Compiler"] != null)
 					{
-						c.Compiler = (DCompiler)Enum.Parse(
-							typeof(DCompiler), 
+						c.Compiler = (DCompilerVendor)Enum.Parse(
+							typeof(DCompilerVendor), 
 							projectOptions.Attributes["Compiler"].InnerText);
 					}
 
@@ -209,8 +190,7 @@ namespace MonoDevelop.D
 		#region Building
 		public override bool IsCompileable(string fileName)
 		{
-			return fileName.EndsWith(".d",StringComparison.InvariantCultureIgnoreCase)||
-				fileName.EndsWith(".di",StringComparison.InvariantCultureIgnoreCase);
+			return DLanguageBinding.IsDFile(fileName);
 		}
 
 		public override FilePath GetOutputFileName(ConfigurationSelector configuration)
@@ -221,13 +201,10 @@ namespace MonoDevelop.D
 
 		protected override BuildResult DoBuild(IProgressMonitor monitor, ConfigurationSelector configuration)
 		{
-			if (DmdCompiler == null)
-				DmdCompiler = null; //HACK: Re-init dmd again
-
 			var cfg = GetConfiguration(configuration) as DProjectConfiguration;
 			cfg.SourcePath = BaseDirectory;
 
-			return DmdCompiler.Compile(this,Files,cfg,monitor);
+			return DCompiler.Compile(this,Files,cfg,monitor);
 		}
 
 		protected override void DoClean(IProgressMonitor monitor, ConfigurationSelector configuration)
@@ -259,7 +236,7 @@ namespace MonoDevelop.D
 				return false;
 			var cmd = CreateExecutionCommand(cfg);
 
-			return CompileTarget == DCompileTargetType.Bin && context.ExecutionHandler.CanExecute(cmd);
+			return CompileTarget == DCompileTarget.Executable && context.ExecutionHandler.CanExecute(cmd);
 		}
 
 		protected virtual ExecutionCommand CreateExecutionCommand(DProjectConfiguration conf)
@@ -282,7 +259,7 @@ namespace MonoDevelop.D
 			bool pause = conf.PauseConsoleOutput;
 			IConsole console;
 
-			if (conf.CompileTarget != DCompileTargetType.Bin)
+			if (conf.CompileTarget != DCompileTarget.Executable)
 			{
 				MessageService.ShowMessage("Compile target is not an executable!");
 				return;

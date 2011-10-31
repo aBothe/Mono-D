@@ -66,7 +66,7 @@
 	<!-- Project Binding -->
 	
 	<Extension path = "/MonoDevelop/ProjectModel/ProjectBindings">
-		<ProjectBinding id = "DProject" class = "MonoDevelop.D.DPrjBinding"/>
+		<ProjectBinding id = "DProject" class = "MonoDevelop.D.DProjectBinding"/>
 	</Extension>
 
 	<Extension path = "/MonoDevelop/ProjectModel/MSBuildItemTypes">
@@ -83,7 +83,7 @@
 	<Extension path = "/MonoDevelop/ProjectModel/SerializableClasses">
 		<DataType class = "MonoDevelop.D.DProject" />
 		<DataType class = "MonoDevelop.D.DProjectConfiguration" />
-		<DataType class = "MonoDevelop.D.DMDCompiler" />
+		<!--<DataType class = "MonoDevelop.D.DMDCompiler" />-->
 	</Extension>
 	
 	

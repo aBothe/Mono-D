@@ -6,34 +6,20 @@ using MonoDevelop.Projects;
 using MonoDevelop.Core.Serialization;
 using System.Collections;
 using System.IO;
+using MonoDevelop.D.Building;
 
 namespace MonoDevelop.D
 {
-
-	public enum DCompileTargetType
-	{
-		Bin,
-		SharedLibrary,
-		StaticLibrary
-	}
-
-	public enum DCompiler
-	{
-		DMD,
-		GDC,
-		LDC
-	}
-	
 	public class DProjectConfiguration:ProjectConfiguration
 	{
 		[ItemProperty("OutputName")]
 		string output = string.Empty;
 
 		[ItemProperty("CompileTarget")]
-		DCompileTargetType target = DCompileTargetType.Bin;
+		DCompileTarget target = DCompileTarget.Executable;
 		
 		[ItemProperty("Compiler")]
-		DCompiler compiler = DCompiler.DMD;
+		DCompilerVendor compiler = DCompilerVendor.DMD;
 
 		[ItemProperty("Includes")]
 		[ItemProperty("Include", Scope = "*", ValueType = typeof(string))]
@@ -64,13 +50,13 @@ namespace MonoDevelop.D
 			set { output = value; }
 		}
 
-		public DCompileTargetType CompileTarget
+		public DCompileTarget CompileTarget
 		{
 			get { return target; }
 			set { target = value; }
 		}
 		
-		public DCompiler Compiler
+		public DCompilerVendor Compiler
 		{
 			get { return compiler; }
 			set { compiler = value; }
@@ -149,13 +135,14 @@ namespace MonoDevelop.D
 					case PlatformID.MacOSX:
 						switch (CompileTarget)
 						{
-							case DCompileTargetType.Bin:
+							case DCompileTarget.ConsolelessExecutable:
+							case DCompileTarget.Executable:
 								ext = ".app";
 								break;
-							case DCompileTargetType.SharedLibrary:
+							case DCompileTarget.SharedLibrary:
 								ext = ".dylib";
 								break;
-							case DCompileTargetType.StaticLibrary:
+							case DCompileTarget.StaticLibrary:
 								ext = ".a";
 								break;
 						}
@@ -163,13 +150,14 @@ namespace MonoDevelop.D
 					case PlatformID.Unix:
 						switch (CompileTarget)
 						{
-							case DCompileTargetType.Bin:
+							case DCompileTarget.ConsolelessExecutable:
+							case DCompileTarget.Executable:
 								ext = null;
 								break;
-							case DCompileTargetType.SharedLibrary:
+							case DCompileTarget.SharedLibrary:
 								ext = ".so";
 								break;
-							case DCompileTargetType.StaticLibrary:
+							case DCompileTarget.StaticLibrary:
 								ext = ".a";
 								break;
 						}
@@ -177,13 +165,14 @@ namespace MonoDevelop.D
 					default:
 						switch (CompileTarget)
 						{
-							case DCompileTargetType.Bin:
+							case DCompileTarget.ConsolelessExecutable:
+							case DCompileTarget.Executable:
 								ext = ".exe";
 								break;
-							case DCompileTargetType.SharedLibrary:
+							case DCompileTarget.SharedLibrary:
 								ext = ".dll";
 								break;
-							case DCompileTargetType.StaticLibrary:
+							case DCompileTarget.StaticLibrary:
 								ext = ".lib";
 								break;
 						}

@@ -8,11 +8,11 @@ using System.IO;
 
 namespace MonoDevelop.D
 {
-	public class DPrjBinding:IProjectBinding
+	public class DProjectBinding:IProjectBinding
 	{
 		public bool CanCreateSingleFileProject(string sourceFile)
 		{
-			return sourceFile.EndsWith(".d",StringComparison.CurrentCultureIgnoreCase);
+			return DLanguageBinding.IsDFile(sourceFile);
 		}
 
 		public Project CreateProject(ProjectCreateInformation info, XmlElement projectOptions)
