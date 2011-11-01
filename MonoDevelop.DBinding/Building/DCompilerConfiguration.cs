@@ -1,9 +1,11 @@
 
+using MonoDevelop.Core.Serialization;
 namespace MonoDevelop.D.Building
 {
 	/// <summary>
 	/// Stores compiler commands and arguments for compiling and linking D source files.
 	/// </summary>
+	[DataItem("CompilerConfiguration")]
 	public class DCompilerConfiguration
 	{
 		public DCompilerConfiguration() { }
@@ -33,12 +35,17 @@ namespace MonoDevelop.D.Building
 			cmp.ResetBuildArguments(ReleaseBuildArguments, false);
 		}
 
+		[ItemProperty]
 		public DCompilerVendor CompilerType;
 
+		[ItemProperty]
 		public string CompilerExecutable;
+		[ItemProperty]
 		public string LinkerExecutable;
 
+		[ItemProperty("DebugArguments")]
 		public DArgumentConfiguration DebugBuildArguments = new DArgumentConfiguration { IsDebug=true};
+		[ItemProperty("ReleaseArguments")]
 		public DArgumentConfiguration ReleaseBuildArguments=new DArgumentConfiguration();
 
 		public DArgumentConfiguration GetArgumentCollection(bool DebugArguments = false)
@@ -51,16 +58,23 @@ namespace MonoDevelop.D.Building
 	/// Provides raw argument strings that will be used when building projects.
 	/// Each DCompilerConfiguration holds both Debug and Release argument sub-configurations.
 	/// </summary>
+	[DataItem("ArgumentConfiguration")]
 	public class DArgumentConfiguration
 	{
+		[ItemProperty]
 		public bool IsDebug;
 
+		[ItemProperty]
 		public string SourceCompilerArguments;
 
+		[ItemProperty]
 		public string ExecutableLinkerArguments;
+		[ItemProperty]
 		public string ConsolelessLinkerArguments;
 
+		[ItemProperty]
 		public string SharedLibraryLinkerArguments;
+		[ItemProperty]
 		public string StaticLibraryLinkerArguments;
 
 		public string GetLinkerArgumentString(DCompileTarget targetType)

@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using MonoDevelop.Core;
 using MonoDevelop.Core.ProgressMonitoring;
 using MonoDevelop.Projects;
+using MonoDevelop.Core.Serialization;
 
 namespace MonoDevelop.D.Building
 {
@@ -36,26 +37,32 @@ namespace MonoDevelop.D.Building
 	/// <summary>
 	/// Central class which enables build support for D projects in MonoDevelop.
 	/// </summary>
+	[DataItem("DCompiler")]
 	public class DCompiler
 	{
+		public static DCompiler Instance = new DCompiler();
+
 		/// <summary>
 		/// Static object which stores all global information about the dmd installation which probably exists on the programmer's machine.
 		/// </summary>
-		public static readonly DCompilerConfiguration Dmd = new DCompilerConfiguration(DCompilerVendor.DMD);
-		public static readonly DCompilerConfiguration Gdc = new DCompilerConfiguration(DCompilerVendor.GDC);
-		public static readonly DCompilerConfiguration Ldc = new DCompilerConfiguration(DCompilerVendor.LDC);
+		[ItemProperty]
+		public DCompilerConfiguration Dmd = new DCompilerConfiguration(DCompilerVendor.DMD);
+		[ItemProperty]
+		public DCompilerConfiguration Gdc = new DCompilerConfiguration(DCompilerVendor.GDC);
+		[ItemProperty]
+		public DCompilerConfiguration Ldc = new DCompilerConfiguration(DCompilerVendor.LDC);
 
 		public static DCompilerConfiguration GetCompiler(DCompilerVendor type)
 		{
 			switch (type)
 			{
 				case DCompilerVendor.GDC:
-					return Gdc;
+					return Instance.Gdc;
 				case DCompilerVendor.LDC:
-					return Ldc;
+					return Instance.Ldc;
 			}
 
-			return Dmd;
+			return Instance.Dmd;
 		}
 		
 		/// <summary>

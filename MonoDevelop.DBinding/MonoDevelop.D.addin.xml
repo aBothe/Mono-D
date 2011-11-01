@@ -4,7 +4,7 @@
 	author="Alexander Bothe" 
 	url="http://mono-d.sourceforge.net"
 	copyright="" 
-	description="A language binding to the D Programming Language" 
+	description="D Language Binding" 
 	category="Language bindings" 
 	version="1.0">
 	
@@ -83,7 +83,10 @@
 	<Extension path = "/MonoDevelop/ProjectModel/SerializableClasses">
 		<DataType class = "MonoDevelop.D.DProject" />
 		<DataType class = "MonoDevelop.D.DProjectConfiguration" />
-		<!--<DataType class = "MonoDevelop.D.DMDCompiler" />-->
+
+		<DataType class = "MonoDevelop.D.Building.DCompilerConfiguration" />
+		<DataType class = "MonoDevelop.D.Building.DArgumentConfiguration" />
+		<DataType class = "MonoDevelop.D.Building.DCompiler" />
 	</Extension>
 	
 	

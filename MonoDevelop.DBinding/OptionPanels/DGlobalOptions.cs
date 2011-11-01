@@ -27,7 +27,12 @@ namespace MonoDevelop.D.OptionPanels
 			configuration = config;
 			
 		}
-		
+
+
+		public bool Validate()
+		{
+			return true;
+		}
 		
 		public bool Store ()
 		{
@@ -46,6 +51,11 @@ namespace MonoDevelop.D.OptionPanels
 		public override Gtk.Widget CreatePanelWidget ()
 		{
 			return panel = new DGlobalOptions ();
+		}
+
+		public override bool ValidateChanges()
+		{
+			return panel.Validate();
 		}
 			
 		public override void ApplyChanges ()

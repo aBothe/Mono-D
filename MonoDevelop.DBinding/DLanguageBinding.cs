@@ -27,6 +27,8 @@ namespace MonoDevelop.D
 		{
 			Instance = this;
 			GlobalParseCache = new ASTStorage();
+
+			var props=MonoDevelop.Core.PropertyService.GlobalInstance;
 		}
 
 		public static bool IsDFile(string fileName)
