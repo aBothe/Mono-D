@@ -46,6 +46,14 @@ namespace MonoDevelop.D
 			set { target = value; }
 		}
 
+		/// <summary>
+		/// Returns the actual compiler configuration used by this project
+		/// </summary>
+		public DCompilerConfiguration Compiler
+		{
+			get { return DCompiler.GetCompiler(compiler); }
+		}
+
 		#region Parsing cache
 		public IEnumerable<IAbstractSyntaxTree> ParsedModules
 		{

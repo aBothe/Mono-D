@@ -9,7 +9,7 @@ namespace MonoDevelop.D.Building
 		public DCompilerConfiguration() { }
 
 		/// <summary>
-		/// Initializes all commands and arguments (also debug&release args!) with default values depending on given target compiler type
+		/// Initializes all commands and arguments (also debug&amp;release args!) with default values depending on given target compiler type
 		/// </summary>
 		public DCompilerConfiguration(DCompilerVendor type)
 		{
