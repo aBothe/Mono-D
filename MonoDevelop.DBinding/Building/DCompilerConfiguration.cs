@@ -1,6 +1,7 @@
 using MonoDevelop.Core.Serialization;
 using System.Collections.Generic;
 using D_Parser.Completion;
+using System.Collections.ObjectModel;
 
 namespace MonoDevelop.D.Building
 {
@@ -8,7 +9,7 @@ namespace MonoDevelop.D.Building
 	/// Stores compiler commands and arguments for compiling and linking D source files.
 	/// </summary>
 	[DataItem("CompilerConfiguration")]
-	public class DCompilerConfiguration:ICustomDataItem
+	public class DCompilerConfiguration
 	{
 		public DCompilerConfiguration() { }
 
@@ -37,18 +38,34 @@ namespace MonoDevelop.D.Building
 			cmp.ResetBuildArguments(ReleaseBuildArguments, false);
 		}
 
-		/// <summary>
-		/// Stores code libraries paths. 
-		/// These libraries will be scanned by the DParser and used for providing code completion later on.
-		/// </summary>
-		public ASTStorage GlobalParseCache = new ASTStorage(); // Note: This property has to be (de-)serialized manually!
+		[ItemProperty("CodeLibraries")]
+		[ItemProperty("Path",Scope="*")]
+		string[] libPaths;
 
-		[ItemProperty]
+		public ParsePerformanceData[] SetupGlobalParseCache(bool ParseFunctionBodies=true)
+		{
+			var gc = DLanguageBinding.GetGlobalParseCache(CompilerType);
+
+			if(libPaths!=null)
+				foreach (var lib in libPaths)
+					gc.Add(lib,ParseFunctionBodies);
+
+			return gc.UpdateCache();
+		}
+
+		public void SaveGlobalParseCacheInformation()
+		{
+			var gc = DLanguageBinding.GetGlobalParseCache(CompilerType);
+
+			libPaths = gc.DirectoryPaths;
+		}
+
+		[ItemProperty("Vendor")]
 		public DCompilerVendor CompilerType;
 
-		[ItemProperty]
+		[ItemProperty("Compiler")]
 		public string CompilerExecutable;
-		[ItemProperty]
+		[ItemProperty("Linker")]
 		public string LinkerExecutable;
 
 		[ItemProperty("DebugArguments")]
@@ -60,39 +77,6 @@ namespace MonoDevelop.D.Building
 		{
 			return DebugArguments ? DebugBuildArguments : ReleaseBuildArguments;
 		}
-
-		#region Serialization
-		public void Deserialize(ITypeSerializer handler, DataCollection data)
-		{
-			var impLibs = data.Extract("ImportLibraries") as DataItem;
-
-			if (impLibs != null)
-			{
-				foreach (var lib in impLibs.ItemData)
-					if (lib is DataValue)
-						GlobalParseCache.Add((lib as DataValue).Value);
-
-				//TODO: Put the update call into an other thread
-				GlobalParseCache.UpdateCache();
-			}
-
-			handler.Deserialize(this, data);
-		}
-
-		public DataCollection Serialize(ITypeSerializer handler)
-		{
-			var data=handler.Serialize(this);
-
-			var impLibs=new DataItem{ Name="ImportLibraries"};
-
-			foreach(var lib in GlobalParseCache.DirectoryPaths)
-				impLibs.ItemData.Add(new DataValue("lib",lib));
-
-			data.Add(impLibs);
-
-			return data;
-		}
-#endregion
 	}
 
 	/// <summary>

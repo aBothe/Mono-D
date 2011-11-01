@@ -45,6 +45,8 @@ namespace MonoDevelop.D.Building
 		{
 			Instance = PropertyService.Get<DCompiler>(GlobalPropertyName);
 
+			//LoggingService.AddLogger(new MonoDevelop.Core.Logging.FileLogger("A:\\monoDev.log", true));
+
 			if (Instance == null)
 			{
 				Instance = new DCompiler

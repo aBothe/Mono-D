@@ -36,7 +36,7 @@ namespace MonoDevelop.D
 		public ASTStorage ParseCache { get; private set; }		
 		
 		[ItemProperty("Compiler")]
-		DCompilerVendor compiler=DCompiler.Instance.DefaultCompiler;
+		DCompilerVendor compiler=DCompilerVendor.DMD;
 
 		[ItemProperty("Target")]
 		DCompileTarget target = DCompileTarget.Executable;
@@ -52,6 +52,12 @@ namespace MonoDevelop.D
 		public DCompilerConfiguration Compiler
 		{
 			get { return DCompiler.GetCompiler(compiler); }
+		}
+
+		public DCompilerVendor UsedCompilerVendor
+		{
+			get { return compiler; }
+			set { compiler = value; }
 		}
 
 		#region Parsing cache
@@ -88,7 +94,10 @@ namespace MonoDevelop.D
 		#region Init
 		void Init()
 		{
-			ParseCache = new ASTStorage();	
+			ParseCache = new ASTStorage();
+
+			if(DCompiler.Instance!=null)
+				compiler = DCompiler.Instance.DefaultCompiler;
 		}
 
 		public DProject() { Init(); }
