@@ -9,6 +9,7 @@ using MonoDevelop.D.Parser;
 using System.Reflection;
 using MonoDevelop.D.Completion;
 using D_Parser.Completion;
+using MonoDevelop.D.Building;
 
 namespace MonoDevelop.D
 {
@@ -17,7 +18,6 @@ namespace MonoDevelop.D
 		#region Properties
 
 		public static DLanguageBinding Instance { get; private set; }
-		public static ASTStorage GlobalParseCache { get; private set; }
 		
 		private static DIncludesParser dIncludesParser=null;
 		public static DIncludesParser DIncludesParser { get{ return (dIncludesParser == null)? dIncludesParser = new DIncludesParser(): dIncludesParser;}}
@@ -26,9 +26,14 @@ namespace MonoDevelop.D
 		public DLanguageBinding()
 		{
 			Instance = this;
-			GlobalParseCache = new ASTStorage();
 
-			var props=MonoDevelop.Core.PropertyService.GlobalInstance;
+			// Init compiler configurations
+			DCompiler.Init();
+		}
+
+		~DLanguageBinding()
+		{
+			DCompiler.Instance.Save();
 		}
 
 		public static bool IsDFile(string fileName)

@@ -40,17 +40,55 @@ namespace MonoDevelop.D.Building
 	[DataItem("DCompiler")]
 	public class DCompiler
 	{
-		public static DCompiler Instance = new DCompiler();
+		#region Init/Loading & Saving
+		public static void Init()
+		{
+			Instance = PropertyService.Get<DCompiler>(GlobalPropertyName);
+
+			if (Instance == null)
+			{
+				Instance = new DCompiler
+				{
+					Dmd = new DCompilerConfiguration(DCompilerVendor.DMD),
+					Gdc = new DCompilerConfiguration(DCompilerVendor.GDC),
+					Ldc = new DCompilerConfiguration(DCompilerVendor.LDC)
+				};
+
+				Instance.Save();
+			}
+		}
+
+		public void Save()
+		{
+			PropertyService.Set(GlobalPropertyName, this);
+			PropertyService.SaveProperties();
+		}
+
+		const string GlobalPropertyName = "DBinding.DCompiler";
+		#endregion
+
+		[ItemProperty]
+		public DCompilerVendor DefaultCompiler = DCompilerVendor.DMD;
+
+		public static DCompiler Instance;
 
 		/// <summary>
 		/// Static object which stores all global information about the dmd installation which probably exists on the programmer's machine.
 		/// </summary>
 		[ItemProperty]
-		public DCompilerConfiguration Dmd = new DCompilerConfiguration(DCompilerVendor.DMD);
+		public DCompilerConfiguration Dmd;
 		[ItemProperty]
-		public DCompilerConfiguration Gdc = new DCompilerConfiguration(DCompilerVendor.GDC);
+		public DCompilerConfiguration Gdc;
 		[ItemProperty]
-		public DCompilerConfiguration Ldc = new DCompilerConfiguration(DCompilerVendor.LDC);
+		public DCompilerConfiguration Ldc;
+
+		/// <summary>
+		/// Returns the default compiler configuration
+		/// </summary>
+		public static DCompilerConfiguration GetDefaultCompiler()
+		{
+			return GetCompiler(Instance.DefaultCompiler);
+		}
 
 		public static DCompilerConfiguration GetCompiler(DCompilerVendor type)
 		{

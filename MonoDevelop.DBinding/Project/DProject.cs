@@ -36,7 +36,7 @@ namespace MonoDevelop.D
 		public ASTStorage ParseCache { get; private set; }		
 		
 		[ItemProperty("Compiler")]
-		DCompilerVendor compiler = DCompilerVendor.DMD;
+		DCompilerVendor compiler=DCompiler.Instance.DefaultCompiler;
 
 		[ItemProperty("Target")]
 		DCompileTarget target = DCompileTarget.Executable;

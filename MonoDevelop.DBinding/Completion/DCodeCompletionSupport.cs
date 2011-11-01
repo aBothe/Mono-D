@@ -12,6 +12,7 @@ using D_Parser.Resolver;
 using MonoDevelop.Core;
 using MonoDevelop.Ide.CodeCompletion;
 using MonoDevelop.Ide.Gui;
+using MonoDevelop.D.Building;
 
 namespace MonoDevelop.D.Completion
 {
@@ -55,7 +56,7 @@ namespace MonoDevelop.D.Completion
 			return EnumAvailableModules(Editor.HasProject ? Editor.Project as DProject : null);
 		}
 
-		public static IEnumerable<IAbstractSyntaxTree> EnumAvailableModules(DProject Project)
+		public static IEnumerable<IAbstractSyntaxTree> EnumAvailableModules(DProject Project=null)
 		{
 			var ret = new List<IAbstractSyntaxTree>();
 
@@ -65,19 +66,16 @@ namespace MonoDevelop.D.Completion
 				ret.AddRange(Project.ParsedModules);
 				
 				// Add all parsed project include modules that belong to the project's configuration
-				lock(Project.ParseCache)
-				{
-					foreach (var astColl in Project.ParseCache)
+				foreach (var astColl in Project.ParseCache)
 					ret.AddRange(astColl);
-				}				
-			}
 
-			// Add all parsed global modules that belong to the project's compiler configuration
-			lock(DLanguageBinding.GlobalParseCache)
-			{
-				foreach (var astColl in DLanguageBinding.GlobalParseCache)
+				// Add all parsed global modules that belong to the project's compiler configuration
+				foreach (var astColl in Project.Compiler.GlobalParseCache)
 					ret.AddRange(astColl);
 			}
+			else 
+				foreach (var astColl in DCompiler.GetDefaultCompiler().GlobalParseCache)
+					ret.AddRange(astColl);
 
 			return ret;
 		}
