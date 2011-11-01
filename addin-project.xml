@@ -1,7 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<AddinProject appVersion="2.6">
+<AddinProject appVersion="2.7">
 	<Project>
-		<AddinFile>MonoDevelop.DBinding/bin/Debug/D_Parser.dll</AddinFile>
 		<AddinFile>MonoDevelop.DBinding/bin/Debug/MonoDevelop.D.dll</AddinFile>
 		<BuildFile>MonoDevelop.DBinding.sln</BuildFile>
 		<BuildConfiguration>Debug</BuildConfiguration>
