@@ -142,9 +142,9 @@ namespace MonoDevelop.D.Building
 			bool succesfullyBuilt = true;
 			bool modificationsDone = false;
 
-			var Compiler = GetCompiler(cfg.Compiler);
+			var Compiler = prj.Compiler;
 			var Arguments=Compiler.GetArgumentCollection(cfg.DebugMode);
-
+			
 			/// The target file to which all objects will be linked to
 			var LinkTarget = cfg.OutputDirectory.Combine(cfg.CompiledOutputName);
 				

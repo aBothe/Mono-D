@@ -36,29 +36,32 @@ namespace MonoDevelop.D
 		public ASTStorage ParseCache { get; private set; }		
 		
 		[ItemProperty("Compiler")]
-		DCompilerVendor compiler=DCompilerVendor.DMD;
+		public DCompilerVendor UsedCompilerVendor= DCompilerVendor.DMD;
 
 		[ItemProperty("Target")]
-		DCompileTarget target = DCompileTarget.Executable;
+		public DCompileTarget CompileTarget = DCompileTarget.Executable;
 
-		public DCompileTarget CompileTarget {
-			get { return target; }
-			set { target = value; }
-		}
+		[ItemProperty("Includes")]
+		[ItemProperty("Path", Scope = "*")]
+		public List<string> IncludePaths = new List<string>();
+
+		[ItemProperty("LibPaths")]
+		[ItemProperty("Path", Scope = "*")]
+		public List<string> LibraryPaths = new List<string>();
+
+		[ItemProperty("Libs")]
+		[ItemProperty("Lib", Scope = "*")]
+		public List<string> ExtraLibraries = new List<string>();
 
 		/// <summary>
 		/// Returns the actual compiler configuration used by this project
 		/// </summary>
 		public DCompilerConfiguration Compiler
 		{
-			get { return DCompiler.GetCompiler(compiler); }
+			get { return DCompiler.GetCompiler(UsedCompilerVendor); }
+			set { UsedCompilerVendor = value.CompilerType; }
 		}
-
-		public DCompilerVendor UsedCompilerVendor
-		{
-			get { return compiler; }
-			set { compiler = value; }
-		}
+		#endregion
 
 		#region Parsing cache
 		public IEnumerable<IAbstractSyntaxTree> ParsedModules
@@ -89,15 +92,13 @@ namespace MonoDevelop.D
 		}
 		#endregion
 
-		#endregion
-
 		#region Init
 		void Init()
 		{
 			ParseCache = new ASTStorage();
 
 			if(DCompiler.Instance!=null)
-				compiler = DCompiler.Instance.DefaultCompiler;
+				UsedCompilerVendor = DCompiler.Instance.DefaultCompiler;
 		}
 
 		public DProject() { Init(); }
@@ -133,7 +134,6 @@ namespace MonoDevelop.D
 			foreach (DProjectConfiguration c in Configurations)
 			{
 				c.OutputDirectory = Path.Combine(binPath, c.Id);
-				c.SourcePath = info.ProjectBasePath;
 				c.Output = Name;
 
 				if (projectOptions != null)
@@ -141,7 +141,7 @@ namespace MonoDevelop.D
 					// Set project's target type to the one which has been defined in the project template
 					if (projectOptions.Attributes["Target"] != null)
 					{
-						c.CompileTarget = (DCompileTarget)Enum.Parse(
+						CompileTarget = (DCompileTarget)Enum.Parse(
 							typeof(DCompileTarget),
 							projectOptions.Attributes["Target"].InnerText);
 					}
@@ -149,7 +149,7 @@ namespace MonoDevelop.D
 					// Set project's compiler
 					if (projectOptions.Attributes["Compiler"] != null)
 					{
-						c.Compiler = (DCompilerVendor)Enum.Parse(
+						UsedCompilerVendor = (DCompilerVendor)Enum.Parse(
 							typeof(DCompilerVendor), 
 							projectOptions.Attributes["Compiler"].InnerText);
 					}
@@ -176,8 +176,6 @@ namespace MonoDevelop.D
 					}			
 				}
 			}
-
-
 						
 		}
 		#endregion
@@ -192,14 +190,9 @@ namespace MonoDevelop.D
 
 		private void config_Changed(object sender, EventArgs e)
 		{
-			List<string> includepaths = new List<string>();	
-			foreach (DProjectConfiguration c in Configurations)					
-				foreach(string dir in c.Includes)
-						includepaths.Add(dir);					
-			
 			lock (ParseCache) {
 				ParseCache.ParsedGlobalDictionaries.Clear();			
-				DLanguageBinding.DIncludesParser.AddDirectoryRange(includepaths, ParseCache);
+				DLanguageBinding.DIncludesParser.AddDirectoryRange(IncludePaths, ParseCache);
 			}			
 		}
 
@@ -213,13 +206,13 @@ namespace MonoDevelop.D
 		public override FilePath GetOutputFileName(ConfigurationSelector configuration)
 		{
 			var cfg = GetConfiguration(configuration) as DProjectConfiguration;
+
 			return cfg.OutputDirectory.Combine(cfg.CompiledOutputName);
 		}
 
 		protected override BuildResult DoBuild(IProgressMonitor monitor, ConfigurationSelector configuration)
 		{
 			var cfg = GetConfiguration(configuration) as DProjectConfiguration;
-			cfg.SourcePath = BaseDirectory;
 
 			return DCompiler.Compile(this,Files,cfg,monitor);
 		}
@@ -233,14 +226,9 @@ namespace MonoDevelop.D
 		{
 			base.OnEndLoad();
 			
-			List<string> includepaths = new List<string>();	
-			foreach (DProjectConfiguration c in Configurations)
-				foreach(string dir in c.Includes)
-						includepaths.Add(dir);
-			
 			lock (ParseCache) {
 				ParseCache.ParsedGlobalDictionaries.Clear();
-				DLanguageBinding.DIncludesParser.AddDirectoryRange(includepaths, ParseCache);
+				DLanguageBinding.DIncludesParser.AddDirectoryRange(IncludePaths, ParseCache);
 			}
 		}
 		#endregion
@@ -276,7 +264,7 @@ namespace MonoDevelop.D
 			bool pause = conf.PauseConsoleOutput;
 			IConsole console;
 
-			if (conf.CompileTarget != DCompileTarget.Executable)
+			if (CompileTarget != DCompileTarget.Executable)
 			{
 				MessageService.ShowMessage("Compile target is not an executable!");
 				return;

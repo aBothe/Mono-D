@@ -15,27 +15,6 @@ namespace MonoDevelop.D
 		[ItemProperty("OutputName")]
 		string output = string.Empty;
 
-		[ItemProperty("CompileTarget")]
-		DCompileTarget target = DCompileTarget.Executable;
-		
-		[ItemProperty("Compiler")]
-		DCompilerVendor compiler = DCompilerVendor.DMD;
-
-		[ItemProperty("Includes")]
-		[ItemProperty("Include", Scope = "*", ValueType = typeof(string))]
-		private ArrayList includes = new ArrayList();
-
-		[ItemProperty("LibPaths")]
-		[ItemProperty("LibPath", Scope = "*", ValueType = typeof(string))]
-		private ArrayList libpaths = new ArrayList();
-
-		[ItemProperty("Libs")]
-		[ItemProperty("Lib", Scope = "*", ValueType = typeof(string))]
-		private ArrayList libs = new ArrayList();
-
-		[ItemProperty("SourcePath")]
-		string sourcepath = "";
-
 		[ItemProperty("ExtraCompilerArguments", DefaultValue = "")]
 		private string extra_compiler_args = string.Empty;
 
@@ -48,42 +27,6 @@ namespace MonoDevelop.D
 		{
 			get { return output; }
 			set { output = value; }
-		}
-
-		public DCompileTarget CompileTarget
-		{
-			get { return target; }
-			set { target = value; }
-		}
-		
-		public DCompilerVendor Compiler
-		{
-			get { return compiler; }
-			set { compiler = value; }
-		}
-		
-		public ArrayList Includes
-		{
-			get { return includes; }
-			set { includes = value; }
-		}
-
-		public ArrayList LibPaths
-		{
-			get { return libpaths; }
-			set { libpaths = value; }
-		}
-
-		public ArrayList Libs
-		{
-			get { return libs; }
-			set { libs = value; }
-		}
-
-		public string SourcePath
-		{
-			get { return sourcepath; }
-			set { sourcepath = value; }
 		}
 
 		public string ExtraCompilerArguments
@@ -109,11 +52,6 @@ namespace MonoDevelop.D
 				return;
 
 			output = conf.output;
-			target = conf.target;
-			compiler = conf.compiler;
-			includes = conf.includes;
-			libpaths = conf.libpaths;
-			libs = conf.libs;
 			extra_compiler_args = conf.extra_compiler_args;
 			extra_linker_args = conf.extra_linker_args;
 			

@@ -40,16 +40,16 @@ namespace MonoDevelop.D.OptionPanels
 		{
 			configuration = config;
 			
-			cmbCompiler.Active = (int)config.Compiler;
+			//cmbCompiler.Active = (int)config.Compiler;
 		
 			extraCompilerTextView.Buffer.Text = config.ExtraCompilerArguments;
 			extraLinkerTextView.Buffer.Text = config.ExtraLinkerArguments;			
-			
+			/*
 			foreach (string lib in config.Libs)
 				libStore.AppendValues (lib);
 			
 			foreach (string includePath in config.Includes)
-				includePathStore.AppendValues (includePath);
+				includePathStore.AppendValues (includePath);*/
 		}
 		
 		private void OnIncludePathAdded (object sender, EventArgs e)
@@ -90,10 +90,10 @@ namespace MonoDevelop.D.OptionPanels
 		}
 		
 		private void OnIncludePathBrowseButtonClick (object sender, EventArgs e)
-		{			
+		{			/*
 			AddPathDialog dialog = new AddPathDialog (configuration.SourcePath);
 			dialog.Run ();
-			includePathEntry.Text = dialog.SelectedPath;
+			includePathEntry.Text = dialog.SelectedPath;*/
 		}
 		
 		public bool Store ()
@@ -104,23 +104,23 @@ namespace MonoDevelop.D.OptionPanels
 			string line;
 			Gtk.TreeIter iter;
 			
-			configuration.Compiler = (DCompilerVendor)cmbCompiler.Active;
+			//configuration.Compiler = (DCompilerVendor)cmbCompiler.Active;
 			configuration.ExtraCompilerArguments = extraCompilerTextView.Buffer.Text;
 			configuration.ExtraLinkerArguments = extraLinkerTextView.Buffer.Text;
 			
 			libStore.GetIterFirst (out iter);
-			configuration.Libs.Clear();
+			//configuration.Libs.Clear();
 			while (libStore.IterIsValid (iter)) {
 				line = (string)libStore.GetValue (iter, 0);
-				configuration.Libs.Add (line);
+				//configuration.Libs.Add (line);
 				libStore.IterNext (ref iter);
 			}
 			
 			includePathStore.GetIterFirst (out iter);
-			configuration.Includes.Clear ();
+			//configuration.Includes.Clear ();
 			while (includePathStore.IterIsValid (iter)) {
 				line = (string)includePathStore.GetValue (iter, 0);
-				configuration.Includes.Add (line);
+				//configuration.Includes.Add (line);
 				includePathStore.IterNext (ref iter);
 			}
 			

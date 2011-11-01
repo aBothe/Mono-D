@@ -39,7 +39,7 @@ namespace MonoDevelop.D.Building
 		}
 
 		[ItemProperty("CodeLibraries")]
-		[ItemProperty("Path",Scope="*")]
+		[ItemProperty("Path", Scope = "*")]
 		string[] libPaths;
 
 		public ParsePerformanceData[] SetupGlobalParseCache(bool ParseFunctionBodies=true)
@@ -60,7 +60,7 @@ namespace MonoDevelop.D.Building
 			libPaths = gc.DirectoryPaths;
 		}
 
-		[ItemProperty("Vendor")]
+		[ItemProperty("Name")]
 		public DCompilerVendor CompilerType;
 
 		[ItemProperty("Compiler")]
