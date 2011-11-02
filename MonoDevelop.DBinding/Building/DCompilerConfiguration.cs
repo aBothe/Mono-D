@@ -38,35 +38,100 @@ namespace MonoDevelop.D.Building
 			cmp.ResetBuildArguments(ReleaseBuildArguments, false);
 		}
 
-		[ItemProperty("CodeLibraries")]
+		#region Parse Cache
+		/// <summary>
+		/// See DProject.includePaths for details!
+		/// </summary>
+		[ItemProperty("IncludePaths")]
 		[ItemProperty("Path", Scope = "*")]
-		string[] libPaths;
+		string[] includePaths;
 
 		public ParsePerformanceData[] SetupGlobalParseCache(bool ParseFunctionBodies=true)
 		{
-			var gc = DLanguageBinding.GetGlobalParseCache(CompilerType);
+			var gc = GetGlobalParseCache();
 
-			if(libPaths!=null)
-				foreach (var lib in libPaths)
-					gc.Add(lib,ParseFunctionBodies);
+			if(includePaths!=null)
+				foreach (var inc in includePaths)
+					gc.Add(inc,ParseFunctionBodies);
 
 			return gc.UpdateCache();
 		}
 
 		public void SaveGlobalParseCacheInformation()
 		{
-			var gc = DLanguageBinding.GetGlobalParseCache(CompilerType);
-
-			libPaths = gc.DirectoryPaths;
+			includePaths = GetGlobalParseCache().DirectoryPaths;
 		}
+		
+		public ASTStorage GetGlobalParseCache()
+		{
+			return DLanguageBinding.GetGlobalParseCache(CompilerType);
+		}
+		#endregion
 
 		[ItemProperty("Name")]
 		public DCompilerVendor CompilerType;
 
 		[ItemProperty("Compiler")]
 		public string CompilerExecutable;
-		[ItemProperty("Linker")]
-		public string LinkerExecutable;
+		
+		[ItemProperty("Linker.Executable")]
+		public string Linker_Executable;
+		[ItemProperty("Linker.Consoleless")]
+		public string Linker_Consoleless;
+		[ItemProperty("Linker.SharedLibrary")]
+		public string Linker_SharedLib;
+		[ItemProperty("Linker.StaticLibrary")]
+		public string Linker_StaticLib;
+		
+		/// <summary>
+		/// Gets the linker executable path for a specific link target type
+		/// </summary>
+		public string LinkerFor(DCompileTarget Target)
+		{
+			switch (Target)
+			{
+				case DCompileTarget.SharedLibrary:
+					return Linker_SharedLib;
+				case DCompileTarget.StaticLibrary:
+					return Linker_StaticLib;
+				case DCompileTarget.ConsolelessExecutable:
+					return Linker_Consoleless;
+				default:
+					return Linker_Executable;
+			}
+		}
+		
+		/// <summary>
+		/// Sets the linker executable path for a specific link target type
+		/// </summary>
+		public void LinkerFor(DCompileTarget Target, string NewLinkerPath)
+		{
+			switch (Target)
+			{
+				case DCompileTarget.SharedLibrary:
+					Linker_SharedLib=NewLinkerPath;break;
+				case DCompileTarget.StaticLibrary:
+					Linker_StaticLib=NewLinkerPath;break;
+				case DCompileTarget.ConsolelessExecutable:
+					Linker_Consoleless=NewLinkerPath;break;
+				default:
+					Linker_Executable=NewLinkerPath;break;
+			}
+		}
+		
+		public void SetAllLinkerPathsTo(string NewLinkerPath)
+		{
+			Linker_Executable=
+				Linker_Consoleless=
+				Linker_SharedLib=
+				Linker_StaticLib=NewLinkerPath;
+		}
+		/*
+		[ItemProperty("DefaultLibraryPaths")]
+		public List<string> DefaultLibPaths=new List<string>();
+		*/
+		[ItemProperty("DefaultLibs")]
+		public List<string> DefaultLibraries=new List<string>();
 
 		[ItemProperty("DebugArguments")]
 		public DArgumentConfiguration DebugBuildArguments = new DArgumentConfiguration { IsDebug=true};
@@ -101,20 +166,38 @@ namespace MonoDevelop.D.Building
 		public string SharedLibraryLinkerArguments;
 		[ItemProperty]
 		public string StaticLibraryLinkerArguments;
-
-		public string GetLinkerArgumentString(DCompileTarget targetType)
+		
+		/// <summary>
+		/// Gets/Sets the argument string for a specific link target type
+		/// </summary>
+		public string this[DCompileTarget target]
 		{
-			switch (targetType)
-			{
-				case DCompileTarget.SharedLibrary:
-					return SharedLibraryLinkerArguments;
-				case DCompileTarget.StaticLibrary:
-					return StaticLibraryLinkerArguments;
-				case DCompileTarget.ConsolelessExecutable:
-					return ConsolelessLinkerArguments;
+			get{
+				switch (target)
+				{
+					case DCompileTarget.SharedLibrary:
+						return SharedLibraryLinkerArguments;
+					case DCompileTarget.StaticLibrary:
+						return StaticLibraryLinkerArguments;
+					case DCompileTarget.ConsolelessExecutable:
+						return ConsolelessLinkerArguments;
+					default:
+						return ExecutableLinkerArguments;
+				}
 			}
-
-			return ExecutableLinkerArguments;
+			set{
+				switch (target)
+				{
+					case DCompileTarget.SharedLibrary:
+						SharedLibraryLinkerArguments=value;break;
+					case DCompileTarget.StaticLibrary:
+						StaticLibraryLinkerArguments=value;break;
+					case DCompileTarget.ConsolelessExecutable:
+						ConsolelessLinkerArguments=value;break;
+					default:
+						ExecutableLinkerArguments=value;break;
+				}
+			}
 		}
 	}
 }

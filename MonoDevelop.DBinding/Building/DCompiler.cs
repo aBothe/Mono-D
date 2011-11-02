@@ -109,9 +109,9 @@ namespace MonoDevelop.D.Building
 		/// Compiles a D project.
 		/// </summary>
 		public static BuildResult Compile(
-			DProject prj, 
-			ProjectFileCollection files, 
-			DProjectConfiguration cfg, 
+			DProject Project, 
+			ProjectFileCollection FilesToCompile, 
+			DProjectConfiguration BuildConfig, 
 			IProgressMonitor monitor)
 		{
 			// Determine default object extension
@@ -121,37 +121,31 @@ namespace MonoDevelop.D.Building
 				objExt = ".o";
 
 			var relObjDir = "objs";
-			var objDir = Path.Combine(prj.BaseDirectory, relObjDir);
+			var objDir = Path.Combine(Project.BaseDirectory, relObjDir);
 
 			if(!Directory.Exists(objDir))
 				Directory.CreateDirectory(objDir);
 
-			/*
-			 * 1) Compile all D sources
-			 *	a. Check if modified
-			 *	b. If so, compile
-			 * 2) Link them
-			 *	a. Check if there were modifications made
-			 *	b. If so, link
-			 */
-
 			// List of created object files
-			var objs = new List<string>();
+			var BuiltObjects = new List<string>();
 			var compilerResults = new CompilerResults(new TempFileCollection());
 			var buildResult = new BuildResult(compilerResults, "");
 			bool succesfullyBuilt = true;
 			bool modificationsDone = false;
 
-			var Compiler = prj.Compiler;
-			var Arguments=Compiler.GetArgumentCollection(cfg.DebugMode);
+			var Compiler = Project.Compiler;
+			var Arguments=Compiler.GetArgumentCollection(BuildConfig.DebugMode);
 			
 			/// The target file to which all objects will be linked to
-			var LinkTarget = cfg.OutputDirectory.Combine(cfg.CompiledOutputName);
-				
-			monitor.BeginTask("Build Project", files.Count + 1);
+			var LinkTarget = BuildConfig.OutputDirectory.Combine(BuildConfig.CompiledOutputName);
+			
+			monitor.BeginTask("Build Project", FilesToCompile.Count + 1);
 
-			// 1)
-			foreach (var f in files)
+			var SourceIncludePaths=new List<string>(Compiler.GetGlobalParseCache().DirectoryPaths);
+				SourceIncludePaths.AddRange(Project.LocalIncludeCache.DirectoryPaths);
+			
+			#region Compile sources to objects
+			foreach (var f in FilesToCompile)
 			{
 				if (monitor.IsCancelRequested)
 					return buildResult;
@@ -164,13 +158,13 @@ namespace MonoDevelop.D.Building
 				var obj = Path.Combine(objDir, Path.GetFileNameWithoutExtension(f.FilePath)) + objExt;
 				
 				// a.Check if source file was modified and if object file still exists
-				if (prj.LastModificationTimes.ContainsKey(f) &&
-					prj.LastModificationTimes[f] == File.GetLastWriteTime(f.FilePath) &&
+				if (Project.LastModificationTimes.ContainsKey(f) &&
+					Project.LastModificationTimes[f] == File.GetLastWriteTime(f.FilePath) &&
 					File.Exists(f.LastGenOutput))
 				{
 					// File wasn't edited since last build
 					// but add the built object to the objs array
-					objs.Add(f.LastGenOutput);
+					BuiltObjects.Add(f.LastGenOutput);
 					monitor.Step(1);
 					continue;
 				}
@@ -190,17 +184,18 @@ namespace MonoDevelop.D.Building
 					obj= Path.Combine(objDir, Path.GetFileNameWithoutExtension(f.FilePath))+i + objExt;
 					i++;
 				}
-
+				
 				// Create argument string for source file compilation.
-				var dmdArgs = FillInMacros(Arguments.SourceCompilerArguments,  new DCompilerMacroProvider 
+				var dmdArgs = FillInMacros(Arguments.SourceCompilerArguments + " " + BuildConfig.ExtraCompilerArguments,  new DCompilerMacroProvider 
 				{ 
 					SourceFile = f.FilePath, 
-					ObjectFile = obj 
+					ObjectFile = obj,
+					ImportPaths=SourceIncludePaths,
 				});			
 				
 				// b.Execute compiler
 				string dmdOutput;
-				int exitCode = ExecuteCommand(Compiler.CompilerExecutable, dmdArgs, prj.BaseDirectory, monitor, out dmdOutput);
+				int exitCode = ExecuteCommand(Compiler.CompilerExecutable, dmdArgs, Project.BaseDirectory, monitor, out dmdOutput);
 
 				ParseCompilerOutput(dmdOutput, compilerResults);
 				CheckReturnCode(exitCode, compilerResults);
@@ -217,17 +212,18 @@ namespace MonoDevelop.D.Building
 				{
 					f.LastGenOutput = obj;
 					buildResult.BuildCount++;
-					prj.LastModificationTimes[f] = File.GetLastWriteTime(f.FilePath);
+					Project.LastModificationTimes[f] = File.GetLastWriteTime(f.FilePath);
 
 					// Especially when compiling large projects, do only add the relative part of the obj file due to command shortness
-					if (obj.StartsWith(prj.BaseDirectory))
-						objs.Add(obj.Substring(prj.BaseDirectory.ToString().Length).TrimStart(Path.DirectorySeparatorChar));
+					if (obj.StartsWith(Project.BaseDirectory))
+						BuiltObjects.Add(obj.Substring(Project.BaseDirectory.ToString().Length).TrimStart(Path.DirectorySeparatorChar));
 					else
-						objs.Add(obj);
+						BuiltObjects.Add(obj);
 				}
 			}
+			#endregion
 
-			// 2)
+			#region Link files
 			if (succesfullyBuilt)
 			{
 				// a.
@@ -242,13 +238,26 @@ namespace MonoDevelop.D.Building
 				}
 
 				// b.Build linker argument string
-				var linkArgs = FillInMacros(Arguments.GetLinkerArgumentString(prj.CompileTarget), new DLinkerMacroProvider { 
-					Objects=objs.ToArray(),
-					TargetFile=LinkTarget,
-					RelativeTargetDirectory=cfg.OutputDirectory.ToRelative(prj.BaseDirectory)
+				
+				// Build argument preparation
+				/*				
+				var libPaths=new List<string>(Compiler.DefaultLibPaths);
+				libPaths.AddRange(Project.LibraryPaths);
+				*/
+				var libs=new List<string>(Compiler.DefaultLibraries);
+				libs.AddRange(Project.ExtraLibraries);
+				
+				var linkArgs = FillInMacros(Arguments[Project.CompileTarget] + " "+BuildConfig.ExtraLinkerArguments,
+				    new DLinkerMacroProvider {
+						Objects=BuiltObjects.ToArray(),
+						TargetFile=LinkTarget,
+						RelativeTargetDirectory=BuildConfig.OutputDirectory.ToRelative(Project.BaseDirectory),
+						
+						//LibraryPaths=libPaths,
+						Libraries=libs
 				});
 				var linkerOutput = "";
-				int exitCode = ExecuteCommand(Compiler.LinkerExecutable,linkArgs,prj.BaseDirectory,monitor,out linkerOutput);
+				int exitCode = ExecuteCommand(Compiler.LinkerFor(Project.CompileTarget),linkArgs,Project.BaseDirectory,monitor,out linkerOutput);
 
 				compilerResults.NativeCompilerReturnValue = exitCode;
 
@@ -260,6 +269,7 @@ namespace MonoDevelop.D.Building
 					monitor.Step(1);
 				}
 			}
+			#endregion
 
 			return new BuildResult(compilerResults,"");
 		}

@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 
 namespace MonoDevelop.D.Building
 {
@@ -14,6 +15,17 @@ namespace MonoDevelop.D.Building
 	{
 		public string SourceFile;
 		public string ObjectFile;
+		public IEnumerable<string> ImportPaths
+		{
+			set{
+				importPaths="";
+				if(value!=null)
+					foreach(var p in value)
+						importPaths+='"'+p+'"'+' ';
+			}
+		}
+		
+		string importPaths;
 
 		public string Replace(string Input)
 		{
@@ -21,6 +33,8 @@ namespace MonoDevelop.D.Building
 				return SourceFile;
 			if (Input == "obj")
 				return ObjectFile;
+			if(Input=="importPaths")
+				return importPaths;
 			return Input;
 		}
 	}
@@ -30,7 +44,7 @@ namespace MonoDevelop.D.Building
 	/// </summary>
 	public class DLinkerMacroProvider : IArgumentMacroProvider
 	{
-		public string[] Objects
+		public IEnumerable<string> Objects
 		{
 			set {
 				objects = "";
@@ -43,6 +57,30 @@ namespace MonoDevelop.D.Building
 		public string RelativeTargetDirectory;
 
 		string objects;
+		
+		public IEnumerable<string> LibraryPaths
+		{
+			set{
+				libPaths="";
+				if(value!=null)
+					foreach(var p in value)
+						libPaths+='"'+p+'"'+' ';
+			}
+		}
+		
+		string libPaths;
+		
+		public IEnumerable<string> Libraries
+		{
+			set{
+				libs="";
+				if(value!=null)
+					foreach(var p in value)
+						libs+='"'+p+'"'+' ';
+			}
+		}
+		
+		string libs;
 
 		public string Replace(string Input)
 		{
@@ -54,6 +92,10 @@ namespace MonoDevelop.D.Building
 				return RelativeTargetDirectory;
 			if (Input == "target_noExt")
 				return Path.ChangeExtension(TargetFile, null);
+			if(Input=="libraryPaths")
+				return libPaths;
+			if(Input=="libs")
+				return libs;
 
 			return null;
 		}

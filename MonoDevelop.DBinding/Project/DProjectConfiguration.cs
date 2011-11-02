@@ -12,37 +12,29 @@ namespace MonoDevelop.D
 {
 	public class DProjectConfiguration:ProjectConfiguration
 	{
+		#region Properties
+		public DProject Project
+		{
+			get;protected set;
+		}
+		
 		[ItemProperty("OutputName")]
-		string output = string.Empty;
+		public string Output="";
 
 		[ItemProperty("ExtraCompilerArguments", DefaultValue = "")]
-		private string extra_compiler_args = string.Empty;
+		public string ExtraCompilerArguments = "";
 
 		[ItemProperty("ExtraLinkerArguments", DefaultValue = "")]
-		private string extra_linker_args = string.Empty;
+		public string ExtraLinkerArguments = "";
+		#endregion
+		
+		public DProjectConfiguration(DProject Project)
+		{
+			this.Project=Project;
+		}
 
 		public event EventHandler Changed;
 		
-		public string Output
-		{
-			get { return output; }
-			set { output = value; }
-		}
-
-		public string ExtraCompilerArguments
-		{
-			get { return extra_compiler_args; }
-			set { extra_compiler_args = value; }
-		}
-
-		public string ExtraLinkerArguments
-		{
-			get { return extra_linker_args; }
-			set { extra_linker_args = value; }
-		}
-
-
-
 		public override void CopyFrom(ItemConfiguration configuration)
 		{
 			base.CopyFrom(configuration);
@@ -51,9 +43,9 @@ namespace MonoDevelop.D
 			if (conf == null)
 				return;
 
-			output = conf.output;
-			extra_compiler_args = conf.extra_compiler_args;
-			extra_linker_args = conf.extra_linker_args;
+			Output=conf.Output;
+			ExtraCompilerArguments=conf.ExtraCompilerArguments;
+			ExtraLinkerArguments=conf.ExtraLinkerArguments;
 			
 			if (Changed != null)
 				Changed(this, new EventArgs());
@@ -66,12 +58,16 @@ namespace MonoDevelop.D
 		public string CompiledOutputName
 		{
 			get {
+				var prj=Project;
+				
+				if(prj!=null)
+				{
 				var ext = "";
 
 				switch (Environment.OSVersion.Platform)
 				{
 					case PlatformID.MacOSX:
-						switch (CompileTarget)
+						switch (prj.CompileTarget)
 						{
 							case DCompileTarget.ConsolelessExecutable:
 							case DCompileTarget.Executable:
@@ -86,7 +82,7 @@ namespace MonoDevelop.D
 						}
 						break;
 					case PlatformID.Unix:
-						switch (CompileTarget)
+						switch (prj.CompileTarget)
 						{
 							case DCompileTarget.ConsolelessExecutable:
 							case DCompileTarget.Executable:
@@ -101,7 +97,7 @@ namespace MonoDevelop.D
 						}
 						break;
 					default:
-						switch (CompileTarget)
+						switch (prj.CompileTarget)
 						{
 							case DCompileTarget.ConsolelessExecutable:
 							case DCompileTarget.Executable:
@@ -118,6 +114,8 @@ namespace MonoDevelop.D
 				}
 
 				return Path.ChangeExtension(Output, ext);
+				}
+				return Output;
 			}
 		}
 	}

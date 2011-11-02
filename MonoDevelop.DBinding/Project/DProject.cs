@@ -21,7 +21,10 @@ namespace MonoDevelop.D
 	[DataInclude(typeof(DProjectConfiguration))]
 	public class DProject:Project
 	{
-		public const string DParserPropertyKey="dom";
+		/// <summary>
+		/// Used to indentify the AST object of a project's D module
+		/// </summary>
+		public const string DParserPropertyKey="DDom";
 
 		#region Properties
 		/// <summary>
@@ -33,7 +36,10 @@ namespace MonoDevelop.D
 		public override string ProjectType	{get { return "Native"; }}
 		public override string[] SupportedLanguages	{get{return new[]{"D"};}}
 		
-		public ASTStorage ParseCache { get; private set; }		
+		/// <summary>
+		/// Stores parse information from project-wide includes
+		/// </summary>
+		public ASTStorage LocalIncludeCache { get; private set; }		
 		
 		[ItemProperty("Compiler")]
 		public DCompilerVendor UsedCompilerVendor= DCompilerVendor.DMD;
@@ -41,14 +47,37 @@ namespace MonoDevelop.D
 		[ItemProperty("Target")]
 		public DCompileTarget CompileTarget = DCompileTarget.Executable;
 
+		#region Local Include Cache
+		/// <summary>
+		/// Important: This property is used only for saving and loading the include paths, not for working with them while the project is still open.
+		/// To keep the includes-list and parsecache synced, only operate with the parsecache's directory list!
+		/// </summary>
 		[ItemProperty("Includes")]
 		[ItemProperty("Path", Scope = "*")]
-		public List<string> IncludePaths = new List<string>();
+		string[] includes;
+		
+		public ParsePerformanceData[] SetupLocalIncludeCache()
+		{
+			LocalIncludeCache=new ASTStorage();
+			
+			if(includes!=null)
+				foreach (var inc in includes)
+					LocalIncludeCache.Add(inc,true);
 
+			return LocalIncludeCache.UpdateCache();
+		}
+
+		public void SaveLocalIncludeCacheInformation()
+		{
+			if(LocalIncludeCache!=null)
+				includes = LocalIncludeCache.DirectoryPaths;
+		}
+		#endregion
+/*
 		[ItemProperty("LibPaths")]
 		[ItemProperty("Path", Scope = "*")]
 		public List<string> LibraryPaths = new List<string>();
-
+*/
 		[ItemProperty("Libs")]
 		[ItemProperty("Lib", Scope = "*")]
 		public List<string> ExtraLibraries = new List<string>();
@@ -63,7 +92,7 @@ namespace MonoDevelop.D
 		}
 		#endregion
 
-		#region Parsing cache
+		#region Parsed project modules
 		public IEnumerable<IAbstractSyntaxTree> ParsedModules
 		{
 			get
@@ -95,7 +124,7 @@ namespace MonoDevelop.D
 		#region Init
 		void Init()
 		{
-			ParseCache = new ASTStorage();
+			LocalIncludeCache = new ASTStorage();
 
 			if(DCompiler.Instance!=null)
 				UsedCompilerVendor = DCompiler.Instance.DefaultCompiler;
@@ -180,22 +209,23 @@ namespace MonoDevelop.D
 		}
 		#endregion
 
+		#region Build Configurations
 		public override SolutionItemConfiguration CreateConfiguration(string name)
 		{
-			DProjectConfiguration config = new DProjectConfiguration() { Name=name};
-			config.Changed += new EventHandler(config_Changed);				
+			var config = new DProjectConfiguration(this) { Name=name};
+			//config.Changed += new EventHandler(config_Changed);				
 			
 			return config;			
 		}
 
-		private void config_Changed(object sender, EventArgs e)
+		/*private void config_Changed(object sender, EventArgs e)
 		{
-			lock (ParseCache) {
-				ParseCache.ParsedGlobalDictionaries.Clear();			
-				DLanguageBinding.DIncludesParser.AddDirectoryRange(IncludePaths, ParseCache);
+			lock (LocalIncludeCache) {
+				LocalIncludeCache.ParsedGlobalDictionaries.Clear();			
+				DLanguageBinding.DIncludesParser.AddDirectoryRange(IncludePaths, LocalIncludeCache);
 			}			
-		}
-
+		}*/
+		#endregion
 
 		#region Building
 		public override bool IsCompileable(string fileName)
@@ -226,10 +256,10 @@ namespace MonoDevelop.D
 		{
 			base.OnEndLoad();
 			
-			lock (ParseCache) {
-				ParseCache.ParsedGlobalDictionaries.Clear();
-				DLanguageBinding.DIncludesParser.AddDirectoryRange(IncludePaths, ParseCache);
-			}
+			/*lock (LocalIncludeCache) {
+				LocalIncludeCache.ParsedGlobalDictionaries.Clear();
+				DLanguageBinding.DIncludesParser.AddDirectoryRange(IncludePaths, LocalIncludeCache);
+			}*/
 		}
 		#endregion
 

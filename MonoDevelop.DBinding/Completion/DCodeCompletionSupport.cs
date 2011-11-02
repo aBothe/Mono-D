@@ -66,15 +66,15 @@ namespace MonoDevelop.D.Completion
 				ret.AddRange(Project.ParsedModules);
 				
 				// Add all parsed project include modules that belong to the project's configuration
-				foreach (var astColl in Project.ParseCache)
+				foreach (var astColl in Project.LocalIncludeCache)
 					ret.AddRange(astColl);
 
 				// Add all parsed global modules that belong to the project's compiler configuration
-				foreach (var astColl in DLanguageBinding.GetGlobalParseCache(Project.UsedCompilerVendor))
+				foreach (var astColl in Project.Compiler.GetGlobalParseCache())
 					ret.AddRange(astColl);
 			}
 			else
-				foreach (var astColl in DLanguageBinding.GetGlobalParseCache(DCompiler.Instance.DefaultCompiler))
+				foreach (var astColl in DCompiler.GetDefaultCompiler().GetGlobalParseCache())
 					ret.AddRange(astColl);
 
 			return ret;

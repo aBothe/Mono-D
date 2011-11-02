@@ -17,12 +17,8 @@ namespace MonoDevelop.D
 	public class DLanguageBinding: ILanguageBinding
 	{
 		#region Properties
-
 		public static DLanguageBinding Instance { get; private set; }
 		
-		private static DIncludesParser dIncludesParser=null;
-		public static DIncludesParser DIncludesParser { get{ return (dIncludesParser == null)? dIncludesParser = new DIncludesParser(): dIncludesParser;}}
-
 		/// <summary>
 		/// Workaround for handling serializer issue:
 		/// Although GlobalParseCache isn't marked as serializable, there's an error thrown that ASTStorage isn't implementing Add(System.Object) ..

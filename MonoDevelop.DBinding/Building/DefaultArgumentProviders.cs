@@ -19,7 +19,7 @@ namespace MonoDevelop.D.Building
 		public void ResetCompilerConfiguration(DCompilerConfiguration Config)
 		{
 			Config.CompilerExecutable = "dmd";
-			Config.LinkerExecutable = "dmd";
+			Config.SetAllLinkerPathsTo("dmd");
 			Config.CompilerType = DCompilerVendor.DMD;
 		}
 
@@ -66,7 +66,8 @@ namespace MonoDevelop.D.Building
 		public new void ResetCompilerConfiguration(DCompilerConfiguration Config)
 		{
 			Config.CompilerExecutable = "gdc";
-			Config.LinkerExecutable = "gdc";
+			Config.SetAllLinkerPathsTo("gdc");
+			Config.LinkerFor(DCompileTarget.StaticLibrary,"ar");
 			Config.CompilerType = DCompilerVendor.GDC;
 		}
 	}
@@ -79,7 +80,8 @@ namespace MonoDevelop.D.Building
 		public new void ResetCompilerConfiguration(DCompilerConfiguration Config)
 		{
 			Config.CompilerExecutable = "ldc";
-			Config.LinkerExecutable = "ldc";
+			Config.SetAllLinkerPathsTo("ldc");
+			Config.LinkerFor(DCompileTarget.StaticLibrary,"ar");
 			Config.CompilerType = DCompilerVendor.LDC;
 		}
 	}
