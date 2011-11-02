@@ -5,189 +5,179 @@ namespace MonoDevelop.D.Building
 	/// <summary>
 	/// Interface which enables resetting D configuration objects to default.
 	/// </summary>
-	public interface ICompilerDefaultArgumentProvider
+	public abstract class CompilerDefaultArgumentProvider
 	{
-		void ResetCompilerConfiguration(DCompilerConfiguration Config);
-		void ResetBuildArguments(DArgumentConfiguration Arguments, bool IsDebug);
+		protected DCompilerConfiguration Configuration;
+
+		public CompilerDefaultArgumentProvider(DCompilerConfiguration Configuration)
+		{
+			this.Configuration = Configuration;
+		}
+
+		/// <summary>
+		/// Resets generic compiler properties except build arguments.
+		/// </summary>
+		public abstract void ResetCompilerConfiguration();
+
+		public void ResetBuildArguments()
+		{
+			foreach (var t in new[]{ 
+				DCompileTarget.Executable, 
+				DCompileTarget.ConsolelessExecutable, 
+				DCompileTarget.SharedLibrary, 
+				DCompileTarget.StaticLibrary })
+			{
+				ResetBuildArguments(t, true);
+				ResetBuildArguments(t, false);
+			}
+		}
+
+		public abstract void ResetBuildArguments(DCompileTarget LinkTarget, bool IsDebug);
 	}
 
 	/// <summary>
 	/// Provides default build commands and arguments for the dmd compiler.
 	/// </summary>
-	public class Dmd : ICompilerDefaultArgumentProvider
+	public class Dmd:CompilerDefaultArgumentProvider
 	{
-		public void ResetCompilerConfiguration(DCompilerConfiguration Config)
+		public Dmd(DCompilerConfiguration cfg):base(cfg){}
+
+		public override void ResetCompilerConfiguration()
 		{
-			Config.CompilerExecutable = "dmd";
-			Config.SetAllLinkerPathsTo("dmd");
-			Config.CompilerType = DCompilerVendor.DMD;
+			Configuration.CompilerType = DCompilerVendor.DMD;
+			Configuration.DefaultLibraries.Clear();
+
+			Configuration.SetAllCompilerCommands("dmd");
+			Configuration.SetAllLinkerCommands("dmd");
 		}
 
-		public void ResetBuildArguments(DArgumentConfiguration args, bool IsDebug)
+		public override void ResetBuildArguments(DCompileTarget LinkTarget, bool IsDebug)
 		{
-			string commonLinkerArgs = "";
-			if (IsDebug)
+			// Only arguments become reset, not the commands
+			var args = Configuration.GetTargetConfiguration(LinkTarget).GetArguments(IsDebug);
+			var debugAppendix=IsDebug?"-gc -debug":"-O -release";
+
+			args.CompilerArguments = "-c \"$src\" -of\"$obj\" $includes " + debugAppendix;
+			args.LinkerArguments = "-L/NOLOGO " + debugAppendix + " -of\"$target\" $objs";
+
+			switch (LinkTarget)
 			{
-				commonLinkerArgs = "$objs -gc -debug -L/NOLOGO ";
+				case DCompileTarget.ConsolelessExecutable:
+					//TODO: Complete arg strings which let link to a consoleless executable 
+					if (Environment.OSVersion.Platform == PlatformID.MacOSX)
+					{ }
+					else if (Environment.OSVersion.Platform == PlatformID.Unix)
+					{ }
+					else
+						args.LinkerArguments += " -L/su:windows -L/exet:nt";
+					break;
 
-				args.IsDebug = true;
-				args.SourceCompilerArguments = "-c \"$src\" -of\"$obj\" $importPaths -gc -debug";
+				case DCompileTarget.SharedLibrary:
+					args.LinkerArguments += " -L/IMPLIB:$relativeTargetDir ";
+					break;
+
+				case DCompileTarget.StaticLibrary:
+					args.LinkerArguments = "-lib -of\"$target\" $objs";
+					break;
 			}
-			else
-			{
-				commonLinkerArgs = "$objs -release -O -L/NOLOGO ";
-
-				args.SourceCompilerArguments = "-c \"$src\" -of\"$obj\" $importPaths -release -O";
-			}
-
-			args.ConsolelessLinkerArguments = commonLinkerArgs + "-of\"$target\"";
-
-			//TODO: Complete arg strings which let link to a consoleless executable 
-			if (Environment.OSVersion.Platform == PlatformID.MacOSX)
-			{ }
-			else if (Environment.OSVersion.Platform == PlatformID.Unix)
-			{ }
-			else
-				args.ConsolelessLinkerArguments += " -L/su:windows -L/exet:nt";
-
-			args.ExecutableLinkerArguments = commonLinkerArgs + "-of\"$target\"";
-			args.SharedLibraryLinkerArguments = commonLinkerArgs + "-L/IMPLIB:$relativeTargetDir -of\"$target\"";
-
-			// When creating a static library, debug & release builds share equal build parameters
-			args.StaticLibraryLinkerArguments = "-lib -of\"$target\" $objs";
 		}
 	}
 
 	/// <summary>
 	/// Provides default build commands and arguments for the gdc compiler.
 	/// </summary>
-	public class Gdc : Dmd
+	public class Gdc : CompilerDefaultArgumentProvider
 	{
-		public new void ResetCompilerConfiguration(DCompilerConfiguration Config)
+		public Gdc(DCompilerConfiguration cfg) : base(cfg) { }
+
+		public override void ResetCompilerConfiguration()
 		{
-			Config.CompilerExecutable = "gdc";
-			Config.SetAllLinkerPathsTo("gdc");
-			Config.LinkerFor(DCompileTarget.StaticLibrary,"ar");
-			Config.CompilerType = DCompilerVendor.GDC;
+			Configuration.CompilerType = DCompilerVendor.GDC;
+			Configuration.DefaultLibraries.Clear();
+
+			Configuration.SetAllCompilerCommands("gdc");
+			Configuration.SetAllLinkerCommands("gdc");
+
+			Configuration.GetTargetConfiguration(DCompileTarget.StaticLibrary).Linker = "ar";
+		}
+
+		public override void ResetBuildArguments(DCompileTarget LinkTarget, bool IsDebug)
+		{
+			var args = Configuration.GetTargetConfiguration(LinkTarget).GetArguments(IsDebug);
+			var debugAppendix = IsDebug ? "-g -debug" : "-O -release";
+
+			args.CompilerArguments = "-c \"$src\" -o \"$obj\" $includes " + debugAppendix;
+			args.LinkerArguments = "-o \"$target\" -L/NOLOGO " + debugAppendix + " $objs";
+
+			switch (LinkTarget)
+			{
+				case DCompileTarget.ConsolelessExecutable:
+					if (Environment.OSVersion.Platform == PlatformID.MacOSX)
+					{ }
+					else if (Environment.OSVersion.Platform == PlatformID.Unix)
+					{ }
+					else
+						args.LinkerArguments += " -L/su:windows -L/exet:nt";
+					break;
+
+				case DCompileTarget.SharedLibrary:
+					args.CompilerArguments = "-fPIC " + args.CompilerArguments;
+					args.LinkerArguments += " -shared -L/IMPLIB:$relativeTargetDir";
+					break;
+
+				case DCompileTarget.StaticLibrary:
+					args.LinkerArguments = "rcs \"$target\" $objs";
+					break;
+			}
 		}
 	}
 
 	/// <summary>
 	/// Provides default build commands and arguments for the ldc compiler.
 	/// </summary>
-	public class Ldc : Dmd
+	public class Ldc :CompilerDefaultArgumentProvider
 	{
-		public new void ResetCompilerConfiguration(DCompilerConfiguration Config)
-		{
-			Config.CompilerExecutable = "ldc";
-			Config.SetAllLinkerPathsTo("ldc");
-			Config.LinkerFor(DCompileTarget.StaticLibrary,"ar");
-			Config.CompilerType = DCompilerVendor.LDC;
-		}
-	}
+		public Ldc(DCompilerConfiguration cfg):base(cfg){}
 
-	/*public class DMDCompilerCommandBuilder : DCompilerSupport
-	{
-		public DMDCompilerCommandBuilder(DProject prj, DProjectConfiguration config)
-			: base(prj, config)
+		public override void ResetCompilerConfiguration()
 		{
-			this.compilerCommand = "dmd";
-			this.linkerCommand = "dmd";
+			Configuration.CompilerType = DCompilerVendor.LDC;
+			Configuration.DefaultLibraries.Clear();
+
+			Configuration.SetAllCompilerCommands("ldc");
+			Configuration.SetAllLinkerCommands("ldc");
+
+			Configuration.GetTargetConfiguration(DCompileTarget.StaticLibrary).Linker="ar";
 		}
 
-		public override string BuildCompilerArguments(string srcfile, string outputFile)
+		public override void ResetBuildArguments(DCompileTarget LinkTarget, bool IsDebug)
 		{
+			var args = Configuration.GetTargetConfiguration(LinkTarget).GetArguments(IsDebug);
+			var debugAppendix=IsDebug?"-g -debug": "-O -release";
 
+			args.CompilerArguments = "-c \"$src\" -o \"$obj\" $includes "+debugAppendix;
+			args.LinkerArguments = "-o \"$target\" -L/NOLOGO "+debugAppendix +" $objs";
 
-			var dmdincludes = new StringBuilder();
-			if (config.Includes != null)
-				foreach (string inc in config.Includes)
-					dmdincludes.AppendFormat(" -I\"{0}\"", inc);
-
-			// b.Build argument string
-			//var dmdArgs = "-c \"" + f.FilePath + "\" -op\"" + objDir + "\" " + 
-			//(cfg.DebugMode?compilerDebugArgs:compilerReleaseArgs) + " " + 
-			//cfg.ExtraCompilerArguments + dmdincludes.ToString();		
-
-			return string.Format("-c \"{0}\" {5}\"{1}\" {2} {3} {4}",
-												srcfile,
-												outputFile,
-												(config.DebugMode ? compilerDebugArgs : compilerReleaseArgs),
-												config.ExtraCompilerArguments,
-												dmdincludes.ToString(),
-												compilerOutputFileSwitch);
-		}
-
-		public override string BuildLinkerArguments(List<string> objFiles)
-		{
-			var objsArg = "";
-			foreach (var o in objFiles)
+			switch (LinkTarget)
 			{
-				var o_ = o;
-
-				if (o_.StartsWith(prj.BaseDirectory))
-					o_ = o_.Substring(prj.BaseDirectory.ToString().Length).TrimStart('/', '\\');
-
-				objsArg += "\"" + o_ + "\" ";
-			}
-
-			var libs = "";
-			foreach (var lib in config.Libs)
-			{
-				libs += lib + " ";
-			}
-
-			var nologo = "";
-			if (!((Environment.OSVersion.Platform == PlatformID.Unix) || (Environment.OSVersion.Platform == PlatformID.MacOSX)))
-				nologo = " -L/NOLOGO";
-			var linkArgs =
-					objsArg.TrimEnd() + nologo + " " +
-					libs + " " +
-					config.ExtraLinkerArguments + " " +
-					(config.DebugMode ? linkerDebugArgs : linkerReleaseArgs) +
-					" " + linkerOutputFileSwitch + "\"" + Path.Combine(config.OutputDirectory, config.CompiledOutputName) + "\"";
-
-
-			switch (config.CompileTarget)
-			{
-				case DCompileTargetType.SharedLibrary:
-					if (config.CompiledOutputName.EndsWith(".dll"))
-						linkArgs += " -L/IMPLIB:\"" + Path.GetFileNameWithoutExtension(config.Output) + ".lib\"";
-					//TODO: Are there import libs on other platforms?
+				case DCompileTarget.ConsolelessExecutable:
+					if (Environment.OSVersion.Platform == PlatformID.MacOSX)
+					{ }
+					else if (Environment.OSVersion.Platform == PlatformID.Unix)
+					{ }
+					else
+						args.LinkerArguments += " -L/su:windows -L/exet:nt";
 					break;
-				case DCompileTargetType.StaticLibrary:
-					linkArgs += "-lib";
+
+				case DCompileTarget.SharedLibrary:
+					args.CompilerArguments="-relocation-model=pic " + args.CompilerArguments; 
+					args.LinkerArguments += " -shared -L/IMPLIB:$relativeTargetDir";
+					break;
+
+				case DCompileTarget.StaticLibrary:
+					args.LinkerArguments =	"rcs \"$target\" $objs";
 					break;
 			}
-			return linkArgs;
-		}
-
-	}
-	 
-		public class GDCCompilerCommandBuilder : DMDCompilerCommandBuilder
-	{
-		public GDCCompilerCommandBuilder(DProject prj, DProjectConfiguration config)
-			: base(prj, config)
-		{
-			this.compilerCommand = "gdc";
-			this.linkerCommand = "gdc";
-			this.compilerDebugArgs = "-g";
-			this.compilerOutputFileSwitch = "-o ";
-			this.linkerOutputFileSwitch = "-o ";
 		}
 	}
-	 
-	 	public class LDCCompilerCommandBuilder : DMDCompilerCommandBuilder
-	{
-		public LDCCompilerCommandBuilder(DProject prj, DProjectConfiguration config)
-			: base(prj, config)
-		{
-			this.compilerCommand = "ldc";
-			this.linkerCommand = "ldc";
-			this.compilerDebugArgs = "-gc";
-			this.linkerDebugArgs = "-gc";
-		}
-	}
-	 
-	 */
 }

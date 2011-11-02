@@ -11,31 +11,31 @@ namespace MonoDevelop.D.Building
 	[DataItem("CompilerConfiguration")]
 	public class DCompilerConfiguration
 	{
-		public DCompilerConfiguration() { }
-
 		/// <summary>
 		/// Initializes all commands and arguments (also debug&amp;release args!) with default values depending on given target compiler type
 		/// </summary>
-		public DCompilerConfiguration(DCompilerVendor type)
+		public static DCompilerConfiguration CreateWithDefaults(DCompilerVendor Compiler)
 		{
-			ICompilerDefaultArgumentProvider cmp = null;
-			switch (type)
+			var cfg = new DCompilerConfiguration {  CompilerType=Compiler };
+
+			CompilerDefaultArgumentProvider cmp = null;
+			switch (Compiler)
 			{
 				case DCompilerVendor.DMD:
-					cmp = new Dmd();
+					cmp = new Dmd(cfg);
 					break;
 				case DCompilerVendor.GDC:
-					cmp = new Gdc();
+					cmp = new Gdc(cfg);
 					break;
 				case DCompilerVendor.LDC:
-					cmp = new Ldc();
+					cmp = new Ldc(cfg);
 					break;
 			}
 
-			cmp.ResetCompilerConfiguration(this);
+			cmp.ResetCompilerConfiguration();
+			cmp.ResetBuildArguments();
 
-			cmp.ResetBuildArguments(DebugBuildArguments, true);
-			cmp.ResetBuildArguments(ReleaseBuildArguments, false);
+			return cfg;
 		}
 
 		#region Parse Cache
@@ -71,134 +71,110 @@ namespace MonoDevelop.D.Building
 		[ItemProperty("Name")]
 		public DCompilerVendor CompilerType;
 
-		[ItemProperty("Compiler")]
-		public string CompilerExecutable;
-		
-		[ItemProperty("Linker.Executable")]
-		public string Linker_Executable;
-		[ItemProperty("Linker.Consoleless")]
-		public string Linker_Consoleless;
-		[ItemProperty("Linker.SharedLibrary")]
-		public string Linker_SharedLib;
-		[ItemProperty("Linker.StaticLibrary")]
-		public string Linker_StaticLib;
-		
-		/// <summary>
-		/// Gets the linker executable path for a specific link target type
-		/// </summary>
-		public string LinkerFor(DCompileTarget Target)
+		[ItemProperty]
+		LinkTargetConfiguration Cfg_Executable = new LinkTargetConfiguration();
+		[ItemProperty]
+		LinkTargetConfiguration Cfg_ConsolelessExecutable = new LinkTargetConfiguration();
+		[ItemProperty]
+		LinkTargetConfiguration Cfg_SharedLib = new LinkTargetConfiguration();
+		[ItemProperty]
+		LinkTargetConfiguration Cfg_StaticLib = new LinkTargetConfiguration();
+
+		public IEnumerable<LinkTargetConfiguration> TargetConfigurations
+		{
+			get { return new[] { Cfg_Executable, Cfg_ConsolelessExecutable, Cfg_SharedLib, Cfg_StaticLib }; }
+		}
+
+		public LinkTargetConfiguration GetTargetConfiguration(DCompileTarget Target)
 		{
 			switch (Target)
 			{
-				case DCompileTarget.SharedLibrary:
-					return Linker_SharedLib;
-				case DCompileTarget.StaticLibrary:
-					return Linker_StaticLib;
 				case DCompileTarget.ConsolelessExecutable:
-					return Linker_Consoleless;
-				default:
-					return Linker_Executable;
+					return Cfg_ConsolelessExecutable;
+				case DCompileTarget.SharedLibrary:
+					return Cfg_SharedLib;
+				case DCompileTarget.StaticLibrary:
+					return Cfg_StaticLib;
 			}
+
+			return Cfg_Executable;
 		}
-		
+
+		public void SetAllCompilerBuildArgs(string NewCompilerArguments, bool AffectDebugArguments)
+		{
+			foreach (var t in TargetConfigurations)
+				t.GetArguments(AffectDebugArguments).CompilerArguments=NewCompilerArguments;
+		}
+
 		/// <summary>
-		/// Sets the linker executable path for a specific link target type
+		/// Overrides all compiler command strings of all LinkTargetConfigurations
 		/// </summary>
-		public void LinkerFor(DCompileTarget Target, string NewLinkerPath)
+		public void SetAllCompilerCommands(string NewCompilerPath)
 		{
-			switch (Target)
-			{
-				case DCompileTarget.SharedLibrary:
-					Linker_SharedLib=NewLinkerPath;break;
-				case DCompileTarget.StaticLibrary:
-					Linker_StaticLib=NewLinkerPath;break;
-				case DCompileTarget.ConsolelessExecutable:
-					Linker_Consoleless=NewLinkerPath;break;
-				default:
-					Linker_Executable=NewLinkerPath;break;
-			}
+			foreach (var t in TargetConfigurations)
+				t.Compiler = NewCompilerPath;
+		}
+
+		public void SetAllLinkerCommands(string NewLinkerPath)
+		{
+			foreach (var t in TargetConfigurations)
+				t.Linker= NewLinkerPath;
 		}
 		
-		public void SetAllLinkerPathsTo(string NewLinkerPath)
-		{
-			Linker_Executable=
-				Linker_Consoleless=
-				Linker_SharedLib=
-				Linker_StaticLib=NewLinkerPath;
-		}
+		/*
+		 * Do not add default library paths, 
+		 * because it would make building the argument strings more complicated 
+		 * - there had to be compiler-specific composers 
+		 * which created the lib path chain then 
+		 * - for each single compiler/linker!
+		 */
 		/*
 		[ItemProperty("DefaultLibraryPaths")]
 		public List<string> DefaultLibPaths=new List<string>();
 		*/
 		[ItemProperty("DefaultLibs")]
-		public List<string> DefaultLibraries=new List<string>();
+		public List<string> DefaultLibraries = new List<string>();
+	}
 
-		[ItemProperty("DebugArguments")]
-		public DArgumentConfiguration DebugBuildArguments = new DArgumentConfiguration { IsDebug=true};
-		[ItemProperty("ReleaseArguments")]
-		public DArgumentConfiguration ReleaseBuildArguments=new DArgumentConfiguration();
+	[DataItem]
+	public class LinkTargetConfiguration
+	{
+		[ItemProperty]
+		public string Compiler;
+		[ItemProperty]
+		public string Linker;
 
-		public DArgumentConfiguration GetArgumentCollection(bool DebugArguments = false)
+		#region Patterns
+		/// <summary>
+		/// Describes how each .obj/.o file shall be enumerated in the $objs linking macro
+		/// </summary>
+		[ItemProperty]
+		public string ObjectFileLinkPattern = "\"{0}\"";
+		/// <summary>
+		/// Describes how each include path shall be enumerated in the $includes compiling macro
+		/// </summary>
+		[ItemProperty]
+		public string IncludePathPattern = "-I\"{0}\"";
+		#endregion
+
+		[ItemProperty]
+		public BuildConfiguration DebugArguments = new BuildConfiguration();
+		[ItemProperty]
+		public BuildConfiguration ReleaseArguments = new BuildConfiguration();
+
+		public BuildConfiguration GetArguments(bool IsDebug)
 		{
-			return DebugArguments ? DebugBuildArguments : ReleaseBuildArguments;
+			return IsDebug ? DebugArguments : ReleaseArguments;
 		}
 	}
 
-	/// <summary>
-	/// Provides raw argument strings that will be used when building projects.
-	/// Each DCompilerConfiguration holds both Debug and Release argument sub-configurations.
-	/// </summary>
-	[DataItem("ArgumentConfiguration")]
-	public class DArgumentConfiguration
+	[DataItem]
+	public class BuildConfiguration
 	{
 		[ItemProperty]
-		public bool IsDebug;
-
+		public string CompilerArguments;
 		[ItemProperty]
-		public string SourceCompilerArguments;
-
-		[ItemProperty]
-		public string ExecutableLinkerArguments;
-		[ItemProperty]
-		public string ConsolelessLinkerArguments;
-
-		[ItemProperty]
-		public string SharedLibraryLinkerArguments;
-		[ItemProperty]
-		public string StaticLibraryLinkerArguments;
-		
-		/// <summary>
-		/// Gets/Sets the argument string for a specific link target type
-		/// </summary>
-		public string this[DCompileTarget target]
-		{
-			get{
-				switch (target)
-				{
-					case DCompileTarget.SharedLibrary:
-						return SharedLibraryLinkerArguments;
-					case DCompileTarget.StaticLibrary:
-						return StaticLibraryLinkerArguments;
-					case DCompileTarget.ConsolelessExecutable:
-						return ConsolelessLinkerArguments;
-					default:
-						return ExecutableLinkerArguments;
-				}
-			}
-			set{
-				switch (target)
-				{
-					case DCompileTarget.SharedLibrary:
-						SharedLibraryLinkerArguments=value;break;
-					case DCompileTarget.StaticLibrary:
-						StaticLibraryLinkerArguments=value;break;
-					case DCompileTarget.ConsolelessExecutable:
-						ConsolelessLinkerArguments=value;break;
-					default:
-						ExecutableLinkerArguments=value;break;
-				}
-			}
-		}
+		public string LinkerArguments;
 	}
 }
 

@@ -13,15 +13,18 @@ namespace MonoDevelop.D.Building
 	/// </summary>
 	public class DCompilerMacroProvider : IArgumentMacroProvider
 	{
+		public string IncludePathConcatPattern = "-I\"{0}\"";
+
 		public string SourceFile;
 		public string ObjectFile;
-		public IEnumerable<string> ImportPaths
+
+		public IEnumerable<string> Includes
 		{
 			set{
 				importPaths="";
 				if(value!=null)
 					foreach(var p in value)
-						importPaths+='"'+p+'"'+' ';
+						importPaths+=string.Format(IncludePathConcatPattern,p)+' ';
 			}
 		}
 		
@@ -33,7 +36,7 @@ namespace MonoDevelop.D.Building
 				return SourceFile;
 			if (Input == "obj")
 				return ObjectFile;
-			if(Input=="importPaths")
+			if(Input=="includes")
 				return importPaths;
 			return Input;
 		}
@@ -44,13 +47,15 @@ namespace MonoDevelop.D.Building
 	/// </summary>
 	public class DLinkerMacroProvider : IArgumentMacroProvider
 	{
+		public string ObjectsStringPattern = "\"{0}\"";
+
 		public IEnumerable<string> Objects
 		{
 			set {
 				objects = "";
 				if(value!=null)
 					foreach (var o in value)
-						objects += '"'+o+"\" ";
+						objects += string.Format(ObjectsStringPattern,o)+ ' ';
 			}
 		}
 		public string TargetFile;

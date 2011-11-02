@@ -51,9 +51,9 @@ namespace MonoDevelop.D.Building
 			{
 				Instance = new DCompiler
 				{
-					Dmd = new DCompilerConfiguration(DCompilerVendor.DMD),
-					Gdc = new DCompilerConfiguration(DCompilerVendor.GDC),
-					Ldc = new DCompilerConfiguration(DCompilerVendor.LDC)
+					Dmd = DCompilerConfiguration.CreateWithDefaults(DCompilerVendor.DMD),
+					Gdc = DCompilerConfiguration.CreateWithDefaults(DCompilerVendor.GDC),
+					Ldc = DCompilerConfiguration.CreateWithDefaults(DCompilerVendor.LDC)
 				};
 
 				Instance.Save();
@@ -134,7 +134,8 @@ namespace MonoDevelop.D.Building
 			bool modificationsDone = false;
 
 			var Compiler = Project.Compiler;
-			var Arguments=Compiler.GetArgumentCollection(BuildConfig.DebugMode);
+			var Commands = Compiler.GetTargetConfiguration(Project.CompileTarget);
+			var Arguments= Commands.GetArguments(BuildConfig.DebugMode);
 			
 			/// The target file to which all objects will be linked to
 			var LinkTarget = BuildConfig.OutputDirectory.Combine(BuildConfig.CompiledOutputName);
@@ -186,16 +187,17 @@ namespace MonoDevelop.D.Building
 				}
 				
 				// Create argument string for source file compilation.
-				var dmdArgs = FillInMacros(Arguments.SourceCompilerArguments + " " + BuildConfig.ExtraCompilerArguments,  new DCompilerMacroProvider 
+				var dmdArgs = FillInMacros(Arguments.CompilerArguments + " " + BuildConfig.ExtraCompilerArguments,  new DCompilerMacroProvider 
 				{ 
+					IncludePathConcatPattern=Commands.IncludePathPattern,
 					SourceFile = f.FilePath, 
 					ObjectFile = obj,
-					ImportPaths=SourceIncludePaths,
+					Includes=SourceIncludePaths,
 				});			
 				
 				// b.Execute compiler
 				string dmdOutput;
-				int exitCode = ExecuteCommand(Compiler.CompilerExecutable, dmdArgs, Project.BaseDirectory, monitor, out dmdOutput);
+				int exitCode = ExecuteCommand(Commands.Compiler, dmdArgs, Project.BaseDirectory, monitor, out dmdOutput);
 
 				ParseCompilerOutput(dmdOutput, compilerResults);
 				CheckReturnCode(exitCode, compilerResults);
@@ -247,8 +249,9 @@ namespace MonoDevelop.D.Building
 				var libs=new List<string>(Compiler.DefaultLibraries);
 				libs.AddRange(Project.ExtraLibraries);
 				
-				var linkArgs = FillInMacros(Arguments[Project.CompileTarget] + " "+BuildConfig.ExtraLinkerArguments,
+				var linkArgs = FillInMacros(Arguments.LinkerArguments + " "+BuildConfig.ExtraLinkerArguments,
 				    new DLinkerMacroProvider {
+						ObjectsStringPattern=Commands.ObjectFileLinkPattern,
 						Objects=BuiltObjects.ToArray(),
 						TargetFile=LinkTarget,
 						RelativeTargetDirectory=BuildConfig.OutputDirectory.ToRelative(Project.BaseDirectory),
@@ -257,7 +260,7 @@ namespace MonoDevelop.D.Building
 						Libraries=libs
 				});
 				var linkerOutput = "";
-				int exitCode = ExecuteCommand(Compiler.LinkerFor(Project.CompileTarget),linkArgs,Project.BaseDirectory,monitor,out linkerOutput);
+				int exitCode = ExecuteCommand(Commands.Linker,linkArgs,Project.BaseDirectory,monitor,out linkerOutput);
 
 				compilerResults.NativeCompilerReturnValue = exitCode;
 
