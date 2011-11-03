@@ -44,7 +44,7 @@ namespace MonoDevelop.D.Building
 
 		public override void ResetCompilerConfiguration()
 		{
-			Configuration.CompilerType = DCompilerVendor.DMD;
+			Configuration.Vendor = DCompilerVendor.DMD;
 			Configuration.DefaultLibraries.Clear();
 
 			Configuration.SetAllCompilerCommands("dmd");
@@ -92,7 +92,7 @@ namespace MonoDevelop.D.Building
 
 		public override void ResetCompilerConfiguration()
 		{
-			Configuration.CompilerType = DCompilerVendor.GDC;
+			Configuration.Vendor = DCompilerVendor.GDC;
 			Configuration.DefaultLibraries.Clear();
 
 			Configuration.SetAllCompilerCommands("gdc");
@@ -141,7 +141,7 @@ namespace MonoDevelop.D.Building
 
 		public override void ResetCompilerConfiguration()
 		{
-			Configuration.CompilerType = DCompilerVendor.LDC;
+			Configuration.Vendor = DCompilerVendor.LDC;
 			Configuration.DefaultLibraries.Clear();
 
 			Configuration.SetAllCompilerCommands("ldc");

@@ -2,13 +2,13 @@ using MonoDevelop.Core.Serialization;
 using System.Collections.Generic;
 using D_Parser.Completion;
 using System.Collections.ObjectModel;
+using System;
 
 namespace MonoDevelop.D.Building
 {
 	/// <summary>
 	/// Stores compiler commands and arguments for compiling and linking D source files.
 	/// </summary>
-	[DataItem("CompilerConfiguration")]
 	public class DCompilerConfiguration
 	{
 		/// <summary>
@@ -16,7 +16,7 @@ namespace MonoDevelop.D.Building
 		/// </summary>
 		public static DCompilerConfiguration CreateWithDefaults(DCompilerVendor Compiler)
 		{
-			var cfg = new DCompilerConfiguration {  CompilerType=Compiler };
+			var cfg = new DCompilerConfiguration {  Vendor=Compiler };
 
 			CompilerDefaultArgumentProvider cmp = null;
 			switch (Compiler)
@@ -32,77 +32,33 @@ namespace MonoDevelop.D.Building
 					break;
 			}
 
-			cmp.ResetCompilerConfiguration();
+			// Reset arguments BEFORE reset compiler commands - only then, the 4 link target config objects will be created.
 			cmp.ResetBuildArguments();
+			cmp.ResetCompilerConfiguration();
 
 			return cfg;
 		}
 
-		#region Parse Cache
-		/// <summary>
-		/// See DProject.includePaths for details!
-		/// </summary>
-		[ItemProperty("IncludePaths")]
-		[ItemProperty("Path", Scope = "*")]
-		string[] includePaths;
+		public readonly ASTStorage GlobalParseCache = new ASTStorage();
 
-		public ParsePerformanceData[] SetupGlobalParseCache(bool ParseFunctionBodies=true)
-		{
-			var gc = GetGlobalParseCache();
+		public DCompilerVendor Vendor;
 
-			if(includePaths!=null)
-				foreach (var inc in includePaths)
-					gc.Add(inc,ParseFunctionBodies);
-
-			return gc.UpdateCache();
-		}
-
-		public void SaveGlobalParseCacheInformation()
-		{
-			includePaths = GetGlobalParseCache().DirectoryPaths;
-		}
-		
-		public ASTStorage GetGlobalParseCache()
-		{
-			return DLanguageBinding.GetGlobalParseCache(CompilerType);
-		}
-		#endregion
-
-		[ItemProperty("Name")]
-		public DCompilerVendor CompilerType;
-
-		[ItemProperty]
-		LinkTargetConfiguration Cfg_Executable = new LinkTargetConfiguration();
-		[ItemProperty]
-		LinkTargetConfiguration Cfg_ConsolelessExecutable = new LinkTargetConfiguration();
-		[ItemProperty]
-		LinkTargetConfiguration Cfg_SharedLib = new LinkTargetConfiguration();
-		[ItemProperty]
-		LinkTargetConfiguration Cfg_StaticLib = new LinkTargetConfiguration();
-
-		public IEnumerable<LinkTargetConfiguration> TargetConfigurations
-		{
-			get { return new[] { Cfg_Executable, Cfg_ConsolelessExecutable, Cfg_SharedLib, Cfg_StaticLib }; }
-		}
+		protected List<LinkTargetConfiguration> LinkTargetConfigurations = new List<LinkTargetConfiguration>();
 
 		public LinkTargetConfiguration GetTargetConfiguration(DCompileTarget Target)
 		{
-			switch (Target)
-			{
-				case DCompileTarget.ConsolelessExecutable:
-					return Cfg_ConsolelessExecutable;
-				case DCompileTarget.SharedLibrary:
-					return Cfg_SharedLib;
-				case DCompileTarget.StaticLibrary:
-					return Cfg_StaticLib;
-			}
+			foreach (var t in LinkTargetConfigurations)
+				if (t.TargetType == Target)
+					return t;
 
-			return Cfg_Executable;
+			var newTarget = new LinkTargetConfiguration { TargetType=Target };
+			LinkTargetConfigurations.Add(newTarget);
+			return newTarget;
 		}
 
 		public void SetAllCompilerBuildArgs(string NewCompilerArguments, bool AffectDebugArguments)
 		{
-			foreach (var t in TargetConfigurations)
+			foreach (var t in LinkTargetConfigurations)
 				t.GetArguments(AffectDebugArguments).CompilerArguments=NewCompilerArguments;
 		}
 
@@ -111,13 +67,13 @@ namespace MonoDevelop.D.Building
 		/// </summary>
 		public void SetAllCompilerCommands(string NewCompilerPath)
 		{
-			foreach (var t in TargetConfigurations)
+			foreach (var t in LinkTargetConfigurations)
 				t.Compiler = NewCompilerPath;
 		}
 
 		public void SetAllLinkerCommands(string NewLinkerPath)
 		{
-			foreach (var t in TargetConfigurations)
+			foreach (var t in LinkTargetConfigurations)
 				t.Linker= NewLinkerPath;
 		}
 		
@@ -129,52 +85,170 @@ namespace MonoDevelop.D.Building
 		 * - for each single compiler/linker!
 		 */
 		/*
-		[ItemProperty("DefaultLibraryPaths")]
 		public List<string> DefaultLibPaths=new List<string>();
 		*/
-		[ItemProperty("DefaultLibs")]
 		public List<string> DefaultLibraries = new List<string>();
+
+		public void ReadFrom(System.Xml.XmlReader x)
+		{
+			while(x.Read())
+				switch (x.LocalName)
+				{
+					case "TargetConfiguration":
+						var t = new LinkTargetConfiguration();
+						t.LoadFrom(x);
+						LinkTargetConfigurations.Add(t);
+						break;
+
+					case "DefaultLibs":
+						var s = x.ReadSubtree();
+						while (s.Read())
+							if (s.LocalName == "lib")
+								DefaultLibraries.Add(s.ReadContentAsString());
+						break;
+				}
+		}
+
+		public void SaveTo(System.Xml.XmlWriter x)
+		{
+			foreach (var t in LinkTargetConfigurations)
+			{
+				x.WriteStartElement("TargetConfiguration");
+
+				t.SaveTo(x);
+
+				x.WriteEndElement();
+			}
+
+			x.WriteStartElement("DefaultLibs");
+			foreach (var lib in DefaultLibraries)
+			{
+				x.WriteStartElement("lib");
+				x.WriteCData(lib);
+				x.WriteEndElement();
+			}
+			x.WriteEndElement();
+		}
 	}
 
-	[DataItem]
 	public class LinkTargetConfiguration
 	{
-		[ItemProperty]
+		public DCompileTarget TargetType;
+
 		public string Compiler;
-		[ItemProperty]
 		public string Linker;
 
 		#region Patterns
 		/// <summary>
 		/// Describes how each .obj/.o file shall be enumerated in the $objs linking macro
 		/// </summary>
-		[ItemProperty]
 		public string ObjectFileLinkPattern = "\"{0}\"";
 		/// <summary>
 		/// Describes how each include path shall be enumerated in the $includes compiling macro
 		/// </summary>
-		[ItemProperty]
 		public string IncludePathPattern = "-I\"{0}\"";
 		#endregion
 
-		[ItemProperty]
 		public BuildConfiguration DebugArguments = new BuildConfiguration();
-		[ItemProperty]
 		public BuildConfiguration ReleaseArguments = new BuildConfiguration();
 
 		public BuildConfiguration GetArguments(bool IsDebug)
 		{
 			return IsDebug ? DebugArguments : ReleaseArguments;
 		}
+
+		public void SaveTo(System.Xml.XmlWriter x)
+		{
+			x.WriteAttributeString("Target",TargetType.ToString());
+
+			x.WriteStartElement("Compiler");
+			x.WriteCData(Compiler);
+			x.WriteEndElement();
+
+			x.WriteStartElement("Linker");
+			x.WriteCData(Linker);
+			x.WriteEndElement();
+
+			x.WriteStartElement("ObjectLinkPattern");
+			x.WriteCData(ObjectFileLinkPattern);
+			x.WriteEndElement();
+
+			x.WriteStartElement("IncludePathPattern");
+			x.WriteCData(IncludePathPattern);
+			x.WriteEndElement();
+
+			x.WriteStartElement("DebugArgs");
+			DebugArguments.SaveTo(x);
+			x.WriteEndElement();
+
+			x.WriteStartElement("ReleaseArgs");
+			ReleaseArguments.SaveTo(x);
+			x.WriteEndElement();
+		}
+
+		public void LoadFrom(System.Xml.XmlReader x)
+		{
+			if (x.MoveToAttribute("Target"))
+				TargetType = (DCompileTarget)Enum.Parse(typeof(DCompileTarget), x.ReadContentAsString());
+
+			while(x.Read())
+				switch (x.LocalName)
+				{
+					case "Compiler":
+						Compiler = x.ReadContentAsString();
+						break;
+					case "Linker":
+						Linker = x.ReadContentAsString();
+						break;
+					case "ObjectLinkPattern":
+						ObjectFileLinkPattern = x.ReadContentAsString();
+						break;
+					case "IncludePathPattern":
+						IncludePathPattern = x.ReadContentAsString();
+						break;
+
+					case "DebugArgs":
+						var s = x.ReadSubtree();
+						DebugArguments.ReadFrom(s);
+						break;
+
+					case "ReleaseArgs":
+						var s2 = x.ReadSubtree();
+						ReleaseArguments.ReadFrom(s2);
+						break;
+				}
+		}
 	}
 
-	[DataItem]
 	public class BuildConfiguration
 	{
-		[ItemProperty]
 		public string CompilerArguments;
-		[ItemProperty]
 		public string LinkerArguments;
+
+		public void SaveTo(System.Xml.XmlWriter x)
+		{
+			x.WriteStartElement("CompilerArg");
+			x.WriteCData(CompilerArguments);
+			x.WriteEndElement();
+
+			x.WriteStartElement("LinkerArgs");
+			x.WriteCData(LinkerArguments);
+			x.WriteEndElement();
+		}
+
+		public void ReadFrom(System.Xml.XmlReader x)
+		{
+			while(x.Read())
+				switch (x.LocalName)
+				{
+					case "CompilerArg":
+						CompilerArguments = x.ReadContentAsString();
+						break;
+					case "LinkerArg":
+						LinkerArguments = x.ReadContentAsString();
+						break;
+				}
+		}
 	}
 }
 

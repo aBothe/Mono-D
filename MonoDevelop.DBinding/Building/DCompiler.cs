@@ -7,6 +7,7 @@ using MonoDevelop.Core;
 using MonoDevelop.Core.ProgressMonitoring;
 using MonoDevelop.Projects;
 using MonoDevelop.Core.Serialization;
+using System.Xml;
 
 namespace MonoDevelop.D.Building
 {
@@ -37,8 +38,7 @@ namespace MonoDevelop.D.Building
 	/// <summary>
 	/// Central class which enables build support for D projects in MonoDevelop.
 	/// </summary>
-	[DataItem("DCompiler")]
-	public class DCompiler
+	public class DCompiler : ICustomXmlSerializer
 	{
 		#region Init/Loading & Saving
 		public static void Init()
@@ -69,7 +69,6 @@ namespace MonoDevelop.D.Building
 		const string GlobalPropertyName = "DBinding.DCompiler";
 		#endregion
 
-		[ItemProperty]
 		public DCompilerVendor DefaultCompiler = DCompilerVendor.DMD;
 
 		public static DCompiler Instance;
@@ -83,6 +82,11 @@ namespace MonoDevelop.D.Building
 		public DCompilerConfiguration Gdc;
 		[ItemProperty]
 		public DCompilerConfiguration Ldc;
+
+		public IEnumerable<DCompilerConfiguration> Compilers
+		{
+			get { return new[] { Dmd,Gdc,Ldc }; }
+		}
 
 		/// <summary>
 		/// Returns the default compiler configuration
@@ -142,7 +146,7 @@ namespace MonoDevelop.D.Building
 			
 			monitor.BeginTask("Build Project", FilesToCompile.Count + 1);
 
-			var SourceIncludePaths=new List<string>(Compiler.GetGlobalParseCache().DirectoryPaths);
+			var SourceIncludePaths=new List<string>(Compiler.GlobalParseCache.DirectoryPaths);
 				SourceIncludePaths.AddRange(Project.LocalIncludeCache.DirectoryPaths);
 			
 			#region Compile sources to objects
@@ -495,5 +499,56 @@ namespace MonoDevelop.D.Building
 
 			return exitCode;
 		}
+
+		#region Loading & Saving
+		public ICustomXmlSerializer ReadFrom(XmlReader top_x)
+		{
+			if (!top_x.Read())
+				return this;
+
+			var x=top_x.ReadSubtree();
+
+			while (x.Read())
+			{
+				switch (x.LocalName)
+				{
+					case "DefaultCompiler":
+						if (x.MoveToAttribute("Name"))
+							DefaultCompiler = (DCompilerVendor)Enum.Parse(typeof(DCompilerVendor), x.ReadContentAsString());
+						break;
+
+					case "Compiler":
+						var vendor = DCompilerVendor.DMD;
+
+						if (x.MoveToAttribute("Name")) 
+							vendor=(DCompilerVendor)Enum.Parse(typeof(DCompilerVendor), x.ReadContentAsString());
+
+						var cmp=GetCompiler(vendor);
+						cmp.Vendor = vendor;
+						cmp.ReadFrom(x.ReadSubtree());
+						break;
+				}
+			}
+
+			return this;
+		}
+
+		public void WriteTo(XmlWriter x)
+		{
+			x.WriteStartElement("DefaultCompiler");
+			x.WriteAttributeString("Name", DefaultCompiler.ToString());
+			x.WriteEndElement();
+
+			foreach (var cmp in Compilers)
+			{
+				x.WriteStartElement("Compiler");
+				x.WriteAttributeString("Name", cmp.Vendor.ToString());
+
+				cmp.SaveTo(x);
+
+				x.WriteEndElement();
+			}
+		}
+		#endregion
 	}
 }

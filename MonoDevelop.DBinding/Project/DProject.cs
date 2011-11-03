@@ -88,7 +88,7 @@ namespace MonoDevelop.D
 		public DCompilerConfiguration Compiler
 		{
 			get { return DCompiler.GetCompiler(UsedCompilerVendor); }
-			set { UsedCompilerVendor = value.CompilerType; }
+			set { UsedCompilerVendor = value.Vendor; }
 		}
 		#endregion
 

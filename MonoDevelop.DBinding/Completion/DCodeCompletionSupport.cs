@@ -70,11 +70,11 @@ namespace MonoDevelop.D.Completion
 					ret.AddRange(astColl);
 
 				// Add all parsed global modules that belong to the project's compiler configuration
-				foreach (var astColl in Project.Compiler.GetGlobalParseCache())
+				foreach (var astColl in Project.Compiler.GlobalParseCache)
 					ret.AddRange(astColl);
 			}
 			else
-				foreach (var astColl in DCompiler.GetDefaultCompiler().GetGlobalParseCache())
+				foreach (var astColl in DCompiler.GetDefaultCompiler().GlobalParseCache)
 					ret.AddRange(astColl);
 
 			return ret;
