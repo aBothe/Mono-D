@@ -96,8 +96,9 @@ namespace MonoDevelop.D.Building
 				switch (x.LocalName)
 				{
 					case "TargetConfiguration":
+						var s2 = x.ReadSubtree();
 						var t = new LinkTargetConfiguration();
-						t.LoadFrom(x);
+						t.LoadFrom(s2);
 						LinkTargetConfigurations.Add(t);
 						break;
 
@@ -105,7 +106,7 @@ namespace MonoDevelop.D.Building
 						var s = x.ReadSubtree();
 						while (s.Read())
 							if (s.LocalName == "lib")
-								DefaultLibraries.Add(s.ReadContentAsString());
+								DefaultLibraries.Add(s.ReadString());
 						break;
 				}
 		}
@@ -197,16 +198,16 @@ namespace MonoDevelop.D.Building
 				switch (x.LocalName)
 				{
 					case "Compiler":
-						Compiler = x.ReadContentAsString();
+						Compiler = x.ReadString();
 						break;
 					case "Linker":
-						Linker = x.ReadContentAsString();
+						Linker = x.ReadString();
 						break;
 					case "ObjectLinkPattern":
-						ObjectFileLinkPattern = x.ReadContentAsString();
+						ObjectFileLinkPattern = x.ReadString();
 						break;
 					case "IncludePathPattern":
-						IncludePathPattern = x.ReadContentAsString();
+						IncludePathPattern = x.ReadString();
 						break;
 
 					case "DebugArgs":
@@ -244,10 +245,10 @@ namespace MonoDevelop.D.Building
 				switch (x.LocalName)
 				{
 					case "CompilerArg":
-						CompilerArguments = x.ReadContentAsString();
+						CompilerArguments = x.ReadString();
 						break;
 					case "LinkerArg":
-						LinkerArguments = x.ReadContentAsString();
+						LinkerArguments = x.ReadString();
 						break;
 				}
 		}

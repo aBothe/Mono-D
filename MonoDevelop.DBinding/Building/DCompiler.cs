@@ -67,14 +67,14 @@ namespace MonoDevelop.D.Building
 
 		public DCompilerVendor DefaultCompiler = DCompilerVendor.DMD;
 
-		public static DCompiler Instance;
+		public static DCompiler Instance=new DCompiler();
 
 		/// <summary>
 		/// Static object which stores all global information about the dmd installation which probably exists on the programmer's machine.
 		/// </summary>
-		public DCompilerConfiguration Dmd;
-		public DCompilerConfiguration Gdc;
-		public DCompilerConfiguration Ldc;
+		public DCompilerConfiguration Dmd = new DCompilerConfiguration { Vendor = DCompilerVendor.DMD };
+		public DCompilerConfiguration Gdc = new DCompilerConfiguration { Vendor = DCompilerVendor.GDC };
+		public DCompilerConfiguration Ldc = new DCompilerConfiguration { Vendor = DCompilerVendor.LDC };
 
 		public IEnumerable<DCompilerConfiguration> Compilers
 		{
@@ -518,7 +518,8 @@ namespace MonoDevelop.D.Building
 
 						var cmp=GetCompiler(vendor);
 						cmp.Vendor = vendor;
-						cmp.ReadFrom(x.ReadSubtree());
+						if(x.MoveToElement())
+							cmp.ReadFrom(x.ReadSubtree());
 						break;
 				}
 			}
