@@ -135,6 +135,14 @@
     <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.DGlobalOptions.cs" />
     <Compile Include="Completion\DParameterDataProvider.cs" />
     <Compile Include="Parser\DIncludesParser.cs" />
+    <Compile Include="OptionPanels\DGlobalCompilerOptions.cs" />
+    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.DGlobalCompilerOptions.cs" />
+    <Compile Include="OptionPanels\DGlobalDMDCompilerOptions.cs" />
+    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.DGlobalDMDCompilerOptions.cs" />
+    <Compile Include="OptionPanels\DGlobalGDCCompilerOptions.cs" />
+    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.DGlobalGDCCompilerOptions.cs" />
+    <Compile Include="OptionPanels\DGlobalLDCCompilerOptions.cs" />
+    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.DGlobalLDCCompilerOptions.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

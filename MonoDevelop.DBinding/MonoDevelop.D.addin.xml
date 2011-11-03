@@ -97,6 +97,34 @@
 			_label = "D"
 			class = "MonoDevelop.D.OptionPanels.DGlobalOptionsBinding"/>
 	</Extension>	
+
+	<Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Other/DGlobalOptions">
+		<Section
+			id = "DGlobalCompilerOptions"
+			_label = "Compilers"
+			class = "MonoDevelop.D.OptionPanels.DGlobalCompilerOptionsBinding"/>
+	</Extension>	
+
+	<Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Other/DGlobalOptions/DGlobalCompilerOptions">
+		<Section
+			id = "DGlobalDMDCompilerOptions"
+			_label = "DMD"
+			class = "MonoDevelop.D.OptionPanels.DGlobalDMDCompilerOptionsBinding"/>
+	</Extension>		
+	
+	<Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Other/DGlobalOptions/DGlobalCompilerOptions">
+		<Section
+			id = "DGlobalGDCCompilerOptions"
+			_label = "GDC"
+			class = "MonoDevelop.D.OptionPanels.DGlobalGDCCompilerOptionsBinding"/>
+	</Extension>		
+	
+	<Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Other/DGlobalOptions/DGlobalCompilerOptions">
+		<Section
+			id = "DGlobalLDCCompilerOptions"
+			_label = "LDC"
+			class = "MonoDevelop.D.OptionPanels.DGlobalLDCCompilerOptionsBinding"/>
+	</Extension>		
 	
 	<Extension path = "/MonoDevelop/ProjectModel/Gui/ItemOptionPanels/Build">
 		<Condition id = "ItemType" value = "MonoDevelop.D.DProject">

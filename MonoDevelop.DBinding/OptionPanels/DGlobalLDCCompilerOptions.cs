@@ -14,14 +14,14 @@ namespace MonoDevelop.D.OptionPanels
 	/// <summary>
 	/// This panel provides UI access to project independent D settings such as generic compiler configurations, library and import paths etc.
 	/// </summary>
-	public partial class DGlobalOptions : Gtk.Bin
+	public partial class DGlobalLDCCompilerOptions : Gtk.Bin
 	{
 		private DProjectConfiguration configuration;
 		
-		public DGlobalOptions () 
+		public DGlobalLDCCompilerOptions () 
 		{
 			this.Build ();	
-		
+	
 		}
 	
 		public void Load (DProjectConfiguration config)
@@ -49,13 +49,13 @@ namespace MonoDevelop.D.OptionPanels
 
 	}
 	
-	public class DGlobalOptionsBinding : OptionsPanel
+	public class DGlobalLDCCompilerOptionsBinding : OptionsPanel
 	{
-		private DGlobalOptions panel;
-		
+		private DGlobalLDCCompilerOptions panel;
+				
 		public override Gtk.Widget CreatePanelWidget ()
 		{
-			return panel = new DGlobalOptions ();
+			return panel = new DGlobalLDCCompilerOptions ();
 		}
 
 		public override bool ValidateChanges()
