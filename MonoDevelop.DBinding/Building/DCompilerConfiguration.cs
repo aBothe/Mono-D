@@ -89,6 +89,7 @@ namespace MonoDevelop.D.Building
 		*/
 		public List<string> DefaultLibraries = new List<string>();
 
+		#region Loading & Saving
 		public void ReadFrom(System.Xml.XmlReader x)
 		{
 			while(x.Read())
@@ -129,6 +130,7 @@ namespace MonoDevelop.D.Building
 			}
 			x.WriteEndElement();
 		}
+		#endregion
 	}
 
 	public class LinkTargetConfiguration

@@ -48,16 +48,12 @@ namespace MonoDevelop.D.Building
 			//LoggingService.AddLogger(new MonoDevelop.Core.Logging.FileLogger("A:\\monoDev.log", true));
 
 			if (Instance == null)
-			{
 				Instance = new DCompiler
 				{
 					Dmd = DCompilerConfiguration.CreateWithDefaults(DCompilerVendor.DMD),
 					Gdc = DCompilerConfiguration.CreateWithDefaults(DCompilerVendor.GDC),
 					Ldc = DCompilerConfiguration.CreateWithDefaults(DCompilerVendor.LDC)
 				};
-
-				Instance.Save();
-			}
 		}
 
 		public void Save()
@@ -76,11 +72,8 @@ namespace MonoDevelop.D.Building
 		/// <summary>
 		/// Static object which stores all global information about the dmd installation which probably exists on the programmer's machine.
 		/// </summary>
-		[ItemProperty]
 		public DCompilerConfiguration Dmd;
-		[ItemProperty]
 		public DCompilerConfiguration Gdc;
-		[ItemProperty]
 		public DCompilerConfiguration Ldc;
 
 		public IEnumerable<DCompilerConfiguration> Compilers
