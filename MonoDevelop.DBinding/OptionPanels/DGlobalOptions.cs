@@ -20,19 +20,13 @@ namespace MonoDevelop.D.OptionPanels
 		
 		public DGlobalOptions () 
 		{
-			this.Build ();	
-		
+			this.Build ();			
 		}
 	
 		public void Load (DProjectConfiguration config)
 		{
-			configuration = config;
-			
-			
-			//DCompiler.Init();
-			//DCompiler.Instance
+			configuration = config;			
 		}
-
 
 		public bool Validate()
 		{

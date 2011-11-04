@@ -26,7 +26,6 @@ namespace MonoDevelop.D.OptionPanels
 			this.Title = global::Mono.Unix.Catalog.GetString ("Release build arguments");
 			this.WindowPosition = ((global::Gtk.WindowPosition)(4));
 			this.Modal = true;
-			this.Resizable = false;
 			// Internal child MonoDevelop.D.OptionPanels.DGlobalBuildArgumentOptions.VBox
 			global::Gtk.VBox w1 = this.VBox;
 			w1.Name = "dialog1_VBox";

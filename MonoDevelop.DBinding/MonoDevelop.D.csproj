@@ -137,14 +137,10 @@
     <Compile Include="Parser\DIncludesParser.cs" />
     <Compile Include="OptionPanels\DGlobalCompilerOptions.cs" />
     <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.DGlobalCompilerOptions.cs" />
-    <Compile Include="OptionPanels\DGlobalDMDCompilerOptions.cs" />
-    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.DGlobalDMDCompilerOptions.cs" />
-    <Compile Include="OptionPanels\DGlobalGDCCompilerOptions.cs" />
-    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.DGlobalGDCCompilerOptions.cs" />
-    <Compile Include="OptionPanels\DGlobalLDCCompilerOptions.cs" />
-    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.DGlobalLDCCompilerOptions.cs" />
+    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.DGlobalDCompilerOptions.cs" />
     <Compile Include="OptionPanels\DGlobalBuildArgumentOptions.cs" />
     <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.DGlobalBuildArgumentOptions.cs" />
+    <Compile Include="OptionPanels\DGlobalDCompilerOptions.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -239,4 +235,4 @@
     <StartAction>Program</StartAction>
     <StartProgram>..\..\tutorial%3blib\MonoDevelop\main\build\bin\MonoDevelop.exe</StartProgram>
   </PropertyGroup>
-</Project>
+</Project>
