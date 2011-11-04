@@ -8,6 +8,7 @@ using MonoDevelop.Core.ProgressMonitoring;
 using MonoDevelop.Projects;
 using MonoDevelop.Core.Serialization;
 using System.Xml;
+using System.Threading;
 
 namespace MonoDevelop.D.Building
 {
@@ -41,9 +42,10 @@ namespace MonoDevelop.D.Building
 	public class DCompiler : ICustomXmlSerializer
 	{
 		#region Init/Loading & Saving
-		public static void Init()
+		public static void Load()
 		{
-			Instance = PropertyService.Get<DCompiler>(GlobalPropertyName);
+			// Deserialize config data
+			PropertyService.Get<DCompiler>(GlobalPropertyName);
 
 			//LoggingService.AddLogger(new MonoDevelop.Core.Logging.FileLogger("A:\\monoDev.log", true));
 
@@ -60,6 +62,35 @@ namespace MonoDevelop.D.Building
 		{
 			PropertyService.Set(GlobalPropertyName, this);
 			PropertyService.SaveProperties();
+		}
+
+		public void UpdateParseCachesAsync()
+		{
+			var th = new Thread(() =>
+			{
+				foreach (var cmp in Instance.Compilers)
+					try
+					{
+						var perfResults = cmp.GlobalParseCache.UpdateCache();
+
+						foreach (var perfData in perfResults)
+						{
+							LoggingService.LogInfo(
+								"Parsed {0} files in \"{1}\" in {2}s (~{3}s per file)", 
+								perfData.AmountFiles, 
+								perfData.BaseDirectory, 
+								perfData.TotalDuration, 
+								perfData.FileDuration);
+						}
+					}
+					catch (Exception ex)
+					{
+						LoggingService.LogError("Error while updating parse caches", ex);
+					}
+			});
+
+			th.IsBackground = true;
+			th.Start();
 		}
 
 		const string GlobalPropertyName = "DBinding.DCompiler";
@@ -505,12 +536,10 @@ namespace MonoDevelop.D.Building
 		}
 
 		#region Loading & Saving
-		public ICustomXmlSerializer ReadFrom(XmlReader top_x)
+		public ICustomXmlSerializer ReadFrom(XmlReader x)
 		{
-			if (!top_x.Read())
+			if (!x.Read())
 				return this;
-
-			var x=top_x.ReadSubtree();
 
 			while (x.Read())
 			{
@@ -524,13 +553,17 @@ namespace MonoDevelop.D.Building
 					case "Compiler":
 						var vendor = DCompilerVendor.DMD;
 
-						if (x.MoveToAttribute("Name")) 
-							vendor=(DCompilerVendor)Enum.Parse(typeof(DCompilerVendor), x.ReadContentAsString());
+						if (x.MoveToAttribute("Name"))
+						{
+							vendor = (DCompilerVendor)Enum.Parse(typeof(DCompilerVendor), x.ReadContentAsString());
+
+							x.MoveToElement();
+						}
 
 						var cmp=GetCompiler(vendor);
 						cmp.Vendor = vendor;
-						if(x.MoveToElement())
-							cmp.ReadFrom(x.ReadSubtree());
+
+						cmp.ReadFrom(x.ReadSubtree());
 						break;
 				}
 			}

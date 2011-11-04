@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using D_Parser.Completion;
 using System.Collections.ObjectModel;
 using System;
+using System.Xml;
 
 namespace MonoDevelop.D.Building
 {
@@ -92,21 +93,39 @@ namespace MonoDevelop.D.Building
 		#region Loading & Saving
 		public void ReadFrom(System.Xml.XmlReader x)
 		{
+			XmlReader s = null;
+
 			while(x.Read())
 				switch (x.LocalName)
 				{
 					case "TargetConfiguration":
-						var s2 = x.ReadSubtree();
+						s = x.ReadSubtree();
+
 						var t = new LinkTargetConfiguration();
-						t.LoadFrom(s2);
+						t.LoadFrom(s);
 						LinkTargetConfigurations.Add(t);
+
+						s.Close();
 						break;
 
 					case "DefaultLibs":
-						var s = x.ReadSubtree();
+						s = x.ReadSubtree();
+						
 						while (s.Read())
 							if (s.LocalName == "lib")
 								DefaultLibraries.Add(s.ReadString());
+
+						s.Close();
+						break;
+
+					case "Includes":
+						s = x.ReadSubtree();
+
+						while (s.Read())
+							if (s.LocalName == "Path")
+								GlobalParseCache.Add(s.ReadString());
+
+						s.Close();
 						break;
 				}
 		}
@@ -127,6 +146,15 @@ namespace MonoDevelop.D.Building
 			{
 				x.WriteStartElement("lib");
 				x.WriteCData(lib);
+				x.WriteEndElement();
+			}
+			x.WriteEndElement();
+
+			x.WriteStartElement("Includes");
+			foreach (var inc in GlobalParseCache.DirectoryPaths)
+			{
+				x.WriteStartElement("Path");
+				x.WriteCData(inc);
 				x.WriteEndElement();
 			}
 			x.WriteEndElement();
@@ -164,11 +192,11 @@ namespace MonoDevelop.D.Building
 		{
 			x.WriteAttributeString("Target",TargetType.ToString());
 
-			x.WriteStartElement("Compiler");
+			x.WriteStartElement("CompilerCommand");
 			x.WriteCData(Compiler);
 			x.WriteEndElement();
 
-			x.WriteStartElement("Linker");
+			x.WriteStartElement("LinkerCommand");
 			x.WriteCData(Linker);
 			x.WriteEndElement();
 
@@ -191,16 +219,19 @@ namespace MonoDevelop.D.Building
 
 		public void LoadFrom(System.Xml.XmlReader x)
 		{
+			if (x.ReadState == ReadState.Initial)
+				x.Read();
+
 			if (x.MoveToAttribute("Target"))
 				TargetType = (DCompileTarget)Enum.Parse(typeof(DCompileTarget), x.ReadContentAsString());
 
 			while(x.Read())
 				switch (x.LocalName)
 				{
-					case "Compiler":
+					case "CompilerCommand":
 						Compiler = x.ReadString();
 						break;
-					case "Linker":
+					case "LinkerCommand":
 						Linker = x.ReadString();
 						break;
 					case "ObjectLinkPattern":
@@ -213,11 +244,13 @@ namespace MonoDevelop.D.Building
 					case "DebugArgs":
 						var s = x.ReadSubtree();
 						DebugArguments.ReadFrom(s);
+						s.Close();
 						break;
 
 					case "ReleaseArgs":
 						var s2 = x.ReadSubtree();
 						ReleaseArguments.ReadFrom(s2);
+						s2.Close();
 						break;
 				}
 		}
@@ -247,7 +280,7 @@ namespace MonoDevelop.D.Building
 					case "CompilerArg":
 						CompilerArguments = x.ReadString();
 						break;
-					case "LinkerArg":
+					case "LinkerArgs":
 						LinkerArguments = x.ReadString();
 						break;
 				}

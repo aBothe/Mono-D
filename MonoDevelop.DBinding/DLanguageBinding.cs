@@ -11,6 +11,7 @@ using MonoDevelop.D.Completion;
 using D_Parser.Completion;
 using MonoDevelop.D.Building;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace MonoDevelop.D
 {
@@ -23,7 +24,10 @@ namespace MonoDevelop.D
 			Instance = this;
 
 			// Init compiler configurations
-			DCompiler.Init();
+			DCompiler.Load();
+
+			// Init global parse cache
+			DCompiler.Instance.UpdateParseCachesAsync();
 		}
 
 		~DLanguageBinding()
