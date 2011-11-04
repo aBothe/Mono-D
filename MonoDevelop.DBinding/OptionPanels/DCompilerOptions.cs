@@ -100,8 +100,7 @@ namespace MonoDevelop.D.OptionPanels
 		}
 		
 		public void LoadConfigData ()
-		{
-			DCompiler.Init();						
+		{					
 			panel.Load(DCompiler.Instance.Dmd);
 		}		
 
@@ -129,7 +128,6 @@ namespace MonoDevelop.D.OptionPanels
 		
 		public void LoadConfigData ()
 		{
-			DCompiler.Init();
 			panel.Load(DCompiler.Instance.Gdc);
 		}		
 
@@ -156,8 +154,7 @@ namespace MonoDevelop.D.OptionPanels
 		}
 			
 		public void LoadConfigData ()
-		{
-			DCompiler.Init();			
+		{		
 			panel.Load(DCompiler.Instance.Ldc);
 		}		
 
