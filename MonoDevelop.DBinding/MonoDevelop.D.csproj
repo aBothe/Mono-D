@@ -119,13 +119,13 @@
     <Compile Include="Gui\DModuleOutlineExtension.cs" />
     <Compile Include="Gui\DToolTipProvider.cs" />
     <Compile Include="Gui\DToolTipWindow.cs" />
-    <Compile Include="OptionPanels\DGenericOptions.cs" />
+    <Compile Include="OptionPanels\ProjectOptions.cs" />
     <Compile Include="Parser\DParserWrapper.cs" />
     <Compile Include="Parser\ParsedDModule.cs" />
     <Compile Include="Project\DProjectBinding.cs" />
     <Compile Include="Project\DProject.cs" />
     <Compile Include="Project\DProjectConfiguration.cs" />
-    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.DGenericOptions.cs" />
+    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.ProjectOptions.cs" />
     <Compile Include="Gui\AddLibraryDialog.cs" />
     <Compile Include="Gui\AddPathDialog.cs" />
     <Compile Include="gtk-gui\MonoDevelop.D.AddLibraryDialog.cs" />
@@ -135,12 +135,12 @@
     <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.DGlobalOptions.cs" />
     <Compile Include="Completion\DParameterDataProvider.cs" />
     <Compile Include="Parser\DIncludesParser.cs" />
-    <Compile Include="OptionPanels\DGlobalCompilerOptions.cs" />
-    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.DGlobalCompilerOptions.cs" />
-    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.DGlobalDCompilerOptions.cs" />
-    <Compile Include="OptionPanels\DGlobalBuildArgumentOptions.cs" />
-    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.DGlobalBuildArgumentOptions.cs" />
-    <Compile Include="OptionPanels\DGlobalDCompilerOptions.cs" />
+    <Compile Include="OptionPanels\CompilerOptions.cs" />
+    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.CompilerOptions.cs" />
+    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.DCompilerOptions.cs" />
+    <Compile Include="OptionPanels\BuildArgumentOptions.cs" />
+    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.BuildArgumentOptions.cs" />
+    <Compile Include="OptionPanels\DCompilerOptions.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -235,4 +235,4 @@
     <StartAction>Program</StartAction>
     <StartProgram>..\..\tutorial%3blib\MonoDevelop\main\build\bin\MonoDevelop.exe</StartProgram>
   </PropertyGroup>
-</Project>
+</Project>

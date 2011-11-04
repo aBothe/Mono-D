@@ -3,12 +3,12 @@ using MonoDevelop.D.Building;
 
 namespace MonoDevelop.D.OptionPanels
 {
-	public partial class DGlobalBuildArgumentOptions : Gtk.Dialog
+	public partial class BuildArgumentOptions : Gtk.Dialog
 	{		
 		private bool isDebug;
 		private DCompilerConfiguration configuration;
 		
-		public DGlobalBuildArgumentOptions ()
+		public BuildArgumentOptions ()
 		{
 			this.Build ();
 		}

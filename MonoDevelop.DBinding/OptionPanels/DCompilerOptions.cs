@@ -14,11 +14,11 @@ namespace MonoDevelop.D.OptionPanels
 	/// <summary>
 	/// This panel provides UI access to project independent D settings such as generic compiler configurations, library and import paths etc.
 	/// </summary>
-	public partial class DGlobalDCompilerOptions : Gtk.Bin
+	public partial class DCompilerOptions : Gtk.Bin
 	{
 		private DCompilerConfiguration configuration;
 		
-		public DGlobalDCompilerOptions () 
+		public DCompilerOptions () 
 		{
 			this.Build ();	
 			
@@ -63,7 +63,7 @@ namespace MonoDevelop.D.OptionPanels
 		protected void btnReleaseArguments_Clicked (object sender, System.EventArgs e)
 		{			
 			Gtk.ResponseType response;			
-			DGlobalBuildArgumentOptions dialog = new DGlobalBuildArgumentOptions();
+			BuildArgumentOptions dialog = new BuildArgumentOptions();
 			try{			
 				dialog.IsDebug = false;
 				dialog.Load (configuration);
@@ -76,7 +76,7 @@ namespace MonoDevelop.D.OptionPanels
 		protected void btnDebugArguments_Clicked (object sender, System.EventArgs e)
 		{
 			Gtk.ResponseType response;						
-			DGlobalBuildArgumentOptions dialog = new DGlobalBuildArgumentOptions();
+			BuildArgumentOptions dialog = new BuildArgumentOptions();
 			try{
 				dialog.IsDebug = true;
 				dialog.Load (configuration);
@@ -88,13 +88,13 @@ namespace MonoDevelop.D.OptionPanels
 		}
 	}
 	
-	public class DGlobalDMDCompilerOptionsBinding : OptionsPanel
+	public class DMDCompilerOptionsBinding : OptionsPanel
 	{
-		private DGlobalDCompilerOptions panel;
+		private DCompilerOptions panel;
 		
 		public override Gtk.Widget CreatePanelWidget ()
 		{
-			panel = new DGlobalDCompilerOptions ();
+			panel = new DCompilerOptions ();
 			LoadConfigData();
 			return panel;
 		}
@@ -116,13 +116,13 @@ namespace MonoDevelop.D.OptionPanels
 		}
 	}
 	
-	public class DGlobalGDCCompilerOptionsBinding : OptionsPanel
+	public class GDCCompilerOptionsBinding : OptionsPanel
 	{
-		private DGlobalDCompilerOptions panel;
+		private DCompilerOptions panel;
 		
 		public override Gtk.Widget CreatePanelWidget ()
 		{
-			panel = new DGlobalDCompilerOptions ();
+			panel = new DCompilerOptions ();
 			LoadConfigData();
 			return panel;
 		}
@@ -144,13 +144,13 @@ namespace MonoDevelop.D.OptionPanels
 		}
 	}
 	
-	public class DGlobalLDCCompilerOptionsBinding : OptionsPanel
+	public class LDCCompilerOptionsBinding : OptionsPanel
 	{
-		private DGlobalDCompilerOptions panel;
+		private DCompilerOptions panel;
 
 		public override Gtk.Widget CreatePanelWidget ()
 		{
-			panel = new DGlobalDCompilerOptions ();
+			panel = new DCompilerOptions ();
 			LoadConfigData();
 			return panel;
 		}

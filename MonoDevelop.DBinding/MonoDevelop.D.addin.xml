@@ -100,39 +100,39 @@
 
 	<Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Other/DGlobalOptions">
 		<Section
-			id = "DGlobalCompilerOptions"
+			id = "CompilerOptions"
 			_label = "Compilers"
-			class = "MonoDevelop.D.OptionPanels.DGlobalCompilerOptionsBinding"/>
+			class = "MonoDevelop.D.OptionPanels.CompilerOptionsBinding"/>
 	</Extension>	
 
-	<Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Other/DGlobalOptions/DGlobalCompilerOptions">
+	<Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Other/DGlobalOptions/CompilerOptions">
 		<Section
-			id = "DGlobalDMDCompilerOptions"
+			id = "DMDCompilerOptions"
 			_label = "DMD"
-			class = "MonoDevelop.D.OptionPanels.DGlobalDMDCompilerOptionsBinding"/>
+			class = "MonoDevelop.D.OptionPanels.DMDCompilerOptionsBinding"/>
 	</Extension>		
 	
-	<Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Other/DGlobalOptions/DGlobalCompilerOptions">
+	<Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Other/DGlobalOptions/CompilerOptions">
 		<Section
-			id = "DGlobalGDCCompilerOptions"
+			id = "GDCCompilerOptions"
 			_label = "GDC"
-			class = "MonoDevelop.D.OptionPanels.DGlobalGDCCompilerOptionsBinding"/>
+			class = "MonoDevelop.D.OptionPanels.GDCCompilerOptionsBinding"/>
 	</Extension>		
 	
-	<Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Other/DGlobalOptions/DGlobalCompilerOptions">
+	<Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Other/DGlobalOptions/CompilerOptions">
 		<Section
-			id = "DGlobalLDCCompilerOptions"
+			id = "LDCCompilerOptions"
 			_label = "LDC"
-			class = "MonoDevelop.D.OptionPanels.DGlobalLDCCompilerOptionsBinding"/>
+			class = "MonoDevelop.D.OptionPanels.LDCCompilerOptionsBinding"/>
 	</Extension>		
 	
 	<Extension path = "/MonoDevelop/ProjectModel/Gui/ItemOptionPanels/Build">
 		<Condition id = "ItemType" value = "MonoDevelop.D.DProject">
 			<Section
-				id = "DGenericOptions"
-			    _label = "Generic Options"
+				id = "DProjectOptions"
+			    _label = "D Project Options"
 			    insertafter = "Compile"
-			    class = "MonoDevelop.D.OptionPanels.DGenericOptionsBinding"/>
+			    class = "MonoDevelop.D.OptionPanels.ProjectOptionsBinding"/>
 		</Condition>
 	</Extension>
 				

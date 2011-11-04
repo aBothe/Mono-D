@@ -14,14 +14,14 @@ namespace MonoDevelop.D.OptionPanels
 	/// <summary>
 	/// This is the option panel which occurs in D Project settings.
 	/// </summary>
-	public partial class DGenericOptions : Gtk.Bin
+	public partial class ProjectOptions : Gtk.Bin
 	{
 		private DProjectConfiguration configuration;
 
 		private Gtk.ListStore libStore = new Gtk.ListStore (typeof(string));
 		private Gtk.ListStore includePathStore = new Gtk.ListStore (typeof(string));
 		
-		public DGenericOptions () 
+		public ProjectOptions () 
 		{
 			this.Build ();
 			
@@ -174,13 +174,13 @@ namespace MonoDevelop.D.OptionPanels
 		}
 	}
 	
-	public class DGenericOptionsBinding : MultiConfigItemOptionsPanel
+	public class ProjectOptionsBinding : MultiConfigItemOptionsPanel
 	{
-		private DGenericOptions panel;
+		private ProjectOptions panel;
 		
 		public override Gtk.Widget CreatePanelWidget ()
 		{
-			return panel = new DGenericOptions ();
+			return panel = new ProjectOptions ();
 		}
 		
 		public override void LoadConfigData ()
