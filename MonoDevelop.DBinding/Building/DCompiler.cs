@@ -190,7 +190,7 @@ namespace MonoDevelop.D.Building
 				while(File.Exists(obj))
 				{
 					// Simply add a number between the obj name and its extension
-					obj= Path.Combine(objDir, Path.GetFileNameWithoutExtension(f.FilePath))+i + objExt;
+					obj= Path.Combine(objDir, Path.GetFileNameWithoutExtension(f.FilePath))+i + ObjectExtension;
 					i++;
 				}
 				
