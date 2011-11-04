@@ -33,11 +33,23 @@ namespace MonoDevelop.D.OptionPanels
 			LinkTargetConfiguration targetConfig;			
 			BuildConfiguration arguments;
 
-			//default compiler
+			//compiler targets
 			targetConfig =  config.GetTargetConfiguration(DCompileTarget.Executable);				
 			arguments = targetConfig.GetArguments(isDebug);					
-			txtCompiler.Text = arguments.CompilerArguments;
+			txtGUICompiler.Text = arguments.CompilerArguments;
 
+			targetConfig =  config.GetTargetConfiguration(DCompileTarget.ConsolelessExecutable);				
+			arguments = targetConfig.GetArguments(isDebug);					
+			txtConsoleCompiler.Text = arguments.CompilerArguments;
+
+			targetConfig =  config.GetTargetConfiguration(DCompileTarget.SharedLibrary);				
+			arguments = targetConfig.GetArguments(isDebug);					
+			txtSharedLibCompiler.Text = arguments.CompilerArguments;
+			
+			targetConfig =  config.GetTargetConfiguration(DCompileTarget.StaticLibrary);				
+			arguments = targetConfig.GetArguments(isDebug);					
+			txtStaticLibCompiler.Text = arguments.CompilerArguments;
+			
 			
 			//linker targets 
 			targetConfig =  config.GetTargetConfiguration(DCompileTarget.Executable);				

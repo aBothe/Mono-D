@@ -404,7 +404,7 @@ namespace MonoDevelop.D.OptionPanels
 			// Notebook tab
 			this.label3 = new global::Gtk.Label ();
 			this.label3.Name = "label3";
-			this.label3.LabelProp = global::Mono.Unix.Catalog.GetString ("Include");
+			this.label3.LabelProp = global::Mono.Unix.Catalog.GetString ("Includes");
 			this.notebook1.SetTabLabel (this.vbox7, this.label3);
 			this.label3.ShowAll ();
 			this.Add (this.notebook1);
