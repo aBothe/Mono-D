@@ -64,6 +64,23 @@ namespace MonoDevelop.D.Building
 
 		const string GlobalPropertyName = "DBinding.DCompiler";
 		#endregion
+		
+		public static string ExecutableExtension
+		{
+			get{ return OS.IsWindows?".exe":(OS.IsMac?".app":null);}	
+		}
+		public static string StaticLibraryExtension
+		{
+			get{ return OS.IsWindows?".lib":".a"; }
+		}
+		public static string SharedLibraryExtension
+		{
+			get{return OS.IsWindows?".dll":(OS.IsMac?".dylib":".so");}	
+		}
+		public static string ObjectExtension
+		{
+			get{return OS.IsWindows?".obj":".o";}	
+		}
 
 		public DCompilerVendor DefaultCompiler = DCompilerVendor.DMD;
 
@@ -111,12 +128,6 @@ namespace MonoDevelop.D.Building
 			DProjectConfiguration BuildConfig, 
 			IProgressMonitor monitor)
 		{
-			// Determine default object extension
-			var objExt = ".obj";
-			if (Environment.OSVersion.Platform == PlatformID.MacOSX ||
-				Environment.OSVersion.Platform == PlatformID.Unix)
-				objExt = ".o";
-
 			var relObjDir = "objs";
 			var objDir = Path.Combine(Project.BaseDirectory, relObjDir);
 
@@ -153,7 +164,7 @@ namespace MonoDevelop.D.Building
 					continue;
 
 				// Create object file path
-				var obj = Path.Combine(objDir, Path.GetFileNameWithoutExtension(f.FilePath)) + objExt;
+				var obj = Path.Combine(objDir, Path.GetFileNameWithoutExtension(f.FilePath)) + ObjectExtension;
 				
 				// a.Check if source file was modified and if object file still exists
 				if (Project.LastModificationTimes.ContainsKey(f) &&
@@ -544,5 +555,21 @@ namespace MonoDevelop.D.Building
 			}
 		}
 		#endregion
+	}
+	
+	public class OS
+	{
+		public static bool IsWindows
+		{
+			get{return !IsMac && !IsLinux;}	
+		}
+		
+		public static bool IsMac{
+			get{ return Environment.OSVersion.Platform==PlatformID.MacOSX;}	
+		}
+		
+		public static bool IsLinux{
+			get{return Environment.OSVersion.Platform==PlatformID.Unix;}	
+		}
 	}
 }

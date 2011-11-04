@@ -49,6 +49,10 @@ namespace MonoDevelop.D.Building
 
 			Configuration.SetAllCompilerCommands("dmd");
 			Configuration.SetAllLinkerCommands("dmd");
+			
+			// Add phobos.lib/.a by default
+			Configuration.DefaultLibraries.Clear();
+			Configuration.DefaultLibraries.Add("phobos"+DCompiler.SharedLibraryExtension);
 		}
 
 		public override void ResetBuildArguments(DCompileTarget LinkTarget, bool IsDebug)
@@ -99,6 +103,9 @@ namespace MonoDevelop.D.Building
 			Configuration.SetAllLinkerCommands("gdc");
 
 			Configuration.GetTargetConfiguration(DCompileTarget.StaticLibrary).Linker = "ar";
+			
+			Configuration.DefaultLibraries.Clear();
+			Configuration.DefaultLibraries.Add("phobos"+DCompiler.SharedLibraryExtension);
 		}
 
 		public override void ResetBuildArguments(DCompileTarget LinkTarget, bool IsDebug)
@@ -148,6 +155,9 @@ namespace MonoDevelop.D.Building
 			Configuration.SetAllLinkerCommands("ldc");
 
 			Configuration.GetTargetConfiguration(DCompileTarget.StaticLibrary).Linker="ar";
+			
+			Configuration.DefaultLibraries.Clear();
+			Configuration.DefaultLibraries.Add("phobos"+DCompiler.SharedLibraryExtension);
 		}
 
 		public override void ResetBuildArguments(DCompileTarget LinkTarget, bool IsDebug)

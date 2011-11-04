@@ -58,62 +58,24 @@ namespace MonoDevelop.D
 		public string CompiledOutputName
 		{
 			get {
-				var prj=Project;
-				
-				if(prj!=null)
+				if(Project!=null)
 				{
-				var ext = "";
-
-				switch (Environment.OSVersion.Platform)
-				{
-					case PlatformID.MacOSX:
-						switch (prj.CompileTarget)
-						{
-							case DCompileTarget.ConsolelessExecutable:
-							case DCompileTarget.Executable:
-								ext = ".app";
-								break;
-							case DCompileTarget.SharedLibrary:
-								ext = ".dylib";
-								break;
-							case DCompileTarget.StaticLibrary:
-								ext = ".a";
-								break;
-						}
-						break;
-					case PlatformID.Unix:
-						switch (prj.CompileTarget)
-						{
-							case DCompileTarget.ConsolelessExecutable:
-							case DCompileTarget.Executable:
-								ext = null;
-								break;
-							case DCompileTarget.SharedLibrary:
-								ext = ".so";
-								break;
-							case DCompileTarget.StaticLibrary:
-								ext = ".a";
-								break;
-						}
-						break;
-					default:
-						switch (prj.CompileTarget)
-						{
-							case DCompileTarget.ConsolelessExecutable:
-							case DCompileTarget.Executable:
-								ext = ".exe";
-								break;
-							case DCompileTarget.SharedLibrary:
-								ext = ".dll";
-								break;
-							case DCompileTarget.StaticLibrary:
-								ext = ".lib";
-								break;
-						}
-						break;
-				}
-
-				return Path.ChangeExtension(Output, ext);
+					var ext = "";
+						
+					switch(Project.CompileTarget)
+					{
+						case DCompileTarget.SharedLibrary:
+							ext=DCompiler.SharedLibraryExtension;
+							break;
+						case DCompileTarget.StaticLibrary:
+							ext=DCompiler.StaticLibraryExtension;
+							break;
+						default:
+							ext=DCompiler.ExecutableExtension;
+							break;
+					}
+	
+					return Path.ChangeExtension(Output, ext);
 				}
 				return Output;
 			}
