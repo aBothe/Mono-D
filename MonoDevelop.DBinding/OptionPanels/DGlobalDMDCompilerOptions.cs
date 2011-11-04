@@ -47,6 +47,32 @@ namespace MonoDevelop.D.OptionPanels
 			return true;
 		}
 
+		protected void btnReleaseArguments_Clicked (object sender, System.EventArgs e)
+		{			
+			Gtk.ResponseType response;			
+			DGlobalBuildArgumentOptions dialog = new DGlobalBuildArgumentOptions();
+			try{			
+				dialog.IsDebug = false;
+				dialog.ShowAll();
+				response = (Gtk.ResponseType) dialog.Run ();
+			}finally{
+				dialog.Destroy();
+			}
+			
+		}
+		protected void btnDebugArguments_Clicked (object sender, System.EventArgs e)
+		{
+			Gtk.ResponseType response;						
+			DGlobalBuildArgumentOptions dialog = new DGlobalBuildArgumentOptions();
+			try{
+				dialog.IsDebug = true;
+				dialog.ShowAll();
+				response = (Gtk.ResponseType) dialog.Run ();			
+			}finally{
+				dialog.Destroy();
+			}
+			
+		}
 	}
 	
 	public class DGlobalDMDCompilerOptionsBinding : OptionsPanel

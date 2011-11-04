@@ -684,6 +684,8 @@ namespace MonoDevelop.D.OptionPanels
 				this.Child.ShowAll ();
 			}
 			this.Show ();
+			this.btnDebugArguments.Clicked += new global::System.EventHandler (this.btnDebugArguments_Clicked);
+			this.btnReleaseArguments.Clicked += new global::System.EventHandler (this.btnReleaseArguments_Clicked);
 		}
 	}
 }
