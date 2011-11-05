@@ -64,10 +64,9 @@ namespace MonoDevelop.D.OptionPanels
 			defaultLibStore.Clear();
 			foreach (string lib in config.DefaultLibraries)
 				defaultLibStore.AppendValues (lib);
-			
-			/*includePathStore.Clear ()
-			foreach (string includePath in config.Includes)
-				includePathStore.AppendValues (includePath);*/			
+
+			includePathStore.Clear();
+			includePathStore.AppendValues(config.GlobalParseCache.DirectoryPaths);
 		}
 
 
@@ -110,14 +109,18 @@ namespace MonoDevelop.D.OptionPanels
 				defaultLibStore.IterNext (ref iter);
 			}
 			
-			/*
+			// Store new include paths
 			includePathStore.GetIterFirst (out iter);
-			//configuration.Includes.Clear ();
+			configuration.GlobalParseCache.ParsedGlobalDictionaries.Clear();
 			while (includePathStore.IterIsValid (iter)) {
 				line = (string)includePathStore.GetValue (iter, 0);
-				//configuration.Includes.Add (line);
+				// Add it to the compiler's global parse cache
+				configuration.GlobalParseCache.Add(line);
 				includePathStore.IterNext (ref iter);
-			}*/
+			}
+
+			// Update parse cache immediately!
+			configuration.GlobalParseCache.UpdateEditorParseCache();
 		
 			if (releaseArgumentsDialog != null)
 				releaseArgumentsDialog.Store();
