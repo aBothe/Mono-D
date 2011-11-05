@@ -28,6 +28,12 @@ namespace MonoDevelop.D
 		public string ExtraLinkerArguments = "";
 		#endregion
 		
+		//if absent an exception occurs when opening project config	
+		public DProjectConfiguration()
+		{
+			
+		}
+		
 		public DProjectConfiguration(DProject Project)
 		{
 			this.Project=Project;

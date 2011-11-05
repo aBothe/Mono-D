@@ -55,8 +55,8 @@ namespace MonoDevelop.D.OptionPanels
 			this.label2.LabelProp = global::Mono.Unix.Catalog.GetString ("GUI Linker");
 			this.table1.Add (this.label2);
 			global::Gtk.Table.TableChild w3 = ((global::Gtk.Table.TableChild)(this.table1 [this.label2]));
-			w3.TopAttach = ((uint)(4));
-			w3.BottomAttach = ((uint)(5));
+			w3.TopAttach = ((uint)(1));
+			w3.BottomAttach = ((uint)(2));
 			w3.XOptions = ((global::Gtk.AttachOptions)(4));
 			w3.YOptions = ((global::Gtk.AttachOptions)(4));
 			// Container child table1.Gtk.Table+TableChild
@@ -65,8 +65,8 @@ namespace MonoDevelop.D.OptionPanels
 			this.label3.LabelProp = global::Mono.Unix.Catalog.GetString ("Console Linker");
 			this.table1.Add (this.label3);
 			global::Gtk.Table.TableChild w4 = ((global::Gtk.Table.TableChild)(this.table1 [this.label3]));
-			w4.TopAttach = ((uint)(5));
-			w4.BottomAttach = ((uint)(6));
+			w4.TopAttach = ((uint)(3));
+			w4.BottomAttach = ((uint)(4));
 			w4.XOptions = ((global::Gtk.AttachOptions)(4));
 			w4.YOptions = ((global::Gtk.AttachOptions)(4));
 			// Container child table1.Gtk.Table+TableChild
@@ -75,8 +75,8 @@ namespace MonoDevelop.D.OptionPanels
 			this.label4.LabelProp = global::Mono.Unix.Catalog.GetString ("Shared Lib Linker");
 			this.table1.Add (this.label4);
 			global::Gtk.Table.TableChild w5 = ((global::Gtk.Table.TableChild)(this.table1 [this.label4]));
-			w5.TopAttach = ((uint)(6));
-			w5.BottomAttach = ((uint)(7));
+			w5.TopAttach = ((uint)(5));
+			w5.BottomAttach = ((uint)(6));
 			w5.XOptions = ((global::Gtk.AttachOptions)(4));
 			w5.YOptions = ((global::Gtk.AttachOptions)(4));
 			// Container child table1.Gtk.Table+TableChild
@@ -95,8 +95,8 @@ namespace MonoDevelop.D.OptionPanels
 			this.label6.LabelProp = global::Mono.Unix.Catalog.GetString ("Console Compiler");
 			this.table1.Add (this.label6);
 			global::Gtk.Table.TableChild w7 = ((global::Gtk.Table.TableChild)(this.table1 [this.label6]));
-			w7.TopAttach = ((uint)(1));
-			w7.BottomAttach = ((uint)(2));
+			w7.TopAttach = ((uint)(2));
+			w7.BottomAttach = ((uint)(3));
 			w7.XOptions = ((global::Gtk.AttachOptions)(4));
 			w7.YOptions = ((global::Gtk.AttachOptions)(4));
 			// Container child table1.Gtk.Table+TableChild
@@ -105,8 +105,8 @@ namespace MonoDevelop.D.OptionPanels
 			this.label7.LabelProp = global::Mono.Unix.Catalog.GetString ("Shared Lib Compiler");
 			this.table1.Add (this.label7);
 			global::Gtk.Table.TableChild w8 = ((global::Gtk.Table.TableChild)(this.table1 [this.label7]));
-			w8.TopAttach = ((uint)(2));
-			w8.BottomAttach = ((uint)(3));
+			w8.TopAttach = ((uint)(4));
+			w8.BottomAttach = ((uint)(5));
 			w8.XOptions = ((global::Gtk.AttachOptions)(4));
 			w8.YOptions = ((global::Gtk.AttachOptions)(4));
 			// Container child table1.Gtk.Table+TableChild
@@ -115,8 +115,8 @@ namespace MonoDevelop.D.OptionPanels
 			this.label8.LabelProp = global::Mono.Unix.Catalog.GetString ("Static Lib Compiler");
 			this.table1.Add (this.label8);
 			global::Gtk.Table.TableChild w9 = ((global::Gtk.Table.TableChild)(this.table1 [this.label8]));
-			w9.TopAttach = ((uint)(3));
-			w9.BottomAttach = ((uint)(4));
+			w9.TopAttach = ((uint)(6));
+			w9.BottomAttach = ((uint)(7));
 			w9.XOptions = ((global::Gtk.AttachOptions)(4));
 			w9.YOptions = ((global::Gtk.AttachOptions)(4));
 			// Container child table1.Gtk.Table+TableChild
@@ -127,8 +127,8 @@ namespace MonoDevelop.D.OptionPanels
 			this.txtConsoleCompiler.InvisibleChar = '•';
 			this.table1.Add (this.txtConsoleCompiler);
 			global::Gtk.Table.TableChild w10 = ((global::Gtk.Table.TableChild)(this.table1 [this.txtConsoleCompiler]));
-			w10.TopAttach = ((uint)(1));
-			w10.BottomAttach = ((uint)(2));
+			w10.TopAttach = ((uint)(2));
+			w10.BottomAttach = ((uint)(3));
 			w10.LeftAttach = ((uint)(1));
 			w10.RightAttach = ((uint)(2));
 			w10.YOptions = ((global::Gtk.AttachOptions)(4));
@@ -140,8 +140,8 @@ namespace MonoDevelop.D.OptionPanels
 			this.txtConsoleLinker.InvisibleChar = '•';
 			this.table1.Add (this.txtConsoleLinker);
 			global::Gtk.Table.TableChild w11 = ((global::Gtk.Table.TableChild)(this.table1 [this.txtConsoleLinker]));
-			w11.TopAttach = ((uint)(5));
-			w11.BottomAttach = ((uint)(6));
+			w11.TopAttach = ((uint)(3));
+			w11.BottomAttach = ((uint)(4));
 			w11.LeftAttach = ((uint)(1));
 			w11.RightAttach = ((uint)(2));
 			w11.YOptions = ((global::Gtk.AttachOptions)(4));
@@ -164,8 +164,8 @@ namespace MonoDevelop.D.OptionPanels
 			this.txtGUILinker.InvisibleChar = '•';
 			this.table1.Add (this.txtGUILinker);
 			global::Gtk.Table.TableChild w13 = ((global::Gtk.Table.TableChild)(this.table1 [this.txtGUILinker]));
-			w13.TopAttach = ((uint)(4));
-			w13.BottomAttach = ((uint)(5));
+			w13.TopAttach = ((uint)(1));
+			w13.BottomAttach = ((uint)(2));
 			w13.LeftAttach = ((uint)(1));
 			w13.RightAttach = ((uint)(2));
 			w13.YOptions = ((global::Gtk.AttachOptions)(4));
@@ -177,8 +177,8 @@ namespace MonoDevelop.D.OptionPanels
 			this.txtSharedLibCompiler.InvisibleChar = '•';
 			this.table1.Add (this.txtSharedLibCompiler);
 			global::Gtk.Table.TableChild w14 = ((global::Gtk.Table.TableChild)(this.table1 [this.txtSharedLibCompiler]));
-			w14.TopAttach = ((uint)(2));
-			w14.BottomAttach = ((uint)(3));
+			w14.TopAttach = ((uint)(4));
+			w14.BottomAttach = ((uint)(5));
 			w14.LeftAttach = ((uint)(1));
 			w14.RightAttach = ((uint)(2));
 			w14.YOptions = ((global::Gtk.AttachOptions)(4));
@@ -190,8 +190,8 @@ namespace MonoDevelop.D.OptionPanels
 			this.txtSharedLibLinker.InvisibleChar = '•';
 			this.table1.Add (this.txtSharedLibLinker);
 			global::Gtk.Table.TableChild w15 = ((global::Gtk.Table.TableChild)(this.table1 [this.txtSharedLibLinker]));
-			w15.TopAttach = ((uint)(6));
-			w15.BottomAttach = ((uint)(7));
+			w15.TopAttach = ((uint)(5));
+			w15.BottomAttach = ((uint)(6));
 			w15.LeftAttach = ((uint)(1));
 			w15.RightAttach = ((uint)(2));
 			w15.YOptions = ((global::Gtk.AttachOptions)(4));
@@ -203,8 +203,8 @@ namespace MonoDevelop.D.OptionPanels
 			this.txtStaticLibCompiler.InvisibleChar = '•';
 			this.table1.Add (this.txtStaticLibCompiler);
 			global::Gtk.Table.TableChild w16 = ((global::Gtk.Table.TableChild)(this.table1 [this.txtStaticLibCompiler]));
-			w16.TopAttach = ((uint)(3));
-			w16.BottomAttach = ((uint)(4));
+			w16.TopAttach = ((uint)(6));
+			w16.BottomAttach = ((uint)(7));
 			w16.LeftAttach = ((uint)(1));
 			w16.RightAttach = ((uint)(2));
 			w16.YOptions = ((global::Gtk.AttachOptions)(4));
@@ -261,7 +261,7 @@ namespace MonoDevelop.D.OptionPanels
 				this.Child.ShowAll ();
 			}
 			this.DefaultWidth = 400;
-			this.DefaultHeight = 329;
+			this.DefaultHeight = 343;
 			this.Show ();
 		}
 	}

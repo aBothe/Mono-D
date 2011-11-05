@@ -60,9 +60,10 @@ namespace MonoDevelop.D.Building
 			// Only arguments become reset, not the commands
 			var args = Configuration.GetTargetConfiguration(LinkTarget).GetArguments(IsDebug);
 			var debugAppendix=IsDebug?"-gc -debug":"-O -release";
-
+			var noLogoArg = (OS.IsWindows)?"-L/NOLOGO ":"";
+			
 			args.CompilerArguments = "-c \"$src\" -of\"$obj\" $includes " + debugAppendix;
-			args.LinkerArguments = "-L/NOLOGO " + debugAppendix + " -of\"$target\" $objs";
+			args.LinkerArguments = noLogoArg + debugAppendix + " -of\"$target\" $objs";
 
 			switch (LinkTarget)
 			{
@@ -114,7 +115,7 @@ namespace MonoDevelop.D.Building
 			var debugAppendix = IsDebug ? "-g -debug" : "-O -release";
 
 			args.CompilerArguments = "-c \"$src\" -o \"$obj\" $includes " + debugAppendix;
-			args.LinkerArguments = "-o \"$target\" -L/NOLOGO " + debugAppendix + " $objs";
+			args.LinkerArguments = "-o \"$target\" " + debugAppendix + " $objs";
 
 			switch (LinkTarget)
 			{
@@ -129,7 +130,7 @@ namespace MonoDevelop.D.Building
 
 				case DCompileTarget.SharedLibrary:
 					args.CompilerArguments = "-fPIC " + args.CompilerArguments;
-					args.LinkerArguments += " -shared -L/IMPLIB:$relativeTargetDir";
+					args.LinkerArguments += " -shared";
 					break;
 
 				case DCompileTarget.StaticLibrary:
@@ -165,8 +166,8 @@ namespace MonoDevelop.D.Building
 			var args = Configuration.GetTargetConfiguration(LinkTarget).GetArguments(IsDebug);
 			var debugAppendix=IsDebug?"-g -debug": "-O -release";
 
-			args.CompilerArguments = "-c \"$src\" -o \"$obj\" $includes "+debugAppendix;
-			args.LinkerArguments = "-o \"$target\" -L/NOLOGO "+debugAppendix +" $objs";
+			args.CompilerArguments = "-c \"$src\" -of \"$obj\" $includes "+debugAppendix;
+			args.LinkerArguments = "-of \"$target\" "+debugAppendix +" $objs";
 
 			switch (LinkTarget)
 			{
@@ -181,7 +182,7 @@ namespace MonoDevelop.D.Building
 
 				case DCompileTarget.SharedLibrary:
 					args.CompilerArguments="-relocation-model=pic " + args.CompilerArguments; 
-					args.LinkerArguments += " -shared -L/IMPLIB:$relativeTargetDir";
+					args.LinkerArguments += " -L-shared";
 					break;
 
 				case DCompileTarget.StaticLibrary:
