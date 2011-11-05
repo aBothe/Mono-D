@@ -45,7 +45,7 @@ namespace MonoDevelop.D.Building
 		public static void Load()
 		{
 			// Deserialize config data
-			PropertyService.Get<DCompiler>(GlobalPropertyName);
+			Instance=PropertyService.Get<DCompiler>(GlobalPropertyName);
 
 			//LoggingService.AddLogger(new MonoDevelop.Core.Logging.FileLogger("A:\\monoDev.log", true));
 
@@ -132,22 +132,22 @@ namespace MonoDevelop.D.Building
 		/// <summary>
 		/// Returns the default compiler configuration
 		/// </summary>
-		public static DCompilerConfiguration GetDefaultCompiler()
+		public DCompilerConfiguration GetDefaultCompiler()
 		{
-			return GetCompiler(Instance.DefaultCompiler);
+			return GetCompiler(DefaultCompiler);
 		}
 
-		public static DCompilerConfiguration GetCompiler(DCompilerVendor type)
+		public DCompilerConfiguration GetCompiler(DCompilerVendor type)
 		{
 			switch (type)
 			{
 				case DCompilerVendor.GDC:
-					return Instance.Gdc;
+					return Gdc;
 				case DCompilerVendor.LDC:
-					return Instance.Ldc;
+					return Ldc;
 			}
 
-			return Instance.Dmd;
+			return Dmd;
 		}
 		
 		/// <summary>
