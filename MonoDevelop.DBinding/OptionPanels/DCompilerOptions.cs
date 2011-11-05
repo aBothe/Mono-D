@@ -87,7 +87,7 @@ namespace MonoDevelop.D.OptionPanels
 			//for now, using Executable target compiler command for all targets source compiling
 			LinkTargetConfiguration targetConfig;
  			targetConfig = configuration.GetTargetConfiguration(DCompileTarget.Executable); 			
-			txtCompiler.Text = targetConfig.Compiler;
+			targetConfig.Compiler = txtCompiler.Text;
 			
 			//linker targets 			
  			targetConfig = configuration.GetTargetConfiguration(DCompileTarget.Executable); 						
@@ -101,8 +101,6 @@ namespace MonoDevelop.D.OptionPanels
 			
  			targetConfig = configuration.GetTargetConfiguration(DCompileTarget.StaticLibrary); 						
 			targetConfig.Linker = txtStaticLibLinker.Text;
-			
-			
 			
 			defaultLibStore.GetIterFirst (out iter);
 			configuration.DefaultLibraries.Clear();
@@ -263,21 +261,30 @@ namespace MonoDevelop.D.OptionPanels
 		}
 
 		protected void btnDefaults_Clicked (object sender, System.EventArgs e)
-		{
-			DCompilerConfiguration.ResetToDefaults(configuration, configuration.Vendor);	
-			Load (configuration);
-			
-			//destroy and null argument forms, so that config gets reloaded on the next showdialog
-			if (releaseArgumentsDialog != null)
+		{			
+			//need new object, because the user can still hit canel at the config screen
+			//so we don't want to update the real object yet
+			DCompilerConfiguration realConfig = configuration;			
+			try
 			{
-				releaseArgumentsDialog.Destroy();
-				releaseArgumentsDialog = null;
-			}
-			if (debugArgumentsDialog != null)
-			{
-				debugArgumentsDialog.Destroy();			
-				debugArgumentsDialog = null;
-			}
+				DCompilerConfiguration tempConfig = new DCompilerConfiguration{Vendor = configuration.Vendor};		
+				DCompilerConfiguration.ResetToDefaults(tempConfig, configuration.Vendor);	
+				Load (tempConfig);
+				
+				//destroy and null argument forms, so that config gets reloaded on the next showdialog
+				if (releaseArgumentsDialog != null)
+				{
+					releaseArgumentsDialog.Destroy();
+					releaseArgumentsDialog = null;
+				}
+				if (debugArgumentsDialog != null)
+				{
+					debugArgumentsDialog.Destroy();			
+					debugArgumentsDialog = null;
+				}
+			}finally{
+				configuration = realConfig;	
+			}				
 		}
 	}
 	
