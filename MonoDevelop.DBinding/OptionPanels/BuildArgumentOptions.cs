@@ -26,6 +26,8 @@ namespace MonoDevelop.D.OptionPanels
 			}
 		}
 		
+		public bool CanStore{get;set;}		
+		
 		public void Load(DCompilerConfiguration config)
 		{
 			configuration = config;
@@ -66,8 +68,51 @@ namespace MonoDevelop.D.OptionPanels
 
 			targetConfig =  config.GetTargetConfiguration(DCompileTarget.StaticLibrary);				
 			arguments = targetConfig.GetArguments(isDebug);					
-			txtStaticLibLinker.Text = arguments.LinkerArguments;
+			txtStaticLibLinker.Text = arguments.LinkerArguments;			
+		}
+		
+		public void Store()
+		{
+			if ((configuration == null) || (!CanStore))				
+				return;
+			
+			LinkTargetConfiguration targetConfig;			
+			BuildConfiguration arguments;
 
+			//compiler targets
+			targetConfig =  configuration.GetTargetConfiguration(DCompileTarget.Executable);				
+			arguments = targetConfig.GetArguments(isDebug);					
+			arguments.CompilerArguments = txtGUICompiler.Text;
+
+			targetConfig =  configuration.GetTargetConfiguration(DCompileTarget.ConsolelessExecutable);				
+			arguments = targetConfig.GetArguments(isDebug);					
+			arguments.CompilerArguments = txtConsoleCompiler.Text;
+
+			targetConfig =  configuration.GetTargetConfiguration(DCompileTarget.SharedLibrary);				
+			arguments = targetConfig.GetArguments(isDebug);					
+			arguments.CompilerArguments = txtSharedLibCompiler.Text;
+			
+			targetConfig =  configuration.GetTargetConfiguration(DCompileTarget.StaticLibrary);				
+			arguments = targetConfig.GetArguments(isDebug);					
+			arguments.CompilerArguments = txtStaticLibCompiler.Text;
+			
+			
+			//linker targets 
+			targetConfig =  configuration.GetTargetConfiguration(DCompileTarget.Executable);				
+			arguments = targetConfig.GetArguments(isDebug);					
+			arguments.LinkerArguments = txtConsoleLinker.Text;
+			
+			targetConfig =  configuration.GetTargetConfiguration(DCompileTarget.ConsolelessExecutable);				
+			arguments = targetConfig.GetArguments(isDebug);					
+			arguments.LinkerArguments = txtGUILinker.Text;
+			
+			targetConfig =  configuration.GetTargetConfiguration(DCompileTarget.SharedLibrary);				
+			arguments = targetConfig.GetArguments(isDebug);					
+			arguments.LinkerArguments = txtSharedLibLinker.Text;
+
+			targetConfig =  configuration.GetTargetConfiguration(DCompileTarget.StaticLibrary);				
+			arguments = targetConfig.GetArguments(isDebug);					
+			arguments.LinkerArguments = txtStaticLibLinker.Text;
 			
 		}
 	}

@@ -23,7 +23,7 @@ namespace MonoDevelop.D.OptionPanels
 		private global::Gtk.Entry txtStaticLibLinker;
 		private global::Gtk.Button buttonCancel;
 		private global::Gtk.Button buttonOk;
-        
+		
 		protected virtual void Build ()
 		{
 			global::Stetic.Gui.Initialize (this);
@@ -261,7 +261,7 @@ namespace MonoDevelop.D.OptionPanels
 				this.Child.ShowAll ();
 			}
 			this.DefaultWidth = 400;
-			this.DefaultHeight = 300;
+			this.DefaultHeight = 329;
 			this.Show ();
 		}
 	}

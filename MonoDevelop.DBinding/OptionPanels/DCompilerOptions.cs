@@ -20,6 +20,9 @@ namespace MonoDevelop.D.OptionPanels
 		
 		private Gtk.ListStore defaultLibStore = new Gtk.ListStore (typeof(string));
 		private Gtk.ListStore includePathStore = new Gtk.ListStore (typeof(string));		
+
+		private BuildArgumentOptions releaseArgumentsDialog = null;
+		private BuildArgumentOptions debugArgumentsDialog = null;		
 		
 		public DCompilerOptions () 
 		{
@@ -40,7 +43,7 @@ namespace MonoDevelop.D.OptionPanels
 		public void Load (DCompilerConfiguration config)
 		{
 			configuration = config;
-			//default compiler
+			//for now, using Executable target compiler command for all targets source compiling
 			LinkTargetConfiguration targetConfig;
  			targetConfig = config.GetTargetConfiguration(DCompileTarget.Executable); 			
 			txtCompiler.Text = targetConfig.Compiler;
@@ -58,12 +61,13 @@ namespace MonoDevelop.D.OptionPanels
  			targetConfig = config.GetTargetConfiguration(DCompileTarget.StaticLibrary); 						
 			txtStaticLibLinker.Text = targetConfig.Linker;
 			
-			
+			defaultLibStore.Clear();
 			foreach (string lib in config.DefaultLibraries)
 				defaultLibStore.AppendValues (lib);
 			
-			/*foreach (string includePath in config.Includes)
-				includePathStore.AppendValues (includePath);*/
+			/*includePathStore.Clear ()
+			foreach (string includePath in config.Includes)
+				includePathStore.AppendValues (includePath);*/			
 		}
 
 
@@ -77,29 +81,91 @@ namespace MonoDevelop.D.OptionPanels
 			if (configuration == null)
 				return false;
 			
+			Gtk.TreeIter iter;
+			string line;
+			
+			//for now, using Executable target compiler command for all targets source compiling
+			LinkTargetConfiguration targetConfig;
+ 			targetConfig = configuration.GetTargetConfiguration(DCompileTarget.Executable); 			
+			txtCompiler.Text = targetConfig.Compiler;
+			
+			//linker targets 			
+ 			targetConfig = configuration.GetTargetConfiguration(DCompileTarget.Executable); 						
+			targetConfig.Linker = txtConsoleAppLinker.Text;			
+			
+ 			targetConfig = configuration.GetTargetConfiguration(DCompileTarget.ConsolelessExecutable); 						
+			targetConfig.Linker = txtGUIAppLinker.Text;			
+			
+ 			targetConfig = configuration.GetTargetConfiguration(DCompileTarget.SharedLibrary); 						
+			targetConfig.Linker = txtSharedLibLinker.Text;
+			
+ 			targetConfig = configuration.GetTargetConfiguration(DCompileTarget.StaticLibrary); 						
+			targetConfig.Linker = txtStaticLibLinker.Text;
+			
+			
+			
+			defaultLibStore.GetIterFirst (out iter);
+			configuration.DefaultLibraries.Clear();
+			while (defaultLibStore.IterIsValid (iter)) {
+				line = (string)defaultLibStore.GetValue (iter, 0);
+				configuration.DefaultLibraries.Add (line);
+				defaultLibStore.IterNext (ref iter);
+			}
+			
+			/*
+			includePathStore.GetIterFirst (out iter);
+			//configuration.Includes.Clear ();
+			while (includePathStore.IterIsValid (iter)) {
+				line = (string)includePathStore.GetValue (iter, 0);
+				//configuration.Includes.Add (line);
+				includePathStore.IterNext (ref iter);
+			}*/
+		
+			if (releaseArgumentsDialog != null)
+				releaseArgumentsDialog.Store();
+			if (debugArgumentsDialog != null)
+				debugArgumentsDialog.Store ();			
+			
 			return true;
 		}
-
+		
+		private void ShowArgumentsDialog(bool isDebug)
+		{
+			BuildArgumentOptions dialog = null;
+			if (isDebug)
+			{
+				if (debugArgumentsDialog == null)
+				{
+					debugArgumentsDialog = new BuildArgumentOptions();
+					debugArgumentsDialog.Load (configuration);					
+				}
+				dialog = debugArgumentsDialog;								
+				dialog.IsDebug = true;				
+			}
+			else
+			{
+				if (releaseArgumentsDialog == null)
+				{
+					releaseArgumentsDialog = new BuildArgumentOptions();
+					releaseArgumentsDialog.Load (configuration);	
+				}
+				dialog = releaseArgumentsDialog;								
+				dialog.IsDebug = false;				
+			}
+			
+			Gtk.ResponseType response;	
+			response = (Gtk.ResponseType) dialog.Run ();			
+			dialog.Hide();
+			dialog.CanStore = (response == Gtk.ResponseType.Ok);
+		}
+		
 		protected void btnReleaseArguments_Clicked (object sender, System.EventArgs e)
 		{			
-			Gtk.ResponseType response;			
-			BuildArgumentOptions dialog = new BuildArgumentOptions();
-			dialog.IsDebug = false;
-			dialog.Load (configuration);
-			response = (Gtk.ResponseType) dialog.Run ();
-			dialog.Destroy();			
-			
-			
+			ShowArgumentsDialog(false);						
 		}
 		protected void btnDebugArguments_Clicked (object sender, System.EventArgs e)
 		{
-			Gtk.ResponseType response;						
-			BuildArgumentOptions dialog = new BuildArgumentOptions();
-			dialog.IsDebug = true;
-			dialog.Load (configuration);
-			response = (Gtk.ResponseType) dialog.Run ();
-			dialog.Destroy();
-			
+			ShowArgumentsDialog(true);			
 		}
 
 		protected void btnBrowseDefaultLib_Clicked (object sender, System.EventArgs e)
@@ -194,6 +260,24 @@ namespace MonoDevelop.D.OptionPanels
 		protected void txtIncludePath_Activated (object sender, System.EventArgs e)
 		{
 			OnIncludePathAdded(sender, e);
+		}
+
+		protected void btnDefaults_Clicked (object sender, System.EventArgs e)
+		{
+			DCompilerConfiguration.ResetToDefaults(configuration, configuration.Vendor);	
+			Load (configuration);
+			
+			//destroy and null argument forms, so that config gets reloaded on the next showdialog
+			if (releaseArgumentsDialog != null)
+			{
+				releaseArgumentsDialog.Destroy();
+				releaseArgumentsDialog = null;
+			}
+			if (debugArgumentsDialog != null)
+			{
+				debugArgumentsDialog.Destroy();			
+				debugArgumentsDialog = null;
+			}
 		}
 	}
 	

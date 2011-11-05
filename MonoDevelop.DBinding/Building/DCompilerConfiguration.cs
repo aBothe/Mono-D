@@ -18,7 +18,12 @@ namespace MonoDevelop.D.Building
 		public static DCompilerConfiguration CreateWithDefaults(DCompilerVendor Compiler)
 		{
 			var cfg = new DCompilerConfiguration {  Vendor=Compiler };
-
+			ResetToDefaults(cfg, Compiler);		
+			return cfg;
+		}
+		
+		public static void ResetToDefaults(DCompilerConfiguration cfg, DCompilerVendor Compiler)
+		{	
 			CompilerDefaultArgumentProvider cmp = null;
 			switch (Compiler)
 			{
@@ -35,9 +40,7 @@ namespace MonoDevelop.D.Building
 
 			// Reset arguments BEFORE reset compiler commands - only then, the 4 link target config objects will be created.
 			cmp.ResetBuildArguments();
-			cmp.ResetCompilerConfiguration();
-
-			return cfg;
+			cmp.ResetCompilerConfiguration();						
 		}
 
 		public readonly ASTStorage GlobalParseCache = new ASTStorage();

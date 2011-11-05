@@ -16,20 +16,18 @@ namespace MonoDevelop.D.OptionPanels
 	/// </summary>
 	public partial class CompilerOptions : Gtk.Bin
 	{
-		private DProjectConfiguration configuration;
+		private DCompiler configuration;
 
 		public CompilerOptions () 
 		{
 			this.Build ();			
 		}
 		
-		public void Load (DProjectConfiguration config)
+		public void Load (DCompiler config)
 		{
 			configuration = config;
 			
-			
-			//DCompiler.Init();
-			//DCompiler.Instance
+			cmbCompiler.Active = (int)config.DefaultCompiler;
 		}
 
 
@@ -43,6 +41,7 @@ namespace MonoDevelop.D.OptionPanels
 			if (configuration == null)
 				return false;
 			
+			configuration.DefaultCompiler = (DCompilerVendor)cmbCompiler.Active;			
 			return true;
 		}
 
@@ -54,7 +53,9 @@ namespace MonoDevelop.D.OptionPanels
 		
 		public override Gtk.Widget CreatePanelWidget ()
 		{
-			return panel = new CompilerOptions ();
+			panel = new CompilerOptions ();
+			panel.Load(DCompiler.Instance);
+			return panel;
 		}
 
 		public override bool ValidateChanges()
