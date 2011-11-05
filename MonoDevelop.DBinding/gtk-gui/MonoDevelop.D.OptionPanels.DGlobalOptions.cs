@@ -5,8 +5,6 @@ namespace MonoDevelop.D.OptionPanels
 	public partial class DGlobalOptions
 	{
 		private global::Gtk.HBox hbox1;
-		private global::Gtk.Notebook OptionsNotebook;
-		private global::Gtk.Label label8;
 		
 		protected virtual void Build ()
 		{
@@ -18,24 +16,6 @@ namespace MonoDevelop.D.OptionPanels
 			this.hbox1 = new global::Gtk.HBox ();
 			this.hbox1.Name = "hbox1";
 			this.hbox1.Spacing = 6;
-			// Container child hbox1.Gtk.Box+BoxChild
-			this.OptionsNotebook = new global::Gtk.Notebook ();
-			this.OptionsNotebook.CanFocus = true;
-			this.OptionsNotebook.Name = "OptionsNotebook";
-			this.OptionsNotebook.CurrentPage = 0;
-			this.OptionsNotebook.ShowBorder = false;
-			// Notebook tab
-			global::Gtk.Label w1 = new global::Gtk.Label ();
-			w1.Visible = true;
-			this.OptionsNotebook.Add (w1);
-			this.label8 = new global::Gtk.Label ();
-			this.label8.Name = "label8";
-			this.label8.LabelProp = global::Mono.Unix.Catalog.GetString ("general");
-			this.OptionsNotebook.SetTabLabel (w1, this.label8);
-			this.label8.ShowAll ();
-			this.hbox1.Add (this.OptionsNotebook);
-			global::Gtk.Box.BoxChild w2 = ((global::Gtk.Box.BoxChild)(this.hbox1 [this.OptionsNotebook]));
-			w2.Position = 0;
 			this.Add (this.hbox1);
 			if ((this.Child != null)) {
 				this.Child.ShowAll ();

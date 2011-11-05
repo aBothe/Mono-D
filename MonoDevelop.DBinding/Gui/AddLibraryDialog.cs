@@ -41,16 +41,40 @@ namespace MonoDevelop.D
 	{
 		private string lib = string.Empty;
 		
+		public enum FileFilterType{DFiles, LibraryFiles}
+			
+		public AddLibraryDialog(FileFilterType filterType)
+		{
+			this.Build();
+			Init (filterType);
+		}
+		
 		public AddLibraryDialog()
 		{
 			this.Build();
-			
+			Init(FileFilterType.DFiles);
+		}
+		
+		private void Init(FileFilterType filterType)
+		{
 			Gtk.FileFilter libs = new Gtk.FileFilter ();
 			Gtk.FileFilter all = new Gtk.FileFilter ();
-			
-			libs.AddPattern ("*.d");
-			libs.Name = "Libraries";
-			
+
+			switch (filterType)
+			{
+				case FileFilterType.DFiles:
+					libs.AddPattern ("*.d");
+					libs.AddPattern ("*.di");			
+					libs.Name = "D Files";				
+					break;
+				case FileFilterType.LibraryFiles:
+					libs.AddPattern ("*.lib");
+					libs.AddPattern ("*.so");
+					libs.AddPattern ("*.dylib");							
+					libs.Name = "Libraries";
+					break;
+			}
+
 			all.AddPattern ("*.*");
 			all.Name = "All Files";
 			
@@ -58,7 +82,7 @@ namespace MonoDevelop.D
 			file_chooser_widget.AddFilter (all);
 			
 			if (Environment.OSVersion.Platform == PlatformID.Unix)
-				file_chooser_widget.SetCurrentFolder ("/usr/share/d/di");
+				file_chooser_widget.SetCurrentFolder ("/usr/share/d/di");			
 		}
 		
 		private void OnOkButtonClick (object sender, EventArgs e)

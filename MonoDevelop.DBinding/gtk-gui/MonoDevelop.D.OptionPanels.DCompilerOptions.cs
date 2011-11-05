@@ -5,7 +5,6 @@ namespace MonoDevelop.D.OptionPanels
 	public partial class DCompilerOptions
 	{
 		private global::Gtk.HBox hbox1;
-		private global::Gtk.Notebook OptionsNotebook;
 		private global::Gtk.VBox vbox6;
 		private global::Gtk.VBox vbox8;
 		private global::Gtk.Table table6;
@@ -35,18 +34,17 @@ namespace MonoDevelop.D.OptionPanels
 		private global::Gtk.Button btnRemoveDefaultLib;
 		private global::Gtk.Label label12;
 		private global::Gtk.Table table4;
-		private global::Gtk.Button btnAddLibraryPath;
+		private global::Gtk.Button btnAddIncludePath;
 		private global::Gtk.HBox hbox5;
-		private global::Gtk.Entry txtLibraryPath;
-		private global::Gtk.Button btnBrowseLibraryPath;
+		private global::Gtk.Entry txtIncludePath;
+		private global::Gtk.Button btnBrowseIncludePath;
 		private global::Gtk.Label label15;
 		private global::Gtk.ScrolledWindow scrolledwindow11;
-		private global::Gtk.TreeView tvLibraryPaths;
+		private global::Gtk.TreeView tvIncludePaths;
 		private global::Gtk.VBox vbox9;
-		private global::Gtk.Button btnRemoveLibraryPath;
+		private global::Gtk.Button btnRemoveIncludePath;
 		private global::Gtk.Label label1;
-		private global::Gtk.Label label2;
-        
+		
 		protected virtual void Build ()
 		{
 			global::Stetic.Gui.Initialize (this);
@@ -58,12 +56,6 @@ namespace MonoDevelop.D.OptionPanels
 			this.hbox1.Name = "hbox1";
 			this.hbox1.Spacing = 6;
 			// Container child hbox1.Gtk.Box+BoxChild
-			this.OptionsNotebook = new global::Gtk.Notebook ();
-			this.OptionsNotebook.CanFocus = true;
-			this.OptionsNotebook.Name = "OptionsNotebook";
-			this.OptionsNotebook.CurrentPage = 0;
-			this.OptionsNotebook.ShowBorder = false;
-			// Container child OptionsNotebook.Gtk.Notebook+NotebookChild
 			this.vbox6 = new global::Gtk.VBox ();
 			this.vbox6.Name = "vbox6";
 			this.vbox6.Spacing = 3;
@@ -338,15 +330,16 @@ namespace MonoDevelop.D.OptionPanels
 			this.table4.Name = "table4";
 			this.table4.RowSpacing = ((uint)(10));
 			this.table4.ColumnSpacing = ((uint)(10));
+			this.table4.BorderWidth = ((uint)(3));
 			// Container child table4.Gtk.Table+TableChild
-			this.btnAddLibraryPath = new global::Gtk.Button ();
-			this.btnAddLibraryPath.Sensitive = false;
-			this.btnAddLibraryPath.CanFocus = true;
-			this.btnAddLibraryPath.Name = "btnAddLibraryPath";
-			this.btnAddLibraryPath.UseUnderline = true;
-			this.btnAddLibraryPath.Label = global::Mono.Unix.Catalog.GetString ("Add");
-			this.table4.Add (this.btnAddLibraryPath);
-			global::Gtk.Table.TableChild w25 = ((global::Gtk.Table.TableChild)(this.table4 [this.btnAddLibraryPath]));
+			this.btnAddIncludePath = new global::Gtk.Button ();
+			this.btnAddIncludePath.Sensitive = false;
+			this.btnAddIncludePath.CanFocus = true;
+			this.btnAddIncludePath.Name = "btnAddIncludePath";
+			this.btnAddIncludePath.UseUnderline = true;
+			this.btnAddIncludePath.Label = global::Mono.Unix.Catalog.GetString ("Add");
+			this.table4.Add (this.btnAddIncludePath);
+			global::Gtk.Table.TableChild w25 = ((global::Gtk.Table.TableChild)(this.table4 [this.btnAddIncludePath]));
 			w25.LeftAttach = ((uint)(2));
 			w25.RightAttach = ((uint)(3));
 			w25.XOptions = ((global::Gtk.AttachOptions)(4));
@@ -356,22 +349,22 @@ namespace MonoDevelop.D.OptionPanels
 			this.hbox5.Name = "hbox5";
 			this.hbox5.Spacing = 6;
 			// Container child hbox5.Gtk.Box+BoxChild
-			this.txtLibraryPath = new global::Gtk.Entry ();
-			this.txtLibraryPath.CanFocus = true;
-			this.txtLibraryPath.Name = "txtLibraryPath";
-			this.txtLibraryPath.IsEditable = true;
-			this.txtLibraryPath.InvisibleChar = '?';
-			this.hbox5.Add (this.txtLibraryPath);
-			global::Gtk.Box.BoxChild w26 = ((global::Gtk.Box.BoxChild)(this.hbox5 [this.txtLibraryPath]));
+			this.txtIncludePath = new global::Gtk.Entry ();
+			this.txtIncludePath.CanFocus = true;
+			this.txtIncludePath.Name = "txtIncludePath";
+			this.txtIncludePath.IsEditable = true;
+			this.txtIncludePath.InvisibleChar = '?';
+			this.hbox5.Add (this.txtIncludePath);
+			global::Gtk.Box.BoxChild w26 = ((global::Gtk.Box.BoxChild)(this.hbox5 [this.txtIncludePath]));
 			w26.Position = 0;
 			// Container child hbox5.Gtk.Box+BoxChild
-			this.btnBrowseLibraryPath = new global::Gtk.Button ();
-			this.btnBrowseLibraryPath.CanFocus = true;
-			this.btnBrowseLibraryPath.Name = "btnBrowseLibraryPath";
-			this.btnBrowseLibraryPath.UseUnderline = true;
-			this.btnBrowseLibraryPath.Label = global::Mono.Unix.Catalog.GetString ("Browse...");
-			this.hbox5.Add (this.btnBrowseLibraryPath);
-			global::Gtk.Box.BoxChild w27 = ((global::Gtk.Box.BoxChild)(this.hbox5 [this.btnBrowseLibraryPath]));
+			this.btnBrowseIncludePath = new global::Gtk.Button ();
+			this.btnBrowseIncludePath.CanFocus = true;
+			this.btnBrowseIncludePath.Name = "btnBrowseIncludePath";
+			this.btnBrowseIncludePath.UseUnderline = true;
+			this.btnBrowseIncludePath.Label = global::Mono.Unix.Catalog.GetString ("Browse...");
+			this.hbox5.Add (this.btnBrowseIncludePath);
+			global::Gtk.Box.BoxChild w27 = ((global::Gtk.Box.BoxChild)(this.hbox5 [this.btnBrowseIncludePath]));
 			w27.Position = 1;
 			w27.Expand = false;
 			w27.Fill = false;
@@ -394,10 +387,10 @@ namespace MonoDevelop.D.OptionPanels
 			this.scrolledwindow11.Name = "scrolledwindow11";
 			this.scrolledwindow11.ShadowType = ((global::Gtk.ShadowType)(1));
 			// Container child scrolledwindow11.Gtk.Container+ContainerChild
-			this.tvLibraryPaths = new global::Gtk.TreeView ();
-			this.tvLibraryPaths.CanFocus = true;
-			this.tvLibraryPaths.Name = "tvLibraryPaths";
-			this.scrolledwindow11.Add (this.tvLibraryPaths);
+			this.tvIncludePaths = new global::Gtk.TreeView ();
+			this.tvIncludePaths.CanFocus = true;
+			this.tvIncludePaths.Name = "tvIncludePaths";
+			this.scrolledwindow11.Add (this.tvIncludePaths);
 			this.table4.Add (this.scrolledwindow11);
 			global::Gtk.Table.TableChild w31 = ((global::Gtk.Table.TableChild)(this.table4 [this.scrolledwindow11]));
 			w31.TopAttach = ((uint)(1));
@@ -409,14 +402,14 @@ namespace MonoDevelop.D.OptionPanels
 			this.vbox9.Name = "vbox9";
 			this.vbox9.Spacing = 6;
 			// Container child vbox9.Gtk.Box+BoxChild
-			this.btnRemoveLibraryPath = new global::Gtk.Button ();
-			this.btnRemoveLibraryPath.Sensitive = false;
-			this.btnRemoveLibraryPath.CanFocus = true;
-			this.btnRemoveLibraryPath.Name = "btnRemoveLibraryPath";
-			this.btnRemoveLibraryPath.UseUnderline = true;
-			this.btnRemoveLibraryPath.Label = global::Mono.Unix.Catalog.GetString ("Remove");
-			this.vbox9.Add (this.btnRemoveLibraryPath);
-			global::Gtk.Box.BoxChild w32 = ((global::Gtk.Box.BoxChild)(this.vbox9 [this.btnRemoveLibraryPath]));
+			this.btnRemoveIncludePath = new global::Gtk.Button ();
+			this.btnRemoveIncludePath.Sensitive = false;
+			this.btnRemoveIncludePath.CanFocus = true;
+			this.btnRemoveIncludePath.Name = "btnRemoveIncludePath";
+			this.btnRemoveIncludePath.UseUnderline = true;
+			this.btnRemoveIncludePath.Label = global::Mono.Unix.Catalog.GetString ("Remove");
+			this.vbox9.Add (this.btnRemoveIncludePath);
+			global::Gtk.Box.BoxChild w32 = ((global::Gtk.Box.BoxChild)(this.vbox9 [this.btnRemoveIncludePath]));
 			w32.Position = 0;
 			w32.Expand = false;
 			w32.Fill = false;
@@ -442,16 +435,9 @@ namespace MonoDevelop.D.OptionPanels
 			this.vbox6.Add (this.vbox8);
 			global::Gtk.Box.BoxChild w36 = ((global::Gtk.Box.BoxChild)(this.vbox6 [this.vbox8]));
 			w36.Position = 0;
-			this.OptionsNotebook.Add (this.vbox6);
-			// Notebook tab
-			this.label2 = new global::Gtk.Label ();
-			this.label2.Name = "label2";
-			this.label2.LabelProp = global::Mono.Unix.Catalog.GetString ("Build");
-			this.OptionsNotebook.SetTabLabel (this.vbox6, this.label2);
-			this.label2.ShowAll ();
-			this.hbox1.Add (this.OptionsNotebook);
-			global::Gtk.Box.BoxChild w38 = ((global::Gtk.Box.BoxChild)(this.hbox1 [this.OptionsNotebook]));
-			w38.Position = 0;
+			this.hbox1.Add (this.vbox6);
+			global::Gtk.Box.BoxChild w37 = ((global::Gtk.Box.BoxChild)(this.hbox1 [this.vbox6]));
+			w37.Position = 0;
 			this.Add (this.hbox1);
 			if ((this.Child != null)) {
 				this.Child.ShowAll ();
@@ -459,6 +445,18 @@ namespace MonoDevelop.D.OptionPanels
 			this.Show ();
 			this.btnDebugArguments.Clicked += new global::System.EventHandler (this.btnDebugArguments_Clicked);
 			this.btnReleaseArguments.Clicked += new global::System.EventHandler (this.btnReleaseArguments_Clicked);
+			this.btnRemoveDefaultLib.Clicked += new global::System.EventHandler (this.btnRemoveDefaultLib_Clicked);
+			this.tvDefaultLibs.CursorChanged += new global::System.EventHandler (this.tvDefaultLibs_CursorChanged);
+			this.txtDefaultLib.Changed += new global::System.EventHandler (this.txtDefaultLib_Changed);
+			this.txtDefaultLib.Activated += new global::System.EventHandler (this.txtDefaultLib_Activated);
+			this.btnBrowseDefaultLib.Clicked += new global::System.EventHandler (this.btnBrowseDefaultLib_Clicked);
+			this.btnAddDefaultLib.Clicked += new global::System.EventHandler (this.btnAddDefaultLib_Click);
+			this.btnRemoveIncludePath.Clicked += new global::System.EventHandler (this.btnRemoveIncludePath_Clicked);
+			this.tvIncludePaths.CursorChanged += new global::System.EventHandler (this.tvIncludePaths_CursorChanged);
+			this.txtIncludePath.Changed += new global::System.EventHandler (this.txtIncludePath_Changed);
+			this.txtIncludePath.Activated += new global::System.EventHandler (this.txtIncludePath_Activated);
+			this.btnBrowseIncludePath.Clicked += new global::System.EventHandler (this.btnBrowseIncludePath_Clicked);
+			this.btnAddIncludePath.Clicked += new global::System.EventHandler (this.btnAddIncludePath_Clicked);
 		}
 	}
 }

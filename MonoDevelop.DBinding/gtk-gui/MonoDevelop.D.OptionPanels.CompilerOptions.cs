@@ -4,10 +4,10 @@ namespace MonoDevelop.D.OptionPanels
 {
 	public partial class CompilerOptions
 	{
-		private global::Gtk.HBox hbox1;
-		private global::Gtk.Notebook OptionsNotebook;
-		private global::Gtk.Label label8;
-        
+		private global::Gtk.Table table1;
+		private global::Gtk.ComboBox cmbCompiler;
+		private global::Gtk.Label label4;
+		
 		protected virtual void Build ()
 		{
 			global::Stetic.Gui.Initialize (this);
@@ -15,28 +15,32 @@ namespace MonoDevelop.D.OptionPanels
 			global::Stetic.BinContainer.Attach (this);
 			this.Name = "MonoDevelop.D.OptionPanels.CompilerOptions";
 			// Container child MonoDevelop.D.OptionPanels.CompilerOptions.Gtk.Container+ContainerChild
-			this.hbox1 = new global::Gtk.HBox ();
-			this.hbox1.Name = "hbox1";
-			this.hbox1.Spacing = 6;
-			// Container child hbox1.Gtk.Box+BoxChild
-			this.OptionsNotebook = new global::Gtk.Notebook ();
-			this.OptionsNotebook.CanFocus = true;
-			this.OptionsNotebook.Name = "OptionsNotebook";
-			this.OptionsNotebook.CurrentPage = 0;
-			this.OptionsNotebook.ShowBorder = false;
-			// Notebook tab
-			global::Gtk.Label w1 = new global::Gtk.Label ();
-			w1.Visible = true;
-			this.OptionsNotebook.Add (w1);
-			this.label8 = new global::Gtk.Label ();
-			this.label8.Name = "label8";
-			this.label8.LabelProp = global::Mono.Unix.Catalog.GetString ("general");
-			this.OptionsNotebook.SetTabLabel (w1, this.label8);
-			this.label8.ShowAll ();
-			this.hbox1.Add (this.OptionsNotebook);
-			global::Gtk.Box.BoxChild w2 = ((global::Gtk.Box.BoxChild)(this.hbox1 [this.OptionsNotebook]));
-			w2.Position = 0;
-			this.Add (this.hbox1);
+			this.table1 = new global::Gtk.Table (((uint)(3)), ((uint)(2)), false);
+			this.table1.Name = "table1";
+			this.table1.RowSpacing = ((uint)(6));
+			this.table1.ColumnSpacing = ((uint)(6));
+			// Container child table1.Gtk.Table+TableChild
+			this.cmbCompiler = global::Gtk.ComboBox.NewText ();
+			this.cmbCompiler.AppendText (global::Mono.Unix.Catalog.GetString ("DMD"));
+			this.cmbCompiler.AppendText (global::Mono.Unix.Catalog.GetString ("GDC"));
+			this.cmbCompiler.AppendText (global::Mono.Unix.Catalog.GetString ("LDC"));
+			this.cmbCompiler.Name = "cmbCompiler";
+			this.cmbCompiler.Active = 0;
+			this.table1.Add (this.cmbCompiler);
+			global::Gtk.Table.TableChild w1 = ((global::Gtk.Table.TableChild)(this.table1 [this.cmbCompiler]));
+			w1.LeftAttach = ((uint)(1));
+			w1.RightAttach = ((uint)(2));
+			w1.XOptions = ((global::Gtk.AttachOptions)(4));
+			w1.YOptions = ((global::Gtk.AttachOptions)(4));
+			// Container child table1.Gtk.Table+TableChild
+			this.label4 = new global::Gtk.Label ();
+			this.label4.Name = "label4";
+			this.label4.LabelProp = global::Mono.Unix.Catalog.GetString ("Default Compiler");
+			this.table1.Add (this.label4);
+			global::Gtk.Table.TableChild w2 = ((global::Gtk.Table.TableChild)(this.table1 [this.label4]));
+			w2.XOptions = ((global::Gtk.AttachOptions)(4));
+			w2.YOptions = ((global::Gtk.AttachOptions)(4));
+			this.Add (this.table1);
 			if ((this.Child != null)) {
 				this.Child.ShowAll ();
 			}
