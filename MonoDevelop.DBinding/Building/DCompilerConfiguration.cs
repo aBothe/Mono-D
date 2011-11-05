@@ -4,6 +4,8 @@ using D_Parser.Completion;
 using System.Collections.ObjectModel;
 using System;
 using System.Xml;
+using MonoDevelop.Core;
+using System.Threading;
 
 namespace MonoDevelop.D.Building
 {
@@ -80,17 +82,41 @@ namespace MonoDevelop.D.Building
 			foreach (var t in LinkTargetConfigurations)
 				t.Linker= NewLinkerPath;
 		}
-		
-		/*
-		 * Do not add default library paths, 
-		 * because it would make building the argument strings more complicated 
-		 * - there had to be compiler-specific composers 
-		 * which created the lib path chain then 
-		 * - for each single compiler/linker!
-		 */
-		/*
-		public List<string> DefaultLibPaths=new List<string>();
-		*/
+
+		public void UpdateParseCacheAsync()
+		{
+			// Return immediately if nothing there to parse
+			if (GlobalParseCache.ParsedGlobalDictionaries.Count < 1)
+				return;
+
+			var th = new Thread(() =>
+			{
+				try
+				{
+					LoggingService.LogInfo("Update "+Vendor.ToString()+"'s parse cache ({0} directories) - this may take a while!",GlobalParseCache.ParsedGlobalDictionaries.Count);
+
+					var perfResults = GlobalParseCache.UpdateCache();
+
+					foreach (var perfData in perfResults)
+					{
+						LoggingService.LogInfo(
+							"Parsed {0} files in \"{1}\" in {2}s (~{3}ms per file)",
+							perfData.AmountFiles,
+							perfData.BaseDirectory,
+							Math.Round(perfData.TotalDuration,3),
+							Math.Round( perfData.FileDuration*1000));
+					}
+				}
+				catch (Exception ex)
+				{
+					LoggingService.LogError("Error while updating parse caches", ex);
+				}
+			});
+
+			th.IsBackground = true;
+			th.Start();
+		}
+
 		public List<string> DefaultLibraries = new List<string>();
 
 		#region Loading & Saving

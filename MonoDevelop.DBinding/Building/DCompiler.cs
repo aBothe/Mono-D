@@ -64,35 +64,6 @@ namespace MonoDevelop.D.Building
 			PropertyService.SaveProperties();
 		}
 
-		public void UpdateParseCachesAsync()
-		{
-			var th = new Thread(() =>
-			{
-				foreach (var cmp in Instance.Compilers)
-					try
-					{
-						var perfResults = cmp.GlobalParseCache.UpdateCache();
-
-						foreach (var perfData in perfResults)
-						{
-							LoggingService.LogInfo(
-								"Parsed {0} files in \"{1}\" in {2}s (~{3}s per file)", 
-								perfData.AmountFiles, 
-								perfData.BaseDirectory, 
-								perfData.TotalDuration, 
-								perfData.FileDuration);
-						}
-					}
-					catch (Exception ex)
-					{
-						LoggingService.LogError("Error while updating parse caches", ex);
-					}
-			});
-
-			th.IsBackground = true;
-			th.Start();
-		}
-
 		const string GlobalPropertyName = "DBinding.DCompiler";
 		#endregion
 		
@@ -127,6 +98,12 @@ namespace MonoDevelop.D.Building
 		public IEnumerable<DCompilerConfiguration> Compilers
 		{
 			get { return new[] { Dmd,Gdc,Ldc }; }
+		}
+
+		public void UpdateParseCachesAsync()
+		{
+			foreach (var cmp in Compilers)
+				cmp.UpdateParseCacheAsync();
 		}
 
 		/// <summary>
