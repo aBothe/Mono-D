@@ -112,7 +112,7 @@ namespace MonoDevelop.D.Building
 		public override void ResetBuildArguments(DCompileTarget LinkTarget, bool IsDebug)
 		{
 			var args = Configuration.GetTargetConfiguration(LinkTarget).GetArguments(IsDebug);
-			var debugAppendix = IsDebug ? "-g -debug" : "-O -release";
+			var debugAppendix = IsDebug ? "-g" : "-O3";
 
 			args.CompilerArguments = "-c \"$src\" -o \"$obj\" $includes " + debugAppendix;
 			args.LinkerArguments = "-o \"$target\" " + debugAppendix + " $objs";
@@ -164,7 +164,7 @@ namespace MonoDevelop.D.Building
 		public override void ResetBuildArguments(DCompileTarget LinkTarget, bool IsDebug)
 		{
 			var args = Configuration.GetTargetConfiguration(LinkTarget).GetArguments(IsDebug);
-			var debugAppendix=IsDebug?"-g -debug": "-O -release";
+			var debugAppendix=IsDebug?"-g": "-O3 -release";
 
 			args.CompilerArguments = "-c \"$src\" -of \"$obj\" $includes "+debugAppendix;
 			args.LinkerArguments = "-of \"$target\" "+debugAppendix +" $objs";

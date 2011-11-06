@@ -64,10 +64,8 @@ namespace MonoDevelop.D.OptionPanels
  			targetConfig = config.GetTargetConfiguration(DCompileTarget.StaticLibrary); 						
 			txtStaticLibLinker.Text = targetConfig.Linker;
 			
-			releaseArgumentsDialog.Load(config);		
-			releaseArgumentsDialog.IsDebug = false;		
-			debugArgumentsDialog.Load(config);				
-			debugArgumentsDialog.IsDebug = true;
+			releaseArgumentsDialog.Load(config, false);		
+			debugArgumentsDialog.Load(config, true);				
 
 			defaultLibStore.Clear();
 			foreach (string lib in config.DefaultLibraries)
@@ -265,6 +263,8 @@ namespace MonoDevelop.D.OptionPanels
 				Load (tempConfig);				
 			}finally{
 				configuration = realConfig;	
+				releaseArgumentsDialog.Configuration = realConfig;
+				debugArgumentsDialog.Configuration = realConfig;
 			}				
 		}
 	}

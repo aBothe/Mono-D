@@ -6,7 +6,6 @@ namespace MonoDevelop.D.OptionPanels
 	public partial class BuildArgumentOptions : Gtk.Dialog
 	{		
 		private bool isDebug;
-		private DCompilerConfiguration configuration;
 		
 		
 		private string guiCompiler;
@@ -23,19 +22,8 @@ namespace MonoDevelop.D.OptionPanels
 			this.Build ();
 		}
 		
-		public bool IsDebug
-		{
-			get 
-			{
-				return isDebug;
-			} 
-			set
-			{
-				isDebug = value;
-			}
-		}
-		
-		public bool CanStore{get;set;}		
+		public bool IsDebug{get {return isDebug;} }		
+		public DCompilerConfiguration Configuration{get;set;}		
 		
 		protected override void OnShown ()
 		{
@@ -57,9 +45,10 @@ namespace MonoDevelop.D.OptionPanels
 			txtStaticLibLinker.Text = staticlibLinker;				
 		}
 		
-		public void Load(DCompilerConfiguration config)
+		public void Load(DCompilerConfiguration config, bool isDebug)
 		{
-			configuration = config;
+			Configuration = config;
+			this.isDebug = isDebug;			 
 			
 			LinkTargetConfiguration targetConfig;			
 			BuildConfiguration arguments;
@@ -102,44 +91,44 @@ namespace MonoDevelop.D.OptionPanels
 		
 		public void Store()
 		{
-			if ((configuration == null))				
+			if ((Configuration == null))				
 				return;
 			
 			LinkTargetConfiguration targetConfig;			
 			BuildConfiguration arguments;
 
 			//compiler targets
-			targetConfig =  configuration.GetTargetConfiguration(DCompileTarget.ConsolelessExecutable);				
+			targetConfig =  Configuration.GetTargetConfiguration(DCompileTarget.ConsolelessExecutable);				
 			arguments = targetConfig.GetArguments(isDebug);					
 			arguments.CompilerArguments = guiCompiler;
 
-			targetConfig =  configuration.GetTargetConfiguration(DCompileTarget.Executable);				
+			targetConfig =  Configuration.GetTargetConfiguration(DCompileTarget.Executable);				
 			arguments = targetConfig.GetArguments(isDebug);					
 			arguments.CompilerArguments = consoleCompiler;
 
-			targetConfig =  configuration.GetTargetConfiguration(DCompileTarget.SharedLibrary);				
+			targetConfig =  Configuration.GetTargetConfiguration(DCompileTarget.SharedLibrary);				
 			arguments = targetConfig.GetArguments(isDebug);					
 			arguments.CompilerArguments = sharedlibCompiler;
 			
-			targetConfig =  configuration.GetTargetConfiguration(DCompileTarget.StaticLibrary);				
+			targetConfig =  Configuration.GetTargetConfiguration(DCompileTarget.StaticLibrary);				
 			arguments = targetConfig.GetArguments(isDebug);					
 			arguments.CompilerArguments = staticlibCompiler;
 			
 			
 			//linker targets 
-			targetConfig =  configuration.GetTargetConfiguration(DCompileTarget.ConsolelessExecutable);				
+			targetConfig =  Configuration.GetTargetConfiguration(DCompileTarget.ConsolelessExecutable);				
 			arguments = targetConfig.GetArguments(isDebug);					
 			arguments.LinkerArguments = guiLinker;
 
-			targetConfig =  configuration.GetTargetConfiguration(DCompileTarget.Executable);				
+			targetConfig =  Configuration.GetTargetConfiguration(DCompileTarget.Executable);				
 			arguments = targetConfig.GetArguments(isDebug);					
 			arguments.LinkerArguments = consoleLinker;			
 			
-			targetConfig =  configuration.GetTargetConfiguration(DCompileTarget.SharedLibrary);				
+			targetConfig =  Configuration.GetTargetConfiguration(DCompileTarget.SharedLibrary);				
 			arguments = targetConfig.GetArguments(isDebug);					
 			arguments.LinkerArguments = sharedlibLinker;
 
-			targetConfig =  configuration.GetTargetConfiguration(DCompileTarget.StaticLibrary);				
+			targetConfig =  Configuration.GetTargetConfiguration(DCompileTarget.StaticLibrary);				
 			arguments = targetConfig.GetArguments(isDebug);					
 			arguments.LinkerArguments = staticlibLinker;
 			
