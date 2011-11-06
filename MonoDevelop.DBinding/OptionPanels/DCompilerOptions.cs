@@ -22,7 +22,7 @@ namespace MonoDevelop.D.OptionPanels
 		private Gtk.ListStore includePathStore = new Gtk.ListStore (typeof(string));		
 
 		private BuildArgumentOptions releaseArgumentsDialog = null;
-		private BuildArgumentOptions debugArgumentsDialog = null;		
+		private BuildArgumentOptions debugArgumentsDialog = null;	
 		
 		public DCompilerOptions () 
 		{
@@ -37,7 +37,10 @@ namespace MonoDevelop.D.OptionPanels
 			
 			tvIncludePaths.Model = includePathStore;
 			tvIncludePaths.HeadersVisible = false;
-			tvIncludePaths.AppendColumn ("Include", textRenderer, "text", 0);			
+			tvIncludePaths.AppendColumn ("Include", textRenderer, "text", 0);	
+			
+			releaseArgumentsDialog = new BuildArgumentOptions();
+			debugArgumentsDialog = new BuildArgumentOptions();
 		}
 	
 		public void Load (DCompilerConfiguration config)
@@ -61,12 +64,18 @@ namespace MonoDevelop.D.OptionPanels
  			targetConfig = config.GetTargetConfiguration(DCompileTarget.StaticLibrary); 						
 			txtStaticLibLinker.Text = targetConfig.Linker;
 			
+			releaseArgumentsDialog.Load(config);		
+			releaseArgumentsDialog.IsDebug = false;		
+			debugArgumentsDialog.Load(config);				
+			debugArgumentsDialog.IsDebug = true;
+
 			defaultLibStore.Clear();
 			foreach (string lib in config.DefaultLibraries)
 				defaultLibStore.AppendValues (lib);
 
 			includePathStore.Clear();
 			includePathStore.AppendValues(config.GlobalParseCache.DirectoryPaths);
+										
 		}
 
 
@@ -101,6 +110,9 @@ namespace MonoDevelop.D.OptionPanels
  			targetConfig = configuration.GetTargetConfiguration(DCompileTarget.StaticLibrary); 						
 			targetConfig.Linker = txtStaticLibLinker.Text;
 			
+			releaseArgumentsDialog.Store();			
+			debugArgumentsDialog.Store();					
+			
 			defaultLibStore.GetIterFirst (out iter);
 			configuration.DefaultLibraries.Clear();
 			while (defaultLibStore.IterIsValid (iter)) {
@@ -108,7 +120,7 @@ namespace MonoDevelop.D.OptionPanels
 				configuration.DefaultLibraries.Add (line);
 				defaultLibStore.IterNext (ref iter);
 			}
-			
+					
 			// Store new include paths
 			includePathStore.GetIterFirst (out iter);
 			configuration.GlobalParseCache.ParsedGlobalDictionaries.Clear();
@@ -121,12 +133,7 @@ namespace MonoDevelop.D.OptionPanels
 
 			// Update parse cache immediately!
 			configuration.GlobalParseCache.UpdateEditorParseCache();
-		
-			if (releaseArgumentsDialog != null)
-				releaseArgumentsDialog.Store();
-			if (debugArgumentsDialog != null)
-				debugArgumentsDialog.Store ();			
-			
+					
 			return true;
 		}
 		
@@ -134,30 +141,13 @@ namespace MonoDevelop.D.OptionPanels
 		{
 			BuildArgumentOptions dialog = null;
 			if (isDebug)
-			{
-				if (debugArgumentsDialog == null)
-				{
-					debugArgumentsDialog = new BuildArgumentOptions();
-					debugArgumentsDialog.Load (configuration);					
-				}
 				dialog = debugArgumentsDialog;								
-				dialog.IsDebug = true;				
-			}
 			else
-			{
-				if (releaseArgumentsDialog == null)
-				{
-					releaseArgumentsDialog = new BuildArgumentOptions();
-					releaseArgumentsDialog.Load (configuration);	
-				}
 				dialog = releaseArgumentsDialog;								
-				dialog.IsDebug = false;				
-			}
 			
 			Gtk.ResponseType response;	
 			response = (Gtk.ResponseType) dialog.Run ();			
 			dialog.Hide();
-			dialog.CanStore = (response == Gtk.ResponseType.Ok);
 		}
 		
 		protected void btnReleaseArguments_Clicked (object sender, System.EventArgs e)
@@ -272,19 +262,7 @@ namespace MonoDevelop.D.OptionPanels
 			{
 				DCompilerConfiguration tempConfig = new DCompilerConfiguration{Vendor = configuration.Vendor};		
 				DCompilerConfiguration.ResetToDefaults(tempConfig, configuration.Vendor);	
-				Load (tempConfig);
-				
-				//destroy and null argument forms, so that config gets reloaded on the next showdialog
-				if (releaseArgumentsDialog != null)
-				{
-					releaseArgumentsDialog.Destroy();
-					releaseArgumentsDialog = null;
-				}
-				if (debugArgumentsDialog != null)
-				{
-					debugArgumentsDialog.Destroy();			
-					debugArgumentsDialog = null;
-				}
+				Load (tempConfig);				
 			}finally{
 				configuration = realConfig;	
 			}				
