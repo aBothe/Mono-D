@@ -22,14 +22,8 @@ namespace MonoDevelop.D.Completion
 
 		public static void BuildCompletionData(Document EditorDocument, IAbstractSyntaxTree SyntaxTree, CodeCompletionContext ctx, CompletionDataList l, string EnteredText)
 		{
-			var caretOffset = ctx.TriggerOffset;
-			var caretLocation = new CodeLocation(ctx.TriggerLineOffset, ctx.TriggerLine);
-
-			IStatement stmt = null;
-			var curBlock = DResolver.SearchBlockAt(SyntaxTree, caretLocation, out stmt);
-
-			if (curBlock == null)
-				return;
+			var caretOffset = ctx.TriggerOffset-EnteredText.Length;
+			var caretLocation = new CodeLocation(ctx.TriggerLineOffset-EnteredText.Length, ctx.TriggerLine);
 
 			string lastCompletionResultPath = "";
 
@@ -37,16 +31,16 @@ namespace MonoDevelop.D.Completion
 
 			var ccs = new DCodeCompletionSupport(new CompletionDataGenerator { CompletionDataList = l });
 
-			ccs.BuildCompletionData(new EditorData {
+			var edData=new EditorData {
 					CaretLocation=caretLocation,
-					CaretOffset=ctx.TriggerOffset,
+					CaretOffset=caretOffset,
 					ModuleCode=EditorDocument.Editor.Text,
 					SyntaxTree=SyntaxTree as DModule,
 					ParseCache=codeCache,
 					ImportCache= DResolver.ResolveImports(SyntaxTree as DModule, codeCache)
-				},
-				EnteredText,
-				out lastCompletionResultPath);
+				};
+
+			ccs.BuildCompletionData(edData,	EnteredText, out lastCompletionResultPath);
 
 		}
 
