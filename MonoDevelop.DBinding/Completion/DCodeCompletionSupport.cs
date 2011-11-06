@@ -434,7 +434,7 @@ namespace MonoDevelop.D.Completion
 			{
 				try
 				{
-					return NodeString;
+					return !string.IsNullOrWhiteSpace( Node.Description)?Node.Description:PureNodeString;
 				}
 				catch (Exception ex) { LoggingService.LogError("Error while building node string", ex); }
 				return null;
