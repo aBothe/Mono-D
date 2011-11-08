@@ -130,6 +130,7 @@ namespace MonoDevelop.D.OptionPanels
 			}
 
 			// Update parse cache immediately!
+			//configuration.GlobalParseCache.UpdateCache();
 			configuration.GlobalParseCache.UpdateEditorParseCache();
 					
 			return true;
@@ -206,11 +207,23 @@ namespace MonoDevelop.D.OptionPanels
 		
 		protected void btnBrowseIncludePath_Clicked (object sender, System.EventArgs e)
 		{
-			Gtk.ResponseType response;
-			AddPathDialog dialog = new AddPathDialog (System.IO.Directory.GetCurrentDirectory().ToString());/*configuration.SourcePath*/
+			/*Gtk.ResponseType response;
+			AddPathDialog dialog = new AddPathDialog (System.IO.Directory.GetCurrentDirectory().ToString());
 			response = (Gtk.ResponseType) dialog.Run ();
-			if (response == Gtk.ResponseType.Ok)			
-				txtIncludePath.Text = dialog.SelectedPath;
+			if (response == Gtk.ResponseType.Ok)
+				txtIncludePath.Text = dialog.SelectedPath;*/
+			
+			Gtk.FileChooserDialog dialog = new Gtk.FileChooserDialog("Select D Source Folder", null , Gtk.FileChooserAction.SelectFolder, "Cancel", Gtk.ResponseType.Cancel, "Ok", Gtk.ResponseType.Ok);
+			try{
+				
+				dialog.WindowPosition = Gtk.WindowPosition.Center;
+				if (dialog.Run() == (int)Gtk.ResponseType.Ok)
+					txtIncludePath.Text = dialog.Filename;
+			}finally{
+				dialog.Destroy();
+			}			
+			
+			
 		}
 		
 		private void OnIncludePathAdded(object sender, System.EventArgs e)

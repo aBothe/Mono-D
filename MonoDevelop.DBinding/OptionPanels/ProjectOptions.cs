@@ -69,12 +69,13 @@ namespace MonoDevelop.D.OptionPanels
 			extraCompilerTextView.Buffer.Text = config.ExtraCompilerArguments;
 			extraLinkerTextView.Buffer.Text = config.ExtraLinkerArguments;			
 			
-			/*
-			foreach (string lib in config.Libs)
-				libStore.AppendValues (lib);
 			
-			foreach (string includePath in config.Includes)
-				includePathStore.AppendValues (includePath);*/
+			libStore.Clear();
+			foreach (string lib in proj.ExtraLibraries)
+				libStore.AppendValues (lib);
+
+			includePathStore.Clear();
+			includePathStore.AppendValues(project.LocalIncludeCache.DirectoryPaths);
 		}
 		
 		private void OnIncludePathAdded (object sender, EventArgs e)
@@ -119,6 +120,15 @@ namespace MonoDevelop.D.OptionPanels
 			AddPathDialog dialog = new AddPathDialog (configuration.SourcePath);
 			dialog.Run ();
 			includePathEntry.Text = dialog.SelectedPath;*/
+			
+			Gtk.FileChooserDialog dialog = new Gtk.FileChooserDialog("Select D Source Folder", null, Gtk.FileChooserAction.SelectFolder, "Cancel", Gtk.ResponseType.Cancel, "Ok", Gtk.ResponseType.Ok);
+			try{
+				dialog.WindowPosition = Gtk.WindowPosition.Center;				
+				if (dialog.Run() == (int)Gtk.ResponseType.Ok)
+					includePathEntry.Text = dialog.Filename;
+			}finally{
+				dialog.Destroy();
+			}
 		}
 		
 		public bool Store ()
@@ -137,18 +147,18 @@ namespace MonoDevelop.D.OptionPanels
 			configuration.ExtraLinkerArguments = extraLinkerTextView.Buffer.Text;
 			
 			libStore.GetIterFirst (out iter);
-			//configuration.Libs.Clear();
+			project.ExtraLibraries.Clear();
 			while (libStore.IterIsValid (iter)) {
 				line = (string)libStore.GetValue (iter, 0);
-				//configuration.Libs.Add (line);
+				project.ExtraLibraries.Add(line);
 				libStore.IterNext (ref iter);
 			}
 			
 			includePathStore.GetIterFirst (out iter);
-			//configuration.Includes.Clear ();
+			project.LocalIncludeCache.ParsedGlobalDictionaries.Clear();
 			while (includePathStore.IterIsValid (iter)) {
 				line = (string)includePathStore.GetValue (iter, 0);
-				//configuration.Includes.Add (line);
+				project.LocalIncludeCache.Add(line);
 				includePathStore.IterNext (ref iter);
 			}
 			
