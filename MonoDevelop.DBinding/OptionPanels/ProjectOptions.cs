@@ -74,6 +74,7 @@ namespace MonoDevelop.D.OptionPanels
 			foreach (string lib in proj.ExtraLibraries)
 				libStore.AppendValues (lib);
 
+			project.SetupLocalIncludeCache();
 			includePathStore.Clear();
 			includePathStore.AppendValues(project.LocalIncludeCache.DirectoryPaths);
 		}
@@ -161,6 +162,7 @@ namespace MonoDevelop.D.OptionPanels
 				project.LocalIncludeCache.Add(line);
 				includePathStore.IterNext (ref iter);
 			}
+			project.SaveLocalIncludeCacheInformation();
 			
 			return true;
 		}
