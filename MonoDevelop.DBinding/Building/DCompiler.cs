@@ -31,7 +31,10 @@ namespace MonoDevelop.D.Building
 
 	public enum DCompilerVendor
 	{
-		Default, //only used by d project options to point to the global default compiler which cannot be set to default
+		/// <summary>
+		/// Only used by d project options to point to the global default compiler which cannot be set to default
+		/// </summary>
+		Default,
 		DMD,
 		GDC,
 		LDC
