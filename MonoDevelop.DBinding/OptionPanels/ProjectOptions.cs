@@ -16,8 +16,10 @@ namespace MonoDevelop.D.OptionPanels
 	/// </summary>
 	public partial class ProjectOptions : Gtk.Bin
 	{
+		private DProject project;
 		private DProjectConfiguration configuration;
 
+		private Gtk.ListStore compilerStore = new Gtk.ListStore(typeof(string), typeof(DCompilerVendor));
 		private Gtk.ListStore libStore = new Gtk.ListStore (typeof(string));
 		private Gtk.ListStore includePathStore = new Gtk.ListStore (typeof(string));
 		
@@ -34,16 +36,39 @@ namespace MonoDevelop.D.OptionPanels
 			includePathTreeView.Model = includePathStore;
 			includePathTreeView.HeadersVisible = false;
 			includePathTreeView.AppendColumn ("Include", textRenderer, "text", 0);
+			
+			cmbCompiler.Clear();			
+			Gtk.CellRendererText cellRenderer = new Gtk.CellRendererText();			
+			cmbCompiler.PackStart(cellRenderer, false);
+			cmbCompiler.AddAttribute(cellRenderer, "text", 0);
+
+			cmbCompiler.Model = compilerStore;
+            compilerStore.AppendValues("Default(" + DCompiler.Instance.DefaultCompiler.ToString() + ")", DCompilerVendor.Default);
+            compilerStore.AppendValues("DMD", DCompilerVendor.DMD);			
+            compilerStore.AppendValues("GDC", DCompilerVendor.GDC);			
+            compilerStore.AppendValues("LDC", DCompilerVendor.LDC);						
+
 		}
 		
-		public void Load (DProjectConfiguration config)
+		public void Load (DProject proj, DProjectConfiguration config)
 		{
+			project = proj;
 			configuration = config;
 			
-			//cmbCompiler.Active = (int)config.Compiler;
-		
+			//cmbCompiler.Active = (int)config.Compiler;			
+			Gtk.TreeIter iter;
+			if (cmbCompiler.Model.GetIterFirst (out iter)) {
+				do {
+					if (proj.UsedCompilerVendor == (DCompilerVendor)cmbCompiler.Model.GetValue(iter, 1)) {
+						cmbCompiler.SetActiveIter(iter);
+						break;
+					} 
+				} while (cmbCompiler.Model.IterNext (ref iter));
+			}			
+				
 			extraCompilerTextView.Buffer.Text = config.ExtraCompilerArguments;
 			extraLinkerTextView.Buffer.Text = config.ExtraLinkerArguments;			
+			
 			/*
 			foreach (string lib in config.Libs)
 				libStore.AppendValues (lib);
@@ -102,9 +127,12 @@ namespace MonoDevelop.D.OptionPanels
 				return false;
 			
 			string line;
-			Gtk.TreeIter iter;
 			
 			//configuration.Compiler = (DCompilerVendor)cmbCompiler.Active;
+			Gtk.TreeIter iter;
+			if (cmbCompiler.GetActiveIter(out iter))
+				project.UsedCompilerVendor = (DCompilerVendor)cmbCompiler.Model.GetValue (iter,1);
+			
 			configuration.ExtraCompilerArguments = extraCompilerTextView.Buffer.Text;
 			configuration.ExtraLinkerArguments = extraLinkerTextView.Buffer.Text;
 			
@@ -185,7 +213,7 @@ namespace MonoDevelop.D.OptionPanels
 		
 		public override void LoadConfigData ()
 		{
-			panel.Load((DProjectConfiguration) CurrentConfiguration);
+			panel.Load((DProject)ConfiguredProject, (DProjectConfiguration) CurrentConfiguration);
 		}
 
 		

@@ -42,7 +42,7 @@ namespace MonoDevelop.D
 		public ASTStorage LocalIncludeCache { get; private set; }		
 		
 		[ItemProperty("Compiler")]
-		public DCompilerVendor UsedCompilerVendor= DCompilerVendor.DMD;
+		public DCompilerVendor UsedCompilerVendor= DCompilerVendor.Default;
 
 		[ItemProperty("Target")]
 		public DCompileTarget CompileTarget = DCompileTarget.Executable;
@@ -86,8 +86,11 @@ namespace MonoDevelop.D
 		/// Returns the actual compiler configuration used by this project
 		/// </summary>
 		public DCompilerConfiguration Compiler
-		{
-			get { return DCompiler.Instance.GetCompiler(UsedCompilerVendor); }
+		{		
+			get 
+			{ 
+				return DCompiler.Instance.GetCompiler((UsedCompilerVendor == DCompilerVendor.Default)?DCompiler.Instance.DefaultCompiler : UsedCompilerVendor); 
+			}
 			set { UsedCompilerVendor = value.Vendor; }
 		}
 		#endregion
@@ -126,8 +129,8 @@ namespace MonoDevelop.D
 		{
 			LocalIncludeCache = new ASTStorage();
 
-			if(DCompiler.Instance!=null)
-				UsedCompilerVendor = DCompiler.Instance.DefaultCompiler;
+			//if(DCompiler.Instance!=null)
+			//	UsedCompilerVendor = DCompiler.Instance.DefaultCompiler;
 		}
 
 		public DProject() { Init(); }

@@ -93,11 +93,7 @@ namespace MonoDevelop.D.OptionPanels
 			w1.Fill = false;
 			// Container child hbox1.Gtk.Box+BoxChild
 			this.cmbCompiler = global::Gtk.ComboBox.NewText ();
-			this.cmbCompiler.AppendText (global::Mono.Unix.Catalog.GetString ("DMD"));
-			this.cmbCompiler.AppendText (global::Mono.Unix.Catalog.GetString ("GDC"));
-			this.cmbCompiler.AppendText (global::Mono.Unix.Catalog.GetString ("LDC"));
 			this.cmbCompiler.Name = "cmbCompiler";
-			this.cmbCompiler.Active = 0;
 			this.hbox1.Add (this.cmbCompiler);
 			global::Gtk.Box.BoxChild w2 = ((global::Gtk.Box.BoxChild)(this.hbox1 [this.cmbCompiler]));
 			w2.Position = 1;

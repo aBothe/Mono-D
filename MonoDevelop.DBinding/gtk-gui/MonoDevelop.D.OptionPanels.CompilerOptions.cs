@@ -21,11 +21,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.table1.ColumnSpacing = ((uint)(6));
 			// Container child table1.Gtk.Table+TableChild
 			this.cmbCompiler = global::Gtk.ComboBox.NewText ();
-			this.cmbCompiler.AppendText (global::Mono.Unix.Catalog.GetString ("DMD"));
-			this.cmbCompiler.AppendText (global::Mono.Unix.Catalog.GetString ("GDC"));
-			this.cmbCompiler.AppendText (global::Mono.Unix.Catalog.GetString ("LDC"));
 			this.cmbCompiler.Name = "cmbCompiler";
-			this.cmbCompiler.Active = 0;
 			this.table1.Add (this.cmbCompiler);
 			global::Gtk.Table.TableChild w1 = ((global::Gtk.Table.TableChild)(this.table1 [this.cmbCompiler]));
 			w1.LeftAttach = ((uint)(1));

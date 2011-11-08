@@ -61,10 +61,7 @@
                               <widget class="Gtk.ComboBox" id="cmbCompiler">
                                 <property name="MemberName" />
                                 <property name="IsTextCombo">True</property>
-                                <property name="Items" translatable="yes">DMD
-GDC
-LDC</property>
-                                <property name="Active">0</property>
+                                <property name="Items" translatable="yes" />
                               </widget>
                               <packing>
                                 <property name="Position">1</property>
@@ -795,10 +792,7 @@ Example:
           <widget class="Gtk.ComboBox" id="cmbCompiler">
             <property name="MemberName" />
             <property name="IsTextCombo">True</property>
-            <property name="Items" translatable="yes">DMD
-GDC
-LDC</property>
-            <property name="Active">0</property>
+            <property name="Items" translatable="yes" />
           </widget>
           <packing>
             <property name="LeftAttach">1</property>

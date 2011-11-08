@@ -16,18 +16,40 @@ namespace MonoDevelop.D.OptionPanels
 	/// </summary>
 	public partial class CompilerOptions : Gtk.Bin
 	{
+		private Gtk.ListStore compilerStore = new Gtk.ListStore(typeof(string), typeof(DCompilerVendor));		
 		private DCompiler configuration;
 
 		public CompilerOptions () 
 		{
 			this.Build ();			
+			
+        	cmbCompiler.Clear();			
+			Gtk.CellRendererText cellRenderer = new Gtk.CellRendererText();
+			cmbCompiler.PackStart(cellRenderer, false);
+			cmbCompiler.AddAttribute(cellRenderer, "text", 0);
+
+			cmbCompiler.Model = compilerStore;
+            compilerStore.AppendValues("DMD", DCompilerVendor.DMD);			
+            compilerStore.AppendValues("GDC", DCompilerVendor.GDC);			
+            compilerStore.AppendValues("LDC", DCompilerVendor.LDC);						
+			
 		}
 		
 		public void Load (DCompiler config)
 		{
 			configuration = config;
 			
-			cmbCompiler.Active = (int)config.DefaultCompiler;
+			//cmbCompiler.Active = (int)config.DefaultCompiler;
+			Gtk.TreeIter iter;
+			cmbCompiler.Model.GetIterFirst (out iter);
+			if (cmbCompiler.Model.GetIterFirst (out iter)) {
+				do {
+					if (config.DefaultCompiler == (DCompilerVendor)cmbCompiler.Model.GetValue(iter, 1)) {
+						cmbCompiler.SetActiveIter(iter);
+						break;
+					}
+				} while (cmbCompiler.Model.IterNext (ref iter));
+			}			
 		}
 
 
@@ -41,7 +63,11 @@ namespace MonoDevelop.D.OptionPanels
 			if (configuration == null)
 				return false;
 			
-			configuration.DefaultCompiler = (DCompilerVendor)cmbCompiler.Active;			
+			//configuration.DefaultCompiler = (DCompilerVendor)cmbCompiler.Active;			
+			Gtk.TreeIter iter;
+			if (cmbCompiler.GetActiveIter(out iter))
+				configuration.DefaultCompiler = (DCompilerVendor)cmbCompiler.Model.GetValue (iter,1);
+			
 			return true;
 		}
 
