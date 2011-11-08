@@ -43,11 +43,10 @@ namespace MonoDevelop.D.OptionPanels
 			cmbCompiler.AddAttribute(cellRenderer, "text", 0);
 
 			cmbCompiler.Model = compilerStore;
-            compilerStore.AppendValues("Default(" + DCompiler.Instance.DefaultCompiler.ToString() + ")", DCompilerVendor.Default);
             compilerStore.AppendValues("DMD", DCompilerVendor.DMD);			
             compilerStore.AppendValues("GDC", DCompilerVendor.GDC);			
-            compilerStore.AppendValues("LDC", DCompilerVendor.LDC);						
-
+            compilerStore.AppendValues("LDC", DCompilerVendor.LDC);	
+			
 		}
 		
 		public void Load (DProject proj, DProjectConfiguration config)
@@ -55,7 +54,8 @@ namespace MonoDevelop.D.OptionPanels
 			project = proj;
 			configuration = config;
 			
-			//cmbCompiler.Active = (int)config.Compiler;			
+			cbUseDefaultCompiler.Active = proj.UseDefaultCompilerVendor;
+			OnUseDefaultCompilerChanged();
 			Gtk.TreeIter iter;
 			if (cmbCompiler.Model.GetIterFirst (out iter)) {
 				do {
@@ -128,7 +128,7 @@ namespace MonoDevelop.D.OptionPanels
 			
 			string line;
 			
-			//configuration.Compiler = (DCompilerVendor)cmbCompiler.Active;
+			project.UseDefaultCompilerVendor = cbUseDefaultCompiler.Active;
 			Gtk.TreeIter iter;
 			if (cmbCompiler.GetActiveIter(out iter))
 				project.UsedCompilerVendor = (DCompilerVendor)cmbCompiler.Model.GetValue (iter,1);
@@ -154,7 +154,17 @@ namespace MonoDevelop.D.OptionPanels
 			
 			return true;
 		}
-
+			
+		protected virtual void OnUseDefaultCompilerChanged()
+		{
+			cmbCompiler.Sensitive = (!cbUseDefaultCompiler.Active);			
+		}
+				
+		protected void cbUseDefaultCompiler_Clicked (object sender, System.EventArgs e)
+		{
+			OnUseDefaultCompilerChanged ();
+		}		
+		
 		protected virtual void OnLibAddEntryChanged (object sender, EventArgs e)
 		{
 			if (string.IsNullOrEmpty (libAddEntry.Text))

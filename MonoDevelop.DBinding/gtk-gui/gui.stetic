@@ -70,6 +70,23 @@
                                 <property name="Fill">False</property>
                               </packing>
                             </child>
+                            <child>
+                              <widget class="Gtk.CheckButton" id="cbUseDefaultCompiler">
+                                <property name="MemberName" />
+                                <property name="CanFocus">True</property>
+                                <property name="Label" translatable="yes">Use Default Compiler</property>
+                                <property name="Active">True</property>
+                                <property name="DrawIndicator">True</property>
+                                <property name="HasLabel">True</property>
+                                <property name="UseUnderline">True</property>
+                                <signal name="Clicked" handler="cbUseDefaultCompiler_Clicked" />
+                              </widget>
+                              <packing>
+                                <property name="PackType">End</property>
+                                <property name="Position">2</property>
+                                <property name="AutoSize">True</property>
+                              </packing>
+                            </child>
                           </widget>
                           <packing>
                             <property name="AutoSize">True</property>
