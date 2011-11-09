@@ -83,19 +83,27 @@ namespace MonoDevelop.D.Building
 				t.Linker= NewLinkerPath;
 		}
 
+		/// <summary>
+		/// Updates the configuration's global parse cache
+		/// </summary>
 		public void UpdateParseCacheAsync()
 		{
+			UpdateParseCacheAsync(GlobalParseCache);
+		}
+
+		public static void UpdateParseCacheAsync(ASTStorage Cache)
+		{
 			// Return immediately if nothing there to parse
-			if (GlobalParseCache.ParsedGlobalDictionaries.Count < 1)
+			if (Cache.ParsedGlobalDictionaries.Count < 1)
 				return;
 
 			var th = new Thread(() =>
 			{
 				try
 				{
-					LoggingService.LogInfo("Update "+Vendor.ToString()+"'s parse cache ({0} directories) - this may take a while!",GlobalParseCache.ParsedGlobalDictionaries.Count);
+					LoggingService.LogInfo("Update parse cache ({0} directories) - this may take a while!", Cache.ParsedGlobalDictionaries.Count);
 
-					var perfResults = GlobalParseCache.UpdateCache();
+					var perfResults = Cache.UpdateCache();
 
 					foreach (var perfData in perfResults)
 					{

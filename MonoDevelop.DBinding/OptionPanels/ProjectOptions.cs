@@ -158,8 +158,6 @@ namespace MonoDevelop.D.OptionPanels
 				project.LocalIncludeCache.Add(line);
 				includePathStore.IterNext (ref iter);
 			}
-			// Update internal includes list
-			project.SaveLocalIncludeCacheInformation();
 			// Parse local includes
 			project.LocalIncludeCache.UpdateCache();
 			

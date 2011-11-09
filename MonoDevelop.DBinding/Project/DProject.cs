@@ -19,7 +19,7 @@ using MonoDevelop.D.Building;
 namespace MonoDevelop.D
 {
 	[DataInclude(typeof(DProjectConfiguration))]
-	public class DProject:Project
+	public class DProject:Project, ICustomDataItem
 	{
 		/// <summary>
 		/// Used to indentify the AST object of a project's D module
@@ -49,41 +49,6 @@ namespace MonoDevelop.D
 
 		[ItemProperty("Target")]
 		public DCompileTarget CompileTarget = DCompileTarget.Executable;
-
-		#region Local Include Cache
-		/// <summary>
-		/// Important: This property is used only for saving and loading the include paths, not for working with them while the project is still open.
-		/// To keep the includes-list and parsecache synced, only operate with the parsecache's directory list!
-		/// </summary>
-		[ItemProperty("Includes")]
-		[ItemProperty("Path", Scope = "*")]
-		string[] includes;
-		
-		/// <summary>
-		/// Call after deserializing the project file.
-		/// Adds the internal 'includes'-list to the LocalIncludeCache and updates that one.
-		/// </summary>
-		public ParsePerformanceData[] SetupLocalIncludeCache()
-		{
-			LocalIncludeCache=new ASTStorage();
-			
-			if(includes!=null)
-				foreach (var inc in includes)
-					LocalIncludeCache.Add(inc,true);
-
-			return LocalIncludeCache.UpdateCache();
-		}
-
-		/// <summary>
-		/// Updates the internal 'includes'-list by putting all parsed directories from the LocalIncludeCache into it.
-		/// Call before serializing the project instance.
-		/// </summary>
-		public void SaveLocalIncludeCacheInformation()
-		{
-			if(LocalIncludeCache!=null)
-				includes = LocalIncludeCache.DirectoryPaths;
-		}
-		#endregion
 
 		[ItemProperty("Libs")]
 		[ItemProperty("Lib", Scope = "*")]
@@ -344,6 +309,43 @@ namespace MonoDevelop.D
 				operationMonitor.Dispose();
 				console.Dispose();
 			}
+		}
+		#endregion
+
+		#region Loading&Saving
+		public void Deserialize(ITypeSerializer handler, DataCollection data)
+		{
+			// Load include paths manually
+			var includes = data.Extract("Includes") as DataItem;
+
+			if(includes!=null && includes.HasItemData)
+				foreach (var v in includes.ItemData)
+				{
+					var dv = v as DataValue;
+
+					if (dv != null && dv.Name == "Path")
+						LocalIncludeCache.Add(dv.Value);
+				}
+
+			// Parse local includes
+			DCompilerConfiguration.UpdateParseCacheAsync(LocalIncludeCache);
+
+			handler.Deserialize(this, data);
+		}
+
+		public DataCollection Serialize(ITypeSerializer handler)
+		{
+			// Save include paths manually
+			var includes = new DataItem { Name="Includes" };
+
+			foreach (var p in LocalIncludeCache.DirectoryPaths)
+				includes.ItemData.Add(new DataValue("Path",p));
+
+			var ret = handler.Serialize(this);
+
+			ret.Add(includes);
+	
+			return ret;
 		}
 		#endregion
 	}
