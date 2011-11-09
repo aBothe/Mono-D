@@ -1,13 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-using Mono.Addins;
-using MonoDevelop.Core;
-using MonoDevelop.Ide.Projects;
-using MonoDevelop.Ide.Gui.Dialogs;
 using MonoDevelop.D.Building;
+using MonoDevelop.Ide.Gui.Dialogs;
 
 namespace MonoDevelop.D.OptionPanels
 {
@@ -35,8 +28,8 @@ namespace MonoDevelop.D.OptionPanels
 			
 			includePathTreeView.Model = includePathStore;
 			includePathTreeView.HeadersVisible = false;
-			includePathTreeView.AppendColumn ("Include", textRenderer, "text", 0);
-			
+			includePathTreeView.AppendColumn("Path", textRenderer, "text", 0);
+
 			cmbCompiler.Clear();			
 			Gtk.CellRendererText cellRenderer = new Gtk.CellRendererText();			
 			cmbCompiler.PackStart(cellRenderer, false);
@@ -74,7 +67,8 @@ namespace MonoDevelop.D.OptionPanels
 				libStore.AppendValues (lib);
 
 			includePathStore.Clear();
-			includePathStore.AppendValues(project.LocalIncludeCache.DirectoryPaths);
+			foreach(var p in project.LocalIncludeCache.DirectoryPaths)
+				includePathStore.AppendValues(p);
 		}
 		
 		private void OnIncludePathAdded (object sender, EventArgs e)
