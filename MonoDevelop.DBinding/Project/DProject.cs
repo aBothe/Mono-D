@@ -59,6 +59,10 @@ namespace MonoDevelop.D
 		[ItemProperty("Path", Scope = "*")]
 		string[] includes;
 		
+		/// <summary>
+		/// Call after deserializing the project file.
+		/// Adds the internal 'includes'-list to the LocalIncludeCache and updates that one.
+		/// </summary>
 		public ParsePerformanceData[] SetupLocalIncludeCache()
 		{
 			LocalIncludeCache=new ASTStorage();
@@ -70,17 +74,17 @@ namespace MonoDevelop.D
 			return LocalIncludeCache.UpdateCache();
 		}
 
+		/// <summary>
+		/// Updates the internal 'includes'-list by putting all parsed directories from the LocalIncludeCache into it.
+		/// Call before serializing the project instance.
+		/// </summary>
 		public void SaveLocalIncludeCacheInformation()
 		{
 			if(LocalIncludeCache!=null)
 				includes = LocalIncludeCache.DirectoryPaths;
 		}
 		#endregion
-/*
-		[ItemProperty("LibPaths")]
-		[ItemProperty("Path", Scope = "*")]
-		public List<string> LibraryPaths = new List<string>();
-*/
+
 		[ItemProperty("Libs")]
 		[ItemProperty("Lib", Scope = "*")]
 		public List<string> ExtraLibraries = new List<string>();

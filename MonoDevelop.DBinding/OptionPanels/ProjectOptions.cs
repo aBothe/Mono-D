@@ -69,12 +69,10 @@ namespace MonoDevelop.D.OptionPanels
 			extraCompilerTextView.Buffer.Text = config.ExtraCompilerArguments;
 			extraLinkerTextView.Buffer.Text = config.ExtraLinkerArguments;			
 			
-			
 			libStore.Clear();
 			foreach (string lib in proj.ExtraLibraries)
 				libStore.AppendValues (lib);
 
-			project.SetupLocalIncludeCache();
 			includePathStore.Clear();
 			includePathStore.AppendValues(project.LocalIncludeCache.DirectoryPaths);
 		}
@@ -139,14 +137,17 @@ namespace MonoDevelop.D.OptionPanels
 			
 			string line;
 			
+			// Store used compiler vendor
 			project.UseDefaultCompilerVendor = cbUseDefaultCompiler.Active;
 			Gtk.TreeIter iter;
 			if (cmbCompiler.GetActiveIter(out iter))
 				project.UsedCompilerVendor = (DCompilerVendor)cmbCompiler.Model.GetValue (iter,1);
 			
+			// Store args
 			configuration.ExtraCompilerArguments = extraCompilerTextView.Buffer.Text;
 			configuration.ExtraLinkerArguments = extraLinkerTextView.Buffer.Text;
 			
+			// Store libs
 			libStore.GetIterFirst (out iter);
 			project.ExtraLibraries.Clear();
 			while (libStore.IterIsValid (iter)) {
@@ -155,6 +156,7 @@ namespace MonoDevelop.D.OptionPanels
 				libStore.IterNext (ref iter);
 			}
 			
+			// Store includes
 			includePathStore.GetIterFirst (out iter);
 			project.LocalIncludeCache.ParsedGlobalDictionaries.Clear();
 			while (includePathStore.IterIsValid (iter)) {
@@ -162,7 +164,10 @@ namespace MonoDevelop.D.OptionPanels
 				project.LocalIncludeCache.Add(line);
 				includePathStore.IterNext (ref iter);
 			}
+			// Update internal includes list
 			project.SaveLocalIncludeCacheInformation();
+			// Parse local includes
+			project.LocalIncludeCache.UpdateCache();
 			
 			return true;
 		}

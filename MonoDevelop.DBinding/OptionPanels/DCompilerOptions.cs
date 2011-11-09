@@ -72,7 +72,8 @@ namespace MonoDevelop.D.OptionPanels
 				defaultLibStore.AppendValues (lib);
 
 			includePathStore.Clear();
-			includePathStore.AppendValues(config.GlobalParseCache.DirectoryPaths);
+			foreach(var p in config.GlobalParseCache.DirectoryPaths)
+				includePathStore.AppendValues(p);
 										
 		}
 
@@ -129,9 +130,15 @@ namespace MonoDevelop.D.OptionPanels
 				includePathStore.IterNext (ref iter);
 			}
 
-			// Update parse cache immediately!
-			//configuration.GlobalParseCache.UpdateCache();
-			configuration.GlobalParseCache.UpdateEditorParseCache();
+			try
+			{
+				// Update parse cache immediately
+				configuration.GlobalParseCache.UpdateCache();
+			}
+			catch (Exception ex)
+			{
+				LoggingService.LogError("Include path analysis error",ex);
+			}
 					
 			return true;
 		}
