@@ -23,11 +23,14 @@ namespace MonoDevelop.D
 		{
 			Instance = this;
 
-			// Init compiler configurations
-			DCompiler.Load();
+			// Init compiler configurations if not done yet
+			if (!DCompiler.IsInitialized)
+			{
+				DCompiler.Load();
 
-			// Init global parse cache
-			DCompiler.Instance.UpdateParseCachesAsync();
+				// Init global parse cache
+				DCompiler.Instance.UpdateParseCachesAsync();
+			}
 		}
 
 		~DLanguageBinding()

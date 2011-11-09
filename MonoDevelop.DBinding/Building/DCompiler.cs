@@ -41,16 +41,29 @@ namespace MonoDevelop.D.Building
 	/// </summary>
 	public class DCompiler : ICustomXmlSerializer
 	{
+		static DCompiler _instance = null;
+		public static DCompiler Instance
+		{
+			get
+			{
+				// If not initialized yet, load configuration
+				if (!IsInitialized)
+					Load();
+
+				return _instance;
+			}
+		}
+
 		#region Init/Loading & Saving
 		public static void Load()
 		{
 			// Deserialize config data
-			Instance=PropertyService.Get<DCompiler>(GlobalPropertyName);
+			_instance=PropertyService.Get<DCompiler>(GlobalPropertyName);
 
 			//LoggingService.AddLogger(new MonoDevelop.Core.Logging.FileLogger("A:\\monoDev.log", true));
 
-			if (Instance == null)
-				Instance = new DCompiler
+			if (_instance == null)
+				_instance = new DCompiler
 				{
 					Dmd = DCompilerConfiguration.CreateWithDefaults(DCompilerVendor.DMD),
 					Gdc = DCompilerConfiguration.CreateWithDefaults(DCompilerVendor.GDC),
@@ -86,7 +99,7 @@ namespace MonoDevelop.D.Building
 
 		public DCompilerVendor DefaultCompiler = DCompilerVendor.DMD;
 
-		public static DCompiler Instance=new DCompiler();
+		public static bool IsInitialized { get { return _instance != null; } }
 
 		/// <summary>
 		/// Static object which stores all global information about the dmd installation which probably exists on the programmer's machine.
