@@ -62,6 +62,12 @@ namespace MonoDevelop.D.Parser
 				else
 					cu.Add(ch as IType);
 			}
+			
+			foreach(ParserError parserError in parser.ParseErrors)
+			{
+				doc.Errors.Add(new Error(ErrorType.Error, parserError.Location.Line, parserError.Location.Column,parserError.Message));
+			}
+			
 
 			return doc;
 		}
