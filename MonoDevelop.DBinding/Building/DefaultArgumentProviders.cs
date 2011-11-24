@@ -63,7 +63,7 @@ namespace MonoDevelop.D.Building
 			var noLogoArg = (OS.IsWindows)?"-L/NOLOGO ":"";
 			
 			args.CompilerArguments = "-c \"$src\" -of\"$obj\" $includes " + debugAppendix;
-			args.LinkerArguments = noLogoArg + debugAppendix + " -of\"$target\" $objs";
+			args.LinkerArguments = noLogoArg + debugAppendix + " -of\"$target\" $objs $libs";
 
 			switch (LinkTarget)
 			{
@@ -115,7 +115,7 @@ namespace MonoDevelop.D.Building
 			var debugAppendix = IsDebug ? "-g" : "-O3";
 
 			args.CompilerArguments = "-c \"$src\" -o \"$obj\" $includes " + debugAppendix;
-			args.LinkerArguments = "-o \"$target\" " + debugAppendix + " $objs";
+			args.LinkerArguments = "-o \"$target\" " + debugAppendix + " $objs $libs";
 
 			switch (LinkTarget)
 			{
@@ -167,7 +167,7 @@ namespace MonoDevelop.D.Building
 			var debugAppendix=IsDebug?"-g": "-O3 -release";
 
 			args.CompilerArguments = "-c \"$src\" -of \"$obj\" $includes "+debugAppendix;
-			args.LinkerArguments = "-of \"$target\" "+debugAppendix +" $objs";
+			args.LinkerArguments = "-of \"$target\" "+debugAppendix +" $objs $libs";
 
 			switch (LinkTarget)
 			{

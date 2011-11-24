@@ -6,7 +6,7 @@
 	copyright="" 
 	description="D Language Binding" 
 	category="Language bindings" 
-	version="1.0">
+	version="0.1">
 	
 	
 	<!-- Resources -->
@@ -17,6 +17,10 @@
 		<Addin id = "SourceEditor2" version = "2.7" />
 		<Addin id = "DesignerSupport" version = "2.7" />
 	</Dependencies>
+
+	<Runtime>
+		<Import assembly="D_Parser.dll" />
+	</Runtime>
 	
 	<Extension path = "/MonoDevelop/Core/StockIcons">
 		<StockIcon stockid = "d-file" resource = "dfile16.png" />
@@ -60,6 +64,7 @@
 		<ProjectTemplate id = "DEmptyProject" resource = "EmptyProject.xpt.xml"/>
 		<ProjectTemplate id = "DSharedLibrary" resource = "MonoDevelop.D.templates.SharedLibrary.xpt.xml"/>
 		<ProjectTemplate id = "DStaticLibrary" resource = "MonoDevelop.D.templates.StaticLibrary.xpt.xml"/>
+		<ProjectTemplate id = "DWin32Project" resource = "MonoDevelop.D.templates.Win32Project.xpt.xml"/>
 	</Extension>
 
 	

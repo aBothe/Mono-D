@@ -207,6 +207,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="templates\Win32Project.xpt.xml" />
     <Content Include="unused extensions.txt" />
   </ItemGroup>
   <PropertyGroup>

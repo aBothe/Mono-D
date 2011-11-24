@@ -119,6 +119,12 @@ namespace MonoDevelop.D
 				binPath = info.BinPath;
 			}
 
+			var libs = projectOptions.GetElementsByTagName("Lib");
+
+			foreach (XmlNode lib in libs)
+				if (!string.IsNullOrWhiteSpace(lib.InnerText))
+					ExtraLibraries.Add(lib.InnerText);
+
 			// Create a debug configuration
 			var cfg = CreateConfiguration("Debug") as DProjectConfiguration;
 
