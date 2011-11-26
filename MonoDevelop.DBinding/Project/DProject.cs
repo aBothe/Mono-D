@@ -230,7 +230,34 @@ namespace MonoDevelop.D
 
 		protected override void DoClean(IProgressMonitor monitor, ConfigurationSelector configuration)
 		{
-			
+			var cfg = GetConfiguration(configuration) as DProjectConfiguration;
+
+			// delete obj/res files
+			monitor.BeginTask("Delete intermediate files", Files.Count);
+			foreach (var f in Files)
+			{
+				try
+				{
+					if (File.Exists(f.LastGenOutput))
+						File.Delete(f.LastGenOutput);
+				}
+				catch (Exception ex)
+				{
+					monitor.ReportError("Error while removing " + f, ex);
+				}
+				monitor.Step(1);
+			}
+			monitor.EndTask();
+
+			// delete target file
+			monitor.BeginTask("Delete output file", 1);
+
+			if (File.Exists(cfg.CompiledOutputName))
+				File.Delete(cfg.CompiledOutputName);
+
+			monitor.EndTask();
+
+			monitor.ReportSuccess("Cleanup successful!");
 		}
 
 		protected override void OnEndLoad ()
