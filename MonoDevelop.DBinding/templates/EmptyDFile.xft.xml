@@ -4,7 +4,7 @@
 	Language="D">
 
 	<TemplateConfiguration>
-		<_Name>Empty D Source File</_Name>
+		<_Name>D Source Module</_Name>
 		<Icon>d-file32</Icon>
 		<_Category>General</_Category>
 		<LanguageName>D</LanguageName>
@@ -14,7 +14,4 @@
 	<TemplateFiles>
 		<File DefaultExtension=".d" DefaultName="EmptyDSourceFile" AddStandardHeader="True"/>
 	</TemplateFiles>
-
-	<FileOptions/>
-
 </Template>

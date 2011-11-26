@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<Template
+	Originator="Alexander Bothe"
+	Language="RC">
+
+	<TemplateConfiguration>
+		<_Name>Resource Script</_Name>
+		<Icon>md-resource-file-icon</Icon>
+		<_Category>Win32</_Category>
+		<LanguageName>D</LanguageName>
+		<_Description>Creates an empty resource script for Win32 Applications.</_Description>
+	</TemplateConfiguration>
+
+	<TemplateFiles>
+		<File DefaultExtension=".rc" DefaultName="EmptyRCSourceFile" AddStandardHeader="True"/>
+	</TemplateFiles>
+</Template>

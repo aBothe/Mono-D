@@ -211,7 +211,7 @@ namespace MonoDevelop.D
 		#region Building
 		public override bool IsCompileable(string fileName)
 		{
-			return DLanguageBinding.IsDFile(fileName);
+			return DLanguageBinding.IsDFile(fileName) || fileName.ToLower().EndsWith(".rc");
 		}
 
 		public override FilePath GetOutputFileName(ConfigurationSelector configuration)

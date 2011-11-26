@@ -55,10 +55,6 @@
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="D_Parser, Version=1.0.4326.31692, Culture=neutral, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\D_Parser.dll</HintPath>
-    </Reference>
     <Reference Include="gdk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
       <Private>False</Private>
       <SpecificVersion>False</SpecificVersion>
@@ -109,6 +105,9 @@
       <Private>False</Private>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
+    <Reference Include="D_Parser">
+      <HintPath>..\D_Parser.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
@@ -145,6 +144,8 @@
     <Compile Include="OptionPanels\BuildArgumentOptions.cs" />
     <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.BuildArgumentOptions.cs" />
     <Compile Include="OptionPanels\DCompilerOptions.cs" />
+    <Compile Include="OptionPanels\ResourcesCompilerOptions.cs" />
+    <Compile Include="gtk-gui\MonoDevelop.D.ResourcesCompilerOptionsPanel.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -184,6 +185,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="gtk-gui\gui.stetic">
       <LogicalName>gui.stetic</LogicalName>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
@@ -208,6 +210,7 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="templates\Win32Project.xpt.xml" />
+    <EmbeddedResource Include="templates\EmptyRCFile.xft.xml" />
     <Content Include="unused extensions.txt" />
   </ItemGroup>
   <PropertyGroup>

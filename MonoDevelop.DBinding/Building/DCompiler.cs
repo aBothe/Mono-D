@@ -183,9 +183,6 @@ namespace MonoDevelop.D.Building
 				// If not compilable, skip it
 				if (f.BuildAction != BuildAction.Compile || !File.Exists(f.FilePath))
 					continue;
-
-				// Create object file path
-				var obj = Path.Combine(objDir, Path.GetFileNameWithoutExtension(f.FilePath)) + ObjectExtension;
 				
 				// a.Check if source file was modified and if object file still exists
 				if (Project.LastModificationTimes.ContainsKey(f) &&
@@ -198,13 +195,67 @@ namespace MonoDevelop.D.Building
 					monitor.Step(1);
 					continue;
 				}
-				// If source was modified and if obj file is existing, delete it
 				else
+					modificationsDone=true;
+				
+				#region Resource file
+				if(f.Name.EndsWith(".rc",StringComparison.OrdinalIgnoreCase))
 				{
-					modificationsDone = true;
-					if (File.Exists(obj))
-						File.Delete(obj);
+					var res = Path.Combine(objDir, Path.GetFileNameWithoutExtension(f.FilePath))+ ".res";
+					
+					if(File.Exists(res))
+						File.Delete(res);
+					
+					// Build argument string
+					var resCmpArgs=FillInMacros(Instance.ResourceCompiler.Arguments,
+						new Win32ResourceCompiler.ArgProvider{
+							RcFile=f.FilePath.ToString(), 
+							ResFile=res 
+						});
+					
+					// Execute compiler
+					string output;
+					int _exitCode = ExecuteCommand(Instance.ResourceCompiler.Executable, 
+						resCmpArgs, 
+						Project.BaseDirectory, 
+						monitor, 
+						out output);
+	
+					// Error analysis
+					if(!string.IsNullOrEmpty(output))
+						compilerResults.Errors.Add(new CompilerError{ FileName=f.FilePath, ErrorText=output});
+					CheckReturnCode(_exitCode, compilerResults);
+	
+					monitor.Step(1);
+	
+					if (_exitCode != 0)
+					{
+						buildResult.FailedBuildCount++;
+						succesfullyBuilt = false;
+						break;
+					}
+					else
+					{
+						f.LastGenOutput = res;
+						buildResult.BuildCount++;
+						Project.LastModificationTimes[f] = File.GetLastWriteTime(f.FilePath);
+	
+						// Especially when compiling large projects, do only add the relative part of the r file due to command shortness
+						if (res.StartsWith(Project.BaseDirectory))
+							BuiltObjects.Add(res.Substring(Project.BaseDirectory.ToString().Length).TrimStart(Path.DirectorySeparatorChar));
+						else
+							BuiltObjects.Add(res);
+					}
+					
+					continue;
 				}
+				#endregion
+
+				// Create object file path
+				var obj = Path.Combine(objDir, Path.GetFileNameWithoutExtension(f.FilePath)) + ObjectExtension;
+				
+				if (File.Exists(obj))
+					File.Delete(obj);
 
 				// Prevent duplicates e.g. when having the samely-named source files in different sub-packages
 				int i=2;
@@ -555,6 +606,11 @@ namespace MonoDevelop.D.Building
 
 						cmp.ReadFrom(x.ReadSubtree());
 						break;
+					
+					
+				case "ResCmp":
+					ResourceCompiler.Load( x.ReadSubtree());
+					break;
 				}
 			}
 
@@ -576,8 +632,71 @@ namespace MonoDevelop.D.Building
 
 				x.WriteEndElement();
 			}
+			
+			x.WriteStartElement("ResCmp");
+			ResourceCompiler.Save(x);
+			x.WriteEndElement();
 		}
 		#endregion
+		
+		#region Win32 Resources
+		public Win32ResourceCompiler ResourceCompiler=new Win32ResourceCompiler();
+		#endregion
+	}
+	
+	public class Win32ResourceCompiler
+	{
+		public string Executable="rc.exe";
+		public string Arguments=ResourceCompilerDefaultArguments;
+
+		public const string ResourceCompilerDefaultArguments = "/fo \"$res\" \"$rc\"";
+		
+		public void Load(XmlReader x)
+		{
+			while(x.Read())
+			{
+				switch(x.LocalName)
+				{
+				case "exe":
+					Executable=x.ReadContentAsString();
+					break;
+				
+				case "args":
+					Arguments=x.ReadContentAsString();
+					break;
+				}
+			}
+		}
+		
+		public void Save(XmlWriter x)
+		{
+			x.WriteStartElement("exe");
+			x.WriteCData(Executable);
+			x.WriteEndElement();
+			
+			x.WriteStartElement("args");
+			x.WriteCData(Arguments);
+			x.WriteEndElement();
+		}
+		
+		public class ArgProvider:IArgumentMacroProvider
+		{
+			public string RcFile;
+			public string ResFile;
+			
+			public string Replace (string Input)
+			{
+				switch(Input)
+				{
+				case "rc":
+					return RcFile;
+					
+				case "res":
+					return ResFile;
+				}
+				return null;
+			}
+		}
 	}
 	
 	public class OS

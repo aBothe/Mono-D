@@ -33,13 +33,22 @@
 		<FileFilter id = "D"
 		            insertbefore="AllFiles"
 		            _label = "D Files"
-			    extensions = "*.d,*.di"/>
+								extensions = "*.d,*.di"/>
+
+		<FileFilter id="RC"
+								insertbefore="AllFiles"
+								_label="Resource Scripts"
+								extensions="*.rc"/>
 	</Extension>
 
 	<Extension path = "/MonoDevelop/Core/MimeTypes">
 		<MimeType id="text/x-d" _description="D source code" icon="d-file" isText="true">
 			<File pattern="*.d" />
 			<File pattern="*.di" />
+		</MimeType>
+
+		<MimeType id="text/x-d" _description="Resource script code" icon="md-resource-file-icon" isText="true">
+			<File pattern="*.rc" />
 		</MimeType>
 	</Extension>
 	
@@ -48,7 +57,7 @@
 
 	<Extension path = "/MonoDevelop/ProjectModel/LanguageBindings">
 		<LanguageBinding id    = "D"
-		                 supportedextensions = ".d,.di"
+		                 supportedextensions = ".d,.di,.rc"
 		                 class = "MonoDevelop.D.DLanguageBinding" />
 	</Extension>
 	
@@ -57,6 +66,7 @@
 
 	<Extension path = "/MonoDevelop/Ide/FileTemplates">
 		<FileTemplate id = "DEmptyFile" resource = "EmptyDFile.xft.xml"/>
+		<FileTemplate id = "RCEmptyFile" resource = "MonoDevelop.D.templates.EmptyRCFile.xft.xml"/>
 	</Extension>
 
 	<Extension path = "/MonoDevelop/Ide/ProjectTemplates">
@@ -129,7 +139,14 @@
 			id = "LDCCompilerOptions"
 			_label = "LDC"
 			class = "MonoDevelop.D.OptionPanels.LDCCompilerOptionsBinding"/>
-	</Extension>		
+	</Extension>	
+
+	<Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Other/DGlobalOptions/CompilerOptions">
+		<Section
+			id = "ResCompilerOptions"
+			_label = "Win32 Resource Compiler"
+			class = "MonoDevelop.D.ResourceCompilerOptionsBinding"/>
+	</Extension>	
 	
 	<Extension path = "/MonoDevelop/ProjectModel/Gui/ItemOptionPanels/Build">
 		<Condition id = "ItemType" value = "MonoDevelop.D.DProject">

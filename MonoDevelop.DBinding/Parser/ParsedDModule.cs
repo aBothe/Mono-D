@@ -44,6 +44,7 @@ namespace MonoDevelop.D.Parser
 					pf.ExtendedProperties[DProject.DParserPropertyKey] = ast;
 			}
 
+			/*
 			var cu = new CompilationUnit(file);
 			doc.CompilationUnit = cu;
 
@@ -61,7 +62,7 @@ namespace MonoDevelop.D.Parser
 					globalScope.Add(ch as IMember);
 				else
 					cu.Add(ch as IType);
-			}
+			}*/
 			
 			foreach(ParserError parserError in parser.ParseErrors)
 			{
