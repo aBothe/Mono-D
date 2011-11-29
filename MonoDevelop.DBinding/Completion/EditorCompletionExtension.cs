@@ -116,7 +116,7 @@ namespace MonoDevelop.D
 
 		public override IParameterDataProvider HandleParameterCompletion(CodeCompletionContext completionContext, char completionChar)
 		{
-			if (!(((completionChar == ',') && (!ParameterInformationWindowManager.IsWindowVisible)) || completionChar == '('))
+			if (!(((completionChar == ',') && (!ParameterInformationWindowManager.IsWindowVisible)) || completionChar == '(' || completionChar=='!'))
 				return null;
 						
 			// Require a parsed D source
@@ -125,10 +125,6 @@ namespace MonoDevelop.D
 			if (dom == null)
 				return null;
 
-			// Check if in comment or string literal
-			if (DResolver.CommentSearching.IsInCommentAreaOrString(Document.Editor.Text, completionContext.TriggerOffset))
-				return null;
-			
 			return DParameterDataProvider.Create(Document, dom.DDom, completionContext);
 		}
 

@@ -209,7 +209,9 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="templates\Win32Project.xpt.xml" />
+    <EmbeddedResource Include="templates\Win32Project.xpt.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="templates\EmptyRCFile.xft.xml" />
     <Content Include="unused extensions.txt" />
   </ItemGroup>

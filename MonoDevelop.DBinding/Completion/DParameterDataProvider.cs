@@ -40,8 +40,8 @@ namespace MonoDevelop.D.Completion
 					caretOffset, 
 					caretLocation, 
 					curBlock as D_Parser.Dom.DMethod, 
-					DCodeCompletionSupport.EnumAvailableModules(doc));
-
+					DCodeCompletionSupport.EnumAvailableModules(doc),null);
+				
 				if (argsResult == null || argsResult.ResolvedTypesOrMethods == null || argsResult.ResolvedTypesOrMethods.Length < 1)
 					return null;
 
