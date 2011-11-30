@@ -15,6 +15,8 @@ namespace MonoDevelop.D.Completion
 		Document doc;
 		DResolver.ArgumentsResolutionResult args;
 		int selIndex = 0;
+		public ResolveResult CurrentResult { get { return args.ResolvedTypesOrMethods[selIndex]; } }		
+		
 		
 		public static DParameterDataProvider Create(Document doc, IAbstractSyntaxTree SyntaxTree, CodeCompletionContext ctx)
 		{		
@@ -56,13 +58,13 @@ namespace MonoDevelop.D.Completion
 			args = argsResult;
 			selIndex = args.CurrentlyCalledMethod;
 		}
-		
-		public ResolveResult CurrentResult { get { return args.ResolvedTypesOrMethods[selIndex]; } }		
-		
+	
 		#region IParameterDataProvider implementation
 		
 		public int GetCurrentParameterIndex (ICompletionWidget widget, CodeCompletionContext ctx)
-		{			
+		{
+			return args.CurrentlyTypedArgumentIndex+1;
+
 			int cursor = widget.CurrentCodeCompletionContext.TriggerOffset;
 			int i =  ctx.TriggerOffset;
 			
@@ -109,64 +111,129 @@ namespace MonoDevelop.D.Completion
 		public string GetMethodMarkup (int overload, string[] parameterMarkup, int currentParameter)
 		{
 			//string result1 = (overload+1).ToString()+"/"+args.ResolvedTypesOrMethods.Length.ToString();
-			string result = "";
+			string s = "";
+
 			if (CurrentResult is MemberResult)
 			{
 				MemberResult mr = (CurrentResult as MemberResult);
-				if (mr.ResolvedMember.Type != null){
-					result += " " + mr.ResolvedMember.Type.ToString();
-				}else if (mr.ResolvedMember is DMethod)	
+				var dv = mr.ResolvedMember as DMethod;
+
+				if (dv == null)
+					return (mr.ResolvedMember as DNode).ToString(false);
+
+				switch(dv.SpecialType)
 				{
-					if ((mr.ResolvedMember as DMethod).SpecialType == DMethod.MethodType.Constructor)
-						result += " constructor";
-					else if ((mr.ResolvedMember as DMethod).SpecialType == DMethod.MethodType.Destructor)
-						result += " destructor";					
+					case DMethod.MethodType.Constructor:
+						s = "(Constructor) ";
+						break;
+					case DMethod.MethodType.Destructor:
+						s = "(Destructor) ";
+						break;
+					case DMethod.MethodType.Allocator:
+						s = "(Allocator) ";
+						break;
 				}
-				result += " " + mr.ResolvedMember.Name;					
-				result += " (" + string.Join(",", parameterMarkup) + ")";
-				result += "\r\n " + mr.ResolvedMember.Description;
+
+				if (dv.Attributes.Count>0)
+					s = dv.AttributeString + ' ';
+
+				s += dv.Name;
+
+				// Template parameters
+				if (dv.TemplateParameters != null && dv.TemplateParameters.Length > 0)
+				{
+					s += "(";
+
+					if(args.IsTemplateInstanceArguments)
+						s += string.Join(",", parameterMarkup);
+					else foreach(var p in dv.TemplateParameters)
+						s += p.ToString() + ",";
+
+					s = s.Trim(',') + ")";
+				}
+
+				// Parameters
+				s += "(";
+
+				if(!args.IsTemplateInstanceArguments)
+					s += string.Join(",", parameterMarkup);
+				else foreach (var p in dv.Parameters)
+						s += p.ToString() + ",";
+
+				s = s.Trim(',') + ")";
+
+
+				// Optional: description
+				if(!string.IsNullOrWhiteSpace( mr.ResolvedMember.Description))
+					s += "\n\n " + mr.ResolvedMember.Description;
+				return s;
 			}
 			
-			if (CurrentResult is TypeResult)
+			if (CurrentResult is TypeResult && args.IsTemplateInstanceArguments)
 			{				
-				TypeResult tr = (CurrentResult as TypeResult);
-				if (tr.ResolvedTypeDefinition.Type != null)
-				{
-					result += " " + tr.ResolvedTypeDefinition.Type.ToString();
-					result += " " + tr.ResolvedTypeDefinition.Name;									
-				}else{
-					result += " " + tr.ResolvedTypeDefinition.ToString();
-				}
+				var tr = (CurrentResult as TypeResult);
 				
-				result += " (" + string.Join(",", parameterMarkup) + ")";
-				result += "\r\n " + tr.ResolvedTypeDefinition.Description;	
-			}					
-			
-			return result;	
+				s = tr.ResolvedTypeDefinition.Name;
+				
+				s += "(" + string.Join(",", parameterMarkup) + ")";
+				s += "\r\n " + tr.ResolvedTypeDefinition.Description;
+
+				return s;
+			}
+
+			return "";
 		}
 
 		public string GetParameterMarkup (int overload, int paramIndex)			
 		{
 			selIndex = overload;
-			string result = "";
+
 			if (CurrentResult is MemberResult)
-				if ((((CurrentResult as MemberResult).ResolvedMember is DMethod))
-				    && (((CurrentResult as MemberResult).ResolvedMember as DMethod).Parameters.Count > paramIndex))
+			{
+				var dm = (CurrentResult as MemberResult).ResolvedMember as DMethod;
+
+				if (dm != null)
 				{
-					DMethod dmethod = (CurrentResult as MemberResult).ResolvedMember as DMethod;
-					result += " " + dmethod.Parameters[paramIndex].Type.ToString() + " " +  dmethod.Parameters[paramIndex].Name;
+					if (args.IsTemplateInstanceArguments && dm.TemplateParameters != null)
+						return dm.TemplateParameters[paramIndex].ToString();
+					else
+						return (dm.Parameters[paramIndex] as DNode).ToString(false);
 				}
-			if (CurrentResult is TypeResult)
-				result += " " + (CurrentResult as TypeResult).ResolvedTypeDefinition.Description;
-			return result;
+			}
+
+			if (args.IsTemplateInstanceArguments && 
+				CurrentResult is TypeResult && 
+				(CurrentResult as TypeResult).ResolvedTypeDefinition is DClassLike)
+			{
+				var dc=(CurrentResult as TypeResult).ResolvedTypeDefinition as DClassLike;
+
+				if(dc.TemplateParameters!=null && dc.TemplateParameters.Length>paramIndex)
+					return dc.TemplateParameters[paramIndex].ToString();
+			}
+				
+			return null;
 		}
 
 		public int GetParameterCount (int overload)
 		{			
-			selIndex = overload;			
+			selIndex = overload;
+
 			if (CurrentResult is MemberResult)
 				if (((CurrentResult as MemberResult).ResolvedMember is DMethod))
-				    return  ((CurrentResult as MemberResult).ResolvedMember as DMethod).Parameters.Count;
+				{
+					var dm=(CurrentResult as MemberResult).ResolvedMember as DMethod;
+					if (args.IsTemplateInstanceArguments)
+						return dm.TemplateParameters!=null? dm.TemplateParameters.Length:0;
+					return dm.Parameters.Count;
+				}
+			if (CurrentResult is TypeResult && (CurrentResult as TypeResult).ResolvedTypeDefinition is DClassLike)
+			{
+				var dc=((CurrentResult as TypeResult).ResolvedTypeDefinition as DClassLike);
+
+				if (dc.TemplateParameters != null)
+					return dc.TemplateParameters.Length;
+			}
+
 			return 0;
 		}
 
