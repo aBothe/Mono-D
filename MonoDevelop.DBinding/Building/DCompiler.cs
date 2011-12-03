@@ -207,7 +207,7 @@ namespace MonoDevelop.D.Building
 						File.Delete(res);
 					
 					// Build argument string
-					var resCmpArgs=FillInMacros(Instance.ResourceCompiler.Arguments,
+					var resCmpArgs = FillInMacros(Win32ResourceCompiler.Instance.Arguments,
 						new Win32ResourceCompiler.ArgProvider{
 							RcFile=f.FilePath.ToString(), 
 							ResFile=res 
@@ -215,7 +215,7 @@ namespace MonoDevelop.D.Building
 					
 					// Execute compiler
 					string output;
-					int _exitCode = ExecuteCommand(Instance.ResourceCompiler.Executable, 
+					int _exitCode = ExecuteCommand(Win32ResourceCompiler.Instance.Executable, 
 						resCmpArgs, 
 						Project.BaseDirectory, 
 						monitor, 
@@ -609,7 +609,7 @@ namespace MonoDevelop.D.Building
 					
 					
 				case "ResCmp":
-					ResourceCompiler.Load( x.ReadSubtree());
+					Win32ResourceCompiler.Instance.Load( x.ReadSubtree());
 					break;
 				}
 			}
@@ -634,18 +634,16 @@ namespace MonoDevelop.D.Building
 			}
 			
 			x.WriteStartElement("ResCmp");
-			ResourceCompiler.Save(x);
+			Win32ResourceCompiler.Instance.Save(x);
 			x.WriteEndElement();
 		}
-		#endregion
-		
-		#region Win32 Resources
-		public Win32ResourceCompiler ResourceCompiler=new Win32ResourceCompiler();
 		#endregion
 	}
 	
 	public class Win32ResourceCompiler
 	{
+		public static Win32ResourceCompiler Instance = new Win32ResourceCompiler();
+
 		public string Executable="rc.exe";
 		public string Arguments=ResourceCompilerDefaultArguments;
 
@@ -658,11 +656,11 @@ namespace MonoDevelop.D.Building
 				switch(x.LocalName)
 				{
 				case "exe":
-					Executable=x.ReadContentAsString();
+					Executable=x.ReadString();
 					break;
 				
 				case "args":
-					Arguments=x.ReadContentAsString();
+					Arguments=x.ReadString();
 					break;
 				}
 			}
