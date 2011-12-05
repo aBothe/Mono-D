@@ -346,38 +346,30 @@ namespace MonoDevelop.D
 		#endregion
 
 		#region Loading&Saving
+
+		[ItemProperty("Includes")]
+		[ItemProperty("Path", Scope = "*")]
+		List<string> tempIncludes = new List<string>();
+
 		public void Deserialize(ITypeSerializer handler, DataCollection data)
 		{
-			// Load include paths manually
-			var includes = data.Extract("Includes") as DataItem;
+			handler.Deserialize(this, data);
 
-			if(includes!=null && includes.HasItemData)
-				foreach (var v in includes.ItemData)
-				{
-					var dv = v as DataValue;
-
-					if (dv != null && dv.Name == "Path")
-						LocalIncludeCache.Add(dv.Value);
-				}
+			foreach (var p in tempIncludes)
+				LocalIncludeCache.Add(p);
 
 			// Parse local includes
 			DCompilerConfiguration.UpdateParseCacheAsync(LocalIncludeCache);
-
-			handler.Deserialize(this, data);
 		}
 
 		public DataCollection Serialize(ITypeSerializer handler)
 		{
-			// Save include paths manually
-			var includes = new DataItem { Name="Includes" };
-
+			tempIncludes.Clear();
 			foreach (var p in LocalIncludeCache.DirectoryPaths)
-				includes.ItemData.Add(new DataValue("Path",p));
+				tempIncludes.Add(p);
 
 			var ret = handler.Serialize(this);
-
-			ret.Add(includes);
-	
+			
 			return ret;
 		}
 		#endregion
