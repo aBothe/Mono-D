@@ -140,6 +140,8 @@ namespace MonoDevelop.D.Building
 			return Dmd;
 		}
 		
+		private static bool lastLinkerActionSuccessfull = false;
+		
 		/// <summary>
 		/// Compiles a D project.
 		/// </summary>
@@ -309,7 +311,7 @@ namespace MonoDevelop.D.Building
 			if (succesfullyBuilt)
 			{
 				// a.
-				if (!modificationsDone)
+				if ((!modificationsDone) && lastLinkerActionSuccessfull)
 				{
 					// Only return if build target is still existing
 					if (File.Exists(LinkTarget))
@@ -346,7 +348,8 @@ namespace MonoDevelop.D.Building
 
 				CheckReturnCode(exitCode, compilerResults);
 
-				if (exitCode == 0)
+				lastLinkerActionSuccessfull = (exitCode == 0);
+				if (lastLinkerActionSuccessfull)
 				{
 					monitor.ReportSuccess("Build successful!");
 					monitor.Step(1);
