@@ -1,0 +1,23 @@
+<Addin id = "Mono.Debugging.Win32.D"
+       name	     = "win32-d"
+       author	 = "Michael Crompton"
+       url       = "http://mono-d.sourceforge.net/"
+       description = "D Debugger support for Mono.Debugging"
+       copyright   = ""
+       category = "Debugging"
+       version   = "2.8.2">
+
+	<Dependencies>
+		<Addin id="MonoDevelop.Core" version="2.8.2"/>
+		<Addin id="MonoDevelop.Ide" version="2.8.2"/>
+		<Addin id="MonoDevelop.Debugger" version="2.8.2"/>
+	</Dependencies>
+	
+	<Extension path="/MonoDevelop/Debugging/DebuggerEngines">
+		<DebuggerEngine id="Mono.Debugger.Gdb" 
+			name="DDebug Debugger" 
+			features="ConditionalBreakpoints, Tracepoints, Catchpoints, Attaching, DebugFile, Stepping, Pause, Breakpoints"
+			type="MonoDevelop.Debugger.DDebugger.DDebugSessionFactory" />
+	</Extension>
+
+</Addin>

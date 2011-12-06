@@ -1,0 +1,190 @@
+<Addin id="D" 
+	namespace="MonoDevelop" 
+	name="D Language Binding" 
+	author="Alexander Bothe" 
+	url="http://mono-d.sourceforge.net"
+	copyright="" 
+	description="D Language Binding" 
+	category="Language bindings" 
+	version="0.1">
+	
+	
+	<!-- Resources -->
+	
+	<Dependencies>
+		<Addin id="Ide" version="2.7" />
+		<Addin id="Core" version="2.7" />
+		<Addin id = "SourceEditor2" version = "2.7" />
+		<Addin id = "DesignerSupport" version = "2.7" />
+	</Dependencies>
+
+	<Runtime>
+		<Import assembly="D_Parser.dll" />
+	</Runtime>
+	
+	<Extension path = "/MonoDevelop/Core/StockIcons">
+		<StockIcon stockid = "d-file" resource = "dfile16.png" />
+		<StockIcon stockid = "d-project" resource = "dproj16.png" />
+		<StockIcon stockid = "d-file32" resource = "MonoDevelop.D.icons.dfile32.png" />
+		<StockIcon stockid = "d-project32" resource = "MonoDevelop.D.icons.dproj32.png" />
+	</Extension>
+
+	<Extension path = "/MonoDevelop/Ide/FileFilters">
+		<FileFilter id = "D"
+		            insertbefore="AllFiles"
+		            _label = "D Files"
+								extensions = "*.d,*.di"/>
+
+		<FileFilter id="RC"
+								insertbefore="AllFiles"
+								_label="Resource Scripts"
+								extensions="*.rc"/>
+	</Extension>
+
+	<Extension path = "/MonoDevelop/Core/MimeTypes">
+		<MimeType id="text/x-d" _description="D source code" icon="d-file" isText="true">
+			<File pattern="*.d" />
+			<File pattern="*.di" />
+		</MimeType>
+
+		<MimeType id="text/x-d" _description="Resource script code" icon="md-resource-file-icon" isText="true">
+			<File pattern="*.rc" />
+		</MimeType>
+	</Extension>
+	
+	
+	<!-- Language Binding -->
+
+	<Extension path = "/MonoDevelop/ProjectModel/LanguageBindings">
+		<LanguageBinding id    = "D"
+		                 supportedextensions = ".d,.di,.rc"
+		                 class = "MonoDevelop.D.DLanguageBinding" />
+	</Extension>
+	
+	
+	<!-- File and Project Templates -->
+
+	<Extension path = "/MonoDevelop/Ide/FileTemplates">
+		<FileTemplate id = "DEmptyFile" resource = "EmptyDFile.xft.xml"/>
+		<FileTemplate id = "RCEmptyFile" resource = "MonoDevelop.D.templates.EmptyRCFile.xft.xml"/>
+	</Extension>
+
+	<Extension path = "/MonoDevelop/Ide/ProjectTemplates">
+		<ProjectTemplate id = "DConsoleProject" resource = "ConsoleProject.xpt.xml"/>
+		<ProjectTemplate id = "DEmptyProject" resource = "EmptyProject.xpt.xml"/>
+		<ProjectTemplate id = "DSharedLibrary" resource = "MonoDevelop.D.templates.SharedLibrary.xpt.xml"/>
+		<ProjectTemplate id = "DStaticLibrary" resource = "MonoDevelop.D.templates.StaticLibrary.xpt.xml"/>
+		<ProjectTemplate id = "DWin32Project" resource = "MonoDevelop.D.templates.Win32Project.xpt.xml"/>
+	</Extension>
+
+	
+	<!-- Project Binding -->
+	
+	<Extension path = "/MonoDevelop/ProjectModel/ProjectBindings">
+		<ProjectBinding id = "DProject" class = "MonoDevelop.D.DProjectBinding"/>
+	</Extension>
+
+	<Extension path = "/MonoDevelop/ProjectModel/MSBuildItemTypes">
+		<SolutionItem type="MonoDevelop.D.DProject" extension="dproj" guid="{3947E667-4C90-4C3A-BEB9-7148D6FE0D7C}"/>
+	</Extension>
+
+	
+	<!-- Project File Serialization Support -->
+	
+	<Extension path = "/MonoDevelop/ProjectModel/MD1SerializationMaps">
+		<SerializationMap resource="MonoDevelop.D.ProjectFormats.xml" />
+	</Extension>
+
+	<Extension path = "/MonoDevelop/ProjectModel/SerializableClasses">
+		<DataType class = "MonoDevelop.D.DProject" />
+		<DataType class = "MonoDevelop.D.DProjectConfiguration" />
+
+		<DataType class = "MonoDevelop.D.Building.DCompilerConfiguration" />
+		<DataType class = "MonoDevelop.D.Building.DArgumentConfiguration" />
+		<DataType class = "MonoDevelop.D.Building.DCompiler" />
+	</Extension>
+	
+	
+	<!-- Option panels -->
+	<Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Other">
+		<Section
+			id = "DGlobalOptions"
+			_label = "D"
+			class = "MonoDevelop.D.OptionPanels.DGlobalOptionsBinding"/>
+	</Extension>	
+
+	<Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Other/DGlobalOptions">
+		<Section
+			id = "CompilerOptions"
+			_label = "Compilers"
+			class = "MonoDevelop.D.OptionPanels.CompilerOptionsBinding"/>
+	</Extension>	
+
+	<Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Other/DGlobalOptions/CompilerOptions">
+		<Section
+			id = "DMDCompilerOptions"
+			_label = "DMD"
+			class = "MonoDevelop.D.OptionPanels.DMDCompilerOptionsBinding"/>
+	</Extension>		
+	
+	<Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Other/DGlobalOptions/CompilerOptions">
+		<Section
+			id = "GDCCompilerOptions"
+			_label = "GDC"
+			class = "MonoDevelop.D.OptionPanels.GDCCompilerOptionsBinding"/>
+	</Extension>		
+	
+	<Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Other/DGlobalOptions/CompilerOptions">
+		<Section
+			id = "LDCCompilerOptions"
+			_label = "LDC"
+			class = "MonoDevelop.D.OptionPanels.LDCCompilerOptionsBinding"/>
+	</Extension>	
+
+	<Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Other/DGlobalOptions/CompilerOptions">
+		<Section
+			id = "ResCompilerOptions"
+			_label = "Win32 Resource Compiler"
+			class = "MonoDevelop.D.ResourceCompilerOptionsBinding"/>
+	</Extension>	
+	
+	<Extension path = "/MonoDevelop/ProjectModel/Gui/ItemOptionPanels/Build">
+		<Condition id = "ItemType" value = "MonoDevelop.D.DProject">
+			<Section
+				id = "DProjectOptions"
+			    _label = "D Project Options"
+			    insertafter = "Compile"
+			    class = "MonoDevelop.D.OptionPanels.ProjectOptionsBinding"/>
+		</Condition>
+	</Extension>
+				
+	<!-- Syntax Highlighting and Formatting -->
+
+	<Extension path="/MonoDevelop/SourceEditor2/SyntaxModes">
+		<Templates resource="MonoDevelop.D.DSyntaxHighlightingMode.xml"/>
+	</Extension>
+	
+	<Extension path = "/MonoDevelop/Ide/CodeFormatters">
+		<Formatter mimeType="text/x-d" class="MonoDevelop.D.DFormatter" />
+	</Extension>
+		
+	<!-- Code Completion -->
+
+	<Extension path = "/MonoDevelop/Ide/TextEditorExtensions">
+		<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.DEditorCompletionExtension" />
+		
+		<!-- D Document Outline Provider -->
+		<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.Gui.DModuleOutlineExtension" />
+	</Extension>
+	
+	<Extension path = "/MonoDevelop/SourceEditor2/TooltipProviders">
+		<Class mimeTypes="text/x-d" id="DToolTipProvider" class="MonoDevelop.D.Gui.DToolTipProvider" />
+	</Extension>
+	
+	<!-- Code Parsing, Refactoring, Resolving -->
+
+	<Extension path = "/MonoDevelop/ProjectModel/DomParser">
+		<Parser class = "MonoDevelop.D.Parser.DParserWrapper" mimeTypes = "text/x-d" />
+	</Extension>	
+	
+</Addin>

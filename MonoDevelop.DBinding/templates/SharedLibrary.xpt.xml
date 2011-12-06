@@ -1,0 +1,35 @@
+﻿<?xml version="1.0"?>
+<Template	originator   = "Alexander Bothe">
+
+	<!-- Template Header -->
+	<TemplateConfiguration>
+		<_Name>Shared Library Project</_Name>
+		<_Category>D</_Category>
+		<Icon>d-project32</Icon>
+		<LanguageName>D</LanguageName>
+		<_Description>Creates a shared library</_Description>
+	</TemplateConfiguration>
+
+	<!-- Template Content -->
+	<Combine name = "${ProjectName}" directory = ".">
+		<Project name = "${ProjectName}" directory = "." type = "D">
+			<Options
+				Target = "SharedLibrary"
+				PauseConsoleOutput = "True"
+				CompilerArgs = ""
+				LinkerArgs = ""/>
+
+		<Files>
+			<File name = "myclass.d" AddStandardHeader="True">
+				<![CDATA[
+
+class MyClass
+{
+	//TODO: Enter class code here
+}
+]]>
+			</File>
+		</Files>
+		</Project>
+	</Combine>
+</Template>

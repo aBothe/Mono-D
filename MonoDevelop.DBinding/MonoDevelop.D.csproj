@@ -1,0 +1,225 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.21022</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{5867254F-6B1C-4A4C-BF98-C283740A0470}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>MonoDevelop.D</RootNamespace>
+    <AssemblyName>MonoDevelop.D</AssemblyName>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>3.5</OldToolsVersion>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <SignAssembly>false</SignAssembly>
+    <DelaySign>False</DelaySign>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+    <PlatformTarget>x86</PlatformTarget>
+    <StartAction>Program</StartAction>
+    <StartProgram>..\..\tutorial%3blib\MonoDevelop\main\build\bin\MonoDevelop.exe</StartProgram>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>none</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>C:\Program Files (x86)\MonoDevelop\AddIns\BackendBindings</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="gdk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="Mono.Addins">
+      <HintPath>..\ext\Mono.Addins.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Mono.TextEditor">
+      <HintPath>..\Mono.TextEditor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="MonoDevelop.Core">
+      <HintPath>..\MonoDevelop.Core.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="MonoDevelop.DesignerSupport">
+      <HintPath>..\ext\MonoDevelop.DesignerSupport.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="MonoDevelop.Ide">
+      <HintPath>..\MonoDevelop.Ide.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="gtk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <SpecificVersion>False</SpecificVersion>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Data" />
+    <Reference Include="gtk-dotnet, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="Mono.Posix">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="atk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="glib-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="pango-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="D_Parser">
+      <HintPath>..\D_Parser.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="Building\ArgumentMacroProvider.cs" />
+    <Compile Include="Building\DefaultArgumentProviders.cs" />
+    <Compile Include="gtk-gui\generated.cs" />
+    <Compile Include="Building\DCompiler.cs" />
+    <Compile Include="Completion\DCodeCompletionSupport.cs" />
+    <Compile Include="Completion\EditorCompletionExtension.cs" />
+    <Compile Include="DLanguageBinding.cs" />
+    <Compile Include="Formatting\DFormatter.cs" />
+    <Compile Include="Gui\DModuleOutlineExtension.cs" />
+    <Compile Include="Gui\DToolTipProvider.cs" />
+    <Compile Include="Gui\DToolTipWindow.cs" />
+    <Compile Include="OptionPanels\ProjectOptions.cs" />
+    <Compile Include="Parser\DParserWrapper.cs" />
+    <Compile Include="Parser\ParsedDModule.cs" />
+    <Compile Include="Project\DProjectBinding.cs" />
+    <Compile Include="Project\DProject.cs" />
+    <Compile Include="Project\DProjectConfiguration.cs" />
+    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.ProjectOptions.cs" />
+    <Compile Include="Gui\AddLibraryDialog.cs" />
+    <Compile Include="Gui\AddPathDialog.cs" />
+    <Compile Include="gtk-gui\MonoDevelop.D.AddLibraryDialog.cs" />
+    <Compile Include="gtk-gui\MonoDevelop.D.AddPathDialog.cs" />
+    <Compile Include="Building\DCompilerConfiguration.cs" />
+    <Compile Include="OptionPanels\DGlobalOptions.cs" />
+    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.DGlobalOptions.cs" />
+    <Compile Include="Completion\DParameterDataProvider.cs" />
+    <Compile Include="Parser\DIncludesParser.cs" />
+    <Compile Include="OptionPanels\CompilerOptions.cs" />
+    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.CompilerOptions.cs" />
+    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.DCompilerOptions.cs" />
+    <Compile Include="OptionPanels\BuildArgumentOptions.cs" />
+    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.BuildArgumentOptions.cs" />
+    <Compile Include="OptionPanels\DCompilerOptions.cs" />
+    <Compile Include="OptionPanels\ResourcesCompilerOptions.cs" />
+    <Compile Include="gtk-gui\MonoDevelop.D.ResourcesCompilerOptionsPanel.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <Folder Include="Refactoring\" />
+    <Folder Include="Resolver\" />
+  </ItemGroup>
+  <ProjectExtensions>
+    <MonoDevelop>
+      <Properties>
+        <Policies>
+          <DotNetNamingPolicy DirectoryNamespaceAssociation="None" ResourceNamePolicy="FileName" />
+          <TextStylePolicy inheritsSet="null" scope="text/x-csharp" />
+          <CSharpFormattingPolicy inheritsSet="Mono" inheritsScope="text/x-csharp" scope="text/x-csharp" />
+        </Policies>
+      </Properties>
+    </MonoDevelop>
+  </ProjectExtensions>
+  <ItemGroup>
+    <EmbeddedResource Include="icons\dfile16.png">
+      <LogicalName>dfile16.png</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="icons\dproj16.png">
+      <LogicalName>dproj16.png</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MonoDevelop.D.addin.xml">
+      <SubType>Designer</SubType>
+      <LogicalName>MonoDevelop.D.addin.xml</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="templates\EmptyDFile.xft.xml">
+      <LogicalName>EmptyDFile.xft.xml</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="templates\ConsoleProject.xpt.xml">
+      <LogicalName>ConsoleProject.xpt.xml</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="templates\EmptyProject.xpt.xml">
+      <LogicalName>EmptyProject.xpt.xml</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="gtk-gui\gui.stetic">
+      <LogicalName>gui.stetic</LogicalName>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="icons\dfile32.png" />
+    <EmbeddedResource Include="icons\dproj32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="templates\StaticLibrary.xpt.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="ProjectFormats.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="templates\SharedLibrary.xpt.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="DSyntaxHighlightingMode.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="templates\Win32Project.xpt.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="templates\EmptyRCFile.xft.xml" />
+    <Content Include="unused extensions.txt" />
+  </ItemGroup>
+  <PropertyGroup>
+    <PostBuildEvent>xcopy "$(TargetDir)*" "$(SolutionDir)..\tutorial.lib\MonoDevelop\main\build\AddIns\BackendBindings" /Y</PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <StartAction>Program</StartAction>
+    <StartProgram>..\..\tutorial%3blib\MonoDevelop\main\build\bin\MonoDevelop.exe</StartProgram>
+  </PropertyGroup>
+</Project>
