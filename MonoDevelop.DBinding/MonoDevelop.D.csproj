@@ -219,7 +219,9 @@
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(TargetDir)*" "$(SolutionDir)..\tutorial.lib\MonoDevelop\main\build\AddIns\BackendBindings" /Y</PostBuildEvent>
+    <PostBuildEvent>cd "$(SolutionDir)build"
+BuildRepoFiles
+xcopy "$(TargetDir)*" "$(SolutionDir)..\tutorial.lib\MonoDevelop\main\build\AddIns\BackendBindings" /Y</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <StartAction>Program</StartAction>
