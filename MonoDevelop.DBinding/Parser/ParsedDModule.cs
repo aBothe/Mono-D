@@ -7,6 +7,7 @@ using MonoDevelop.Projects.Dom;
 using MonoDevelop.Projects.Dom.Parser;
 using System.IO;
 using D_Parser.Parser;
+using D_Parser.Dom.Statements;
 
 namespace MonoDevelop.D.Parser
 {
@@ -68,7 +69,16 @@ namespace MonoDevelop.D.Parser
 			{
 				doc.Errors.Add(new Error(ErrorType.Error, parserError.Location.Line, parserError.Location.Column,parserError.Message));
 			}
-			
+
+			foreach (var cm in parser.TrackerVariables.Comments)
+			{
+				var c = new Projects.Dom.Comment(cm.CommentText);
+
+				c.CommentType = cm.CommentType.HasFlag(D_Parser.Parser.Comment.Type.Block) ? CommentType.MultiLine : CommentType.SingleLine;
+				c.IsDocumentation = cm.CommentType.HasFlag(D_Parser.Parser.Comment.Type.Documentation);
+
+				c.Region = new DomRegion(cm.StartPosition.Line, cm.StartPosition.Column, cm.EndPosition.Line, cm.EndPosition.Column);
+			}
 
 			return doc;
 		}
@@ -234,6 +244,83 @@ namespace MonoDevelop.D.Parser
 		}
 
 		#endregion
+
+
+		public override IEnumerable<FoldingRegion> GenerateFolds()
+		{
+			var l = new List<FoldingRegion>();
+
+			// Add primary node folds
+			GenerateFoldsInternal(l, DDom);
+
+			// Get member block regions
+			var memberRegions = new List<DomRegion>();
+			foreach (var i in l)
+				if (i.Type == FoldType.Member)
+					memberRegions.Add(i.Region);
+
+			// Add comment folds
+			foreach (var c in Comments)
+			{
+				bool IsMemberComment = false;
+
+				foreach (var i in memberRegions)
+					if (i.Contains(c.Region.Start))
+					{
+						IsMemberComment = true;
+						break;
+					}
+
+				l.Add(new FoldingRegion(c.Region, IsMemberComment?FoldType.CommentInsideMember: FoldType.Comment));
+			}
+
+			return l;
+		}
+
+		void GenerateFoldsInternal(List<FoldingRegion> l,IBlockNode block)
+		{
+			if (block == null)
+				return;
+
+			if (!(block is IAbstractSyntaxTree) && !block.StartLocation.IsEmpty && block.EndLocation > block.StartLocation)
+			{
+				if (block is DMethod)
+				{
+					var dm = block as DMethod;
+
+					if (dm.In != null)
+						GenerateFoldsInternal(l, dm.In);
+					if (dm.Out != null)
+						GenerateFoldsInternal(l, dm.Out);
+					if (dm.Body != null)
+						GenerateFoldsInternal(l, dm.Body);
+				}
+				else
+					l.Add(new FoldingRegion(GetBlockBodyRegion(block),FoldType.Type));
+			}
+
+			if (block.Count > 0)
+				foreach (var n in block)
+					GenerateFoldsInternal(l,n as IBlockNode);
+		}
+
+		void GenerateFoldsInternal(List<FoldingRegion> l, StatementContainingStatement statement)
+		{
+			// Only let block statements (like { SomeStatement(); SomeOtherStatement++; }) be foldable
+			if(statement is BlockStatement)
+				l.Add(new FoldingRegion(
+					new DomRegion(
+						statement.StartLocation.Line,
+						statement.StartLocation.Column,
+						statement.EndLocation.Line,
+						statement.EndLocation.Column),
+					FoldType.Undefined));
+
+			// Do a deep-scan
+			foreach (var s in statement.SubStatements)
+				if (s is StatementContainingStatement)
+					GenerateFoldsInternal(l, s as StatementContainingStatement);
+		}
 	}
 
 }
