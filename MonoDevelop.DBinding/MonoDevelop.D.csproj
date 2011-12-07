@@ -143,10 +143,12 @@
     <Compile Include="OptionPanels\DCompilerOptions.cs" />
     <Compile Include="OptionPanels\ResourcesCompilerOptions.cs" />
     <Compile Include="gtk-gui\MonoDevelop.D.ResourcesCompilerOptionsPanel.cs" />
+    <Compile Include="Refactoring\Commands.cs" />
+    <Compile Include="Refactoring\GotoDeclarationHandler.cs" />
+    <Compile Include="Refactoring\ReferenceFinder.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-    <Folder Include="Refactoring\" />
     <Folder Include="Resolver\" />
   </ItemGroup>
   <ProjectExtensions>
@@ -219,9 +221,7 @@
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
-    <PostBuildEvent>cd "$(SolutionDir)build"
-BuildRepoFiles
-xcopy "$(TargetDir)*" "$(SolutionDir)..\tutorial.lib\MonoDevelop\main\build\AddIns\BackendBindings" /Y</PostBuildEvent>
+    <PostBuildEvent>xcopy /Q "$(TargetDir)*" "$(SolutionDir)..\tutorial.lib\MonoDevelop\main\build\AddIns\BackendBindings" /Y</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <StartAction>Program</StartAction>

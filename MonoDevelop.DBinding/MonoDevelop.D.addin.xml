@@ -6,7 +6,7 @@
 	copyright="" 
 	description="D Language Binding" 
 	category="Language bindings" 
-	version="0.1.1">
+	version="0.1.2">
 	
 	
 	<!-- Resources -->
@@ -185,6 +185,27 @@
 
 	<Extension path = "/MonoDevelop/ProjectModel/DomParser">
 		<Parser class = "MonoDevelop.D.Parser.DParserWrapper" mimeTypes = "text/x-d" />
-	</Extension>	
+	</Extension>
+
+	<!-- Context menu extensions -->
+	<Extension path = "/MonoDevelop/Ide/Commands">
+		<Command id = "MonoDevelop.D.Refactoring.Commands.ContextMenuRefactoringCommands"
+					defaultHandler = "MonoDevelop.D.Refactoring.ContextMenuRefactoringCommandHandler"
+					_label="Refactoring Commands"
+						 type="array" />
+
+		<Command id = "MonoDevelop.D.Refactoring.Commands.GotoDeclaration"
+					defaultHandler = "MonoDevelop.D.Refactoring.GotoDeclarationHandler"
+					_label = "_Go to declaration"/>
+		<!-- defaultHandler = "MonoDevelop.D.Refactoring.FindReferencesHandler" -->
+		<Command id = "MonoDevelop.D.Refactoring.Commands.FindReferences"
+					_label = "_Find references"/>
+	</Extension>
+	
+	<Extension path = "/MonoDevelop/SourceEditor2/ContextMenu/Editor">
+		<Condition id="FileType" fileExtensions=".d,.di">
+			<CommandItem id = "MonoDevelop.D.Refactoring.Commands.ContextMenuRefactoringCommands"  insertafter="MonoDevelop.SourceEditor.SourceEditorCommands.MarkerOperations"/>
+		</Condition>
+	</Extension>
 	
 </Addin>

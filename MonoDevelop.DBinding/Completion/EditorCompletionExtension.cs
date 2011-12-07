@@ -10,6 +10,7 @@ using MonoDevelop.D.Completion;
 using MonoDevelop.D.Parser;
 using D_Parser;
 using D_Parser.Resolver;
+using MonoDevelop.Components.Commands;
 
 namespace MonoDevelop.D
 {
