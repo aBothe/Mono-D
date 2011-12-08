@@ -56,8 +56,10 @@ namespace D_Parser.Parser
 			string ret = "";
 
 			foreach(var c in Lexer.Comments)
-				ret += c.CommentText+ ' ';
+				if(c.CommentType.HasFlag(Comment.Type.Documentation))
+					ret += c.CommentText+ ' ';
 
+			TrackerVariables.Comments.AddRange(Lexer.Comments);
 			Lexer.Comments.Clear();
 
 			ret = ret.Trim();
@@ -88,18 +90,22 @@ namespace D_Parser.Parser
 			int i=0;
 			foreach (var c in Lexer.Comments)
 			{
-				// Ignore ddoc comments made e.g. in int a /** ignored comment */, b,c; 
-				// , whereas this method is called as t is the final semicolon
-				if (c.EndPosition <= t.Location)
+				if (c.CommentType.HasFlag(Comment.Type.Documentation))
 				{
-					i++;
-					continue;
-				}
-				else if(c.StartPosition.Line > ExpectedLine)
-					break;
+					// Ignore ddoc comments made e.g. in int a /** ignored comment */, b,c; 
+					// , whereas this method is called as t is the final semicolon
+					if (c.EndPosition <= t.Location)
+					{
+						i++;
+						continue;
+					}
+					else if (c.StartPosition.Line > ExpectedLine)
+						break;
 
-				ret += c.CommentText+' ';
-				i++;
+					ret += c.CommentText + ' ';
+					i++;
+				}
+				TrackerVariables.Comments.Add(c);
 			}
 			Lexer.Comments.RemoveRange(0, i);
 
