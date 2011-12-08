@@ -1,0 +1,6 @@
+*/obj/*
+*/bin/*
+*.suo
+*.user
+build/index.html
+build/*.m*
