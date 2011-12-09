@@ -683,13 +683,15 @@ namespace D_Parser.Resolver
 
 				if (block != null)
 					blockStart = DocumentHelper.LocationToOffset(code, blockStartLocation = block.StartLocation);
+				else
+					return FindCurrentCaretContext(code, CurrentScope.Parent as IBlockNode, caretOffset, caretLocation, out TrackerVariables);
 			}
 			else if (CurrentScope != null)
 			{
-				if (caretLocation < CurrentScope.BlockStartLocation && caretLocation > CurrentScope.StartLocation)
+				if (CurrentScope.BlockStartLocation.IsEmpty || caretLocation < CurrentScope.BlockStartLocation && caretLocation > CurrentScope.StartLocation)
 				{
 					ParseDecl = true;
-					blockStart = DocumentHelper.LocationToOffset(code, CurrentScope.StartLocation);
+					blockStart = DocumentHelper.LocationToOffset(code, blockStartLocation= CurrentScope.StartLocation);
 				}
 				else
 					blockStart = DocumentHelper.LocationToOffset(code, CurrentScope.BlockStartLocation);
@@ -717,6 +719,8 @@ namespace D_Parser.Resolver
 					psr.Step();
 					ret = psr.BlockStatement();
 				}
+				else if (CurrentScope is DModule)
+					ret = psr.Root();
 				else
 				{
 					psr.Step();

@@ -17,7 +17,7 @@ namespace D_Parser.Parser
 		/// <summary>
 		/// Module entry point
 		/// </summary>
-		DModule Root()
+		public DModule Root()
 		{
 			Step();
 

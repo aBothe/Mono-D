@@ -111,6 +111,10 @@ namespace D_Parser.Completion
 
 			else if (EnteredText==null || EnteredText==" " || EnteredText.Length<1 || IsIdentifierChar(EnteredText[0]))
 			{
+				// If typing a begun identifier, return immediately
+				if (Editor.CaretOffset > 0 && IsIdentifierChar(Editor.ModuleCode[Editor.CaretOffset - 1]))
+					return;
+
 				// 1) Get current context the caret is at.
 				ParserTrackerVariables trackVars = null;
 
@@ -125,10 +129,14 @@ namespace D_Parser.Completion
 
 				if (trackVars != null && trackVars.LastParsedObject != null)
 				{
+					var endLocation = CodeLocation.Empty;
+
 					if (trackVars.LastParsedObject is IExpression)
-						CaretAfterLastParsedObject = Editor.CaretLocation > (trackVars.LastParsedObject as IExpression).EndLocation;
+						endLocation= (trackVars.LastParsedObject as IExpression).EndLocation;
 					else if (trackVars.LastParsedObject is INode)
-						CaretAfterLastParsedObject = Editor.CaretLocation > (trackVars.LastParsedObject as INode).EndLocation;
+						endLocation= (trackVars.LastParsedObject as INode).EndLocation;
+
+					CaretAfterLastParsedObject = !endLocation.IsEmpty && Editor.CaretLocation > endLocation;
 				}
 
 				// 2) If in declaration and if node identifier is expected, do not show any data
