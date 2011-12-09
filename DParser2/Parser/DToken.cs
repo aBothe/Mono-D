@@ -113,11 +113,12 @@ namespace D_Parser.Parser
 
     public class Comment
     {
+		[Flags]
         public enum Type
         {
-            Block,
-            SingleLine,
-            Documentation
+            Block=1,
+            SingleLine=2,
+            Documentation=4
         }
 
         public Type CommentType;

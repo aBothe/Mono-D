@@ -378,6 +378,13 @@ namespace D_Parser.Parser
 
 		#region Abstract Lexer Props & Methods
 		public IList<ParserError> LexerErrors = new List<ParserError>();
+
+
+		/// <summary>
+		/// Set to false if normal block comments shall be logged, too.
+		/// </summary>
+		public bool OnlyEnlistDDocComments = true;
+
 		/// <summary>
 		/// A temporary storage for DDoc comments
 		/// </summary>
@@ -1588,16 +1595,15 @@ namespace D_Parser.Parser
 			var st = new CodeLocation(Col, Line);
 			string comm = ReadToEndOfLine().TrimStart('/');
 			var end = new CodeLocation(Col, Line);
-			var nComm = new Comment(commentType, comm.Trim(), st.Column < 2, st, end);
-			if (commentType == Comment.Type.Documentation)
-				Comments.Add(nComm);
+
+			if (commentType == Comment.Type.Documentation || !OnlyEnlistDDocComments)
+				Comments.Add(new Comment(commentType, comm.Trim(), st.Column < 2, st, end));
 		}
 
 		void ReadMultiLineComment(Comment.Type commentType, bool isNestingComment)
 		{
 			int nestedCommentDepth = 1;
 			int nextChar;
-			Comment nComm = null;
 			CodeLocation st = new CodeLocation(Col, Line);
 			StringBuilder scCurWord = new StringBuilder(); // current word, (scTag == null) or comment (when scTag != null)
 			bool hadLineEnd = false;
@@ -1623,9 +1629,8 @@ namespace D_Parser.Parser
 						nestedCommentDepth--;
 					else
 					{
-						nComm = new Comment(commentType, scCurWord.ToString().Trim(ch, ' ', '\t', '\r', '\n', isNestingComment? '+':'*'), st.Column < 2, st, new CodeLocation(Col, Line));
-						if (commentType == Comment.Type.Documentation)
-							Comments.Add(nComm);
+						if (commentType == Comment.Type.Documentation || !OnlyEnlistDDocComments)
+							Comments.Add( new Comment(commentType, scCurWord.ToString().Trim(ch, ' ', '\t', '\r', '\n', isNestingComment ? '+' : '*'), st.Column < 2, st, new CodeLocation(Col, Line)));
 						return;
 					}
 				}
@@ -1647,10 +1652,8 @@ namespace D_Parser.Parser
 			}
 
 			// Reached EOF before end of multiline comment.
-
-			nComm = new Comment(commentType, scCurWord.ToString().Trim(), st.Column < 2, st, new CodeLocation(Col, Line));
-			if (commentType == Comment.Type.Documentation)
-				Comments.Add(nComm);
+			if (commentType == Comment.Type.Documentation || !OnlyEnlistDDocComments)
+				Comments.Add(new Comment(commentType, scCurWord.ToString().Trim(), st.Column < 2, st, new CodeLocation(Col, Line)));
 
 			OnError(Line, Col, String.Format("Reached EOF before the end of a multiline comment"));
 		}

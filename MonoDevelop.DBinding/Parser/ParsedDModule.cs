@@ -24,6 +24,9 @@ namespace MonoDevelop.D.Parser
 
 			var parser = DParser.Create(content);
 
+			// Also put attention on non-ddoc comments; These will be used to generate foldable comment regions then
+			parser.Lexer.OnlyEnlistDDocComments = false;
+
 			// Parse the code
 			var ast  = doc.DDom = parser.Parse();
 			doc.LanguageAST = ast;
@@ -78,6 +81,8 @@ namespace MonoDevelop.D.Parser
 				c.IsDocumentation = cm.CommentType.HasFlag(D_Parser.Parser.Comment.Type.Documentation);
 
 				c.Region = new DomRegion(cm.StartPosition.Line, cm.StartPosition.Column, cm.EndPosition.Line, cm.EndPosition.Column);
+
+				doc.Comments.Add(c);
 			}
 
 			return doc;
@@ -259,9 +264,12 @@ namespace MonoDevelop.D.Parser
 				if (i.Type == FoldType.Member)
 					memberRegions.Add(i.Region);
 
-			// Add comment folds
+			// Add multiline comment folds
 			foreach (var c in Comments)
 			{
+				if (c.CommentType == CommentType.SingleLine)
+					continue;
+
 				bool IsMemberComment = false;
 
 				foreach (var i in memberRegions)

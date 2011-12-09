@@ -13,6 +13,7 @@ namespace D_Parser.Formatting
 		public static bool IsPreStatementToken(int t)
 		{
 			return
+				t==DTokens.Switch ||
 				//t == DTokens.Version ||	t == DTokens.Debug || // Don't regard them because they also can occur as an attribute
 				t == DTokens.If ||
 				t == DTokens.While ||
@@ -46,8 +47,6 @@ namespace D_Parser.Formatting
 				t = lex.CurrentToken;
 				la = lex.LookAhead;
 
-				if (la.line == 4) { }
-
 				isTheoreticEOF = la.Location>=parserEndLocation;
 				// Ensure one token after the caret offset becomes parsed
 				if (t!=null && t.Location >= parserEndLocation)
@@ -67,19 +66,20 @@ namespace D_Parser.Formatting
 						psr.AssignExpression();
 						// FIXME: What if cursor is somewhere between case and ':'??
 					}
-
 					// lex.LookAhead should be ':' now
+
 					if(lex.LookAhead.EndLocation >= parserEndLocation)
 					{
 						break;
 					}
-					else block = new CodeBlock
-					{
-						InitialToken = DTokens.Case,
-						StartLocation = t.EndLocation,
+					else if(lex.CurrentPeekToken.Kind!=DTokens.OpenCurlyBrace)
+						block = new CodeBlock
+						{
+							InitialToken = DTokens.Case,
+							StartLocation = t.EndLocation,
 
-						Parent = block
-					};
+							Parent = block
+						};
 				}
 
 				// If in a single-statement scope, unindent by 1 if semicolon found
@@ -175,10 +175,7 @@ namespace D_Parser.Formatting
 			return block;
 		}
 
-		/// <summary>
-		/// Counts the initial white-spaces in lineText
-		/// </summary>
-		public static int GetLineTabIndentation(string lineText)
+		public static int GetLineIndentation(string lineText)
 		{
 			int ret = 0;
 

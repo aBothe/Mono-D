@@ -37,7 +37,12 @@
 		<Begin>"</Begin>
 		<End>"</End>
 	</Span>
-
+<!--
+	<Span color = "string.double" rule="String" stopateol = "false" escape='\"'>
+		<Begin>&#96;</Begin>
+		<End>&#96;</End>
+	</Span>
+-->
 	<Span color = "string.single" rule="String" stopateol = "true" escape="\'">
 		<Begin>&apos;</Begin>
 		<End>&apos;</End>
@@ -166,6 +171,12 @@
 		<Word>ulong</Word>
 		<Word>ushort</Word>
 		<Word>wchar</Word>
+
+		<!-- Not real keywords -->
+		<Word>Object</Word>
+		<Word>string</Word>
+		<Word>wstring</Word>
+		<Word>dstring</Word>
 	</Keywords>
 
 	<Keywords color = "constant.language.void">

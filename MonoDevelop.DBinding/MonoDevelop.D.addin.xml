@@ -6,7 +6,7 @@
 	copyright="" 
 	description="D Language Binding" 
 	category="Language bindings" 
-	version="0.1.2">
+	version="0.1.3">
 	
 	
 	<!-- Resources -->
@@ -172,6 +172,7 @@
 
 	<Extension path = "/MonoDevelop/Ide/TextEditorExtensions">
 		<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.DEditorCompletionExtension" />
+		<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.Formatting.DTextEditorIndentation" />
 		
 		<!-- D Document Outline Provider -->
 		<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.Gui.DModuleOutlineExtension" />

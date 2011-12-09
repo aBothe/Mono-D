@@ -435,14 +435,16 @@ namespace D_Parser.Dom
 		public IEnumerator<INode> GetEnumerator()
 		{
 			if (children == null)
-				return null;
+				UpdateChildrenArray();
+
 			return (children as IEnumerable<INode>).GetEnumerator();
 		}
 
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
 		{
 			if (children == null)
-				return null;
+				UpdateChildrenArray();
+
 			return children.GetEnumerator();
 		}
 
