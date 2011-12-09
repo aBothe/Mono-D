@@ -146,6 +146,7 @@
     <Compile Include="Refactoring\Commands.cs" />
     <Compile Include="Refactoring\GotoDeclarationHandler.cs" />
     <Compile Include="Refactoring\ReferenceFinder.cs" />
+    <Compile Include="Gui\EditorPathbarProvider.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

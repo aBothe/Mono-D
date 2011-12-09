@@ -58,6 +58,24 @@ namespace MonoDevelop.D.Completion
 			args = argsResult;
 			selIndex = args.CurrentlyCalledMethod;
 		}
+		
+		public static string GetNodeParamString(D_Parser.Dom.INode node)
+		{	
+			string result = "";
+			string sep = "";
+			if (node is DMethod)
+			{
+				
+				foreach(D_Parser.Dom.INode param in (node as DMethod).Parameters)
+				{
+					result =  result + sep + param.Type.ToString();	
+					sep = ", ";
+				}
+				if (result.Length != 0)
+					result = "(" + result + ")"; 
+			}
+			return result;
+		}			
 	
 		#region IParameterDataProvider implementation
 		

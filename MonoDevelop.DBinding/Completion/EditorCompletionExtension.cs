@@ -2,29 +2,43 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using MonoDevelop.Ide.Gui.Content;
+using Gtk;
+using MonoDevelop.Core;
+using MonoDevelop.Components;
+using MonoDevelop.Components.Commands;
+using MonoDevelop.Ide;
 using MonoDevelop.Ide.CodeCompletion;
 using MonoDevelop.Ide.Gui;
-using Gtk;
+using MonoDevelop.Ide.Gui.Content;
+using MonoDevelop.Projects.Dom;
+using MonoDevelop.Projects.Dom.Output;
 using MonoDevelop.D.Completion;
+using MonoDevelop.D.Gui;
 using MonoDevelop.D.Parser;
 using D_Parser;
+using D_Parser.Dom;
+using D_Parser.Dom.Statements;
+using D_Parser.Completion;
 using D_Parser.Resolver;
-using MonoDevelop.Components.Commands;
+
 
 namespace MonoDevelop.D
 {
-	public class DEditorCompletionExtension:CompletionTextEditorExtension
+	public class DEditorCompletionExtension:CompletionTextEditorExtension, IPathedDocument
 	{
 		#region Properties / Init
 		public override bool CanRunCompletionCommand(){		return true;	}
 		public override bool CanRunParameterCompletionCommand(){	return false;	}
-
+		private Mono.TextEditor.TextEditorData documentEditor;
+		
 		public override void Initialize()
 		{
 			base.Initialize();
-
 			
+			documentEditor = Document.Editor;
+			UpdatePath (null, null);
+			documentEditor.Caret.PositionChanged += UpdatePath;
+			Document.DocumentParsed += delegate { UpdatePath (null, null); };			
 		}
 
 		#endregion
@@ -169,5 +183,118 @@ namespace MonoDevelop.D
 		{
 			return base.KeyPress(key, keyChar, modifier);
 		}
+		
+		
+		#region IPathedDocument implementation
+		public event EventHandler<DocumentPathChangedEventArgs> PathChanged;
+			
+		public Widget CreatePathWidget (int index)
+		{
+			PathEntry[] path = CurrentPath;
+			if (null == path || 0 > index || path.Length <= index) 
+			{
+				return null;
+			}
+			
+			object tag = path[index].Tag;
+			DropDownBoxListWindow.IListDataProvider provider = null;
+			if (!(tag is D_Parser.Dom.IBlockNode) )
+			{
+				return null;
+			} 
+			provider = new EditorPathbarProvider (Document, tag);
+			
+			DropDownBoxListWindow window = new DropDownBoxListWindow (provider);
+			window.SelectItem (tag);
+			return window;
+		}	
+
+		public MonoDevelop.Components.PathEntry[] CurrentPath 
+		{
+			get;
+			private set;
+		}
+		
+		protected virtual void OnPathChanged (DocumentPathChangedEventArgs args)
+		{
+			if (null != PathChanged) {
+				PathChanged (this, args);
+			}
+		}		
+		#endregion
+		
+		
+		private void UpdatePath (object sender, Mono.TextEditor.DocumentLocationEventArgs e)
+		{
+			
+			var ast = Document.ParsedDocument as ParsedDModule;
+			if (ast == null)
+				return;
+			
+			var Project = Document.Project as DProject;
+			var SyntaxTree = ast.DDom;
+
+			if (SyntaxTree == null)
+				return;		
+			
+			// Encapsule editor data for resolving
+			var edData = new EditorData
+			{
+				CaretLocation = new CodeLocation(documentEditor.Caret.Location.Column, documentEditor.Caret.Location.Line),
+				CaretOffset = documentEditor.Caret.Offset ,
+				ModuleCode = documentEditor.Text,
+				SyntaxTree = SyntaxTree as DModule,
+				ParseCache = Project.ParsedModules,
+				ImportCache = DResolver.ResolveImports(SyntaxTree as DModule, Project.ParsedModules)
+			};
+			
+			// Resolve the hovered piece of code
+			IStatement stmt = null;
+			IBlockNode currentblock = DResolver.SearchBlockAt(SyntaxTree, edData.CaretLocation, out stmt);
+			DResolver.ResolveType(edData,
+				new D_Parser.Resolver.ResolverContext
+				{
+					ParseCache = edData.ParseCache,
+					ImportCache = edData.ImportCache,
+					ScopedBlock = currentblock,
+					ScopedStatement = stmt
+				},
+				true, true);	
+			
+			List<PathEntry> result = new List<PathEntry> ();
+			D_Parser.Dom.INode node = currentblock;			
+					
+			while ((node != null) && (node is IBlockNode)) {
+				PathEntry entry;										
+				
+				var icon=DCompletionData.GetNodeIcon(node as DNode);					
+				entry = new PathEntry (ImageService.GetPixbuf(icon.Name, IconSize.Menu), node.Name + DParameterDataProvider.GetNodeParamString(node));
+				entry.Position = EntryPosition.Left;
+				located = true;				
+				entry.Tag = node;
+				//do not include the module in the path bar
+				if (node.Parent != null)
+					result.Insert (0, entry);
+				node = node.Parent;
+			}						
+			
+			if (currentblock is DClassLike) {				
+				PathEntry noSelection = new PathEntry (GettextCatalog.GetString ("No Selection")) { Tag = new NoSelectionCustomNode (currentblock) };
+				result.Add (noSelection);
+			}
+			
+			var prev = CurrentPath;
+			CurrentPath = result.ToArray ();
+			OnPathChanged (new DocumentPathChangedEventArgs (prev));
+		}	
 	}
+	
+
+	class NoSelectionCustomNode : DNode
+	{
+		public NoSelectionCustomNode (D_Parser.Dom.INode parent)
+		{
+			this.Parent = parent;
+		}		
+	}	
 }
