@@ -13,6 +13,7 @@ using MonoDevelop.D.Parser;
 using MonoDevelop.Ide.Gui;
 using MonoDevelop.Ide.FindInFiles;
 using System.Threading;
+using MonoDevelop.D.Completion;
 
 namespace MonoDevelop.D.Refactoring
 {
@@ -62,14 +63,15 @@ namespace MonoDevelop.D.Refactoring
 				return null;
 
 			// Encapsule editor data for resolving
+			var parseCache=DCodeCompletionSupport.EnumAvailableModules(Project);
 			var edData = new EditorData
 			{
 				CaretLocation = new CodeLocation(column, line),
 				CaretOffset = editor.CursorPosition,
 				ModuleCode = editor.Text,
 				SyntaxTree = SyntaxTree as DModule,
-				ParseCache = Project.ParsedModules,
-				ImportCache = DResolver.ResolveImports(SyntaxTree as DModule, Project.ParsedModules)
+				ParseCache = parseCache,
+				ImportCache = DResolver.ResolveImports(SyntaxTree as DModule, parseCache)
 			};
 
 			// Resolve the hovered piece of code

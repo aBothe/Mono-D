@@ -11,6 +11,7 @@ using Gtk;
 using MonoDevelop.Ide;
 using MonoDevelop.Components;
 using MonoDevelop.D.Completion;
+using MonoDevelop.Core;
 
 namespace MonoDevelop.D.Gui
 {
@@ -103,16 +104,25 @@ namespace MonoDevelop.D.Gui
 
 			outlineReady = false;
 			outlineTreeStore.Clear();
-			if (SyntaxTree!=null)
+			try
 			{
-				BuildTreeChildren(outlineTreeStore, TreeIter.Zero, SyntaxTree);
-				TreeIter it;
-				if (outlineTreeStore.GetIterFirst(out it))
-					outlineTreeView.Selection.SelectIter(it);
-				outlineTreeView.ExpandAll();
+				if (SyntaxTree != null)
+				{
+					BuildTreeChildren(outlineTreeStore, TreeIter.Zero, SyntaxTree);
+					TreeIter it;
+					if (outlineTreeStore.GetIterFirst(out it))
+						outlineTreeView.Selection.SelectIter(it);
+					outlineTreeView.ExpandAll();
+				}
 			}
-			outlineReady = true;
-
+			catch (Exception ex)
+			{
+				LoggingService.LogError("Error while updating document outline panel", ex);
+			}
+			finally
+			{
+				outlineReady = true;
+			}
 			Gdk.Threads.Leave();
 
 			//stop timeout handler
@@ -191,7 +201,7 @@ namespace MonoDevelop.D.Gui
 			if (o is DNode)
 			{
 				var icon=DCompletionData.GetNodeIcon(o as DNode);
-				if(!icon.Equals(null))
+				if(icon!=(Core.IconId)null)
 					pixRenderer.Pixbuf = ImageService.GetPixbuf(icon.Name, IconSize.Menu);
 			}
 			else if (o is D_Parser.Dom.Statements.StatementContainingStatement)
@@ -202,10 +212,9 @@ namespace MonoDevelop.D.Gui
 
 		void OutlineTreeTextFunc(TreeViewColumn column, CellRenderer cell, TreeModel model, TreeIter iter)
 		{
-			CellRendererText txtRenderer = (CellRendererText)cell;
-			object o = model.GetValue(iter, 0);
-			if (o is INode)
-				txtRenderer.Text = (o as INode).Name;
+			var n = model.GetValue(iter, 0) as INode;
+			if (n!=null)
+				(cell as CellRendererText).Text = n.Name;
 		}
 
 		void JumpToDeclaration(bool focusEditor)
@@ -237,7 +246,13 @@ namespace MonoDevelop.D.Gui
 
 			foreach (var n in ParentAstNode)
 			{
-				if (!DCodeCompletionSupport.CanItemBeShownGenerally(n as DNode))
+				if (n is DEnum && (n as DEnum).IsAnonymous)
+				{
+					BuildTreeChildren(Tree, ParentTreeNode, n as IBlockNode);
+					continue;
+				}
+
+				if (!DCodeCompletionSupport.CanItemBeShownGenerally(n))
 					continue;
 
 				TreeIter childIter;

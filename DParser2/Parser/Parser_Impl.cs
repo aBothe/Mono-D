@@ -3831,36 +3831,35 @@ namespace D_Parser.Parser
 			// Variables with 'enum' as base type
 			if (laKind == (Assign) || laKind == (Semicolon))
 			{
-			another_enumvalue:
-				var enumVar = new DVariable();
-				LastParsedObject = enumVar;
-
-				enumVar.AssignFrom(mye);
-
-				enumVar.Attributes.Add(new DAttribute(Enum));
-				if (mye.Type != null)
-					enumVar.Type = mye.Type;
-				else
-					enumVar.Type = new DTokenDeclaration(Enum);
-
-				if (laKind == (Comma))
+				do
 				{
-					Step();
-					Expect(Identifier);
-					enumVar.Name = t.Value;
-				}
+					var enumVar = new DVariable();
+					LastParsedObject = enumVar;
 
-				if (laKind == (Assign))
-				{
-					Step();
-					enumVar.Initializer = AssignExpression();
-				}
-				enumVar.EndLocation = t.Location;
-				ret.Add(enumVar);
+					enumVar.AssignFrom(mye);
 
-				// If there are more than one definitions, loop back
-				if (laKind == (Comma))
-					goto another_enumvalue;
+					enumVar.Attributes.Add(new DAttribute(Enum));
+					if (mye.Type != null)
+						enumVar.Type = mye.Type;
+					else
+						enumVar.Type = new DTokenDeclaration(Enum);
+
+					if (laKind == (Comma))
+					{
+						Step();
+						Expect(Identifier);
+						enumVar.Name = t.Value;
+					}
+
+					if (laKind == (Assign))
+					{
+						Step();
+						enumVar.Initializer = AssignExpression();
+					}
+					enumVar.EndLocation = t.Location;
+					ret.Add(enumVar);
+				}
+				while (laKind == Comma);
 
 				Expect(Semicolon);
 			}
@@ -3880,12 +3879,15 @@ namespace D_Parser.Parser
 					if (!init) Step();
 					init = false;
 
-					if (laKind == (CloseCurlyBrace)) break;
+					if (laKind == CloseCurlyBrace) break;
 
-					var ev = new DEnumValue() { StartLocation = t.Location, Description = GetComments() };
+					var ev = new DEnumValue() { StartLocation = la.Location, Description = GetComments() };
 					LastParsedObject = ev;
 
-					if (laKind == (Identifier) && (Lexer.CurrentPeekToken.Kind == (Assign) || Lexer.CurrentPeekToken.Kind == (Comma) || Lexer.CurrentPeekToken.Kind == (CloseCurlyBrace)))
+					if (laKind == Identifier && (
+						Lexer.CurrentPeekToken.Kind == Assign ||
+						Lexer.CurrentPeekToken.Kind == Comma || 
+						Lexer.CurrentPeekToken.Kind == CloseCurlyBrace))
 					{
 						Step();
 						ev.Name = t.Value;
