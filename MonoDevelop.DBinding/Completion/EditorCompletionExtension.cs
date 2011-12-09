@@ -270,7 +270,6 @@ namespace MonoDevelop.D
 				var icon=DCompletionData.GetNodeIcon(node as DNode);					
 				entry = new PathEntry (ImageService.GetPixbuf(icon.Name, IconSize.Menu), node.Name + DParameterDataProvider.GetNodeParamString(node));
 				entry.Position = EntryPosition.Left;
-				located = true;				
 				entry.Tag = node;
 				//do not include the module in the path bar
 				if (node.Parent != null)
