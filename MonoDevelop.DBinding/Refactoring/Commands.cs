@@ -122,7 +122,11 @@ namespace MonoDevelop.D.Refactoring
 		void GotoDeclaration()
 		{
 			IdeApp.OpenFiles(new[] { 
-						new FileOpenInformation(Module.FileName, n.StartLocation.Line, n.StartLocation.Column, OpenDocumentOptions.HighlightCaretLine)
+						new FileOpenInformation(
+							Module.FileName, 
+							n.StartLocation.Line, 
+							n.StartLocation.Column, 
+							OpenDocumentOptions.BringToFront | OpenDocumentOptions.HighlightCaretLine)
 			});
 		}
 
