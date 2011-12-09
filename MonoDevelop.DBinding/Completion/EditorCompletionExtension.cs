@@ -198,7 +198,7 @@ namespace MonoDevelop.D
 			
 			object tag = path[index].Tag;
 			DropDownBoxListWindow.IListDataProvider provider = null;
-			if (!(tag is D_Parser.Dom.IBlockNode) )
+			if (!(tag is D_Parser.Dom.IBlockNode)  && !(tag is NoSelectionCustomNode))
 			{
 				return null;
 			} 
@@ -252,13 +252,13 @@ namespace MonoDevelop.D
 				entry.Position = EntryPosition.Left;
 				entry.Tag = node;
 				//do not include the module in the path bar
-				if (node.Parent != null)
+				if ((node.Parent != null) && !((node is DNode) && (node as DNode).IsAnonymous))
 					result.Insert (0, entry);
 				node = node.Parent;
 			}						
 			
-			if (currentblock is DClassLike) {				
-				PathEntry noSelection = new PathEntry (GettextCatalog.GetString ("No Selection")) { Tag = new NoSelectionCustomNode (currentblock) };
+			if (!(currentblock is DMethod)) {
+				PathEntry noSelection = new PathEntry (GettextCatalog.GetString ("No Selection")) { Tag =  new NoSelectionCustomNode (currentblock) };
 				result.Add (noSelection);
 			}
 			
