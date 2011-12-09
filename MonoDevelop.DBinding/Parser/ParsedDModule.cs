@@ -264,9 +264,12 @@ namespace MonoDevelop.D.Parser
 				if (i.Type == FoldType.Member)
 					memberRegions.Add(i.Region);
 
-			// Add comment folds
+			// Add multiline comment folds
 			foreach (var c in Comments)
 			{
+				if (c.CommentType == CommentType.SingleLine)
+					continue;
+
 				bool IsMemberComment = false;
 
 				foreach (var i in memberRegions)
