@@ -237,29 +237,9 @@ namespace MonoDevelop.D
 			if (SyntaxTree == null)
 				return;		
 			
-			// Encapsule editor data for resolving
-			var edData = new EditorData
-			{
-				CaretLocation = new CodeLocation(documentEditor.Caret.Location.Column, documentEditor.Caret.Location.Line),
-				CaretOffset = documentEditor.Caret.Offset ,
-				ModuleCode = documentEditor.Text,
-				SyntaxTree = SyntaxTree as DModule,
-				ParseCache = Project.ParsedModules,
-				ImportCache = DResolver.ResolveImports(SyntaxTree as DModule, Project.ParsedModules)
-			};
-			
 			// Resolve the hovered piece of code
 			IStatement stmt = null;
-			IBlockNode currentblock = DResolver.SearchBlockAt(SyntaxTree, edData.CaretLocation, out stmt);
-			DResolver.ResolveType(edData,
-				new D_Parser.Resolver.ResolverContext
-				{
-					ParseCache = edData.ParseCache,
-					ImportCache = edData.ImportCache,
-					ScopedBlock = currentblock,
-					ScopedStatement = stmt
-				},
-				true, true);	
+			var currentblock = DResolver.SearchBlockAt(SyntaxTree, new CodeLocation(documentEditor.Caret.Location.Column, documentEditor.Caret.Location.Line), out stmt);
 			
 			List<PathEntry> result = new List<PathEntry> ();
 			D_Parser.Dom.INode node = currentblock;			
