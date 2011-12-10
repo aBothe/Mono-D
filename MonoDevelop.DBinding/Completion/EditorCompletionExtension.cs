@@ -178,11 +178,6 @@ namespace MonoDevelop.D
 		{
 			return doc.IsFile && DLanguageBinding.IsDFile(doc.FileName);
 		}
-
-		public override bool KeyPress(Gdk.Key key, char keyChar, Gdk.ModifierType modifier)
-		{
-			return base.KeyPress(key, keyChar, modifier);
-		}
 		
 		
 		#region IPathedDocument implementation
@@ -226,12 +221,10 @@ namespace MonoDevelop.D
 		
 		private void UpdatePath (object sender, Mono.TextEditor.DocumentLocationEventArgs e)
 		{
-			
 			var ast = Document.ParsedDocument as ParsedDModule;
 			if (ast == null)
 				return;
 			
-			var Project = Document.Project as DProject;
 			var SyntaxTree = ast.DDom;
 
 			if (SyntaxTree == null)
