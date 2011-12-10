@@ -12,6 +12,8 @@ using MonoDevelop.Ide;
 using MonoDevelop.Components;
 using MonoDevelop.D.Completion;
 using MonoDevelop.Core;
+using D_Parser.Dom.Statements;
+using D_Parser.Resolver;
 
 namespace MonoDevelop.D.Gui
 {
@@ -23,14 +25,15 @@ namespace MonoDevelop.D.Gui
 	public class DModuleOutlineExtension : TextEditorExtension, IOutlinedDocument
 	{
 		#region Properties
-		IAbstractSyntaxTree SyntaxTree = null;
+		IAbstractSyntaxTree SyntaxTree;
 		MonoDevelop.Ide.Gui.Components.PadTreeView outlineTreeView;
 		TreeStore outlineTreeStore;
 		TreeModelSort outlineTreeModelSort;
 		Widget[] toolbarWidgets;
 
 		bool refreshingOutline;
-		bool disposed;
+		bool clickedOnOutlineItem;
+		bool dontJumpToDeclaration;
 		bool outlineReady;
 		#endregion
 
@@ -45,7 +48,56 @@ namespace MonoDevelop.D.Gui
 		{
 			base.Initialize();
 			if (Document != null)
+			{
 				Document.DocumentParsed += UpdateDocumentOutline;
+				Document.Editor.Caret.PositionChanged += UpdateOutlineSelection;
+			}
+		}
+
+		void UpdateOutlineSelection(object sender, Mono.TextEditor.DocumentLocationEventArgs e)
+		{
+			if (clickedOnOutlineItem || SyntaxTree==null || outlineTreeStore==null)
+				return;
+
+			IStatement stmt = null;
+			var caretLocation=Document.Editor.Caret.Location;
+			var caretLocationD=new CodeLocation(caretLocation.Column, caretLocation.Line);
+
+			var currentblock = DResolver.SearchBlockAt(SyntaxTree, caretLocationD, out stmt);
+
+			INode selectedASTNode = null;
+
+			if (currentblock == null)
+				return;
+
+			foreach (var n in currentblock)
+				if (caretLocationD >= n.StartLocation && caretLocationD <= n.EndLocation)
+				{
+					selectedASTNode = n;
+					break;
+				}
+
+			if(selectedASTNode==null)
+				selectedASTNode = stmt != null ? stmt.ParentNode : currentblock;
+
+			if (selectedASTNode == null)
+				return;
+
+			outlineTreeStore.Foreach((TreeModel model, TreePath path, TreeIter iter) =>
+			{
+				var n=model.GetValue(iter, 0);
+				if (n == selectedASTNode)
+				{
+					dontJumpToDeclaration = true;
+					outlineTreeView.Selection.SelectIter(iter);
+					outlineTreeView.ScrollToCell(path, outlineTreeView.GetColumn(0), true, 0, 0);
+					dontJumpToDeclaration = false;
+
+					return true;
+				}
+
+				return false;
+			});
 		}
 
 		void MonoDevelop.DesignerSupport.IOutlinedDocument.ReleaseOutlineWidget()
@@ -169,12 +221,12 @@ namespace MonoDevelop.D.Gui
 
 			outlineTreeView.Selection.Changed += delegate
 			{
-				JumpToDeclaration(false);
-			};
+				if (dontJumpToDeclaration)
+					return;
 
-			outlineTreeView.RowActivated += delegate
-			{
-				JumpToDeclaration(true);
+				clickedOnOutlineItem = true;
+				JumpToDeclaration(false);
+				clickedOnOutlineItem = false;
 			};
 
 			if(Document.ParsedDocument is ParsedDModule)
