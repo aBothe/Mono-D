@@ -265,8 +265,15 @@ namespace MonoDevelop.D.Gui
 		void OutlineTreeTextFunc(TreeViewColumn column, CellRenderer cell, TreeModel model, TreeIter iter)
 		{
 			var n = model.GetValue(iter, 0) as INode;
-			if (n!=null)
-				(cell as CellRendererText).Text = n.Name;
+
+			string label=null;
+
+			if (n is DMethod && (n as DMethod).SpecialType == DMethod.MethodType.Unittest)
+				label = "(Unit test)";
+			else if (n != null)
+				label = n.Name;
+
+			(cell as CellRendererText).Text = label;
 		}
 
 		void JumpToDeclaration(bool focusEditor)
@@ -303,9 +310,6 @@ namespace MonoDevelop.D.Gui
 					BuildTreeChildren(Tree, ParentTreeNode, n as IBlockNode);
 					continue;
 				}
-
-				if (!DCodeCompletionSupport.CanItemBeShownGenerally(n))
-					continue;
 
 				TreeIter childIter;
 				if (!ParentTreeNode.Equals(TreeIter.Zero))
