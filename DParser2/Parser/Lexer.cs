@@ -1568,19 +1568,19 @@ namespace D_Parser.Parser
 			{
 				case '+':
 					if (ReaderPeek() == '+')// DDoc
-						ReadMultiLineComment(Comment.Type.Documentation, true);
+						ReadMultiLineComment(Comment.Type.Documentation | Comment.Type.Block, true);
 					else
 						ReadMultiLineComment(Comment.Type.Block, true);
 					break;
 				case '*':
 					if (ReaderPeek() == '*')// DDoc
-						ReadMultiLineComment(Comment.Type.Documentation, false);
+						ReadMultiLineComment(Comment.Type.Documentation | Comment.Type.Block, false);
 					else
 						ReadMultiLineComment(Comment.Type.Block, false);
 					break;
 				case '/':
 					if (ReaderPeek() == '/')// DDoc
-						ReadSingleLineComment(Comment.Type.Documentation);
+						ReadSingleLineComment(Comment.Type.Documentation | Comment.Type.SingleLine);
 					else
 						ReadSingleLineComment(Comment.Type.SingleLine);
 					break;

@@ -55,9 +55,11 @@ namespace D_Parser.Parser
 		{
 			string ret = "";
 
-			foreach(var c in Lexer.Comments)
-				if(c.CommentType.HasFlag(Comment.Type.Documentation))
-					ret += c.CommentText+ ' ';
+			foreach (var c in Lexer.Comments)
+			{
+				if (c.CommentType.HasFlag(Comment.Type.Documentation))
+					ret += c.CommentText + ' ';
+			}
 
 			TrackerVariables.Comments.AddRange(Lexer.Comments);
 			Lexer.Comments.Clear();
@@ -97,6 +99,7 @@ namespace D_Parser.Parser
 					if (c.EndPosition <= t.Location)
 					{
 						i++;
+						TrackerVariables.Comments.Add(c);
 						continue;
 					}
 					else if (c.StartPosition.Line > ExpectedLine)
@@ -104,8 +107,9 @@ namespace D_Parser.Parser
 
 					ret += c.CommentText + ' ';
 					i++;
+
+					TrackerVariables.Comments.Add(c);
 				}
-				TrackerVariables.Comments.Add(c);
 			}
 			Lexer.Comments.RemoveRange(0, i);
 

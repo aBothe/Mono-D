@@ -80,7 +80,27 @@ namespace MonoDevelop.D.Parser
 				c.CommentType = cm.CommentType.HasFlag(D_Parser.Parser.Comment.Type.Block) ? CommentType.MultiLine : CommentType.SingleLine;
 				c.IsDocumentation = cm.CommentType.HasFlag(D_Parser.Parser.Comment.Type.Documentation);
 
-				c.Region = new DomRegion(cm.StartPosition.Line, cm.StartPosition.Column, cm.EndPosition.Line, cm.EndPosition.Column);
+				if (c.CommentType == CommentType.SingleLine)
+				{
+					if (c.IsDocumentation)
+						c.OpenTag = "///";
+					else
+						c.OpenTag = "//";
+				}
+				else
+				{
+					if (c.IsDocumentation)
+					{
+						c.OpenTag = "/**";
+						c.ClosingTag = "*/";
+					}
+					else {
+						c.OpenTag = "/*";
+						c.ClosingTag = "*/";
+					}
+				}
+
+				c.Region = new DomRegion(cm.StartPosition.Line, cm.StartPosition.Column-2, cm.EndPosition.Line, cm.EndPosition.Column);
 
 				doc.Comments.Add(c);
 			}
@@ -221,7 +241,7 @@ namespace MonoDevelop.D.Parser
 
 		public static DomRegion GetBlockBodyRegion(IBlockNode n)
 		{
-			return new DomRegion(n.BlockStartLocation.Line, n.BlockStartLocation.Column, n.EndLocation.Line, n.EndLocation.Column);
+			return new DomRegion(n.BlockStartLocation.Line, n.BlockStartLocation.Column, n.EndLocation.Line, n.EndLocation.Column+1);
 		}
 
 		public static DomLocation FromCodeLocation(CodeLocation loc)
@@ -279,7 +299,7 @@ namespace MonoDevelop.D.Parser
 						break;
 					}
 
-				l.Add(new FoldingRegion(c.Region, IsMemberComment?FoldType.CommentInsideMember: FoldType.Comment));
+				l.Add(new FoldingRegion(c.Region, IsMemberComment ? FoldType.CommentInsideMember : FoldType.Comment));
 			}
 
 			return l;
@@ -321,7 +341,7 @@ namespace MonoDevelop.D.Parser
 						statement.StartLocation.Line,
 						statement.StartLocation.Column,
 						statement.EndLocation.Line,
-						statement.EndLocation.Column),
+						statement.EndLocation.Column+1),
 					FoldType.Undefined));
 
 			// Do a deep-scan
