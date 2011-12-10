@@ -341,15 +341,11 @@ namespace D_Parser.Resolver
 			{
 				var dm = Parent as DMethod;
 
+				var body = dm.GetSubBlockAt(Where);
+
 				// First search the deepest statement under the caret
-				if (dm.In != null)
-					ScopedStatement = dm.In.SearchStatementDeeply(Where);
-
-				if (dm.Out != null && ScopedStatement == null)
-					ScopedStatement = dm.Out.SearchStatementDeeply(Where);
-
-				if (dm.Body != null && ScopedStatement == null)
-					ScopedStatement = dm.Body.SearchStatementDeeply(Where);
+				if(body!=null)
+					ScopedStatement = body.SearchStatementDeeply(Where);
 			}
 
 			return Parent;
