@@ -15,6 +15,7 @@ using D_Parser.Dom;
 using D_Parser.Parser;
 using D_Parser.Completion;
 using MonoDevelop.D.Building;
+using MonoDevelop.D.Completion;
 
 namespace MonoDevelop.D
 {
@@ -39,7 +40,14 @@ namespace MonoDevelop.D
 		/// <summary>
 		/// Stores parse information from project-wide includes
 		/// </summary>
-		public ASTStorage LocalIncludeCache { get; private set; }		
+		public ASTStorage LocalIncludeCache { get; private set; }
+
+		public IEnumerable<IAbstractSyntaxTree> ParseCache
+		{
+			get {
+				return DCodeCompletionSupport.EnumAvailableModules(this);
+			}
+		}
 		
 		[ItemProperty("UseDefaultCompiler")]
 		public bool UseDefaultCompilerVendor = true;
@@ -72,9 +80,11 @@ namespace MonoDevelop.D
 		{
 			get
 			{
+				var l = new List<IAbstractSyntaxTree>();
 				foreach (ProjectFile pf in Items)
 					if (pf != null && pf.ExtendedProperties.Contains(DParserPropertyKey))
-						yield return pf.ExtendedProperties[DParserPropertyKey] as IAbstractSyntaxTree;
+						l.Add( pf.ExtendedProperties[DParserPropertyKey] as IAbstractSyntaxTree);
+				return l;
 			}
 		}
 
@@ -83,6 +93,8 @@ namespace MonoDevelop.D
 		/// </summary>
 		public void UpdateParseCache()
 		{
+			LocalIncludeCache.UpdateCache();
+			
 			foreach (ProjectFile pf in Items)
 				if (pf != null && DLanguageBinding.IsDFile(pf.FilePath.FileName))
 				{

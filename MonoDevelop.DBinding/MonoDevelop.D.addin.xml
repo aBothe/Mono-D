@@ -196,11 +196,11 @@
 						 type="array" />
 
 		<Command id = "MonoDevelop.D.Refactoring.Commands.GotoDeclaration"
-					defaultHandler = "MonoDevelop.D.Refactoring.GotoDeclarationHandler"
-					_label = "_Go to declaration"/>
-		<!-- defaultHandler = "MonoDevelop.D.Refactoring.FindReferencesHandler" -->
+					   defaultHandler = "MonoDevelop.D.Refactoring.GotoDeclarationHandler"
+						 _label = "_Go to declaration"/>
 		<Command id = "MonoDevelop.D.Refactoring.Commands.FindReferences"
-					_label = "_Find references"/>
+						 defaultHandler = "MonoDevelop.D.Refactoring.FindReferencesHandler"
+						 _label = "_Find references"/>
 	</Extension>
 	
 	<Extension path = "/MonoDevelop/SourceEditor2/ContextMenu/Editor">

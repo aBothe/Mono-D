@@ -233,7 +233,7 @@ namespace D_Parser.Dom.Statements
 		}
 	}
 
-	public class IfStatement : StatementContainingStatement,IDeclarationContainingStatement
+	public class IfStatement : StatementContainingStatement,IDeclarationContainingStatement,IExpressionContainingStatement
 	{
 		public bool IsStatic = false;
 		public IExpression IfCondition;

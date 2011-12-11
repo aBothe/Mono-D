@@ -33,12 +33,6 @@
 	</Extension>-->
 	
 	<!--
-	<Extension path = "/MonoDevelop/Ide/ReferenceFinder">
-		<ReferenceFinder supportedmimetypes = "text/x-d"
-		                 class = "Refactoring.DReferenceFinder" />
-	</Extension>-->
-	
-	<!--
 	<Extension path = "/MonoDevelop/ProjectModel/Ambiences">
 		<Class id = "C#" class = "Ast.DAmbience" />
 	</Extension>-->

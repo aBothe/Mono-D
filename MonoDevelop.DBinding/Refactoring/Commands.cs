@@ -63,7 +63,7 @@ namespace MonoDevelop.D.Refactoring
 				return null;
 
 			// Encapsule editor data for resolving
-			var parseCache=DCodeCompletionSupport.EnumAvailableModules(Project);
+			var parseCache = Project.ParseCache;
 			var edData = new EditorData
 			{
 				CaretLocation = new CodeLocation(column, line),
@@ -140,7 +140,10 @@ namespace MonoDevelop.D.Refactoring
 		{
 			try
 			{
-				foreach (var sr in ReferenceFinder.FindReferences(IdeApp.ProjectOperations.CurrentSelectedSolution, n, monitor))
+				foreach (var sr in DReferenceFinder.FindReferences(
+					IdeApp.Workbench.ActiveDocument.HasProject?
+					IdeApp.Workbench.ActiveDocument.Project as DProject:null, 
+					n, monitor))
 					monitor.ReportResult(sr);
 			}
 			catch (Exception ex)

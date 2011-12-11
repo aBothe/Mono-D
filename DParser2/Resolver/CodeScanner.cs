@@ -362,7 +362,7 @@ namespace D_Parser.Resolver
 		{
 			if (stmt == null)
 				return;
-
+			
 			var l1 = new List<IStatement> { stmt };
 			var l2 = new List<IStatement>();
 
@@ -463,7 +463,7 @@ namespace D_Parser.Resolver
 		{
 			if (ex == null)
 				return;
-
+			
 			var l1 = new List<IExpression> { ex };
 			var l2 = new List<IExpression>();
 

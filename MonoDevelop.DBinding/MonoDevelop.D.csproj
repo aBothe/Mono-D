@@ -147,6 +147,7 @@
     <Compile Include="gtk-gui\MonoDevelop.D.ResourcesCompilerOptionsPanel.cs" />
     <Compile Include="Refactoring\Commands.cs" />
     <Compile Include="Refactoring\GotoDeclarationHandler.cs" />
+    <Compile Include="Refactoring\FindReferencesHandler.cs" />
     <Compile Include="Refactoring\ReferenceFinder.cs" />
     <Compile Include="Gui\EditorPathbarProvider.cs" />
   </ItemGroup>
