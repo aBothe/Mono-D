@@ -52,7 +52,7 @@ namespace MonoDevelop.D.Gui
 			var blockNode = (tag as IBlockNode);
 			foreach(D_Parser.Dom.INode nd in blockNode.Children)
 			{					
-				if (nd is IBlockNode) {
+				if ((nd is IBlockNode) || (nd is DEnumValue)) {
 					memberList.Add(nd);
 				}
 			}

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -193,7 +193,7 @@ namespace MonoDevelop.D
 			
 			object tag = path[index].Tag;
 			DropDownBoxListWindow.IListDataProvider provider = null;
-			if (!(tag is D_Parser.Dom.IBlockNode)  && !(tag is NoSelectionCustomNode))
+			if (!((tag is D_Parser.Dom.IBlockNode) || (tag is DEnumValue) || (tag is NoSelectionCustomNode)))
 			{
 				return null;
 			} 
@@ -231,13 +231,28 @@ namespace MonoDevelop.D
 				return;		
 			
 			// Resolve the hovered piece of code
+			var loc = new CodeLocation(documentEditor.Caret.Location.Column, documentEditor.Caret.Location.Line);			
 			IStatement stmt = null;
-			var currentblock = DResolver.SearchBlockAt(SyntaxTree, new CodeLocation(documentEditor.Caret.Location.Column, documentEditor.Caret.Location.Line), out stmt);
+			DNode currentblock = (DNode) DResolver.SearchBlockAt(SyntaxTree, loc, out stmt);
+			
+			//could be an enum value, which is not IBlockNode
+			if (currentblock is DEnum)
+			{
+				foreach(DNode nd in (currentblock as DEnum).Children)
+				{
+					if ((nd is DEnumValue) 
+					&& ((nd.StartLocation <= loc) && (nd.EndLocation >= loc)))
+					{
+						currentblock = nd;
+						break;
+					}
+				}
+			}
 			
 			List<PathEntry> result = new List<PathEntry> ();
 			D_Parser.Dom.INode node = currentblock;			
 					
-			while ((node != null) && (node is IBlockNode)) {
+			while ((node != null) && ((node is IBlockNode) || (node is DEnumValue))) {
 				PathEntry entry;										
 				
 				var icon=DCompletionData.GetNodeIcon(node as DNode);					
@@ -250,7 +265,7 @@ namespace MonoDevelop.D
 				node = node.Parent;
 			}						
 			
-			if (!(currentblock is DMethod)) {
+			if (!((currentblock is DMethod) || (currentblock is DEnumValue))) {
 				PathEntry noSelection = new PathEntry (GettextCatalog.GetString ("No Selection")) { Tag =  new NoSelectionCustomNode (currentblock) };
 				result.Add (noSelection);
 			}
