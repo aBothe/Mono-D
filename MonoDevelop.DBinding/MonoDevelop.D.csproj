@@ -215,6 +215,7 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="templates\EmptyRCFile.xft.xml" />
+    <Content Include="Remaining features.txt" />
     <Content Include="unused extensions.txt" />
   </ItemGroup>
   <ItemGroup>

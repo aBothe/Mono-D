@@ -1,0 +1,25 @@
+﻿
+This document contains a list of to-do features:
+
+
+* References finder
+* Variable renaming
+* Import management
+	- Add missing imports
+	- Remove unused imports
+* Highlighting of symbol usages
+* Code formatting
+	- Ensure correct indentation
+	- Reformat the entire document
+	- Policy system
+* Code completion
+	- Don't popup when typing declaration identifiers
+* Fade out inactive code parts
+* Omit debug/versioned declarations 
+  if not fitting to environment dependencied 
+  ([debug/release] or [Windows/Mac/Unix/BSD] etc.)
+* Automatically insert a * or + on a block-comment's newline
+* Expand a folded region when clicking on a 
+  document-outline symbol relocates the caret
+  into a collapsed region.
+
