@@ -289,9 +289,16 @@ namespace MonoDevelop.D.Gui
 			if(n==null)
 				return;
 
-			IdeApp.Workbench.OpenDocument(SyntaxTree.FileName, n.StartLocation.Line, n.StartLocation.Column);
+			var openedDoc=IdeApp.Workbench.OpenDocument(SyntaxTree.FileName, n.StartLocation.Line, n.StartLocation.Column);
+			
 			if (focusEditor)
 				IdeApp.Workbench.ActiveDocument.Select();
+
+			openedDoc.Editor.Document.EnsureOffsetIsUnfolded(
+				openedDoc.Editor.LocationToOffset(
+					n.StartLocation.Line,
+					n.StartLocation.Column
+			));
 		}
 
 		#endregion

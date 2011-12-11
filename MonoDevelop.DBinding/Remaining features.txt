@@ -19,7 +19,4 @@ This document contains a list of to-do features:
   if not fitting to environment dependencied 
   ([debug/release] or [Windows/Mac/Unix/BSD] etc.)
 * Automatically insert a * or + on a block-comment's newline
-* Expand a folded region when clicking on a 
-  document-outline symbol relocates the caret
-  into a collapsed region.
 
