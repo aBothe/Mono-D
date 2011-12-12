@@ -14,6 +14,7 @@ using MonoDevelop.Ide.Gui;
 using MonoDevelop.Ide.FindInFiles;
 using System.Threading;
 using MonoDevelop.D.Completion;
+using MonoDevelop.D.Building;
 
 namespace MonoDevelop.D.Refactoring
 {
@@ -63,7 +64,7 @@ namespace MonoDevelop.D.Refactoring
 				return null;
 
 			// Encapsule editor data for resolving
-			var parseCache = Project.ParseCache;
+			var parseCache = Project!=null? Project.ParseCache: DCompiler.Instance.GetDefaultCompiler().GlobalParseCache.ParseCache;
 			var edData = new EditorData
 			{
 				CaretLocation = new CodeLocation(column, line),

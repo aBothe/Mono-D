@@ -2,7 +2,6 @@
 This document contains a list of to-do features:
 
 
-* References finder
 * Variable renaming
 * Import management
 	- Add missing imports

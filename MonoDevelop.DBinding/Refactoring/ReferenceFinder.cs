@@ -10,6 +10,7 @@ using MonoDevelop.Core;
 using D_Parser.Dom.Expressions;
 using D_Parser.Dom.Statements;
 using System.Collections;
+using MonoDevelop.D.Building;
 
 namespace MonoDevelop.D.Refactoring
 {
@@ -20,27 +21,21 @@ namespace MonoDevelop.D.Refactoring
 			INode member, 
 			ISearchProgressMonitor monitor=null)
 		{
-			/*
-			 * How to:
-			 * 
-			 * - Take all parsed modules from every project
-			 * - Scan through every module's code's identifiers (Declarations and identifier expressions(!))
-			 * - Check if identifier equals member.Name
-			 *		- If so, resolve the identifier chain (or similar expression constructions)
-			 *		- If the resolved member equals the 'member' argument, add it (+ the outer expression as result string) to the search results
-			 * 
-			 */
-
 			var searchResults = new List<SearchResult>();
 
-			var parseCache=project.ParseCache;
-			var modules=project.ParsedModules;
+            var parseCache = project != null ? project.ParseCache : DCompiler.Instance.GetDefaultCompiler().GlobalParseCache.ParseCache;
+            var modules = project!=null? project.ParsedModules : new[]{
+                Ide.IdeApp.Workbench.ActiveDocument.ParsedDocument.LanguageAST as IAbstractSyntaxTree
+            };
 
 			if(monitor!=null)
 				monitor.BeginStepTask("Scan for references", modules.Count(), 1);
 
-			foreach (var mod in project.ParsedModules)
+			foreach (var mod in modules)
 			{
+                if (mod == null)
+                    continue;
+
 				var references= ScanNodeReferencesInModule(mod,
 					parseCache,
 					DResolver.ResolveImports(mod as DModule, parseCache),
@@ -117,24 +112,25 @@ namespace MonoDevelop.D.Refactoring
 					if (resolveResults == null)
 						break;
 
-					var targetSymbol = resolveResults[0];
+                    foreach (var targetSymbol in resolveResults)
+                    {
+                        // Get the associated declaration node
+                        INode targetSymbolNode = null;
 
-					// Get the associated declaration node
-					INode targetSymbolNode = null;
+                        if (targetSymbol is MemberResult)
+                            targetSymbolNode = (targetSymbol as MemberResult).ResolvedMember;
+                        else if (targetSymbolNode is TypeResult)
+                            targetSymbolNode = (targetSymbol as TypeResult).ResolvedTypeDefinition;
+                        else
+                            break;
 
-					if (targetSymbol is MemberResult)
-						targetSymbolNode = (targetSymbol as MemberResult).ResolvedMember;
-					else if (targetSymbolNode is TypeResult)
-						targetSymbolNode = (targetSymbol as TypeResult).ResolvedTypeDefinition;
-					else
-						break;
-
-					// Compare with the member whose references shall be looked up
-					if (targetSymbolNode == declarationToCompareWith)
-					{
-						// ... Reference found!
-						matchedReferences.Add(id);
-					}
+                        // Compare with the member whose references shall be looked up
+                        if (targetSymbolNode == declarationToCompareWith)
+                        {
+                            // ... Reference found!
+                            matchedReferences.Add(id);
+                        }
+                    }
 					break;
 				}
 			}
