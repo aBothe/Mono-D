@@ -3,6 +3,7 @@ This document contains a list of to-do features:
 
 
 * Variable renaming
+* Interface/Abstract class implementation
 * Import management
 	- Add missing imports
 	- Remove unused imports
