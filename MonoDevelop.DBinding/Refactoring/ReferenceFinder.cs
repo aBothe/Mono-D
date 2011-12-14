@@ -96,46 +96,37 @@ namespace MonoDevelop.D.Refactoring
 			foreach (var o in identifiers)
 			{
 				var id=o as IdentifierDeclaration;
-				while (id!=null)
-				{
-					if (id.Value as string != declarationToCompareWith.Name)
-					{
-						if (id.InnerDeclaration == null || id.InnerDeclaration == id)
-							break;
-						id = id.InnerDeclaration as IdentifierDeclaration;
-						continue;
-					}
+				if (id.Value as string != declarationToCompareWith.Name)
+					continue;
 
-					// Get the context of the used identifier
-					resolveContext.ScopedBlock = DResolver.SearchBlockAt(scannedFileAST, id.Location, out resolveContext.ScopedStatement);
+				// Get the context of the used identifier
+				resolveContext.ScopedBlock = DResolver.SearchBlockAt(scannedFileAST, id.Location, out resolveContext.ScopedStatement);
 
-					// Resolve the symbol to which the identifier is related to
-					var resolveResults = DResolver.ResolveType(id, resolveContext);
+				// Resolve the symbol to which the identifier is related to
+				var resolveResults = DResolver.ResolveType(id, resolveContext);
 
-					if (resolveResults == null)
-						break;
-
-                    foreach (var targetSymbol in resolveResults)
-                    {
-                        // Get the associated declaration node
-                        INode targetSymbolNode = null;
-
-                        if (targetSymbol is MemberResult)
-                            targetSymbolNode = (targetSymbol as MemberResult).ResolvedMember;
-                        else if (targetSymbol is TypeResult)
-                            targetSymbolNode = (targetSymbol as TypeResult).ResolvedTypeDefinition;
-                        else
-                            break;
-
-                        // Compare with the member whose references shall be looked up
-                        if (targetSymbolNode.Equals(declarationToCompareWith))
-                        {
-                            // ... Reference found!
-                            matchedReferences.Add(id);
-                        }
-                    }
+				if (resolveResults == null)
 					break;
-				}
+
+                foreach (var targetSymbol in resolveResults)
+                {
+                    // Get the associated declaration node
+                    INode targetSymbolNode = null;
+
+                    if (targetSymbol is MemberResult)
+                        targetSymbolNode = (targetSymbol as MemberResult).ResolvedMember;
+                    else if (targetSymbol is TypeResult)
+                        targetSymbolNode = (targetSymbol as TypeResult).ResolvedTypeDefinition;
+                    else
+                        break;
+
+                    // Compare with the member whose references shall be looked up
+                    if (targetSymbolNode.Equals(declarationToCompareWith))
+                    {
+                        // ... Reference found!
+                        matchedReferences.Add(id);
+                    }
+                }
 			}
 
 			return matchedReferences;

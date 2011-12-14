@@ -9,6 +9,7 @@ using Gtk;
 using System.Text;
 using D_Parser.Completion;
 using Pango;
+using MonoDevelop.D.Parser;
 
 namespace MonoDevelop.D.Gui
 {
@@ -26,11 +27,11 @@ namespace MonoDevelop.D.Gui
 			// Note: Normally, the document already should be open
 			var doc=IdeApp.Workbench.OpenDocument(editor.Document.FileName);
 
-			if (doc == null)
+			if (doc == null || !(doc.ParsedDocument is ParsedDModule))
 				return null;
 			
 			// Due the first note, the AST already should exist
-			var ast = doc.ParsedDocument.LanguageAST as IAbstractSyntaxTree;
+			var ast = (doc.ParsedDocument as ParsedDModule).DDom;
 
 			if (ast == null)
 				return null;

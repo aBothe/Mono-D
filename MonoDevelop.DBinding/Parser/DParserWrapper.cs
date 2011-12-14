@@ -24,7 +24,7 @@ namespace MonoDevelop.D.Parser
 	{
 		public bool CanParse(string fileName)
 		{
-			return fileName.EndsWith(".d", StringComparison.OrdinalIgnoreCase) || fileName.EndsWith(".di", StringComparison.OrdinalIgnoreCase);
+			return DLanguageBinding.IsDFile(fileName);
 		}
 
 		public IExpressionFinder CreateExpressionFinder(ProjectDom dom)

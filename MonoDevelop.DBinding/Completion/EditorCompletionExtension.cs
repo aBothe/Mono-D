@@ -164,16 +164,6 @@ namespace MonoDevelop.D
 
 		#endregion
 
-		public override void CursorPositionChanged()
-		{
-			base.CursorPositionChanged();
-		}
-
-		public override void TextChanged(int startIndex, int endIndex)
-		{
-			base.TextChanged(startIndex, endIndex);
-		}
-
 		public override bool ExtendsEditor(Document doc, IEditableTextBuffer editor)
 		{
 			return doc.IsFile && DLanguageBinding.IsDFile(doc.FileName);

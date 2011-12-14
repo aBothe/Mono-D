@@ -15,7 +15,40 @@ namespace MonoDevelop.D.Parser
 	{
 		public ParsedDModule(string fileName) : base(fileName) { }
 
-		public IAbstractSyntaxTree DDom { get; protected set; }
+		IAbstractSyntaxTree _ddom;
+		public IAbstractSyntaxTree DDom {
+			get { 
+				var sln=Ide.IdeApp.ProjectOperations.CurrentSelectedSolution;
+				if(sln!=null)
+				{
+					var prj = sln.GetProjectContainingFile(this.FileName);
+
+					if (prj != null && prj.IsFileInProject(FileName))
+					{
+						var pf = prj.GetProjectFile(FileName);
+
+						return pf.ExtendedProperties[DProject.DParserPropertyKey] as IAbstractSyntaxTree;
+					}
+				}
+				return _ddom;
+			}
+			set
+			{
+				var sln = Ide.IdeApp.ProjectOperations.CurrentSelectedSolution;
+				if (sln != null)
+				{
+					var prj = sln.GetProjectContainingFile(this.FileName);
+
+					if (prj != null && prj.IsFileInProject(FileName))
+					{
+						var pf = prj.GetProjectFile(FileName);
+
+						pf.ExtendedProperties[DProject.DParserPropertyKey] = value;
+					}
+				}
+				_ddom=value;
+			}
+		}
 
 		public static ParsedDModule CreateFromDFile(ProjectDom prjDom, string file, TextReader content)
 		{
@@ -28,8 +61,7 @@ namespace MonoDevelop.D.Parser
 			parser.Lexer.OnlyEnlistDDocComments = false;
 
 			// Parse the code
-			var ast  = doc.DDom = parser.Parse();
-			doc.LanguageAST = ast;
+			var ast  =  parser.Parse();
 
 			ast.FileName = file;
 
