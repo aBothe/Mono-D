@@ -42,7 +42,7 @@ namespace MonoDevelop.D.Refactoring
 					member);
 
 				if (member.NodeRoot == mod)
-					references.Add(new IdentifierDeclaration(member.Name) { Location=member.NameLocation });
+					references.Insert(0,new IdentifierDeclaration(member.Name) { Location=member.NameLocation });
 
 				if(references.Count<1)
 				{
@@ -122,13 +122,13 @@ namespace MonoDevelop.D.Refactoring
 
                         if (targetSymbol is MemberResult)
                             targetSymbolNode = (targetSymbol as MemberResult).ResolvedMember;
-                        else if (targetSymbolNode is TypeResult)
+                        else if (targetSymbol is TypeResult)
                             targetSymbolNode = (targetSymbol as TypeResult).ResolvedTypeDefinition;
                         else
                             break;
 
                         // Compare with the member whose references shall be looked up
-                        if (targetSymbolNode == declarationToCompareWith)
+                        if (targetSymbolNode==declarationToCompareWith)
                         {
                             // ... Reference found!
                             matchedReferences.Add(id);
