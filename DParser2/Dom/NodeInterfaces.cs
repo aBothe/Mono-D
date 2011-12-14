@@ -46,6 +46,7 @@ namespace D_Parser.Dom
 	public interface INode
 	{
 		string Name { get; set; }
+		CodeLocation NameLocation { get; set; }
 		string Description { get; set; }
 		ITypeDeclaration Type { get; set; }
 

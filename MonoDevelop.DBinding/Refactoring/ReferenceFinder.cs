@@ -41,6 +41,9 @@ namespace MonoDevelop.D.Refactoring
 					DResolver.ResolveImports(mod as DModule, parseCache),
 					member);
 
+				if (member.NodeRoot == mod)
+					references.Add(new IdentifierDeclaration(member.Name) { Location=member.NameLocation });
+
 				if(references.Count<1)
 				{
 					if(monitor!=null)

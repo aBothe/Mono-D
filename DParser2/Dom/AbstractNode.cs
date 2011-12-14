@@ -41,6 +41,12 @@ namespace D_Parser.Dom
 			set { _Name = value; }
 		}
 
+		public CodeLocation NameLocation
+		{
+			get;
+			set;
+		}
+
 		public bool IsAnonymous { get { return string.IsNullOrEmpty(Name); } }
 
 		public INode Parent

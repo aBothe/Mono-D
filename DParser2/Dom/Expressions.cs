@@ -2249,7 +2249,7 @@ namespace D_Parser.Dom.Expressions
 
 			Name = param.Name;
 
-			StartLocation = param.Location;
+			StartLocation = NameLocation = param.Location;
 			EndLocation = param.EndLocation;
 		}
 
