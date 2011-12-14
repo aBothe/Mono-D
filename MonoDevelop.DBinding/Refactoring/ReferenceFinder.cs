@@ -41,7 +41,7 @@ namespace MonoDevelop.D.Refactoring
 					DResolver.ResolveImports(mod as DModule, parseCache),
 					member);
 
-				if (member.NodeRoot == mod)
+				if ((member.NodeRoot as IAbstractSyntaxTree).FileName==mod.FileName)
 					references.Insert(0,new IdentifierDeclaration(member.Name) { Location=member.NameLocation });
 
 				if(references.Count<1)
@@ -128,7 +128,7 @@ namespace MonoDevelop.D.Refactoring
                             break;
 
                         // Compare with the member whose references shall be looked up
-                        if (targetSymbolNode==declarationToCompareWith)
+                        if (targetSymbolNode.Equals(declarationToCompareWith))
                         {
                             // ... Reference found!
                             matchedReferences.Add(id);

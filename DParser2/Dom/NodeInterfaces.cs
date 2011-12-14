@@ -44,7 +44,7 @@ namespace D_Parser.Dom
 		INode this[string Name] { get; set; }
 	}
 
-	public interface INode: IEquatable<object>
+	public interface INode:IEquatable<INode>
 	{
 		string Name { get; set; }
 		CodeLocation NameLocation { get; set; }
