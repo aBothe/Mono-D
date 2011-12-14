@@ -255,8 +255,8 @@ namespace MonoDevelop.D.Building
 
 				// Create object file path
 				var obj = Path.Combine(objDir, Path.GetFileNameWithoutExtension(f.FilePath)) + ObjectExtension;
-				
-				if (File.Exists(obj))
+
+				if (File.Exists(obj) && BuiltObjects.Contains(obj))
 					File.Delete(obj);
 
 				// Prevent duplicates e.g. when having the samely-named source files in different sub-packages
@@ -264,7 +264,7 @@ namespace MonoDevelop.D.Building
 				while(File.Exists(obj))
 				{
 					// Simply add a number between the obj name and its extension
-					obj= Path.Combine(objDir, Path.GetFileNameWithoutExtension(f.FilePath))+i + ObjectExtension;
+					obj= Path.Combine(objDir, Path.GetFileNameWithoutExtension(f.FilePath))+ i + ObjectExtension;
 					i++;
 				}
 				
