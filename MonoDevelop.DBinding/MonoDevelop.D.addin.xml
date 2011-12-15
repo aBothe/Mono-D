@@ -12,10 +12,10 @@
 	<!-- Resources -->
 	
 	<Dependencies>
-		<Addin id="Ide" version="2.8" />
-		<Addin id="Core" version="2.8" />
-		<Addin id = "SourceEditor2" version = "2.8" />
-		<Addin id = "DesignerSupport" version = "2.8" />
+		<Addin id="Ide" version="2.7" />
+		<Addin id="Core" version="2.7" />
+		<Addin id = "SourceEditor2" version = "2.7" />
+		<Addin id = "DesignerSupport" version = "2.7" />
 	</Dependencies>
 
 	<Runtime>
@@ -195,11 +195,11 @@
 					_label="Refactoring Commands"
 						 type="array" />
 
+		<Command id="MonoDevelop.D.Refactoring.Commands.RenameSymbols"
+						 _label="_Rename"/>
 		<Command id = "MonoDevelop.D.Refactoring.Commands.GotoDeclaration"
-					   defaultHandler = "MonoDevelop.D.Refactoring.GotoDeclarationHandler"
 						 _label = "_Go to declaration"/>
 		<Command id = "MonoDevelop.D.Refactoring.Commands.FindReferences"
-						 defaultHandler = "MonoDevelop.D.Refactoring.FindReferencesHandler"
 						 _label = "_Find references"/>
 	</Extension>
 	

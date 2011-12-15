@@ -20,6 +20,7 @@ using D_Parser.Dom;
 using D_Parser.Dom.Statements;
 using D_Parser.Completion;
 using D_Parser.Resolver;
+using MonoDevelop.Ide.Commands;
 
 
 namespace MonoDevelop.D
@@ -263,7 +264,25 @@ namespace MonoDevelop.D
 			var prev = CurrentPath;
 			CurrentPath = result.ToArray ();
 			OnPathChanged (new DocumentPathChangedEventArgs (prev));
-		}	
+		}
+
+		[CommandHandler(Refactoring.Commands.FindReferences)]
+		public void FindReferences()
+		{
+
+		}
+
+		[CommandHandler(Refactoring.Commands.GotoDeclaration)]
+		public void GotoDeclaration()
+		{
+
+		}
+
+		[CommandHandler(Refactoring.Commands.RenameSymbols)]
+		public void StartRename()
+		{
+			
+		}
 	}
 	
 

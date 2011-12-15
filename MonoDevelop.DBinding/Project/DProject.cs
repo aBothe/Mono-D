@@ -93,7 +93,7 @@ namespace MonoDevelop.D
 		/// </summary>
 		public void UpdateParseCache()
 		{
-			LocalIncludeCache.UpdateCache();
+			DCompilerConfiguration.UpdateParseCacheAsync(LocalIncludeCache);
 			
 			foreach (ProjectFile pf in Items)
 				if (pf != null && DLanguageBinding.IsDFile(pf.FilePath.FileName))
@@ -370,8 +370,7 @@ namespace MonoDevelop.D
 			foreach (var p in tempIncludes)
 				LocalIncludeCache.Add(p);
 
-			// Parse local includes
-			DCompilerConfiguration.UpdateParseCacheAsync(LocalIncludeCache);
+			UpdateParseCache();
 		}
 
 		public DataCollection Serialize(ITypeSerializer handler)

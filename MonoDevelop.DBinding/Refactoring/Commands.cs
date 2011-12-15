@@ -24,6 +24,7 @@ namespace MonoDevelop.D.Refactoring
 
 		GotoDeclaration,
 		FindReferences,
+		RenameSymbols,
 	}
 
 	public class ContextMenuRefactoringCommandHandler : CommandHandler
@@ -116,6 +117,8 @@ namespace MonoDevelop.D.Refactoring
 			{
 				info.Add(IdeApp.CommandService.GetCommandInfo(Commands.GotoDeclaration), new Action(GotoDeclaration));
 				info.Add(IdeApp.CommandService.GetCommandInfo(Commands.FindReferences), new Action(FindReferences));
+				info.AddSeparator();
+				info.Add(IdeApp.CommandService.GetCommandInfo(Commands.RenameSymbols), new Action(RenameSymbol));
 			}
 		}
 
@@ -159,6 +162,11 @@ namespace MonoDevelop.D.Refactoring
 				if (monitor != null)
 					monitor.Dispose();
 			}
+		}
+
+		void RenameSymbol()
+		{
+			new RenamingRefactoring().Run(res);
 		}
 	}
 }
