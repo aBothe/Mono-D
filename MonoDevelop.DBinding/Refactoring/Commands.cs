@@ -166,7 +166,8 @@ namespace MonoDevelop.D.Refactoring
 
 		void RenameSymbol()
 		{
-			new RenamingRefactoring().Run(res);
+			new RenamingRefactoring().Run(IdeApp.Workbench.ActiveDocument.HasProject ?
+					IdeApp.Workbench.ActiveDocument.Project as DProject : null,res);
 		}
 	}
 }

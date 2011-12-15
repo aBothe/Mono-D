@@ -79,6 +79,8 @@ namespace MonoDevelop.D.Parser
 				if (pf != null)
 					pf.ExtendedProperties[DProject.DParserPropertyKey] = ast;
 			}
+			else
+				doc._ddom = ast;
 
 			/*
 			var cu = new CompilationUnit(file);

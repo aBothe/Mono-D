@@ -25,7 +25,7 @@ namespace MonoDevelop.D.Refactoring
 
             var parseCache = project != null ? project.ParseCache : DCompiler.Instance.GetDefaultCompiler().GlobalParseCache.ParseCache;
             var modules = project!=null? project.ParsedModules : new[]{
-                Ide.IdeApp.Workbench.ActiveDocument.ParsedDocument.LanguageAST as IAbstractSyntaxTree
+                (Ide.IdeApp.Workbench.ActiveDocument.ParsedDocument as MonoDevelop.D.Parser.ParsedDModule).DDom
             };
 
 			if(monitor!=null)
@@ -95,15 +95,23 @@ namespace MonoDevelop.D.Refactoring
 
 			foreach (var o in identifiers)
 			{
-				var id=o as IdentifierDeclaration;
+				IdentifierDeclaration id = null;
+
+				if (o is IdentifierDeclaration)
+					id = (o as IdentifierDeclaration);
+				else if (o is TemplateInstanceExpression)
+					id = (o as TemplateInstanceExpression).TemplateIdentifier;
+				else
+					continue;
+
 				if (id.Value as string != declarationToCompareWith.Name)
 					continue;
 
 				// Get the context of the used identifier
-				resolveContext.ScopedBlock = DResolver.SearchBlockAt(scannedFileAST, id.Location, out resolveContext.ScopedStatement);
+				resolveContext.ScopedBlock = DResolver.SearchBlockAt(scannedFileAST, (o as ITypeDeclaration).Location, out resolveContext.ScopedStatement);
 
 				// Resolve the symbol to which the identifier is related to
-				var resolveResults = DResolver.ResolveType(id, resolveContext);
+				var resolveResults = DResolver.ResolveType(o as ITypeDeclaration, resolveContext);
 
 				if (resolveResults == null)
 					break;
