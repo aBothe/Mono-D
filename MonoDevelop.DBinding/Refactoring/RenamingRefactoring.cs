@@ -19,13 +19,38 @@ namespace MonoDevelop.D.Refactoring
 
 		public bool Run(DProject project,INode targetMember, string newName=null)
 		{
-			if(Ide.IdeApp.Workbench.ActiveDocument ==null)
+			if(targetMember==null || Ide.IdeApp.Workbench.ActiveDocument ==null)
 				return false;
 
 			n = targetMember;
 
-			if (n == null)
+
+
+			// Request new name
+			if (newName == null)
+				newName = MessageService.GetTextResponse("Enter a new name", "Symbol rename", n.Name);
+
+			if (newName == null || newName==n.Name)
 				return false;
+
+			// Validate new name
+			if (newName == "")
+			{
+				MessageService.ShowError("Symbol name must not be empty!");
+				return false;
+			}
+
+			foreach (var c in newName)
+				if (!D.Completion.DCodeCompletionSupport.IsIdentifierChar(c))
+				{
+					MessageService.ShowError("Character '" + c + "' in " + newName + " not allowed as identifier character!");
+					return false;
+				}
+
+
+
+
+
 
 			// Setup locals
 			var parseCache = project != null ? 
@@ -37,6 +62,11 @@ namespace MonoDevelop.D.Refactoring
 				new[]{ (Ide.IdeApp.Workbench.ActiveDocument.ParsedDocument as MonoDevelop.D.Parser.ParsedDModule).DDom };
 
 			foundReferences = new Dictionary<string, List<CodeLocation>>();
+
+
+
+
+
 
 
 
@@ -67,27 +97,16 @@ namespace MonoDevelop.D.Refactoring
 			if (foundReferences.Count < 1)
 				return false;
 
-			// Request new name
-			if(newName==null)
-				newName=MessageService.GetTextResponse("Enter a new name", "Symbol rename", n.Name);
-
-			if (newName == null)
-				return false;
-
-			if (newName == "")
-			{
-				MessageService.ShowError("Symbol name must not be empty!");
-				return false;
-			}
-
-			foreach(var c in newName)
-				if (!D.Completion.DCodeCompletionSupport.IsIdentifierChar(c))
-				{
-					MessageService.ShowError("Character '"+c+"' in "+newName+" not allowed as identifier character!");
-					return false;
-				}
 
 
+
+
+
+
+
+
+
+			// Replace occurences
 			foreach (var kv1 in foundReferences)
 			{
 				var doc = TextFileProvider.Instance.GetEditableTextFile(new FilePath(kv1.Key));
@@ -110,6 +129,14 @@ namespace MonoDevelop.D.Refactoring
 						project.ReparseModule(kv1.Key);
 				}
 			}
+
+			// Assign new name to the node
+			n.Name = newName;
+
+
+
+
+
 
 			/*
 			// Prepare current editor (setup textlinks and anchors)

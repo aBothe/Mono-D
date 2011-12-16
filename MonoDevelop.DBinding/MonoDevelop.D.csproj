@@ -149,7 +149,6 @@
     <Compile Include="Refactoring\ReferenceFinder.cs" />
     <Compile Include="Gui\EditorPathbarProvider.cs" />
     <Compile Include="Refactoring\RenamingRefactoring.cs" />
-    <Compile Include="gtk-gui\MonoDevelop.D.RenamingDialog.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

@@ -2040,7 +2040,7 @@ namespace D_Parser.Parser
 						ac.ClassArguments = ArgumentList(Scope).ToArray();
 				}
 
-				var anclass = new DClassLike(Class) { IsAnonymous=true };
+				var anclass = new DClassLike(Class) { IsAnonymousClass=true };
 				LastParsedObject = anclass;
 
 				anclass.Name = "(Anonymous Class)";

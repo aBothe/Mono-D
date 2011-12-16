@@ -457,7 +457,7 @@ namespace D_Parser.Dom
 
     public class DClassLike : DBlockNode
     {
-		public bool IsAnonymous = false;
+		public bool IsAnonymousClass = false;
 
         public List<ITypeDeclaration> BaseClasses=new List<ITypeDeclaration>();
         public int ClassType=DTokens.Class;
