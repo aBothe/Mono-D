@@ -27,9 +27,8 @@ namespace MonoDevelop.D.Gui
 	{
 		#region Properties
 		IAbstractSyntaxTree SyntaxTree;
-		MonoDevelop.Ide.Gui.Components.PadTreeView outlineTreeView;
-		TreeStore outlineTreeStore;
-		TreeModelSort outlineTreeModelSort;
+		MonoDevelop.Ide.Gui.Components.PadTreeView TreeView;
+		TreeStore TreeStore;
 		Widget[] toolbarWidgets;
 
 		bool refreshingOutline;
@@ -57,7 +56,7 @@ namespace MonoDevelop.D.Gui
 
 		void UpdateOutlineSelection(object sender, Mono.TextEditor.DocumentLocationEventArgs e)
 		{
-			if (clickedOnOutlineItem || SyntaxTree==null || outlineTreeStore==null)
+			if (clickedOnOutlineItem || SyntaxTree==null || TreeStore==null)
 				return;
 
 			IStatement stmt = null;
@@ -84,14 +83,14 @@ namespace MonoDevelop.D.Gui
 			if (selectedASTNode == null)
 				return;
 
-			outlineTreeStore.Foreach((TreeModel model, TreePath path, TreeIter iter) =>
+			TreeStore.Foreach((TreeModel model, TreePath path, TreeIter iter) =>
 			{
 				var n=model.GetValue(iter, 0);
 				if (n == selectedASTNode)
 				{
 					dontJumpToDeclaration = true;
-					outlineTreeView.Selection.SelectIter(iter);
-					outlineTreeView.ScrollToCell(path, outlineTreeView.GetColumn(0), true, 0, 0);
+					TreeView.Selection.SelectIter(iter);
+					TreeView.ScrollToCell(path, TreeView.GetColumn(0), true, 0, 0);
 					dontJumpToDeclaration = false;
 
 					return true;
@@ -103,15 +102,14 @@ namespace MonoDevelop.D.Gui
 
 		void MonoDevelop.DesignerSupport.IOutlinedDocument.ReleaseOutlineWidget()
 		{
-			if (outlineTreeView == null)
+			if (TreeView == null)
 				return;
-			var w = (ScrolledWindow)outlineTreeView.Parent;
+			var w = (ScrolledWindow)TreeView.Parent;
 			w.Destroy();
-			outlineTreeModelSort.Dispose();
-			outlineTreeModelSort = null;
-			outlineTreeStore.Dispose();
-			outlineTreeStore = null;
-			outlineTreeView = null;
+
+			TreeStore.Dispose();
+			TreeStore = null;
+			TreeView = null;
 			//settings = null;
 			if(toolbarWidgets!=null)
 				foreach (var tw in toolbarWidgets)
@@ -126,12 +124,7 @@ namespace MonoDevelop.D.Gui
 			if (!(Document.ParsedDocument is ParsedDModule))
 				return;
 
-			//limit update rate to 2s
-			if (!refreshingOutline)
-			{
-				refreshingOutline = true;
-				refillOutlineStoreId = GLib.Timeout.Add(2000, RefillOutlineStore);
-			}
+			RefillOutlineStore();
 		}
 
 		void RemoveRefillOutlineStoreTimeout()
@@ -147,25 +140,25 @@ namespace MonoDevelop.D.Gui
 			DispatchService.AssertGuiThread();
 			Gdk.Threads.Enter();
 			refreshingOutline = false;
-			if (outlineTreeStore == null || !outlineTreeView.IsRealized)
+			if (TreeStore == null || !TreeView.IsRealized)
 			{
 				refillOutlineStoreId = 0;
 				return false;
 			}
 
 			outlineReady = false;
-			outlineTreeStore.Clear();
+			TreeStore.Clear();
 			try
 			{
 				SyntaxTree = (Document.ParsedDocument as ParsedDModule).DDom;
 
+				var caretLocation = Document.Editor.Caret.Location;
+
 				if (SyntaxTree != null)
 				{
-					BuildTreeChildren(outlineTreeStore, TreeIter.Zero, SyntaxTree);
-					TreeIter it;
-					if (outlineTreeStore.GetIterFirst(out it))
-						outlineTreeView.Selection.SelectIter(it);
-					outlineTreeView.ExpandAll();
+					BuildTreeChildren(TreeIter.Zero, SyntaxTree, new CodeLocation(caretLocation.Column, caretLocation.Line));
+
+					TreeView.ExpandAll();
 				}
 			}
 			catch (Exception ex)
@@ -188,11 +181,10 @@ namespace MonoDevelop.D.Gui
 		#region GUI low level
 		public Gtk.Widget GetOutlineWidget()
 		{
-			if (outlineTreeView != null)
-				return outlineTreeView;
+			if (TreeView != null)
+				return TreeView;
 
-			outlineTreeStore = new TreeStore(typeof(object));
-			outlineTreeModelSort = new TreeModelSort(outlineTreeStore);
+			TreeStore = new TreeStore(typeof(object));
 			/*
 			settings = ClassOutlineSettings.Load();
 			comparer = new ClassOutlineNodeComparer(GetAmbience(), settings, outlineTreeModelSort);
@@ -200,33 +192,33 @@ namespace MonoDevelop.D.Gui
 			outlineTreeModelSort.SetSortFunc(0, comparer.CompareNodes);
 			outlineTreeModelSort.SetSortColumnId(0, SortType.Ascending);
 			*/
-			outlineTreeView = new MonoDevelop.Ide.Gui.Components.PadTreeView(outlineTreeStore);
+			TreeView = new MonoDevelop.Ide.Gui.Components.PadTreeView(TreeStore);
 
 			var pixRenderer = new CellRendererPixbuf();
 			pixRenderer.Xpad = 0;
 			pixRenderer.Ypad = 0;
 
-			outlineTreeView.TextRenderer.Xpad = 0;
-			outlineTreeView.TextRenderer.Ypad = 0;
+			TreeView.TextRenderer.Xpad = 0;
+			TreeView.TextRenderer.Ypad = 0;
 
 			TreeViewColumn treeCol = new TreeViewColumn();
 			treeCol.PackStart(pixRenderer, false);
 			
 			treeCol.SetCellDataFunc(pixRenderer, new TreeCellDataFunc(OutlineTreeIconFunc));
-			treeCol.PackStart(outlineTreeView.TextRenderer, true);
+			treeCol.PackStart(TreeView.TextRenderer, true);
 
-			treeCol.SetCellDataFunc(outlineTreeView.TextRenderer, new TreeCellDataFunc(OutlineTreeTextFunc));
+			treeCol.SetCellDataFunc(TreeView.TextRenderer, new TreeCellDataFunc(OutlineTreeTextFunc));
 
-			outlineTreeView.AppendColumn(treeCol);
+			TreeView.AppendColumn(treeCol);
 
-			outlineTreeView.TextRenderer.Editable = true;
-			outlineTreeView.TextRenderer.Edited += new EditedHandler(nameCell_Edited);
+			TreeView.TextRenderer.Editable = true;
+			TreeView.TextRenderer.Edited += new EditedHandler(nameCell_Edited);
 			
-			outlineTreeView.HeadersVisible = false;
+			TreeView.HeadersVisible = false;
 
-			outlineTreeView.Selection.Changed += delegate
+			TreeView.Selection.Changed += delegate
 			{
-				if (dontJumpToDeclaration)
+				if (dontJumpToDeclaration || !outlineReady)
 					return;
 
 				clickedOnOutlineItem = true;
@@ -234,11 +226,11 @@ namespace MonoDevelop.D.Gui
 				clickedOnOutlineItem = false;
 			};
 
-			outlineTreeView.Realized += delegate { RefillOutlineStore(); };
+			TreeView.Realized += delegate { RefillOutlineStore(); };
 			//UpdateSorting();
 
 			var sw = new CompactScrolledWindow();
-			sw.Add(outlineTreeView);
+			sw.Add(TreeView);
 			sw.ShowAll();
 			return sw;
 		}
@@ -246,17 +238,17 @@ namespace MonoDevelop.D.Gui
 		void nameCell_Edited(object o, EditedArgs args)
 		{
 			TreeIter iter;
-			outlineTreeStore.GetIter(out iter, new Gtk.TreePath(args.Path));
+			TreeStore.GetIter(out iter, new Gtk.TreePath(args.Path));
 
-			var n=outlineTreeStore.GetValue(iter, 0) as INode;
+			var n=TreeStore.GetValue(iter, 0) as INode;
 
 			if (n != null && args.NewText!=n.Name)
 			{
 				new RenamingRefactoring().Run(IdeApp.Workbench.ActiveDocument.HasProject ?
 					IdeApp.Workbench.ActiveDocument.Project as DProject : null, n, args.NewText);
 
-				outlineTreeView.Selection.SelectIter(iter);
-				outlineTreeView.GrabFocus();
+				TreeView.Selection.SelectIter(iter);
+				TreeView.GrabFocus();
 			}
 		}
 
@@ -299,11 +291,12 @@ namespace MonoDevelop.D.Gui
 		{
 			if (!outlineReady)
 				return;
+
 			TreeIter iter;
-			if (!outlineTreeView.Selection.GetSelected(out iter))
+			if (!TreeView.Selection.GetSelected(out iter))
 				return;
 
-			var n = outlineTreeStore.GetValue(iter, 0) as INode;
+			var n = TreeStore.GetValue(iter, 0) as INode;
 
 			if(n==null)
 				return;
@@ -326,7 +319,7 @@ namespace MonoDevelop.D.Gui
 
 		#region Tree building
 
-		static void BuildTreeChildren(TreeStore Tree, TreeIter ParentTreeNode, IBlockNode ParentAstNode)
+		void BuildTreeChildren(TreeIter ParentTreeNode, IBlockNode ParentAstNode, CodeLocation editorSelectionLocation)
 		{
 			if (ParentAstNode == null)
 				return;
@@ -335,17 +328,20 @@ namespace MonoDevelop.D.Gui
 			{
 				if (n is DEnum && (n as DEnum).IsAnonymous)
 				{
-					BuildTreeChildren(Tree, ParentTreeNode, n as IBlockNode);
+					BuildTreeChildren(ParentTreeNode, n as IBlockNode,editorSelectionLocation);
 					continue;
 				}
 
 				TreeIter childIter;
 				if (!ParentTreeNode.Equals(TreeIter.Zero))
-					childIter = Tree.AppendValues(ParentTreeNode,n);
+					childIter = TreeStore.AppendValues(ParentTreeNode,n);
 				else
-					childIter = Tree.AppendValues(n);
+					childIter = TreeStore.AppendValues(n);
+
+				if (editorSelectionLocation >= n.StartLocation && editorSelectionLocation < n.EndLocation)
+					TreeView.Selection.SelectIter(childIter);
 				
-				BuildTreeChildren(Tree, childIter, n as IBlockNode);
+				BuildTreeChildren(childIter, n as IBlockNode,editorSelectionLocation);
 			}
 		}
 
