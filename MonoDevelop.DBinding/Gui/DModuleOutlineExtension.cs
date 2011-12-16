@@ -126,13 +126,11 @@ namespace MonoDevelop.D.Gui
 			if (!(Document.ParsedDocument is ParsedDModule))
 				return;
 
-			SyntaxTree = (Document.ParsedDocument as ParsedDModule).DDom;
-
-			//limit update rate to 3s
+			//limit update rate to 2s
 			if (!refreshingOutline)
 			{
 				refreshingOutline = true;
-				refillOutlineStoreId = GLib.Timeout.Add(3000, RefillOutlineStore);
+				refillOutlineStoreId = GLib.Timeout.Add(2000, RefillOutlineStore);
 			}
 		}
 
@@ -159,6 +157,8 @@ namespace MonoDevelop.D.Gui
 			outlineTreeStore.Clear();
 			try
 			{
+				SyntaxTree = (Document.ParsedDocument as ParsedDModule).DDom;
+
 				if (SyntaxTree != null)
 				{
 					BuildTreeChildren(outlineTreeStore, TreeIter.Zero, SyntaxTree);
@@ -233,9 +233,6 @@ namespace MonoDevelop.D.Gui
 				JumpToDeclaration(true);
 				clickedOnOutlineItem = false;
 			};
-
-			if(Document.ParsedDocument is ParsedDModule)
-				SyntaxTree = (Document.ParsedDocument as ParsedDModule).DDom;
 
 			outlineTreeView.Realized += delegate { RefillOutlineStore(); };
 			//UpdateSorting();
@@ -312,9 +309,11 @@ namespace MonoDevelop.D.Gui
 				return;
 
 			var openedDoc=IdeApp.Workbench.OpenDocument(SyntaxTree.FileName, n.StartLocation.Line, n.StartLocation.Column);
-			
+
 			if (focusEditor)
+			{
 				IdeApp.Workbench.ActiveDocument.Select();
+			}
 
 			openedDoc.Editor.Document.EnsureOffsetIsUnfolded(
 				openedDoc.Editor.LocationToOffset(

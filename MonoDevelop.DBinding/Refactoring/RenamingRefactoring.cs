@@ -78,7 +78,7 @@ namespace MonoDevelop.D.Refactoring
 
 				var references = DReferenceFinder.ScanNodeReferencesInModule(mod,
 					parseCache,
-					DResolver.ResolveImports(mod as DModule, parseCache),n);
+					DResolver.ResolveImports(mod as DModule, parseCache),n,false);
 
 				if ((n.NodeRoot as IAbstractSyntaxTree).FileName == mod.FileName)
 					references.Insert(0, new IdentifierDeclaration(n.Name) { Location = n.NameLocation });
@@ -86,12 +86,16 @@ namespace MonoDevelop.D.Refactoring
 				if (references.Count < 1)
 					continue;
 
+				references.Sort(new DReferenceFinder.IdLocationComparer(true));
+
 				if (!foundReferences.ContainsKey(mod.FileName))
 					foundReferences.Add(mod.FileName, new List<CodeLocation>());
 
 				var moduleRefList = foundReferences[mod.FileName];
 				foreach (var reference in references)
+				{
 					moduleRefList.Add(reference.Location);
+				}
 			}
 
 			if (foundReferences.Count < 1)
@@ -121,6 +125,7 @@ namespace MonoDevelop.D.Refactoring
 						doc.InsertText(offset, newName);
 					}
 
+					// If project file not open for editing, reparse it
 					if (project != null && !IdeApp.Workbench.Documents.Any((Ide.Gui.Document d) => {
 						if (d.IsFile && d.FileName == kv1.Key)
 							return true;

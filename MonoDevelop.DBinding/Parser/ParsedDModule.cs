@@ -72,12 +72,12 @@ namespace MonoDevelop.D.Parser
 				var pf = prj.GetProjectFile(file);
 
 				// Build appropriate module name
-				var modName = pf.ProjectVirtualPath.ChangeExtension(null).ToString().Replace(Path.DirectorySeparatorChar, '.');
-
-				ast.ModuleName = modName;
-
 				if (pf != null)
+				{
+					ast.ModuleName = pf.ProjectVirtualPath.ChangeExtension(null).ToString().Replace(Path.DirectorySeparatorChar, '.');
+
 					pf.ExtendedProperties[DProject.DParserPropertyKey] = ast;
+				}
 			}
 			else
 				doc._ddom = ast;

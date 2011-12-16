@@ -385,7 +385,8 @@ namespace D_Parser.Resolver
 							l2.AddRange(sstmts);
 					}
 
-					if (s is IDeclarationContainingStatement)
+					// Don't add declarations & declaration statements twice
+					if (!(s is BlockStatement) && s is IDeclarationContainingStatement)
 					{
 						var decls = (s as IDeclarationContainingStatement).Declarations;
 

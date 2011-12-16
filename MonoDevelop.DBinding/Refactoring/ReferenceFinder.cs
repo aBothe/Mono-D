@@ -42,7 +42,8 @@ namespace MonoDevelop.D.Refactoring
 				var references= ScanNodeReferencesInModule(mod,
 					parseCache,
 					DResolver.ResolveImports(mod as DModule, parseCache),
-					member);
+					member,
+					false);
 
 				if ((member.NodeRoot as IAbstractSyntaxTree).FileName==mod.FileName)
 					references.Insert(0,new IdentifierDeclaration(member.Name) { Location=member.NameLocation });
@@ -53,6 +54,9 @@ namespace MonoDevelop.D.Refactoring
 						monitor.Step(1);
 					continue;
 				}
+
+				// Sort the references by code location
+				references.Sort(new IdLocationComparer());
 
 				// Get actual document code
 				var targetDoc=Ide.TextFileProvider.Instance.GetTextEditorData(new FilePath(mod.FileName));
@@ -82,7 +86,8 @@ namespace MonoDevelop.D.Refactoring
 			IAbstractSyntaxTree scannedFileAST,
 			IEnumerable<IAbstractSyntaxTree> parseCache,
 			IEnumerable<IAbstractSyntaxTree> scannedFileImports,
-			INode declarationToCompareWith)
+			INode declarationToCompareWith,
+			bool sortResults=true)
 		{
 			var matchedReferences = new List<IdentifierDeclaration>();
 
@@ -140,7 +145,32 @@ namespace MonoDevelop.D.Refactoring
                 }
 			}
 
+
+
+			// Sort matches
+			if(sortResults)
+				matchedReferences.Sort(new IdLocationComparer());
+
+
+
 			return matchedReferences;
+		}
+
+		public class IdLocationComparer : IComparer<IdentifierDeclaration>
+		{
+			bool rev;
+			public IdLocationComparer(bool reverse = false)
+			{
+				rev = reverse;
+			}
+
+			public int Compare(IdentifierDeclaration x, IdentifierDeclaration y)
+			{
+				if (x == null || y == null || x.Location==y.Location)
+					return 0;
+
+				return (rev? x.Location<y.Location : x.Location>y.Location)?1:-1;
+			}
 		}
 	}
 }

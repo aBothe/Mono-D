@@ -2,6 +2,7 @@
 using D_Parser.Dom.Expressions;
 using D_Parser.Dom.Statements;
 using D_Parser.Parser;
+using System;
 
 namespace D_Parser.Dom
 {
@@ -10,6 +11,8 @@ namespace D_Parser.Dom
     /// </summary>
     public class DModule : DBlockNode, IAbstractSyntaxTree
     {
+		public readonly DateTime ParseTimestamp = DateTime.Now;
+
         /// <summary>
         /// Applies file name, children and imports from an other module instance
          /// </summary>

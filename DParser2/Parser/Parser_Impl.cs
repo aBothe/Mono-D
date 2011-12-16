@@ -2053,7 +2053,6 @@ namespace D_Parser.Parser
 				else if (laKind != OpenCurlyBrace)
 					anclass.BaseClasses = BaseClassList(false);
 
-				//TODO: Add the parsed results to node tree somehow
 				ClassBody(anclass);
 
 				ac.AnonymousClass = anclass;
