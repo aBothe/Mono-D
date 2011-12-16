@@ -23,10 +23,13 @@ namespace MonoDevelop.D.Refactoring
 		{
 			var searchResults = new List<SearchResult>();
 
-            var parseCache = project != null ? project.ParseCache : DCompiler.Instance.GetDefaultCompiler().GlobalParseCache.ParseCache;
-            var modules = project!=null? project.ParsedModules : new[]{
-                (Ide.IdeApp.Workbench.ActiveDocument.ParsedDocument as MonoDevelop.D.Parser.ParsedDModule).DDom
-            };
+            var parseCache = project != null ? 
+				project.ParseCache : 
+				DCompiler.Instance.GetDefaultCompiler().GlobalParseCache.ParseCache;
+
+            var modules = project!=null? 
+				project.ParsedModules : 
+				new[]{ (Ide.IdeApp.Workbench.ActiveDocument.ParsedDocument as MonoDevelop.D.Parser.ParsedDModule).DDom };
 
 			if(monitor!=null)
 				monitor.BeginStepTask("Scan for references", modules.Count(), 1);

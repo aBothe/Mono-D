@@ -146,12 +146,10 @@
     <Compile Include="OptionPanels\ResourcesCompilerOptions.cs" />
     <Compile Include="gtk-gui\MonoDevelop.D.ResourcesCompilerOptionsPanel.cs" />
     <Compile Include="Refactoring\Commands.cs" />
-    <Compile Include="Refactoring\GotoDeclarationHandler.cs" />
-    <Compile Include="Refactoring\FindReferencesHandler.cs" />
     <Compile Include="Refactoring\ReferenceFinder.cs" />
     <Compile Include="Gui\EditorPathbarProvider.cs" />
-    <Compile Include="Refactoring\RenamingHandler.cs" />
     <Compile Include="Refactoring\RenamingRefactoring.cs" />
+    <Compile Include="gtk-gui\MonoDevelop.D.RenamingDialog.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

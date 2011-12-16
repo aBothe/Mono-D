@@ -4,3 +4,4 @@
 *.user
 build/index.html
 build/*.m*
+*.pidb

@@ -28,8 +28,14 @@ namespace MonoDevelop.D
 	public class DEditorCompletionExtension:CompletionTextEditorExtension, IPathedDocument
 	{
 		#region Properties / Init
-		public override bool CanRunCompletionCommand(){		return true;	}
-		public override bool CanRunParameterCompletionCommand(){	return false;	}
+		public override bool CanRunCompletionCommand()
+		{
+			return documentEditor.CurrentMode is Mono.TextEditor.SimpleEditMode;	
+		}
+		public override bool CanRunParameterCompletionCommand()
+		{
+			return documentEditor.CurrentMode is Mono.TextEditor.SimpleEditMode;	
+		}
 		private Mono.TextEditor.TextEditorData documentEditor;
 		
 		public override void Initialize()
@@ -60,6 +66,8 @@ namespace MonoDevelop.D
 
 		public override ICompletionDataList HandleCodeCompletion(CodeCompletionContext completionContext, char triggerChar, ref int triggerWordLength)
 		{
+			// Return if e.g. renaming code symbols etc.
+
 			if (!(triggerChar==' ' || char.IsLetter(triggerChar) || triggerChar == '_' || triggerChar == '.' || triggerChar == '\0'))
 				return null;
 			else if ((char.IsLetter(triggerChar) && !DResolver.IsTypeIdentifier(Document.Editor.Text, Document.Editor.Caret.Offset)))

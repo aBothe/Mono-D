@@ -14,6 +14,7 @@ using MonoDevelop.D.Completion;
 using MonoDevelop.Core;
 using D_Parser.Dom.Statements;
 using D_Parser.Resolver;
+using MonoDevelop.D.Refactoring;
 
 namespace MonoDevelop.D.Gui
 {
@@ -210,13 +211,22 @@ namespace MonoDevelop.D.Gui
 
 			TreeViewColumn treeCol = new TreeViewColumn();
 			treeCol.PackStart(pixRenderer, false);
-
+			
 			treeCol.SetCellDataFunc(pixRenderer, new TreeCellDataFunc(OutlineTreeIconFunc));
 			treeCol.PackStart(outlineTreeView.TextRenderer, true);
 
 			treeCol.SetCellDataFunc(outlineTreeView.TextRenderer, new TreeCellDataFunc(OutlineTreeTextFunc));
+
+			var nameCell = new Gtk.CellRendererText();
+
+			// Add the cell to the column
+			treeCol.PackStart(nameCell, true);
+
 			outlineTreeView.AppendColumn(treeCol);
 
+			nameCell.Editable = true;
+			nameCell.Edited += new EditedHandler(nameCell_Edited);
+			
 			outlineTreeView.HeadersVisible = false;
 
 			outlineTreeView.Selection.Changed += delegate
@@ -239,6 +249,23 @@ namespace MonoDevelop.D.Gui
 			sw.Add(outlineTreeView);
 			sw.ShowAll();
 			return sw;
+		}
+
+		void nameCell_Edited(object o, EditedArgs args)
+		{
+			TreeIter iter;
+			outlineTreeStore.GetIter(out iter, new Gtk.TreePath(args.Path));
+
+			var n=outlineTreeStore.GetValue(iter, 0) as INode;
+
+			if (n != null)
+			{
+				var successful=new RenamingRefactoring().Run(IdeApp.Workbench.ActiveDocument.HasProject ?
+					IdeApp.Workbench.ActiveDocument.Project as DProject : null, n, args.NewText);
+
+				if (!successful)
+					args.RetVal = 1;
+			}
 		}
 
 		public IEnumerable<Gtk.Widget> GetToolbarWidgets()

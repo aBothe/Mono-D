@@ -88,23 +88,43 @@ namespace MonoDevelop.D
 			}
 		}
 
+		public void UpdateLocalIncludeCache()
+		{
+			DCompilerConfiguration.UpdateParseCacheAsync(LocalIncludeCache);
+		}
+
+		public void ReparseModule(ProjectFile pf)
+		{
+			if (pf == null || !DLanguageBinding.IsDFile(pf.FilePath.FileName))
+				return;
+
+			try
+			{
+				var ddom = DParser.ParseFile(pf.FilePath.ToAbsolute(BaseDirectory));
+
+				// Update relative module name
+				ddom.ModuleName = pf.ProjectVirtualPath.ChangeExtension(null).ToString().Replace(Path.DirectorySeparatorChar, '.');
+
+				pf.ExtendedProperties[DParserPropertyKey] = ddom;
+			}
+			catch (Exception ex)
+			{
+				LoggingService.LogError("Error while parsing " + pf.FilePath.ToString(), ex);
+			}
+		}
+
+		public void ReparseModule(string file)
+		{
+			ReparseModule(GetProjectFile(file));
+		}
+
 		/// <summary>
 		/// Updates the project's parse cache and reparses all of its D sources
 		/// </summary>
 		public void UpdateParseCache()
 		{
-			DCompilerConfiguration.UpdateParseCacheAsync(LocalIncludeCache);
-			
 			foreach (ProjectFile pf in Items)
-				if (pf != null && DLanguageBinding.IsDFile(pf.FilePath.FileName))
-				{
-					try{
-					pf.ExtendedProperties[DParserPropertyKey]=DParser.ParseFile(pf.FilePath.ToAbsolute(BaseDirectory));
-					}catch(Exception ex)
-					{
-						LoggingService.LogError("Error while parsing "+pf.FilePath.ToString(),ex);
-					}
-				}
+				ReparseModule(pf);					
 		}
 		#endregion
 
@@ -370,6 +390,7 @@ namespace MonoDevelop.D
 			foreach (var p in tempIncludes)
 				LocalIncludeCache.Add(p);
 
+			UpdateLocalIncludeCache();
 			UpdateParseCache();
 		}
 
