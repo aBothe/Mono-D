@@ -16,7 +16,7 @@ using D_Parser.Dom;
 
 namespace MonoDevelop.D.Gui
 {
-	public class EditorPathbarProvider : DropDownBoxListWindow.IListDataProvider
+	class EditorPathbarProvider : DropDownBoxListWindow.IListDataProvider
 	{
 		object tag;
 		IAbstractSyntaxTree syntaxTree;

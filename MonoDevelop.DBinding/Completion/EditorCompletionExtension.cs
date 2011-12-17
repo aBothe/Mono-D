@@ -25,7 +25,7 @@ using MonoDevelop.Ide.Commands;
 
 namespace MonoDevelop.D
 {
-	public class DEditorCompletionExtension:CompletionTextEditorExtension, IPathedDocument
+	class DEditorCompletionExtension:CompletionTextEditorExtension
 	{
 		#region Properties / Init
 		public override bool CanRunCompletionCommand()
@@ -42,10 +42,7 @@ namespace MonoDevelop.D
 		{
 			base.Initialize();
 			
-			documentEditor = Document.Editor;
-			UpdatePath (null, null);
-			documentEditor.Caret.PositionChanged += UpdatePath;
-			Document.DocumentParsed += delegate { UpdatePath (null, null); };			
+			documentEditor = Document.Editor;	
 		}
 
 		#endregion
@@ -159,121 +156,11 @@ namespace MonoDevelop.D
 
 		#endregion
 
-		#region Code Templates
-
-		public override void RunShowCodeTemplatesWindow()
-		{
-			base.RunShowCodeTemplatesWindow();
-		}
-
-		public override ICompletionDataList ShowCodeTemplatesCommand(CodeCompletionContext completionContext)
-		{
-			return base.ShowCodeTemplatesCommand(completionContext);
-		}
-
-		#endregion
-
 		public override bool ExtendsEditor(Document doc, IEditableTextBuffer editor)
 		{
 			return doc.IsFile && DLanguageBinding.IsDFile(doc.FileName);
 		}
-		
-		
-		#region IPathedDocument implementation
-		public event EventHandler<DocumentPathChangedEventArgs> PathChanged;
-			
-		public Widget CreatePathWidget (int index)
-		{
-			PathEntry[] path = CurrentPath;
-			if (null == path || 0 > index || path.Length <= index) 
-			{
-				return null;
-			}
-			
-			object tag = path[index].Tag;
-			DropDownBoxListWindow.IListDataProvider provider = null;
-			if (!((tag is D_Parser.Dom.IBlockNode) || (tag is DEnumValue) || (tag is NoSelectionCustomNode)))
-			{
-				return null;
-			} 
-			provider = new EditorPathbarProvider (Document, tag);
-			
-			DropDownBoxListWindow window = new DropDownBoxListWindow (provider);
-			window.SelectItem (tag);
-			return window;
-		}	
-
-		public MonoDevelop.Components.PathEntry[] CurrentPath 
-		{
-			get;
-			private set;
-		}
-		
-		protected virtual void OnPathChanged (DocumentPathChangedEventArgs args)
-		{
-			if (null != PathChanged) {
-				PathChanged (this, args);
-			}
-		}		
-		#endregion
-		
-		
-		private void UpdatePath (object sender, Mono.TextEditor.DocumentLocationEventArgs e)
-		{
-			var ast = Document.ParsedDocument as ParsedDModule;
-			if (ast == null)
-				return;
-			
-			var SyntaxTree = ast.DDom;
-
-			if (SyntaxTree == null)
-				return;		
-			
-			// Resolve the hovered piece of code
-			var loc = new CodeLocation(documentEditor.Caret.Location.Column, documentEditor.Caret.Location.Line);			
-			IStatement stmt = null;
-			DNode currentblock = (DNode) DResolver.SearchBlockAt(SyntaxTree, loc, out stmt);
-			
-			//could be an enum value, which is not IBlockNode
-			if (currentblock is DEnum)
-			{
-				foreach(DNode nd in (currentblock as DEnum).Children)
-				{
-					if ((nd is DEnumValue) 
-					&& ((nd.StartLocation <= loc) && (nd.EndLocation >= loc)))
-					{
-						currentblock = nd;
-						break;
-					}
-				}
-			}
-			
-			List<PathEntry> result = new List<PathEntry> ();
-			D_Parser.Dom.INode node = currentblock;			
-					
-			while ((node != null) && ((node is IBlockNode) || (node is DEnumValue))) {
-				PathEntry entry;										
-				
-				var icon=DCompletionData.GetNodeIcon(node as DNode);					
-				entry = new PathEntry (ImageService.GetPixbuf(icon.Name, IconSize.Menu), node.Name + DParameterDataProvider.GetNodeParamString(node));
-				entry.Position = EntryPosition.Left;
-				entry.Tag = node;
-				//do not include the module in the path bar
-				if ((node.Parent != null) && !((node is DNode) && (node as DNode).IsAnonymous))
-					result.Insert (0, entry);
-				node = node.Parent;
-			}						
-			
-			if (!((currentblock is DMethod) || (currentblock is DEnumValue))) {
-				PathEntry noSelection = new PathEntry (GettextCatalog.GetString ("No Selection")) { Tag =  new NoSelectionCustomNode (currentblock) };
-				result.Add (noSelection);
-			}
-			
-			var prev = CurrentPath;
-			CurrentPath = result.ToArray ();
-			OnPathChanged (new DocumentPathChangedEventArgs (prev));
-		}
-
+	
 		[CommandHandler(Refactoring.Commands.FindReferences)]
 		public void FindReferences()
 		{

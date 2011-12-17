@@ -121,6 +121,7 @@
     <Compile Include="Gui\DModuleOutlineExtension.cs" />
     <Compile Include="Gui\DToolTipProvider.cs" />
     <Compile Include="Gui\DToolTipWindow.cs" />
+    <Compile Include="Gui\EditorPathBarExtension.cs" />
     <Compile Include="OptionPanels\ProjectOptions.cs" />
     <Compile Include="Parser\DParserWrapper.cs" />
     <Compile Include="Parser\ParsedDModule.cs" />
