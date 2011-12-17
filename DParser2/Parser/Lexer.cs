@@ -1596,7 +1596,7 @@ namespace D_Parser.Parser
 			string comm = ReadToEndOfLine().TrimStart('/');
 			var end = new CodeLocation(Col, Line);
 
-			if (commentType == Comment.Type.Documentation || !OnlyEnlistDDocComments)
+			if (commentType.HasFlag( Comment.Type.Documentation) || !OnlyEnlistDDocComments)
 				Comments.Add(new Comment(commentType, comm.Trim(), st.Column < 2, st, end));
 		}
 
@@ -1629,7 +1629,7 @@ namespace D_Parser.Parser
 						nestedCommentDepth--;
 					else
 					{
-						if (commentType == Comment.Type.Documentation || !OnlyEnlistDDocComments)
+						if (commentType.HasFlag(Comment.Type.Documentation) || !OnlyEnlistDDocComments)
 							Comments.Add( new Comment(commentType, scCurWord.ToString().Trim(ch, ' ', '\t', '\r', '\n', isNestingComment ? '+' : '*'), st.Column < 2, st, new CodeLocation(Col, Line)));
 						return;
 					}
@@ -1657,7 +1657,7 @@ namespace D_Parser.Parser
 			}
 
 			// Reached EOF before end of multiline comment.
-			if (commentType == Comment.Type.Documentation || !OnlyEnlistDDocComments)
+			if (commentType.HasFlag( Comment.Type.Documentation) || !OnlyEnlistDDocComments)
 				Comments.Add(new Comment(commentType, scCurWord.ToString().Trim(), st.Column < 2, st, new CodeLocation(Col, Line)));
 
 			OnError(Line, Col, String.Format("Reached EOF before the end of a multiline comment"));
