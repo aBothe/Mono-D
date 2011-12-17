@@ -1642,10 +1642,15 @@ namespace D_Parser.Parser
 				}
 
 				// Skip intial white spaces, leading + as well as *
-				else if (hadLineEnd && !(char.IsWhiteSpace(ch) || isNestingComment ? ch == '+' : ch == '*'))
+				else if (hadLineEnd)
 				{
-					scCurWord.Append(ch);
-					hadLineEnd = false;
+					if (char.IsWhiteSpace(ch) || (isNestingComment ? ch == '+' : ch == '*'))
+					{ }
+					else
+					{
+						scCurWord.Append(ch);
+						hadLineEnd = false;
+					}
 				}
 				else
 					scCurWord.Append(ch);

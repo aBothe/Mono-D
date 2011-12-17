@@ -5,6 +5,7 @@ using System.Text;
 using MonoDevelop.Ide.Gui.Content;
 using Gdk;
 using D_Parser.Formatting;
+using D_Parser.Resolver;
 
 namespace MonoDevelop.D.Formatting
 {
@@ -19,22 +20,43 @@ namespace MonoDevelop.D.Formatting
 
 		public override bool KeyPress(Key key, char keyChar, ModifierType modifier)
 		{
+			var ed = Document.Editor;
+
+			if (key == Key.Return)
+			{
+				int lastBegin;
+				int lastEnd;
+				var caretCtxt=DResolver.CommentSearching.GetTokenContext(ed.Text, ed.Caret.Offset,out lastBegin, out lastEnd);
+
+				if (lastBegin>=0 &&
+					(caretCtxt == DResolver.CommentSearching.TokenContext.BlockComment ||
+					caretCtxt == DResolver.CommentSearching.TokenContext.NestedComment))
+				{
+					char charToInsert=
+						caretCtxt== DResolver.CommentSearching.TokenContext.BlockComment?
+						'*':
+						'+';
+
+					var prevLineIndent=ed.GetLineIndent(ed.GetLineByOffset(lastBegin));
+
+					ed.InsertAtCaret('\n'+prevLineIndent+' '+charToInsert+' ');
+					return false;
+				}
+			}
+			
 			if(TextEditorProperties.IndentStyle == IndentStyle.Smart)
 			{
 				if (key== Key.Return)
 				{
-					var ed = Document.Editor;
 					var cb=D_Parser.Formatting.DFormatter.CalculateIndentation(ed.Text,ed.Caret.Offset);
 
 					ed.InsertAtCaret("\n" + CalculateIndentationString(cb==null?0:cb.InnerIndentation));
-				
+
 					return false;
 				}
 
 				if (keyChar == '}' || keyChar == ':' || keyChar == ';')
 				{
-					var ed = Document.Editor;
-
 					ed.InsertAtCaret(keyChar.ToString());
 
 					var cb = D_Parser.Formatting.DFormatter.CalculateIndentation(ed.Text, ed.Caret.Offset);
@@ -49,7 +71,8 @@ namespace MonoDevelop.D.Formatting
 					return false;
 				}
 			}
-				return base.KeyPress(key, keyChar, modifier);
+			
+			return base.KeyPress(key, keyChar, modifier);
 		}
 
 		public static string CalculateIndentationString(int indentation)

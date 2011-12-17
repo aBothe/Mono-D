@@ -19,5 +19,4 @@ This document contains a list of to-do features:
 * Omit debug/versioned declarations 
   if not fitting to environment dependencied 
   ([debug/release] or [Windows/Mac/Unix/BSD] etc.)
-* Automatically insert a * or + on a block-comment's newline
 
