@@ -324,6 +324,26 @@ namespace MonoDevelop.D.Gui
 			if (ParentAstNode == null)
 				return;
 
+			if (ParentAstNode is DMethod)
+			{
+				var dm=ParentAstNode as DMethod;
+
+				if (dm.Parameters != null)
+					foreach (var p in dm.Parameters)
+						if(p.Name!="")
+						{
+							TreeIter childIter;
+							if (!ParentTreeNode.Equals(TreeIter.Zero))
+								childIter = TreeStore.AppendValues(ParentTreeNode, p);
+							else
+								childIter = TreeStore.AppendValues(p);
+
+							if (editorSelectionLocation >= p.StartLocation && 
+								editorSelectionLocation < p.EndLocation)
+								TreeView.Selection.SelectIter(childIter);
+						}
+			}
+
 			foreach (var n in ParentAstNode)
 			{
 				if (n is DEnum && (n as DEnum).IsAnonymous)
@@ -338,7 +358,8 @@ namespace MonoDevelop.D.Gui
 				else
 					childIter = TreeStore.AppendValues(n);
 
-				if (editorSelectionLocation >= n.StartLocation && editorSelectionLocation < n.EndLocation)
+				if (editorSelectionLocation >= n.StartLocation && 
+					editorSelectionLocation < n.EndLocation)
 					TreeView.Selection.SelectIter(childIter);
 				
 				BuildTreeChildren(childIter, n as IBlockNode,editorSelectionLocation);

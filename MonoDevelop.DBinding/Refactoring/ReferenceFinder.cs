@@ -42,11 +42,14 @@ namespace MonoDevelop.D.Refactoring
 				var references= ScanNodeReferencesInModule(mod,
 					parseCache,
 					DResolver.ResolveImports(mod as DModule, parseCache),
-					member,
-					false);
+					member);
 
 				if ((member.NodeRoot as IAbstractSyntaxTree).FileName==mod.FileName)
-					references.Insert(0,new IdentifierDeclaration(member.Name) { Location=member.NameLocation });
+					references.Insert(0,new IdentifierDeclaration(member.Name) { 
+						Location=member.NameLocation ,
+						EndLocation=new CodeLocation(member.NameLocation.Column+member.Name.Length,
+							member.NameLocation.Line)
+				});
 
 				if(references.Count<1)
 				{
@@ -64,7 +67,8 @@ namespace MonoDevelop.D.Refactoring
 				foreach (var reference in references)
 				{
 					searchResults.Add( new SearchResult(new FileProvider(mod.FileName,project),
-						targetDoc.LocationToOffset(reference.Location.Line,reference.Location.Column),
+						targetDoc.LocationToOffset(	reference.NonInnerTypeDependendLocation.Line,
+													reference.NonInnerTypeDependendLocation.Column),
 						member.Name.Length));
 				}
 
@@ -86,16 +90,20 @@ namespace MonoDevelop.D.Refactoring
 			IAbstractSyntaxTree scannedFileAST,
 			IEnumerable<IAbstractSyntaxTree> parseCache,
 			IEnumerable<IAbstractSyntaxTree> scannedFileImports,
-			INode declarationToCompareWith,
-			bool sortResults=true)
+			params INode[] declarationsToCompareWith)
 		{
+			var namesToCompareWith = new List<string>();
+
+			foreach (var n in declarationsToCompareWith)
+				namesToCompareWith.Add(n.Name);
+
 			var matchedReferences = new List<IdentifierDeclaration>();
 
 			var identifiers=CodeScanner.ScanForTypeIdentifiers(scannedFileAST);
 
 			var resolveContext=new ResolverContext{
 				ResolveAliases=false,
-				ResolveBaseTypes=false,
+				ResolveBaseTypes=true,
 
 				ParseCache=parseCache,
 				ImportCache=scannedFileImports
@@ -112,7 +120,7 @@ namespace MonoDevelop.D.Refactoring
 				else
 					continue;
 
-				if (id.Value as string != declarationToCompareWith.Name)
+				if (!namesToCompareWith.Contains(id.Value as string))
 					continue;
 
 				// Get the context of the used identifier
@@ -122,22 +130,20 @@ namespace MonoDevelop.D.Refactoring
 				var resolveResults = DResolver.ResolveType(o as ITypeDeclaration, resolveContext);
 
 				if (resolveResults == null)
-					break;
+					continue;
 
                 foreach (var targetSymbol in resolveResults)
                 {
                     // Get the associated declaration node
-                    INode targetSymbolNode = null;
+                    var targetSymbolNode = Resolver.DResolverWrapper.GetResultMember(targetSymbol);
 
-                    if (targetSymbol is MemberResult)
-                        targetSymbolNode = (targetSymbol as MemberResult).ResolvedMember;
-                    else if (targetSymbol is TypeResult)
-                        targetSymbolNode = (targetSymbol as TypeResult).ResolvedTypeDefinition;
-                    else
+                    if(targetSymbolNode==null)
                         break;
 
-                    // Compare with the member whose references shall be looked up
-                    if (targetSymbolNode.Equals(declarationToCompareWith))
+                    // Compare with the members whose references shall be looked up
+                    if (declarationsToCompareWith.Length==1? 
+						targetSymbolNode==declarationsToCompareWith[0] : 
+						declarationsToCompareWith.Contains(targetSymbolNode))
                     {
                         // ... Reference found!
                         matchedReferences.Add(id);
@@ -147,10 +153,10 @@ namespace MonoDevelop.D.Refactoring
 
 
 
-			// Sort matches
+			/* Sort matches
 			if(sortResults)
 				matchedReferences.Sort(new IdLocationComparer());
-
+			*/
 
 
 			return matchedReferences;

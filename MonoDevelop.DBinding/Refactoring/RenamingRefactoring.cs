@@ -78,7 +78,7 @@ namespace MonoDevelop.D.Refactoring
 
 				var references = DReferenceFinder.ScanNodeReferencesInModule(mod,
 					parseCache,
-					DResolver.ResolveImports(mod as DModule, parseCache),n,false);
+					DResolver.ResolveImports(mod as DModule, parseCache),n);
 
 				if ((n.NodeRoot as IAbstractSyntaxTree).FileName == mod.FileName)
 					references.Insert(0, new IdentifierDeclaration(n.Name) { Location = n.NameLocation });

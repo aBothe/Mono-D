@@ -2142,7 +2142,7 @@ namespace D_Parser.Parser
 						e.TemplateOrIdentifier = TemplateInstance();
 					else {
 						if (Expect(Identifier))
-							e.TemplateOrIdentifier = new IdentifierDeclaration(t.Value);
+							e.TemplateOrIdentifier = new IdentifierDeclaration(t.Value) { Location=t.Location, EndLocation=t.EndLocation };
 					}
 
 					e.EndLocation = t.EndLocation;
@@ -2484,8 +2484,7 @@ namespace D_Parser.Parser
 
 			if (laKind == (Typeof))
 			{
-				var startLoc = la.Location;
-				return new TypeDeclarationExpression(TypeOf()) {Location=startLoc,EndLocation=t.EndLocation};
+				return new TypeDeclarationExpression(TypeOf());
 			}
 
 			// TypeidExpression
@@ -2634,7 +2633,7 @@ namespace D_Parser.Parser
 						var mttd = new MemberFunctionAttributeDecl(tk);
 						LastParsedObject = mttd;
 						mttd.InnerType = Type();
-						left = new TypeDeclarationExpression(mttd) { Location = startLoc, EndLocation = t.EndLocation };
+						left = new TypeDeclarationExpression(mttd);
 					}
 					else
 					{
@@ -2643,7 +2642,7 @@ namespace D_Parser.Parser
 						LastParsedObject = mttd;
 						mttd.InnerType = Type();
 						Expect(CloseParenthesis);
-						left = new TypeDeclarationExpression(mttd) { Location = startLoc, EndLocation = t.EndLocation };
+						left = new TypeDeclarationExpression(mttd);
 					}
 				}
 				else
@@ -2654,8 +2653,12 @@ namespace D_Parser.Parser
 					Step();
 					Step();
 
-					var meaex = new PostfixExpression_Access() { PostfixForeExpression=left, 
-						TemplateOrIdentifier=new IdentifierDeclaration(t.Value),EndLocation=t.EndLocation };
+					var meaex = new PostfixExpression_Access()
+					{
+						PostfixForeExpression = left,
+						TemplateOrIdentifier = new IdentifierDeclaration(t.Value) { Location=t.Location, EndLocation=t.EndLocation },
+						EndLocation = t.EndLocation
+					};
 
 					return meaex;
 				}
@@ -3445,8 +3448,14 @@ namespace D_Parser.Parser
 				if (s.IsStatic)
 					Step();
 
-				s.AssertExpression = AssignExpression(Scope);
-				Expect(Semicolon);
+				Step();
+
+				if (Expect(OpenParenthesis))
+				{
+					s.AssertedExpression = Expression(Scope);
+					Expect(CloseParenthesis);
+					Expect(Semicolon);
+				}
 				s.EndLocation = t.EndLocation;
 
 				return s;
@@ -3553,6 +3562,7 @@ namespace D_Parser.Parser
 			{
 				Expect(Identifier);
 				ret.Name = t.Value;
+				ret.NameLocation = t.Location;
 			}
 
 			if (laKind == (Semicolon))
@@ -4345,12 +4355,20 @@ namespace D_Parser.Parser
 			else
 			{
 				Step();
+
+				IExpression arg= null;
+
 				if (t.Kind == Literal)
-					args.Add(new IdentifierExpression(t.LiteralValue, LiteralFormat.Scalar));
+					arg = new IdentifierExpression(t.LiteralValue, LiteralFormat.Scalar) 
+					{ Location=t.Location, EndLocation=t.EndLocation };
 				else if (t.Kind == Identifier)
-					args.Add(new IdentifierExpression(t.Value));
+					arg=new IdentifierExpression(t.Value) 
+					{ Location = t.Location, EndLocation = t.EndLocation };
 				else
-					args.Add(new TokenExpression(t.Kind));
+					arg=new TokenExpression(t.Kind)
+					{ Location = t.Location, EndLocation = t.EndLocation };
+
+				args.Add(arg);
 			}
 			td.Arguments = args.ToArray();
 			td.EndLocation = t.EndLocation;

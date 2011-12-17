@@ -1110,8 +1110,11 @@ namespace D_Parser.Resolver
 						{
 							foreach(var t in c1)
 							{
-								if(t is MemberResult)
-									c2.AddRange((t as MemberResult).MemberBaseTypes);
+								if (t is MemberResult)
+								{
+									if((t as MemberResult).MemberBaseTypes!=null)
+										c2.AddRange((t as MemberResult).MemberBaseTypes);
+								}
 								else
 									returnedResults.Add(t);
 							}

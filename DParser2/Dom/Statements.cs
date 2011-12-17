@@ -894,14 +894,19 @@ namespace D_Parser.Dom.Statements
 		}
 	}
 
-	public class AssertStatement : AbstractStatement
+	public class AssertStatement : AbstractStatement,IExpressionContainingStatement
 	{
 		public bool IsStatic = false;
-		public IExpression AssertExpression;
+		public IExpression AssertedExpression;
 
 		public override string ToCode()
 		{
-			return (IsStatic?"static ":"")+"assert("+(AssertExpression!=null?AssertExpression.ToString():"")+");";
+			return (IsStatic?"static ":"")+"assert("+(AssertedExpression!=null?AssertedExpression.ToString():"")+");";
+		}
+
+		public IExpression[] SubExpressions
+		{
+			get { return new[]{ AssertedExpression }; }
 		}
 	}
 

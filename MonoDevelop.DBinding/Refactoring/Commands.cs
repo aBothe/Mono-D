@@ -40,55 +40,6 @@ namespace MonoDevelop.D.Refactoring
 				(dataItem as Action)();
 		}
 
-		public static ResolveResult[] ResolveHoveredCode(out ResolverContext ResolverContext)
-		{
-			ResolverContext = null;
-			// Editor property preparations
-			var doc = IdeApp.Workbench.ActiveDocument;
-			if (doc == null || doc.FileName == FilePath.Null || IdeApp.ProjectOperations.CurrentSelectedSolution == null)
-				return null;
-
-			var editor = doc.GetContent<ITextBuffer>();
-			if (editor == null)
-				return null;
-
-			int line, column;
-			editor.GetLineColumnFromPosition(editor.CursorPosition, out line, out column);
-
-
-			var ast = doc.ParsedDocument as ParsedDModule;
-
-			var Project = doc.Project as DProject;
-			var SyntaxTree = ast.DDom;
-
-			if (SyntaxTree == null)
-				return null;
-
-			// Encapsule editor data for resolving
-			var parseCache = Project!=null? Project.ParseCache: DCompiler.Instance.GetDefaultCompiler().GlobalParseCache.ParseCache;
-			var edData = new EditorData
-			{
-				CaretLocation = new CodeLocation(column, line),
-				CaretOffset = editor.CursorPosition,
-				ModuleCode = editor.Text,
-				SyntaxTree = SyntaxTree as DModule,
-				ParseCache = parseCache,
-				ImportCache = DResolver.ResolveImports(SyntaxTree as DModule, parseCache)
-			};
-
-			// Resolve the hovered piece of code
-			IStatement stmt = null;
-			return DResolver.ResolveType(edData,
-				ResolverContext=new ResolverContext
-				{
-					ParseCache = edData.ParseCache,
-					ImportCache = edData.ImportCache,
-					ScopedBlock = DResolver.SearchBlockAt(SyntaxTree, edData.CaretLocation, out stmt),
-					ScopedStatement = stmt
-				},
-				true, true);
-		}
-
 		IAbstractSyntaxTree Module
 		{
 			get { return n.NodeRoot as IAbstractSyntaxTree; }
@@ -96,22 +47,14 @@ namespace MonoDevelop.D.Refactoring
 
 		protected override void Update(CommandArrayInfo info)
 		{
-			var rr = ResolveHoveredCode(out ctxt);
+			var rr = Resolver.DResolverWrapper.ResolveHoveredCode(out ctxt);
 
 			if (rr == null || rr.Length < 1)
 				return;
 
 			res = rr[rr.Length - 1];
 			
-			// Get resolved member/type definition node
-			n = null;
-
-			if (res is MemberResult)
-				n = (res as MemberResult).ResolvedMember;
-			else if (res is TypeResult)
-				n = (res as TypeResult).ResolvedTypeDefinition;
-			else if (res is ModuleResult)
-				n = (res as ModuleResult).ResolvedModule;
+			n = Resolver.DResolverWrapper.GetResultMember(res);
 
 			if (n != null)
 			{

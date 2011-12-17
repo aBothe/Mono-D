@@ -8,7 +8,6 @@ This document contains a list of to-do features:
 * Import management
 	- Add missing imports
 	- Remove unused imports
-* Highlighting of symbol usages
 * Code formatting
 	- Ensure correct indentation
 	- Reformat the entire document

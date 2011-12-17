@@ -1625,14 +1625,12 @@ namespace D_Parser.Dom.Expressions
 
 		public CodeLocation Location
 		{
-			get;
-			set;
+			get { return Declaration!=null? Declaration.Location: CodeLocation.Empty; }
 		}
 
 		public CodeLocation EndLocation
 		{
-			get;
-			set;
+			get { return Declaration != null ? Declaration.EndLocation : CodeLocation.Empty; }
 		}
 
 
@@ -2003,7 +2001,7 @@ namespace D_Parser.Dom.Expressions
 
 		public ITypeDeclaration ExpressionTypeRepresentation
 		{
-			get { return new IdentifierDeclaration("TypeInfo") { InnerDeclaration=new IdentifierDeclaration("object")}; }
+			get { return new IdentifierDeclaration("TypeInfo") { Location=Location, EndLocation=EndLocation, InnerDeclaration=new IdentifierDeclaration("object")}; }
 		}
 
 		public bool IsConstant

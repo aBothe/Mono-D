@@ -179,6 +179,9 @@
 		
 		<!-- Document path bar extension -->
 		<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.Gui.EditorPathBarExtension" />
+
+		<!-- Usages highlighting -->
+		<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.Gui.HighlightUsagesExtension" />
 	</Extension>
 	
 	<Extension path = "/MonoDevelop/SourceEditor2/TooltipProviders">

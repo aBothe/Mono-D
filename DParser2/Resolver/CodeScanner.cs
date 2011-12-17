@@ -179,10 +179,7 @@ namespace D_Parser.Resolver
 				return null;
 
 			lastResCtxt.ScopedBlock = DResolver.SearchBlockAt(SyntaxTree, typeId.Location, out lastResCtxt.ScopedStatement);
-			if (typeString == "th" && typeId.Location.Line == 114)
-			{
 
-			}
 			if (!(WasAlreadyResolved = compDict.TryGetValue(typeString, out rr)))
 			{
 				allCurrentResults = DResolver.ResolveType(typeId, lastResCtxt);
@@ -475,52 +472,21 @@ namespace D_Parser.Resolver
 					if (e is UnaryExpression_Type)
 						SearchIn((e as UnaryExpression_Type).Type, l);
 
-					if (
-						e is NewExpression ||
-						e is PostfixExpression_Access ||
-						(e is IdentifierExpression && (e as IdentifierExpression).IsIdentifier))
+					if(e is NewExpression || e is PostfixExpression_Access)
+					{
+						SearchIn(e.ExpressionTypeRepresentation,l);
+					}
+					else if (e is IdentifierExpression && (e as IdentifierExpression).IsIdentifier)
 					{
 						l.Add(e.ExpressionTypeRepresentation);
 					}
 					else if (e is TemplateInstanceExpression)
 					{
-						//l.Add(e);
 						var tie = e as TemplateInstanceExpression;
-						
+
 						if (tie.TemplateIdentifier != null)
 							l.Add(tie.TemplateIdentifier);
-
-						// Do not add e's subexpressions anymore - it'll be done in the ScanSymbols method
-						//continue;
 					}
-
-					/*if (e is NewExpression || e is TemplateInstanceExpression)
-						l.Add(e);
-
-					if (e is PostfixExpression_MethodCall)
-					{
-						var mc = e as PostfixExpression_MethodCall;
-
-						l.Add(e);
-
-						if(mc.Arguments!=null)	
-							l2.AddRange(mc.Arguments);
-						
-						/* 
-						 * Do not add the method identifier twice.
-						 * Instead, and also just if an object has been accessed to reach the method (e.g. as in a.b.foo();),
-						 * skip the .foo() part
-						 * /
-						if (mc.PostfixForeExpression is PostfixExpression)
-						{
-							var acc = mc.PostfixForeExpression as PostfixExpression;
-
-							if(acc.PostfixForeExpression!=null)
-								l2.Add(acc.PostfixForeExpression);
-						}
-
-						continue;
-					}*/
 					
 					if (e is ContainerExpression)
 					{

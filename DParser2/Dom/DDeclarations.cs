@@ -56,15 +56,29 @@ namespace D_Parser.Dom
 		}
 
 		CodeLocation _loc=CodeLocation.Empty;
+
+		/// <summary>
+		/// The type declaration's start location.
+		/// If inner declaration given, its start location will be returned.
+		/// </summary>
 		public CodeLocation Location
 		{
-			get {
+			get 
+			{
 				if (_loc != CodeLocation.Empty || InnerDeclaration==null)
 					return _loc;
 
 				return InnerMost.Location;
-				}
+			}
 			set { _loc = value; }
+		}
+
+		/// <summary>
+		/// The actual start location without regarding inner declarations.
+		/// </summary>
+		public CodeLocation NonInnerTypeDependendLocation
+		{
+			get { return _loc; }
 		}
 
 		public CodeLocation EndLocation
