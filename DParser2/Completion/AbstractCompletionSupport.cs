@@ -692,6 +692,8 @@ namespace D_Parser.Completion
 			var n = tr.ResolvedTypeDefinition;
 			if (n is DClassLike) // Add public static members of the class and including all base classes
 			{
+				var propertyMethodsToIgnore = new List<string>();
+
 				var curlevel = tr;
 				var tvisMod = visMod;
 				while (curlevel != null)
@@ -725,7 +727,30 @@ namespace D_Parser.Completion
 						if (add)
 						{
 							if (CanItemBeShownGenerally(dn))
-								CompletionDataGenerator.Add(dn);
+							{
+								// Convert @property getters&setters to one unique property
+								if(dn is DMethod && dn.ContainsPropertyAttribute())
+								{
+									if (!propertyMethodsToIgnore.Contains(dn.Name))
+									{
+										var dm = dn as DMethod;
+										bool isGetter = dm.Parameters.Count < 1;
+
+										var virtPropNode = new DVariable();
+
+										virtPropNode.AssignFrom(dn);
+
+										if (!isGetter)
+											virtPropNode.Type = dm.Parameters[0].Type;
+
+										CompletionDataGenerator.Add(virtPropNode);
+
+										propertyMethodsToIgnore.Add(dn.Name);
+									}
+								}
+								else
+									CompletionDataGenerator.Add(dn);
+							}
 
 							// Add members of anonymous enums
 							else if (dn is DEnum && dn.Name == "")

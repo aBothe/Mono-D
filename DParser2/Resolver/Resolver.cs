@@ -2,33 +2,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using D_Parser.Completion;
 using D_Parser.Dom;
 using D_Parser.Dom.Expressions;
 using D_Parser.Dom.Statements;
 using D_Parser.Parser;
-using D_Parser.Completion;
-
-/*
-/// Code completion rules:
-///
-/// - If a letter has been typed:
-///		- Show the popup if:
-///			- there's a "*" in front of the identifier, what makes us assume (TODO: ensure it!) that it is meant to be an expression, not a type
-///			- there is no type, show the popup
-///			- a preceding () belong to:
-///				if while for foreach foreach_reverse with try catch finally cast
-///		- Do not show the popup if:
-///			- "]" or an other identifier (includes keywords) is located (after at least one whitespace) in front of the identifier
-///			- If the caret is already located within an identifier
-///		-> When a new identifier has begun to be typed, the after-space completion data gets shown
-///	
-/// - If a dot has been typed:
-///		- resolve the type of the expression in front of the dot
-///			- if the type is a class-like, show all its static public members
-///			- if it's an enum, show all its items
-///			- if it's a variable or method, resolve its base type and show all its public members (also those of the type's base classes)
-///				- if the variable is declared within the base type itself, show all items
-*/
 
 namespace D_Parser.Resolver
 {
@@ -1894,12 +1872,40 @@ namespace D_Parser.Resolver
 			ITypeDeclaration TypeDeclaration = null)
 		{
 			var rl = new List<ResolveResult>();
+
+			var propertyMethodsToIgnore = new List<string>();
+
 			if (matches != null)
 				foreach (var m in matches)
 				{
 					if (m == null)
 						continue;
-					var res = HandleNodeMatch(m, ctxt, currentlyScopedNode, resultBase, typeBase: TypeDeclaration);
+
+					var n = m;
+
+					// Replace getter&setter methods inline
+					if (m is DMethod && 
+						(m as DNode).ContainsPropertyAttribute())
+					{
+						if (propertyMethodsToIgnore.Contains(m.Name))
+							continue;
+
+						var dm = m as DMethod;
+						bool isGetter = dm.Parameters.Count < 1;
+
+						var virtPropNode = new DVariable();
+
+						virtPropNode.AssignFrom(dm);
+
+						if (!isGetter)
+							virtPropNode.Type = dm.Parameters[0].Type;
+
+						propertyMethodsToIgnore.Add(m.Name);
+
+						n = virtPropNode;
+					}
+
+					var res = HandleNodeMatch(n, ctxt, currentlyScopedNode, resultBase, typeBase: TypeDeclaration);
 					if (res != null)
 						rl.Add(res);
 				}
