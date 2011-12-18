@@ -80,7 +80,8 @@ namespace MonoDevelop.D.Gui
 
 		void HandleTextEditorDataCaretPositionChanged(object sender, DocumentLocationEventArgs e)
 		{
-			if (!SourceEditor.DefaultSourceEditorOptions.Instance.EnableHighlightUsages)
+			if (!MonoDevelop.Core.PropertyService.Get<bool>("EnableHighlightUsages"))
+			/*SourceEditor.DefaultSourceEditorOptions.Instance.EnableHighlightUsages*/
 				return;
 			if (!textEditorData.IsSomethingSelected && markers.Values.Any(m => m.Contains(textEditorData.Caret.Offset)))
 				return;
