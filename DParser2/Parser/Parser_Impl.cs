@@ -994,7 +994,6 @@ namespace D_Parser.Parser
 
 				// DeclaratorSuffixes
 				List<INode> _Parameters;
-				//List<DAttribute> attrs;
 				ttd = DeclaratorSuffixes(out (ret as DNode).TemplateParameters, out _Parameters, ret.Attributes);
 				if (ttd != null)
 				{
@@ -1074,9 +1073,9 @@ namespace D_Parser.Parser
 				}
 				_Parameters = Parameters(null);
 
-				//TODO: MemberFunctionAttributes -- add them to the declaration
 				while (StorageClass[laKind] || laKind==PropertyAttribute)
 				{
+					_Attributes.Add(new DAttribute(laKind, la.Value));
 					Step();
 				}
 			}
@@ -1266,7 +1265,9 @@ namespace D_Parser.Parser
 			var attr = new List<DAttribute>();
 			var startLocation = la.Location;
 
-			while (ParamModifiers[laKind] || (MemberFunctionAttribute[laKind] && !PK(OpenParenthesis)))
+			ITypeDeclaration td = null;
+
+			while ((ParamModifiers[laKind] && laKind!=InOut) || (MemberFunctionAttribute[laKind] && !PK(OpenParenthesis)))
 			{
 				Step();
 				attr.Add(new DAttribute(t.Kind));
@@ -1280,7 +1281,7 @@ namespace D_Parser.Parser
 				attr.Add(new DAttribute(Ref));
 			}
 
-			var td = BasicType();
+			td = BasicType();
 
 			var ret = Declarator(td,true);
 			ret.StartLocation = startLocation;
@@ -3614,7 +3615,7 @@ namespace D_Parser.Parser
 					Step();
 					Expect(OpenParenthesis);
 
-					dc.Constraint = Expression();
+					dc.TemplateConstraint = Expression();
 
 					Expect(CloseParenthesis);
 				}
@@ -3781,7 +3782,7 @@ namespace D_Parser.Parser
 				dc.TemplateParameters = TemplateParameterList();
 
 			if (laKind == (If))
-				Constraint();
+				dc.TemplateConstraint=Constraint();
 
 			if (laKind == (Colon))
 				dc.BaseClasses = BaseClassList();
@@ -3796,12 +3797,14 @@ namespace D_Parser.Parser
 			return dc;
 		}
 
-		void Constraint()
+		IExpression Constraint()
 		{
+			IExpression ret;
 			Expect(If);
 			Expect(OpenParenthesis);
-			Expression();
+			ret=Expression();
 			Expect(CloseParenthesis);
+			return ret;
 		}
 		#endregion
 

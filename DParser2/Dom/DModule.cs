@@ -465,11 +465,6 @@ namespace D_Parser.Dom
         public List<ITypeDeclaration> BaseClasses=new List<ITypeDeclaration>();
         public int ClassType=DTokens.Class;
 
-		/// <summary>
-		/// A constraint expression for template and class declarations
-		/// </summary>
-		public IExpression Constraint;
-
         public DClassLike() { }
         public DClassLike(int ClassType)
         {

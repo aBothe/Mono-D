@@ -324,6 +324,8 @@ namespace D_Parser.Resolver
 						if (dm.AdditionalChildren.Count > 0)
 							l2.AddRange(dm.AdditionalChildren);
 
+						SearchIn(dm.TemplateConstraint,l);
+
 						SearchIn(dm.In, l);
 						SearchIn(dm.Out, l);
 						SearchIn(dm.Body, l);
@@ -342,7 +344,7 @@ namespace D_Parser.Resolver
 						foreach (var bc in dc.BaseClasses)
 							SearchIn(bc, l);
 
-						SearchIn(dc.Constraint, l);
+						SearchIn(dc.TemplateConstraint, l);
 					}
 
 					if (n is IBlockNode && !(n is DMethod))

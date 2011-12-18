@@ -7,6 +7,7 @@ namespace D_Parser.Dom
     public abstract class DNode :AbstractNode
     {
         public ITemplateParameter[] TemplateParameters=null; // Functions, Templates
+		public IExpression TemplateConstraint;
 
 		public bool ContainsTemplateParameter(string Name)
 		{
