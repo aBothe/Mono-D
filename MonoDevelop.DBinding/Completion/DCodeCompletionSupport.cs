@@ -172,7 +172,7 @@ namespace MonoDevelop.D.Completion
 
 		public void AddPropertyAttribute(string AttributeText)
 		{
-			CompletionDataList.Add(new CompletionData("@"+AttributeText,new IconId("md-keyword")));
+			CompletionDataList.Add(new CompletionData("@"+AttributeText,new IconId("md-keyword"), DTokens.GetDescription("@"+AttributeText)));
 		}
 	}
 

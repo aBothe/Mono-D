@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using D_Parser.Dom;
+using System;
 
 namespace D_Parser.Parser
 {
@@ -695,6 +696,85 @@ namespace D_Parser.Parser
 
         public static string GetDescription(string token)
         {
+			if (token.StartsWith("@"))
+			{
+				var n=Environment.NewLine;
+				if (token == "@disable")
+					return @"Disables a declaration
+A ref­er­ence to a de­c­la­ra­tion marked with the @dis­able at­tribute causes a com­pile time error. 
+
+This can be used to ex­plic­itly dis­al­low cer­tain op­er­a­tions 
+or over­loads at com­pile time 
+rather than re­ly­ing on gen­er­at­ing a run­time error.";
+
+				if (token == "@property")
+					return 
+@"Prop­erty func­tions 
+can be called with­out paren­the­ses (hence act­ing like prop­er­ties).
+
+struct S {
+  int m_x;
+  @property {
+    int x() { return m_x; }
+    int x(int newx) { return m_x = newx; }
+  }
+}
+
+void foo() {
+  S s;
+  s.x = 3;   // calls s.x(int)
+  bar(s.x);  // calls bar(s.x())
+}";
+
+				if (token == "@safe")
+					return @"Safe func­tions
+
+The fol­low­ing op­er­a­tions are not al­lowed in safe func­tions:
+
+- No cast­ing from a pointer type 
+  to any type other than void*.
+- No cast­ing from any non-pointer 
+  type to a pointer type.
+- No mod­i­fi­ca­tion of pointer val­ues.
+- Can­not ac­cess unions that have point­ers or 
+  ref­er­ences over­lap­ping with other types.
+- Call­ing any sys­tem func­tions.
+- No catch­ing of ex­cep­tions that 
+  are not de­rived from class Ex­cep­tion.
+- No in­line as­sem­bler.
+- No ex­plicit cast­ing of mu­ta­ble ob­jects to im­mutable.
+- No ex­plicit cast­ing of im­mutable ob­jects to mu­ta­ble.
+- No ex­plicit cast­ing of thread local ob­jects to shared.
+- No ex­plicit cast­ing of shared ob­jects to thread local.
+- No tak­ing the ad­dress of a local 
+  vari­able or func­tion pa­ra­me­ter.
+- Can­not ac­cess __gshared vari­ables.
+- Func­tions nested in­side safe 
+  func­tions de­fault to being safe func­tions.
+
+Safe func­tions are co­vari­ant with trusted or sys­tem func­tions.";
+
+
+				if (token == "@system")
+					return @"Sys­tem func­tions 
+are func­tions not marked with @safe or @trusted and are not nested in­side @safe func­tions. 
+
+Sys­tem func­tions may be marked with the @sys­tem at­tribute.
+ 
+A func­tion being sys­tem does not mean it ac­tu­ally is un­safe, it just means that the com­piler is un­able to ver­ify that it can­not ex­hibit un­de­fined be­hav­ior.
+
+Sys­tem func­tions are not co­vari­ant with trusted or safe func­tions.";
+
+
+				if (token == "@trusted")
+					return string.Join(Environment.NewLine, "Trusted func­tions","",
+"- Are marked with the @trusted at­tribute,",
+@"- Are guar­an­teed by the pro­gram­mer to not ex­hibit 
+  any un­de­fined be­hav­ior if called by a safe func­tion,",
+"- May call safe, trusted, or sys­tem func­tions,",
+"- Are co­vari­ant with safe or sys­tem func­tions");
+			}
+
             return GetDescription(GetTokenID(token));
         }
 

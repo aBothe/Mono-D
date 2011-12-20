@@ -228,7 +228,9 @@ namespace D_Parser.Completion
 				foreach (var propAttr in new[] {
 					"disable",
 					"property",
-					"safe"
+					"safe",
+					"system",
+					"trusted"
 				})
 					CompletionDataGenerator.AddPropertyAttribute(propAttr);
 
