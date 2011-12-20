@@ -109,7 +109,11 @@ namespace D_Parser.Completion
 			}
 			#endregion
 
-			else if (EnteredText==null || EnteredText==" " || EnteredText.Length<1 || IsIdentifierChar(EnteredText[0]))
+			else if (
+				EnteredText == null ||
+				EnteredText == " " ||
+				EnteredText.Length < 1 ||
+				IsIdentifierChar(EnteredText[0]))
 			{
 				// If typing a begun identifier, return immediately
 				if (Editor.CaretOffset > 0 && IsIdentifierChar(Editor.ModuleCode[Editor.CaretOffset - 1]))
@@ -132,19 +136,19 @@ namespace D_Parser.Completion
 					var endLocation = CodeLocation.Empty;
 
 					if (trackVars.LastParsedObject is IExpression)
-						endLocation= (trackVars.LastParsedObject as IExpression).EndLocation;
+						endLocation = (trackVars.LastParsedObject as IExpression).EndLocation;
 					else if (trackVars.LastParsedObject is INode)
-						endLocation= (trackVars.LastParsedObject as INode).EndLocation;
+						endLocation = (trackVars.LastParsedObject as INode).EndLocation;
 
 					CaretAfterLastParsedObject = !endLocation.IsEmpty && Editor.CaretLocation > endLocation;
 				}
 
 				// 2) If in declaration and if node identifier is expected, do not show any data
-				if (trackVars==null ||
-					(trackVars.LastParsedObject is INode && 
-						!CaretAfterLastParsedObject && 
+				if (trackVars == null ||
+					(trackVars.LastParsedObject is INode &&
+						!CaretAfterLastParsedObject &&
 						trackVars.ExpectingIdentifier) ||
-					(trackVars.LastParsedObject is TokenExpression && 
+					(trackVars.LastParsedObject is TokenExpression &&
 						!CaretAfterLastParsedObject &&
 						DTokens.BasicTypes[(trackVars.LastParsedObject as TokenExpression).Token] &&
 						!string.IsNullOrEmpty(EnteredText) &&
@@ -173,7 +177,7 @@ namespace D_Parser.Completion
 
 						// Insert the updated locals insight.
 						// Do not take the caret location anymore because of the limited parsing of our code.
-						var scopedStmt=blockStmt.SearchStatementDeeply(blockStmt.EndLocation /*Editor.CaretLocation*/);
+						var scopedStmt = blockStmt.SearchStatementDeeply(blockStmt.EndLocation /*Editor.CaretLocation*/);
 
 						var decls = BlockStatement.GetItemHierarchy(scopedStmt, Editor.CaretLocation);
 
@@ -184,7 +188,7 @@ namespace D_Parser.Completion
 
 				if (visibleMembers != DResolver.MemberTypes.Imports) // Do not pass the curStmt because we already inserted all updated locals a few lines before!
 					listedItems = DResolver.EnumAllAvailableMembers(curBlock, null/*, curStmt*/, Editor.CaretLocation, Editor.ParseCache, visibleMembers);
-				
+
 				//TODO: Split the keywords into such that are allowed within block statements and non-block statements
 				// Insert typable keywords
 				if (visibleMembers.HasFlag(DResolver.MemberTypes.Keywords))
@@ -220,6 +224,14 @@ namespace D_Parser.Completion
 				}
 				#endregion
 			}
+			else if (EnteredText == "@")
+				foreach (var propAttr in new[] {
+					"disable",
+					"property",
+					"safe"
+				})
+					CompletionDataGenerator.AddPropertyAttribute(propAttr);
+
 
 			// Add all found items to the referenced list
 			if (listedItems != null)
@@ -863,6 +875,11 @@ namespace D_Parser.Completion
 		/// Adds a token entry
 		/// </summary>
 		void Add(int Token);
+
+		/// <summary>
+		/// Adds a property attribute
+		/// </summary>
+		void AddPropertyAttribute(string AttributeText);
 
 		/// <summary>
 		/// Adds a node to the completion data

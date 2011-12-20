@@ -65,12 +65,17 @@ namespace MonoDevelop.D
 		{
 			// Return if e.g. renaming code symbols etc.
 
-			if (!(triggerChar==' ' || char.IsLetter(triggerChar) || triggerChar == '_' || triggerChar == '.' || triggerChar == '\0'))
+			if (!(triggerChar==' ' || 
+				char.IsLetter(triggerChar) || 
+				triggerChar == '@' ||
+				triggerChar == '_' || 
+				triggerChar == '.' || 
+				triggerChar == '\0'))
 				return null;
-			else if ((char.IsLetter(triggerChar) && !DResolver.IsTypeIdentifier(Document.Editor.Text, Document.Editor.Caret.Offset)))
+			else if (char.IsLetter(triggerChar) && !DResolver.IsTypeIdentifier(Document.Editor.Text, Document.Editor.Caret.Offset))
 				return null; 
 							
-			triggerWordLength = DCodeCompletionSupport.IsIdentifierChar(triggerChar) ? 1 : 0;
+			triggerWordLength = (DCodeCompletionSupport.IsIdentifierChar(triggerChar) || triggerChar=='@') ? 1 : 0;
 
 			// Require a parsed D source
 			var dom = base.Document.ParsedDocument as ParsedDModule;

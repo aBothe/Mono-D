@@ -169,6 +169,11 @@ namespace MonoDevelop.D.Completion
 		{
 			CompletionDataList.Add(new TokenCompletionData(Token));
 		}
+
+		public void AddPropertyAttribute(string AttributeText)
+		{
+			CompletionDataList.Add(new CompletionData("@"+AttributeText,new IconId("md-keyword")));
+		}
 	}
 
 	public class TokenCompletionData : CompletionData

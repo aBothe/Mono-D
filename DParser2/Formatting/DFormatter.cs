@@ -20,6 +20,7 @@ namespace D_Parser.Formatting
 				t == DTokens.For ||
 				t == DTokens.Foreach ||
 				t == DTokens.Foreach_Reverse ||
+				t == DTokens.With ||
 				t == DTokens.Synchronized;
 		}
 
