@@ -210,11 +210,6 @@ namespace D_Parser.Parser
             {__thread,	    "__thread"},
             {__traits,	    "__traits"},
 
-            /*{PropertyAttribute,"@property"},
-            {DisabledAttribute,	        "@disabled"},
-            {SafeAttribute,            "@safe"},
-            {SystemAttribute,            "@system"},
-            {TrustedAttribute,            "@trusted"},*/
             {__LINE__,"__LINE__"},
             {__FILE__,"__FILE__"},
             {__EOF__,"__EOF__"},
@@ -468,228 +463,110 @@ namespace D_Parser.Parser
                 mods.Remove(Package);
         }
 
-        static string[] tokenList = new string[] {
-			// ----- terminal classes -----
-			"<EOF>",
-			"<Identifier>",
-			"<Literal>",
-			// ----- special character -----
-			"=",
-			"+",
-			"-",
-			"*",
-			"/",
-			"%",
-			":",
-			"..",
-			";",
-			"?",
-			"$",
-			",",
-			".",
-			"{",
-			"}",
-			"[",
-			"]",
-			"(",
-			")",
-			">",
-			"<",
-			"!",
-			"&&",
-			"||",
-			"~",
-			"&",
-			"|",
-			"^",
-			"++",
-			"--",
-			"==",
-			"!=",
-			">=",
-			"<=",
-			"<<",
-			"+=",
-			"-=",
-			"*=",
-			"/=",
-			"%=",
-			"&=",
-			"|=",
-			"^=",
-			"<<=",
-			"~=",
-			">>=",
-			">>>=",
-			// ----- keywords -----
-	"align",
-	"asm",
-	"assert",
-	"auto",
+		static Dictionary<int, string> NonKeywords = new Dictionary<int, string> {
+			// Meta
+			{EOF,"<EOF>"},
+			{Identifier,"<Identifier>"},
+			{Literal,"<Literal>"},
 
-	"body",
-	"bool",
-	"break",
-	"byte",
+			// Math operations
+			{Assign,"="},
+			{Plus,"+"},
+			{Minus,"-"},
+			{Times,"*"},
+			{Div,"/"},
+			{Mod,"%"},
+			{Pow,"^^"},
 
-	"case",
-	"cast",
-	"catch",
-	"cdouble",
-	"cent",
-	"cfloat",
-	"char",
-	"class",
-	"const",
-	"continue",
-	"creal",
+			// Special chars
+			{Dot,"."},
+			{DoubleDot,".."},
+			{TripleDot,"..."},
+			{Colon,":"},
+			{Semicolon,";"},
+			{Question,"?"},
+			{Dollar,"$"},
+			{Comma,","},
+			
+			// Brackets
+			{OpenCurlyBrace,"{"},
+			{CloseCurlyBrace,"}"},
+			{OpenSquareBracket,"["},
+			{CloseSquareBracket,"]"},
+			{OpenParenthesis,"("},
+			{CloseParenthesis,")"},
 
-	"dchar",
-	"debug",
-	"default",
-	"delegate",
-	"delete",
-	"deprecated",
-	"do",
-	"double",
+			// Relational
+			{GreaterThan,">"},
+			{NotGreaterThan,"!>"},
+			{LessThan,"<"},
+			{NotLessThan,"!<"},
+			{Not,"!"},
+			{Unequal,"<>"},
+			{NotUnequal,"!<>"},
+			{LogicalAnd,"&&"},
+			{LogicalOr,"||"},
+			{Tilde,"~"},
+			{BitwiseAnd,"&"},
+			{BitwiseOr,"|"},
+			{Xor,"^"},
 
-	"else",
-	"enum",
-	"export",
-	"extern",
+			// Shift
+			{ShiftLeft,"<<"},
+			{ShiftRight,">>"},
+			{ShiftRightUnsigned,">>>"},
 
-	"false",
-	"final",
-	"finally",
-	"float",
-	"for",
-	"foreach",
-	"foreach_reverse",
-	"function",
+			// Increment
+			{Increment,"++"},
+			{Decrement,"--"},
 
-	"goto",
+			// Assign operators
+			{Equal,"=="},
+			{NotEqual,"!="},
+			{GreaterEqual,">="},
+			{LessEqual,"<="},
+			{PlusAssign,"+="},
+			{MinusAssign,"-="},
+			{TimesAssign,"*="},
+			{DivAssign,"/="},
+			{ModAssign,"%="},
+			{BitwiseOrAssign,"|="},
+			{XorAssign,"^="},
+			{TildeAssign,"~="},
 
-	"idouble",
-	"if",
-	"ifloat",
-	"import",
-	"immutable",
-	"in",
-	"inout",
-	"int",
-	"interface",
-	"invariant",
-	"ireal",
-	"is",
-
-	"lazy",
-	"long",
-
-	"macro",
-	"mixin",
-	"module",
-
-	"new",
-	"nothrow",
-	"null",
-
-	"out",
-	"override",
-
-	"package",
-	"pragma",
-	"private",
-	"protected",
-	"public",
-	"pure",
-
-	"real",
-	"ref",
-	"return",
-
-	"scope",
-	"shared",
-	"short",
-	"static",
-	"struct",
-	"super",
-	"switch",
-	"synchronized",
-
-	"template",
-	"this",
-	"throw",
-	"true",
-	"try",
-	"typedef",
-	"typeid",
-	"typeof",
-
-	"ubyte",
-	"ucent",
-	"uint",
-	"ulong",
-	"union",
-	"unittest",
-	"ushort",
-
-	"version",
-	"void",
-	"volatile",
-
-	"wchar",
-	"while",
-	"with",
-
-	"__gshared",
-	"__thread",
-	"__traits",
-
-	"abstract",
-	"alias",
-
-	"@property",
-	"@disable",
-    "@safe",
-    "@system",
-
-    // Additional operators
-        "^^=",
-        "!<>=",
-        "!<>",
-        "<>",
-        "<>=",
-        "!>",
-        "!>=",
-        "!<",
-        "!<=",
-        ">>",
-        ">>>",
-        "^^",
-        "...",
-
-    "@trusted",
-	"__FILE__",
-	"__LINE__",
-	"__EOF__"
+			{ShiftLeftAssign,"<<="},
+			{ShiftRightAssign,">>="},
+			{TripleRightShiftAssign,">>>="},
+			
+			{PowAssign,"^^="},
+			{UnequalAssign,"<>="},
+			{NotUnequalAssign,"!<>="},
+			{NotGreaterThanAssign,"!>="},
+			{NotLessThanAssign,"!<="},
 		};
+
         public static string GetTokenString(int token)
         {
-            if (token >= 0 && token < tokenList.Length)
-            {
-                return tokenList[token];
-            }
-            throw new System.NotSupportedException("Unknown token:" + token);
+			if (Keywords.ContainsKey(token))
+				return Keywords[token];
+			if (NonKeywords.ContainsKey(token))
+				return NonKeywords[token];
+
+			return "<Unknown>";
         }
 
         public static int GetTokenID(string token)
         {
-            if (token == null || token.Length < 1) return -1;
+            if (token == null || token.Length < 1) 
+				return -1;
 
-            for (int i = 0; i < tokenList.Length; i++)
-            {
-                if (tokenList[i] == token) return i;
-            }
+			foreach (var kv in Keywords)
+				if (kv.Value == token)
+					return kv.Key;
+
+			foreach (var kv in NonKeywords)
+				if (kv.Value == token)
+					return kv.Key;
 
             return -1;
         }
