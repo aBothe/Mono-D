@@ -6,12 +6,33 @@ using MonoDevelop.Ide.Gui.Content;
 using Gdk;
 using D_Parser.Formatting;
 using D_Parser.Resolver;
+using MonoDevelop.Ide.CodeCompletion;
 
 namespace MonoDevelop.D.Formatting
 {
 	public class DTextEditorIndentation:TextEditorExtension
 	{
 		D_Parser.Formatting.DFormatter formatter = new D_Parser.Formatting.DFormatter();
+
+		static DTextEditorIndentation()
+		{/*
+			CompletionWindowManager.WordCompleted += delegate(object sender, CodeCompletionContextEventArgs e)
+			{
+				IExtensibleTextEditor editor = e.Widget as IExtensibleTextEditor;
+				if (editor == null)
+					return;
+				ITextEditorExtension textEditorExtension = editor.Extension;
+				while (textEditorExtension != null && !(textEditorExtension is DTextEditorIndentation))
+				{
+					textEditorExtension = textEditorExtension.Next;
+				}
+				var extension = textEditorExtension as DTextEditorIndentation;
+				if (extension == null)
+					return;
+
+				// Do re-indent after word completion
+			};*/
+		}
 
 		public override void Initialize()
 		{
@@ -29,12 +50,12 @@ namespace MonoDevelop.D.Formatting
 				var caretCtxt=DResolver.CommentSearching.GetTokenContext(ed.Text, ed.Caret.Offset,out lastBegin, out lastEnd);
 
 				if (lastBegin>=0 &&
-					(caretCtxt == DResolver.CommentSearching.TokenContext.BlockComment ||
+					(caretCtxt ==DResolver.CommentSearching.TokenContext.BlockComment ||
 					caretCtxt == DResolver.CommentSearching.TokenContext.NestedComment))
 				{
-					char charToInsert=
-						caretCtxt== DResolver.CommentSearching.TokenContext.BlockComment?
-						'*':
+					char charToInsert =
+						caretCtxt == DResolver.CommentSearching.TokenContext.BlockComment ?
+						'*' :
 						'+';
 
 					var prevLineIndent=ed.GetLineIndent(ed.GetLineByOffset(lastBegin));
@@ -46,27 +67,33 @@ namespace MonoDevelop.D.Formatting
 			
 			if(TextEditorProperties.IndentStyle == IndentStyle.Smart)
 			{
+				int newIndentation = 0;
+
 				if (key== Key.Return)
 				{
 					var cb=D_Parser.Formatting.DFormatter.CalculateIndentation(ed.Text,ed.Caret.Offset);
 
-					ed.InsertAtCaret("\n" + CalculateIndentationString(cb==null?0:cb.InnerIndentation));
+					newIndentation=cb==null?0:cb.GetLineIndentation(ed.Caret.Line+1);
+
+					ed.InsertAtCaret("\n" + CalculateIndentationString(newIndentation));
 
 					return false;
 				}
 
-				if (keyChar == '}' || keyChar == ':' || keyChar == ';')
+				if (keyChar=='{' || keyChar == '}' || keyChar == ':' || keyChar == ';')
 				{
 					ed.InsertAtCaret(keyChar.ToString());
+					int originalIndentation = ed.GetLineIndent(ed.Caret.Line).Length;
 
 					var cb = D_Parser.Formatting.DFormatter.CalculateIndentation(ed.Text, ed.Caret.Offset);
+					newIndentation=cb == null ? 0 : cb.GetLineIndentation(ed.Caret.Line);
 
 					var line=Document.Editor.GetLine(ed.Caret.Line);
 
 					ed.Replace(
 						line.Offset, 
-						ed.GetLineIndent(line).Length, 
-						CalculateIndentationString(cb == null ? 0 : cb.InnerIndentation));
+						originalIndentation,
+						CalculateIndentationString(newIndentation));
 
 					return false;
 				}

@@ -165,7 +165,7 @@
 	</Extension>
 	
 	<Extension path = "/MonoDevelop/Ide/CodeFormatters">
-		<Formatter mimeType="text/x-d" class="MonoDevelop.D.DFormatter" />
+		<Formatter mimeType="text/x-d" class="MonoDevelop.D.Formatting.DFormatter" />
 	</Extension>
 		
 	<!-- Code Completion -->

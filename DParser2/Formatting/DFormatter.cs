@@ -32,47 +32,47 @@ namespace D_Parser.Formatting
 
 			var parserEndLocation = DocumentHelper.OffsetToLocation(code, offset);
 
-			var lex = new Lexer(new StringReader(code));
+			var lexer = new Lexer(new StringReader(code));
 			
-			lex.NextToken();
+			lexer.NextToken();
 
 			DToken t = null;
 			DToken la = null;
-			bool isTheoreticEOF = false;
+			bool IsEOFInNextIteration= false;
 
-			while (!lex.IsEOF)
+			while (!lexer.IsEOF)
 			{
-				lex.NextToken();
+				lexer.NextToken();
 
-				t = lex.CurrentToken;
-				la = lex.LookAhead;
+				t = lexer.CurrentToken;
+				la = lexer.LookAhead;
 
-				isTheoreticEOF = la.Location>=parserEndLocation;
+				IsEOFInNextIteration = la.Location>=parserEndLocation;
 				// Ensure one token after the caret offset becomes parsed
 				if (t!=null && t.Location >= parserEndLocation)
 					break;
 
-				// Handle case: or default: occurences
-				if (t != null && (t.Kind == DTokens.Case || t.Kind == DTokens.Default))
+				if (t != null && (
+					t.Kind == DTokens.Case || 
+					t.Kind == DTokens.Default))
 				{
 					if (block != null && block.IsNonClampBlock)
 						block = block.Parent;
 
-					// On e.g. case myEnum.A:
+					// 'case myEnum.A:'
 					if (la.Kind != DTokens.Colon)
 					{
 						// To prevent further issues, skip the expression
-						var psr = new DParser(lex);
+						var psr = new DParser(lexer);
 						psr.AssignExpression();
 						// FIXME: What if cursor is somewhere between case and ':'??
 					}
-					// lex.LookAhead should be ':' now
 
-					if(lex.LookAhead.EndLocation >= parserEndLocation)
+					if(lexer.LookAhead.EndLocation >= parserEndLocation)
 					{
 						break;
 					}
-					else if(lex.CurrentPeekToken.Kind!=DTokens.OpenCurlyBrace)
+					else if(lexer.CurrentPeekToken.Kind!=DTokens.OpenCurlyBrace)
 						block = new CodeBlock
 						{
 							InitialToken = DTokens.Case,
@@ -80,27 +80,35 @@ namespace D_Parser.Formatting
 
 							Parent = block
 						};
+
+					continue;
 				}
 
-				// If in a single-statement scope, unindent by 1 if semicolon found
 				/*
-				 * Note: On multiple single-sub-statemented statements: for instance
 				 * if(..)
 				 *		if(...)
 				 *			if(...)
 				 *				foo();
 				 *	// No indentation anymore!
 				 */
-				else if (block != null && (block.IsSingleLineIndentation) && la.Kind == DTokens.Semicolon)
-					block = block.Parent;
+				else if(t!=null && 
+					t.Kind == DTokens.Semicolon && 
+					block!=null && 
+					block.LastPreBlockIdentifier.Kind!=DTokens.For)
+				{ 
+					while(block != null && (block.IsSingleSubStatementIndentation || block.IsStatementIndentation))
+						block = block.Parent;
+				}
 
 				// New block is opened by (,[,{
-				else if (
-					!isTheoreticEOF &&
+				if (!IsEOFInNextIteration &&
 					( la.Kind == DTokens.OpenParenthesis || 
 					la.Kind == DTokens.OpenSquareBracket || 
 					la.Kind == DTokens.OpenCurlyBrace))
 				{
+					while (block != null && block.IsStatementIndentation)
+						block = block.Parent;
+
 					block = new CodeBlock
 					{
 						LastPreBlockIdentifier = t,
@@ -119,7 +127,7 @@ namespace D_Parser.Formatting
 				{
 					// If EOF reached, only 'decrement' indentation if code line consists of the closing bracket only
 					// --> Return immediately if there's been another token on the same line
-					if (isTheoreticEOF && t.line==la.line)
+					if (IsEOFInNextIteration && t.line==la.line)
 					{
 						return block;
 					}
@@ -129,26 +137,21 @@ namespace D_Parser.Formatting
 						&& IsPreStatementToken(block.LastPreBlockIdentifier.Kind)) || 
 						la.Kind==DTokens.Do) // 'Do'-Statements allow single statements inside
 
-						&& lex.Peek().Kind != DTokens.OpenCurlyBrace /* Ensure that no block statement follows */)
+						&& lexer.Peek().Kind != DTokens.OpenCurlyBrace /* Ensure that no block statement follows */)
 					{
 						block = new CodeBlock
 						{
 							LastPreBlockIdentifier = t,
-							IsSingleLineIndentation = true,
-							StartLocation = t.Location,
+							IsSingleSubStatementIndentation = true,
+							StartLocation = t.EndLocation,
 
 							Parent = block.Parent
 						};
 					}
 
-					/* 
-					 * Do unindent if the watched code is NOT about to end OR if
-					 * the next token is a '}' (which normally means the end of a class body/block statement etc.)
-					 * AND if no line-break was entered (so unindent the finalizing '}' but not the block's statements)
-					 */
-					else if(!isTheoreticEOF || 
-						(la.Kind==DTokens.CloseCurlyBrace && 
-						la.line==parserEndLocation.Line))
+					else if (!IsEOFInNextIteration ||
+						(la.Kind == DTokens.CloseCurlyBrace &&
+						la.line == parserEndLocation.Line))
 					{
 						/*
 						 * On "case:" or "default:" blocks (so mostly in switch blocks),
@@ -164,18 +167,38 @@ namespace D_Parser.Formatting
 						 */
 						if (la.Kind == DTokens.CloseCurlyBrace)
 							while (block != null && block.IsNonClampBlock)
-								block=block.Parent;
+								block = block.Parent;
 
-						if(block!=null)
+						if (block != null)
 							block = block.Parent;
 					}
+				}
+
+				else if (!IsEOFInNextIteration &&
+					(t.Kind!=DTokens.Semicolon && t.Kind!=DTokens.OpenCurlyBrace) && 
+					(block == null || (
+					!block.IsStatementIndentation &&
+					!block.IsSingleSubStatementIndentation &&
+					(block.IsNonClampBlock || block.InitialToken==DTokens.OpenCurlyBrace)
+					)))
+				{
+					block = new CodeBlock
+					{
+						IsStatementIndentation = true,
+						LastPreBlockIdentifier = t,
+						StartLocation = t.EndLocation,
+
+						Parent = block
+					};
 				}
 			}
 
 			return block;
 		}
 
-		public static int GetLineIndentation(string lineText)
+		
+
+		public static int ReadRawLineIndentation(string lineText)
 		{
 			int ret = 0;
 
@@ -197,8 +220,8 @@ namespace D_Parser.Formatting
 		public CodeLocation StartLocation;
 		//public CodeLocation EndLocation;
 
-		public bool IsSingleLineIndentation = false;
-		//public bool IsWaitingForSemiColon = false;
+		public bool IsSingleSubStatementIndentation = false;
+		public bool IsStatementIndentation = false;
 
 		public bool IsNonClampBlock
 		{
@@ -217,23 +240,20 @@ namespace D_Parser.Formatting
 
 		public CodeBlock Parent;
 
-		public int OuterIndentation
+		public int GetLineIndentation(int line)
 		{
-			get
-			{
-				if (Parent != null)
-					return Parent.OuterIndentation + 1;
-
+			if (StartLocation.Line > line)
 				return 0;
-			}
-		}
 
-		public int InnerIndentation
-		{
-			get
-			{
-				return OuterIndentation + 1;
-			}
+			int indentation = 0;
+
+			if (Parent != null)
+				indentation = Parent.GetLineIndentation(line);
+
+			if (line > StartLocation.Line)
+				indentation++;
+
+			return indentation;
 		}
 	}
 
