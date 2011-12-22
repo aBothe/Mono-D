@@ -53,7 +53,6 @@ namespace MonoDevelop.D.Parser
 		public static ParsedDModule CreateFromDFile(ProjectDom prjDom, string file, TextReader content)
 		{
 			var doc = new ParsedDModule(file);
-			doc.Flags |= ParsedDocumentFlags.NonSerializable;
 
 			var parser = DParser.Create(content);
 
@@ -82,7 +81,8 @@ namespace MonoDevelop.D.Parser
 			else
 				doc._ddom = ast;
 
-			/*
+
+			// Serialize to NRefactory Dom structure
 			var cu = new CompilationUnit(file);
 			doc.CompilationUnit = cu;
 
@@ -100,7 +100,9 @@ namespace MonoDevelop.D.Parser
 					globalScope.Add(ch as IMember);
 				else
 					cu.Add(ch as IType);
-			}*/
+			}
+
+
 			
 			foreach(ParserError parserError in parser.ParseErrors)
 			{
