@@ -85,19 +85,21 @@ namespace MonoDevelop.D.Parser
 			// Serialize to NRefactory Dom structure
 			var cu = new CompilationUnit(file);
 			doc.CompilationUnit = cu;
-
-			//TODO: Usings
-
-			var globalScope = new DomType(cu, ClassType.Unknown, Modifiers.None, "(Global Scope)", new DomLocation(1, 1), string.Empty, new DomRegion(1, int.MaxValue - 2));
-
-			cu.Add(globalScope);
+			
+			var global = new DomType(cu, ClassType.Class,
+				Modifiers.Public | Modifiers.Partial,
+				"(global)",
+				new DomLocation(),
+				ast.ModuleName,
+				new DomRegion());
+			cu.Add(global);
 
 			foreach (var n in ast)
 			{
 				var ch = ConvertDParserToDomNode(n, doc);
-
+				
 				if (ch is DomField || ch is DomMethod)
-					globalScope.Add(ch as IMember);
+					global.Add(ch as IMember);
 				else
 					cu.Add(ch as IType);
 			}
@@ -233,20 +235,7 @@ namespace MonoDevelop.D.Parser
 
 		public static string BuildTypeNamespace(D_Parser.Dom.INode n)
 		{
-			var path = "";
-
-			var curNode = n.Parent;
-			while (curNode != null)
-			{
-				path = curNode.Name + "." + path;
-
-				if (curNode == curNode.Parent)
-					break;
-
-				curNode = curNode.Parent;
-			}
-
-			return path.TrimEnd('.');
+			return (n.NodeRoot as IAbstractSyntaxTree).ModuleName;
 		}
 
 		/// <summary>
