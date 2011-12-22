@@ -6,7 +6,7 @@
 	copyright="" 
 	description="D Language Binding" 
 	category="Language bindings" 
-	version="0.1.9">
+	version="0.2.0">
 	
 	
 	<!-- Resources -->
@@ -165,7 +165,7 @@
 	</Extension>
 	
 	<Extension path = "/MonoDevelop/Ide/CodeFormatters">
-		<Formatter mimeType="text/x-d" class="MonoDevelop.D.Formatting.DFormatter" />
+		<Formatter mimeType="text/x-d" class="MonoDevelop.D.Formatting.DCodeFormatter" />
 	</Extension>
 		
 	<!-- Code Completion -->

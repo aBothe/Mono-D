@@ -24,181 +24,6 @@ namespace D_Parser.Formatting
 				t == DTokens.Synchronized;
 		}
 
-		public static CodeBlock CalculateIndentation(string code, int offset)
-		{
-			if (offset >= code.Length)
-				offset = code.Length - 1;
-
-			CodeBlock block = null;
-
-			var parserEndLocation = DocumentHelper.OffsetToLocation(code, offset);
-
-			var lexer = new Lexer(new StringReader(code));
-			
-			lexer.NextToken();
-
-			DToken t = null;
-			DToken la = null;
-			bool IsEOFInNextIteration= false;
-
-			while (!lexer.IsEOF)
-			{
-				lexer.NextToken();
-
-				t = lexer.CurrentToken;
-				la = lexer.LookAhead;
-
-				IsEOFInNextIteration = la.Location>=parserEndLocation;
-				// Ensure one token after the caret offset becomes parsed
-				if (t!=null && t.Location >= parserEndLocation)
-					break;
-
-				if (t != null && (
-					t.Kind == DTokens.Case || 
-					t.Kind == DTokens.Default))
-				{
-					if (block != null && block.IsNonClampBlock)
-						block = block.Parent;
-
-					// 'case myEnum.A:'
-					if (la.Kind != DTokens.Colon)
-					{
-						// To prevent further issues, skip the expression
-						var psr = new DParser(lexer);
-						psr.AssignExpression();
-						// FIXME: What if cursor is somewhere between case and ':'??
-					}
-
-					if(lexer.LookAhead.EndLocation >= parserEndLocation)
-					{
-						break;
-					}
-					else if(lexer.CurrentPeekToken.Kind!=DTokens.OpenCurlyBrace)
-						block = new CodeBlock
-						{
-							InitialToken = DTokens.Case,
-							StartLocation = t.EndLocation,
-
-							Parent = block
-						};
-
-					continue;
-				}
-
-				/*
-				 * if(..)
-				 *		if(...)
-				 *			if(...)
-				 *				foo();
-				 *	// No indentation anymore!
-				 */
-				else if(t!=null && 
-					t.Kind == DTokens.Semicolon && 
-					block!=null && 
-					block.LastPreBlockIdentifier.Kind!=DTokens.For)
-				{ 
-					while(block != null && (block.IsSingleSubStatementIndentation || block.IsStatementIndentation))
-						block = block.Parent;
-				}
-
-				// New block is opened by (,[,{
-				if (!IsEOFInNextIteration &&
-					( la.Kind == DTokens.OpenParenthesis || 
-					la.Kind == DTokens.OpenSquareBracket || 
-					la.Kind == DTokens.OpenCurlyBrace))
-				{
-					while (block != null && block.IsStatementIndentation)
-						block = block.Parent;
-
-					block = new CodeBlock
-					{
-						LastPreBlockIdentifier = t,
-						InitialToken = la.Kind,
-						StartLocation = la.Location,
-
-						Parent = block
-					};
-				}
-
-				// Open block is closed by ),],}
-				else if (block != null && (
-					la.Kind == DTokens.CloseParenthesis ||
-					la.Kind == DTokens.CloseSquareBracket ||
-					la.Kind == DTokens.CloseCurlyBrace))
-				{
-					// If EOF reached, only 'decrement' indentation if code line consists of the closing bracket only
-					// --> Return immediately if there's been another token on the same line
-					if (IsEOFInNextIteration && t.line==la.line)
-					{
-						return block;
-					}
-
-					// Statements that contain only one sub-statement -> indent by 1
-					if (((block.InitialToken == DTokens.OpenParenthesis && la.Kind == DTokens.CloseParenthesis
-						&& IsPreStatementToken(block.LastPreBlockIdentifier.Kind)) || 
-						la.Kind==DTokens.Do) // 'Do'-Statements allow single statements inside
-
-						&& lexer.Peek().Kind != DTokens.OpenCurlyBrace /* Ensure that no block statement follows */)
-					{
-						block = new CodeBlock
-						{
-							LastPreBlockIdentifier = t,
-							IsSingleSubStatementIndentation = true,
-							StartLocation = t.EndLocation,
-
-							Parent = block.Parent
-						};
-					}
-
-					else if (!IsEOFInNextIteration ||
-						(la.Kind == DTokens.CloseCurlyBrace &&
-						la.line == parserEndLocation.Line))
-					{
-						/*
-						 * On "case:" or "default:" blocks (so mostly in switch blocks),
-						 * skip back to the 'switch' scope.
-						 * 
-						 * switch(..)
-						 * {
-						 *		default:
-						 *		case ..:
-						 *			// There is indentation now!
-						 *			// (On following lines, case blocks are still active)
-						 * } // Decreased Indentation; case blocks discarded
-						 */
-						if (la.Kind == DTokens.CloseCurlyBrace)
-							while (block != null && block.IsNonClampBlock)
-								block = block.Parent;
-
-						if (block != null)
-							block = block.Parent;
-					}
-				}
-
-				else if (!IsEOFInNextIteration &&
-					(t.Kind!=DTokens.Semicolon && t.Kind!=DTokens.OpenCurlyBrace) && 
-					(block == null || (
-					!block.IsStatementIndentation &&
-					!block.IsSingleSubStatementIndentation &&
-					(block.IsNonClampBlock || block.InitialToken==DTokens.OpenCurlyBrace)
-					)))
-				{
-					block = new CodeBlock
-					{
-						IsStatementIndentation = true,
-						LastPreBlockIdentifier = t,
-						StartLocation = t.EndLocation,
-
-						Parent = block
-					};
-				}
-			}
-
-			return block;
-		}
-
-		
-
 		public static int ReadRawLineIndentation(string lineText)
 		{
 			int ret = 0;
@@ -213,21 +38,203 @@ namespace D_Parser.Formatting
 
 			return ret;
 		}
+
+		DToken t { get { return Lexer.CurrentToken; } }
+		DToken la { get { return Lexer.LookAhead; } }
+		CodeBlock block;
+
+		CodeBlock lastLineIndent;
+		bool HadCaseStatementBegin;
+
+		bool IsSemicolonContainingStatement
+		{
+			get {
+				return block.LastPreBlockIdentifier.Kind == DTokens.For ||
+						block.LastPreBlockIdentifier.Kind == DTokens.Foreach ||
+						block.LastPreBlockIdentifier.Kind == DTokens.Foreach_Reverse;
+			}
+		}
+
+		Lexer Lexer;
+
+		CodeBlock PushBlock()
+		{
+			return block = new CodeBlock { 
+				LastPreBlockIdentifier=Lexer.LastToken ?? null,
+				Parent=block,
+				StartLocation = t.Location
+			};
+		}
+
+		CodeBlock PopBlock()
+		{
+			if (block != null)
+				return block = block.Parent;
+			return null;
+		}
+
+		public CodeBlock CalculateIndentation(string code, int line)
+		{
+			block = null;
+
+			var clippedCode = code.Substring(0, DocumentHelper.GetLineEndOffset(code, line));
+
+			Lexer = new Lexer(new StringReader(clippedCode));
+
+			Lexer.NextToken();
+
+			while (!Lexer.IsEOF && (t==null || t.Location.Line <= line))
+			{
+				if (t != null && la.line > t.line)
+					lastLineIndent = null;
+
+				Lexer.NextToken();
+
+				if (Lexer.IsEOF && la.line > t.line)
+					lastLineIndent = null;
+
+				/*
+				 * if(..)
+				 *		for(...)
+				 *			while(...)
+				 *				foo();
+				 *	// No indentation anymore!
+				 */
+				if (t.Kind == DTokens.Comma || t.Kind == DTokens.Semicolon && la.line > t.line)
+				{
+					if (block == null)
+						continue;
+
+					if (block.Reason == CodeBlock.IndentReason.UnfinishedStatement)
+						PopBlock();
+
+					while (
+						block != null &&
+						block.Reason == CodeBlock.IndentReason.SingleLineStatement &&
+						!IsSemicolonContainingStatement)
+						PopBlock();
+				}
+
+				// (,[,{
+				else if (t.Kind == DTokens.OpenParenthesis ||
+					t.Kind == DTokens.OpenSquareBracket ||
+					t.Kind == DTokens.OpenCurlyBrace)
+				{
+					if(block != null && (
+						block.Reason == CodeBlock.IndentReason.SingleLineStatement || 
+						block.Reason == CodeBlock.IndentReason.UnfinishedStatement))
+						PopBlock();
+					
+					PushBlock().BlockStartToken = t.Kind;
+				}
+
+				// ),],}
+				else if (t.Kind == DTokens.Do ||
+					t.Kind == DTokens.CloseParenthesis ||
+					t.Kind == DTokens.CloseSquareBracket ||
+					t.Kind == DTokens.CloseCurlyBrace)
+				{
+					if (t.Kind == DTokens.CloseCurlyBrace)
+					{
+						bool isBraceInLineOnly = true;
+						while (block != null && !block.IsClampBlock)
+						{
+							isBraceInLineOnly = block.StartLocation.Line == t.line && la.line > t.line;
+
+							if (!isBraceInLineOnly && block.Reason == CodeBlock.IndentReason.StatementLabel)
+								PopBlock();
+
+							PopBlock();
+						}
+
+						if (isBraceInLineOnly)
+							PopBlock();
+					}
+					else
+					{
+						while (block != null && !block.IsClampBlock)
+							PopBlock();
+
+						if (lastLineIndent == null && (block == null || block.StartLocation.Line < t.line))
+							lastLineIndent = block;
+
+						if (t.Kind == DTokens.CloseParenthesis &&
+							block != null &&
+							block.BlockStartToken == DTokens.OpenParenthesis && 
+							la.Kind!=DTokens.OpenCurlyBrace)
+						{
+							PopBlock();
+
+							PushBlock().Reason = CodeBlock.IndentReason.UnfinishedStatement;
+							continue;
+						}
+						else
+							PopBlock();
+
+						if (t.Kind == DTokens.Do ||
+							t.Kind == DTokens.CloseParenthesis &&
+							block != null &&
+							block.BlockStartToken == DTokens.OpenParenthesis)
+						{
+							PopBlock();
+							if (la.Kind == DTokens.OpenCurlyBrace && la.line > t.line)
+							{ }
+							else if (block==null || block.LastPreBlockIdentifier!=null && IsPreStatementToken(block.LastPreBlockIdentifier.Kind))
+								PushBlock().Reason = CodeBlock.IndentReason.SingleLineStatement;
+						}
+					}
+				}
+
+				else if (t.Kind == DTokens.Case || t.Kind==DTokens.Default)
+				{
+					while (block != null && block.BlockStartToken!=DTokens.OpenCurlyBrace)
+						PopBlock();
+
+					PushBlock().Reason = CodeBlock.IndentReason.StatementLabel;
+
+					HadCaseStatementBegin = true;
+				}
+				else if (t.Kind == DTokens.Colon)
+				{
+					if (HadCaseStatementBegin)
+					{
+						while (block != null && block.Reason != CodeBlock.IndentReason.StatementLabel)
+							PopBlock();
+						HadCaseStatementBegin = false;
+					}
+				}
+
+
+				else if (block == null ||
+					block.Reason != CodeBlock.IndentReason.UnfinishedStatement &&
+					block.Reason != CodeBlock.IndentReason.SingleLineStatement)
+					PushBlock().Reason = CodeBlock.IndentReason.UnfinishedStatement;
+			}
+
+			return lastLineIndent ?? block;
+		}
 	}
 
 	public class CodeBlock
 	{
-		public int InitialToken;
+		public enum IndentReason
+		{
+			Other,
+			SingleLineStatement,
+			UnfinishedStatement,
+			StatementLabel, // x1: ; case 3: ; default: 
+		}
+
+		public IndentReason Reason= IndentReason.Other;
+
 		public CodeLocation StartLocation;
 		//public CodeLocation EndLocation;
 
-		public bool IsSingleSubStatementIndentation = false;
-		public bool IsStatementIndentation = false;
+		public int BlockStartToken;
 
-		public bool IsNonClampBlock
-		{
-			get { return InitialToken != DTokens.OpenParenthesis && InitialToken != DTokens.OpenSquareBracket && InitialToken != DTokens.OpenCurlyBrace; }
-		}
+		public bool IsClampBlock { get {
+			return BlockStartToken == DTokens.OpenCurlyBrace || BlockStartToken == DTokens.OpenParenthesis || BlockStartToken == DTokens.OpenSquareBracket;
+		} }
 
 		/// <summary>
 		/// The last token before this CodeBlock started.

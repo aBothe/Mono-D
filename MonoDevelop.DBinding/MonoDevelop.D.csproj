@@ -125,7 +125,7 @@
     <Compile Include="Completion\DCodeCompletionSupport.cs" />
     <Compile Include="Completion\EditorCompletionExtension.cs" />
     <Compile Include="DLanguageBinding.cs" />
-    <Compile Include="Formatting\DFormatter.cs" />
+    <Compile Include="Formatting\DCodeFormatter.cs" />
     <Compile Include="Gui\DModuleOutlineExtension.cs" />
     <Compile Include="Gui\DToolTipProvider.cs" />
     <Compile Include="Gui\DToolTipWindow.cs" />

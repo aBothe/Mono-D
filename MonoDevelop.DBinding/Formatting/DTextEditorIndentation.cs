@@ -71,21 +71,23 @@ namespace MonoDevelop.D.Formatting
 
 				if (key== Key.Return)
 				{
-					var cb=D_Parser.Formatting.DFormatter.CalculateIndentation(ed.Text,ed.Caret.Offset);
+					ed.InsertAtCaret("\n");
 
-					newIndentation=cb==null?0:cb.GetLineIndentation(ed.Caret.Line+1);
+					var cb=DCodeFormatter.NativeFormatterInstance.CalculateIndentation(ed.Text,ed.Caret.Line);
 
-					ed.InsertAtCaret("\n" + CalculateIndentationString(newIndentation));
+					newIndentation=cb==null?0:cb.GetLineIndentation(ed.Caret.Line);
+
+					ed.InsertAtCaret(CalculateIndentationString(newIndentation));
 
 					return false;
 				}
 
-				if (keyChar=='{' || keyChar == '}' || keyChar == ':' || keyChar == ';')
+				if (keyChar=='{' || keyChar == '}' /*|| keyChar == ':'*/ || keyChar == ';')
 				{
 					ed.InsertAtCaret(keyChar.ToString());
 					int originalIndentation = ed.GetLineIndent(ed.Caret.Line).Length;
 
-					var cb = D_Parser.Formatting.DFormatter.CalculateIndentation(ed.Text, ed.Caret.Offset);
+					var cb = DCodeFormatter.NativeFormatterInstance.CalculateIndentation(ed.Text, ed.Caret.Offset);
 					newIndentation=cb == null ? 0 : cb.GetLineIndentation(ed.Caret.Line);
 
 					var line=Document.Editor.GetLine(ed.Caret.Line);
