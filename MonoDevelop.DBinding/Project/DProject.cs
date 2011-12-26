@@ -62,6 +62,9 @@ namespace MonoDevelop.D
 		[ItemProperty("Lib", Scope = "*")]
 		public List<string> ExtraLibraries = new List<string>();
 
+		[ItemProperty("IncrementalLinking")]
+		public bool EnableIncrementalLinking = true;
+
 		/// <summary>
 		/// Returns the actual compiler configuration used by this project
 		/// </summary>
@@ -255,9 +258,29 @@ namespace MonoDevelop.D
 
 		protected override BuildResult DoBuild(IProgressMonitor monitor, ConfigurationSelector configuration)
 		{
-			var cfg = GetConfiguration(configuration) as DProjectConfiguration;
+			return ProjectBuilder.CompileProject(monitor,this,configuration);
+		}
 
-			return DCompiler.Compile(this,Files,cfg,monitor);
+		protected override bool CheckNeedsBuild(ConfigurationSelector configuration)
+		{
+			var cfg = GetConfiguration(configuration) as DProjectConfiguration;
+			
+			if (!EnableIncrementalLinking || 
+				!File.Exists(cfg.CompiledOutputName))
+				return true;
+
+			foreach (var f in Files)
+			{
+				if (f.BuildAction != BuildAction.Compile)
+					continue;
+
+				if(!File.Exists(f.LastGenOutput) || 
+					!LastModificationTimes.ContainsKey(f) ||
+					LastModificationTimes[f]!=File.GetLastWriteTime(f.FilePath))
+					return true;
+			}
+
+			return false;
 		}
 
 		protected override void DoClean(IProgressMonitor monitor, ConfigurationSelector configuration)

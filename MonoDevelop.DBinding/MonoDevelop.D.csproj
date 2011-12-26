@@ -118,6 +118,7 @@
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="Building\ArgumentMacroProvider.cs" />
     <Compile Include="Building\DefaultArgumentProviders.cs" />
+    <Compile Include="Building\ProjectBuilder.cs" />
     <Compile Include="Formatting\DFormattingPolicy.cs" />
     <Compile Include="Formatting\DTextEditorIndentation.cs" />
     <Compile Include="gtk-gui\generated.cs" />

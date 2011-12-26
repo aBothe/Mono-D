@@ -82,7 +82,7 @@ namespace MonoDevelop.D.Formatting
 					return false;
 				}
 
-				if (keyChar=='{' || keyChar == '}' /*|| keyChar == ':'*/ || keyChar == ';')
+				if (keyChar=='{' || keyChar == '}')
 				{
 					ed.InsertAtCaret(keyChar.ToString());
 					int originalIndentation = ed.GetLineIndent(ed.Caret.Line).Length;
