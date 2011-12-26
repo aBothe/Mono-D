@@ -68,7 +68,8 @@ namespace MonoDevelop.D.Completion
 				
 				foreach(D_Parser.Dom.INode param in (node as DMethod).Parameters)
 				{
-					result =  result + sep + param.Type.ToString();	
+					if (param.Type != null)
+						result =  result + sep + param.Type.ToString();	
 					sep = ", ";
 				}
 				if (result.Length != 0)
