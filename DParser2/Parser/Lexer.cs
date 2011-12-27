@@ -1454,6 +1454,9 @@ namespace D_Parser.Parser
 						case '=':
 							ReaderRead();
 							return new DToken(DTokens.Equal, x, y);
+						case '>':
+							ReaderRead();
+							return new DToken(DTokens.GoesTo, x, y);
 					}
 					return new DToken(DTokens.Assign, x, y);
 				case '<':

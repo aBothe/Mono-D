@@ -168,7 +168,7 @@ namespace D_Parser.Parser
         public const int Abstract = 153;
         public const int Alias = 154;
         public const int PropertyAttribute = 155;
-        public const int empty2 = 156;
+        public const int GoesTo = 156; // =>  (lambda expressions)
         public const int empty3 = 157;
         public const int empty4 = 158;
 
@@ -543,6 +543,8 @@ namespace D_Parser.Parser
 			{NotUnequalAssign,"!<>="},
 			{NotGreaterThanAssign,"!>="},
 			{NotLessThanAssign,"!<="},
+
+			{GoesTo,"=>"}
 		};
 
         public static string GetTokenString(int token)
