@@ -157,6 +157,7 @@
     <Compile Include="OptionPanels\ResourcesCompilerOptions.cs" />
     <Compile Include="gtk-gui\MonoDevelop.D.ResourcesCompilerOptionsPanel.cs" />
     <Compile Include="Refactoring\Commands.cs" />
+    <Compile Include="Refactoring\DDocumentationLauncher.cs" />
     <Compile Include="Refactoring\ReferenceFinder.cs" />
     <Compile Include="Gui\EditorPathbarProvider.cs" />
     <Compile Include="Refactoring\RenamingRefactoring.cs" />

@@ -165,6 +165,12 @@ namespace MonoDevelop.D
 		{
 			return doc.IsFile && DLanguageBinding.IsDFile(doc.FileName);
 		}
+
+		[CommandHandler(Refactoring.Commands.OpenDDocumentation)]
+		public void OpenDDocumentation()
+		{
+			//Refactoring.DDocumentationLauncher.LaunchReferenceInBrowser();
+		}
 	
 		[CommandHandler(Refactoring.Commands.FindReferences)]
 		public void FindReferences()

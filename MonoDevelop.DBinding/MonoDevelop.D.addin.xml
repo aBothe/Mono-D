@@ -207,6 +207,9 @@
 						 _label = "_Go to declaration"/>
 		<Command id = "MonoDevelop.D.Refactoring.Commands.FindReferences"
 						 _label = "_Find references"/>
+		<Command id="MonoDevelop.D.Refactoring.Commands.OpenDDocumentation"
+						 _label="Open D Documentation"
+						 shortcut="F1"/>
 	</Extension>
 	
 	<Extension path = "/MonoDevelop/SourceEditor2/ContextMenu/Editor">

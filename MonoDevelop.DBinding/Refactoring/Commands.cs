@@ -25,6 +25,8 @@ namespace MonoDevelop.D.Refactoring
 		GotoDeclaration,
 		FindReferences,
 		RenameSymbols,
+
+		OpenDDocumentation,
 	}
 
 	public class ContextMenuRefactoringCommandHandler : CommandHandler
@@ -49,20 +51,26 @@ namespace MonoDevelop.D.Refactoring
 		{
 			var rr = Resolver.DResolverWrapper.ResolveHoveredCode(out ctxt);
 
-			if (rr == null || rr.Length < 1)
-				return;
-
-			res = rr[rr.Length - 1];
-			
-			n = Resolver.DResolverWrapper.GetResultMember(res);
-
-			if (n != null)
+			if (rr != null && rr.Length > 0)
 			{
-				info.Add(IdeApp.CommandService.GetCommandInfo(Commands.GotoDeclaration), new Action(GotoDeclaration));
-				info.Add(IdeApp.CommandService.GetCommandInfo(Commands.FindReferences), new Action(FindReferences));
-				info.AddSeparator();
-				info.Add(IdeApp.CommandService.GetCommandInfo(Commands.RenameSymbols), new Action(RenameSymbol));
+				res = rr[rr.Length - 1];
+
+				n = Resolver.DResolverWrapper.GetResultMember(res);
+
+				if (n != null)
+				{
+					info.Add(IdeApp.CommandService.GetCommandInfo(Commands.GotoDeclaration), new Action(GotoDeclaration));
+					info.Add(IdeApp.CommandService.GetCommandInfo(Commands.FindReferences), new Action(FindReferences));
+					info.AddSeparator();
+					info.Add(IdeApp.CommandService.GetCommandInfo(Commands.RenameSymbols), new Action(RenameSymbol));
+				}
 			}
+			//info.Add(IdeApp.CommandService.GetCommandInfo(Commands.OpenDDocumentation), new Action(OpenDDoc));
+		}
+
+		void OpenDDoc()
+		{
+			DDocumentationLauncher.LaunchReferenceInBrowser(res,ctxt);
 		}
 
 
