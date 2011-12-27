@@ -37,12 +37,12 @@
 		<Begin>"</Begin>
 		<End>"</End>
 	</Span>
-<!--
-	<Span color = "string.double" rule="String" stopateol = "false" escape='\"'>
-		<Begin>&#96;</Begin>
-		<End>&#96;</End>
+
+	<Span color = "string.other" rule="String" stopateol = "false">
+		<Begin>`</Begin>
+		<End>`</End>
 	</Span>
--->
+
 	<Span color = "string.single" rule="String" stopateol = "true" escape="\'">
 		<Begin>&apos;</Begin>
 		<End>&apos;</End>
