@@ -60,7 +60,7 @@ namespace MonoDevelop.D.Building
 
 			compilerResults = new CompilerResults(new TempFileCollection());
 
-			targetBuildResult = new BuildResult(compilerResults, "");
+			targetBuildResult = new BuildResult();
 
 			monitor.BeginTask("Build Project", Project.Files.Count + 1);
 
@@ -106,6 +106,20 @@ namespace MonoDevelop.D.Building
 			}
 
 			monitor.EndTask();
+			
+			foreach(CompilerError compilerError in compilerResults.Errors)
+				if (compilerError.IsWarning)
+					targetBuildResult.AddWarning(compilerError.FileName,
+					                           compilerError.Line,
+					                           compilerError.Column,
+					                           compilerError.ErrorNumber,
+					                           compilerError.ErrorText);
+				else
+					targetBuildResult.AddError(compilerError.FileName,
+					                           compilerError.Line,
+					                           compilerError.Column,
+					                           compilerError.ErrorNumber,
+					                           compilerError.ErrorText);
 
 			return targetBuildResult;
 		}
