@@ -65,12 +65,13 @@ namespace MonoDevelop.D.Refactoring
 					info.Add(IdeApp.CommandService.GetCommandInfo(Commands.RenameSymbols), new Action(RenameSymbol));
 				}
 			}
-			//info.Add(IdeApp.CommandService.GetCommandInfo(Commands.OpenDDocumentation), new Action(OpenDDoc));
+			info.Add(IdeApp.CommandService.GetCommandInfo(Commands.OpenDDocumentation), new Action(OpenDDoc));
 		}
 
 		void OpenDDoc()
 		{
-			DDocumentationLauncher.LaunchReferenceInBrowser(res,ctxt);
+			var caret=Ide.IdeApp.Workbench.ActiveDocument.Editor.Caret.Location;
+			var url=DDocumentationLauncher.GetReferenceUrl(res, ctxt, new CodeLocation(caret.Column, caret.Line));
 		}
 
 

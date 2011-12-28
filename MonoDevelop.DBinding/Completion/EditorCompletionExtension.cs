@@ -1,26 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Gtk;
-using MonoDevelop.Core;
-using MonoDevelop.Components;
+using D_Parser.Dom;
+using D_Parser.Resolver;
 using MonoDevelop.Components.Commands;
-using MonoDevelop.Ide;
+using MonoDevelop.D.Completion;
+using MonoDevelop.D.Parser;
 using MonoDevelop.Ide.CodeCompletion;
 using MonoDevelop.Ide.Gui;
 using MonoDevelop.Ide.Gui.Content;
-using MonoDevelop.Projects.Dom;
-using MonoDevelop.Projects.Dom.Output;
-using MonoDevelop.D.Completion;
-using MonoDevelop.D.Gui;
-using MonoDevelop.D.Parser;
-using D_Parser;
-using D_Parser.Dom;
-using D_Parser.Dom.Statements;
-using D_Parser.Completion;
-using D_Parser.Resolver;
-using MonoDevelop.Ide.Commands;
 
 
 namespace MonoDevelop.D
@@ -169,7 +154,7 @@ namespace MonoDevelop.D
 		[CommandHandler(Refactoring.Commands.OpenDDocumentation)]
 		public void OpenDDocumentation()
 		{
-			//Refactoring.DDocumentationLauncher.LaunchReferenceInBrowser();
+			var url=Refactoring.DDocumentationLauncher.GetReferenceUrl();
 		}
 	
 		[CommandHandler(Refactoring.Commands.FindReferences)]
