@@ -99,15 +99,17 @@ namespace D_Parser.Dom.Expressions
 
 				if (subExpressions == null || subExpressions.Length < 1)
 					break;
-
+				bool foundOne = false;
 				foreach (var se in subExpressions)
 					if (se != null && Where >= se.Location && Where <= se.EndLocation)
 					{
 						e = se;
+						foundOne = true;
 						break;
 					}
 
-				break;
+				if (!foundOne)
+					break;
 			}
 
 			return e;
