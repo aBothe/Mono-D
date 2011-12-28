@@ -479,6 +479,7 @@ namespace D_Parser.Resolver
 				bool IsInNestedBlockComment = false;
 				bool IsChar = false;
 				bool IsVerbatimString = false;
+				bool IsAlternateVerbatimString = false;
 
 				lastBeginOffset = -1;
 				lastEndOffset = -1;
@@ -531,6 +532,12 @@ namespace D_Parser.Resolver
 								off++;
 								IsInString = IsVerbatimString = true;
 							}
+							else if (cur == '`')
+							{
+								lastBeginOffset = off;
+								lastEndOffset = -1;
+								IsInString = IsAlternateVerbatimString = true;
+							}
 							// if not, test for normal string literals
 							else if (cur == '\"')
 							{
@@ -546,6 +553,11 @@ namespace D_Parser.Resolver
 							{
 								off += 2;
 								continue;
+							}
+							else if (IsAlternateVerbatimString && cur=='`')
+							{
+								IsInString = IsAlternateVerbatimString = isBeyondCaret;
+								lastEndOffset = off;
 							}
 							else if (cur == '\"')
 							{
@@ -617,7 +629,7 @@ namespace D_Parser.Resolver
 					ret |= TokenContext.NestedComment;
 				if (IsInString)
 					ret |= TokenContext.String;
-				if (IsVerbatimString)
+				if (IsVerbatimString || IsAlternateVerbatimString)
 					ret |= TokenContext.VerbatimString;
 
 				return ret;
@@ -779,22 +791,43 @@ namespace D_Parser.Resolver
 		{
 			var code = editor.ModuleCode;
 
-			// First check if caret is inside a comment/string etc.
-			int lastNonNormalStart = 0;
-			int lastNonNormalEnd = 0;
-			var caretContext = CommentSearching.GetTokenContext(code, editor.CaretOffset, out lastNonNormalStart,out lastNonNormalEnd);
+			int start = 0;
+			CodeLocation startLocation=CodeLocation.Empty;
+			bool IsExpression = false;
 
-			// Return if comment etc. found
-			if (caretContext != CommentSearching.TokenContext.None)
-				return null;
+			if (ctxt.ScopedStatement is IExpressionContainingStatement)
+			{
+				var exprs=(ctxt.ScopedStatement as IExpressionContainingStatement).SubExpressions;
+				IExpression targetExpr = null;
 
-			var start = ReverseParsing.SearchExpressionStart(code,editor.CaretOffset-1,
-				/*FIXME: Only backward-parse code until the last comment - 
-				 * this can be provoking errors e.g. 
-				 * on MyType /* Some comment * / .myProp
-				 * But: In quite all cases this shouldn't occur - so it's still acceptable
-				 */
-				(lastNonNormalEnd>0 && lastNonNormalEnd<editor.CaretOffset)?lastNonNormalEnd:0);
+				if(exprs!=null)
+					foreach (var ex in exprs)
+						if ((targetExpr = ExpressionHelper.SearchExpressionDeeply(ex, editor.CaretLocation))
+							!=ex)
+							break;
+
+				if (targetExpr == null)
+					return null;
+
+				startLocation = targetExpr.Location;
+				start = DocumentHelper.LocationToOffset(editor.ModuleCode, startLocation);
+				IsExpression = true;
+			}
+			else
+			{
+				// First check if caret is inside a comment/string etc.
+				int lastNonNormalStart = 0;
+				int lastNonNormalEnd = 0;
+				var caretContext = CommentSearching.GetTokenContext(code, editor.CaretOffset, out lastNonNormalStart, out lastNonNormalEnd);
+
+				// Return if comment etc. found
+				if (caretContext != CommentSearching.TokenContext.None)
+					return null;
+
+				start = ReverseParsing.SearchExpressionStart(code, editor.CaretOffset - 1,
+					(lastNonNormalEnd > 0 && lastNonNormalEnd < editor.CaretOffset) ? lastNonNormalEnd : 0);
+				startLocation = DocumentHelper.OffsetToLocation(editor.ModuleCode, start);
+			}
 
 			if (start < 0 || editor.CaretOffset<=start)
 				return null;
@@ -802,12 +835,12 @@ namespace D_Parser.Resolver
 			var expressionCode = code.Substring(start, alsoParseBeyondCaret ? code.Length - start : editor.CaretOffset - start);
 
 			var parser = DParser.Create(new StringReader(expressionCode));
-			parser.Lexer.SetInitialLocation(DocumentHelper.OffsetToLocation(editor.ModuleCode,start));
+			parser.Lexer.SetInitialLocation(startLocation);
 			parser.Step();
 
-			if (onlyAssumeIdentifierList && parser.Lexer.LookAhead.Kind == DTokens.Identifier)
+			if (!IsExpression && onlyAssumeIdentifierList && parser.Lexer.LookAhead.Kind == DTokens.Identifier)
 				return ResolveType(parser.IdentifierList(), ctxt);
-			else if (parser.IsAssignExpression())
+			else if (IsExpression || parser.IsAssignExpression())
 			{
 				var expr = parser.AssignExpression();
 
