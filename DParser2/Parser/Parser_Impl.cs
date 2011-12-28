@@ -2129,7 +2129,7 @@ namespace D_Parser.Parser
 
 			while (!IsEOF)
 			{
-				if (laKind == (Dot))
+				if (laKind == Dot)
 				{
 					Step();
 
@@ -2138,7 +2138,7 @@ namespace D_Parser.Parser
 					e.PostfixForeExpression = leftExpr;
 					leftExpr = e;
 					if (laKind == New)
-						e.NewExpression = NewExpression();
+						e.NewExpression = NewExpression(Scope);
 					else if (IsTemplateInstance)
 						e.TemplateOrIdentifier = TemplateInstance();
 					else {
@@ -2148,7 +2148,7 @@ namespace D_Parser.Parser
 
 					e.EndLocation = t.EndLocation;
 				}
-				else if (laKind == (Increment) || laKind == (Decrement))
+				else if (laKind == Increment || laKind == Decrement)
 				{
 					Step();
 					var e = t.Kind == Increment ? (PostfixExpression)new PostfixExpression_Increment() : new PostfixExpression_Decrement();
@@ -2159,7 +2159,7 @@ namespace D_Parser.Parser
 				}
 
 				// Function call
-				else if (laKind == (OpenParenthesis))
+				else if (laKind == OpenParenthesis)
 				{
 					Step();
 					var ae = new PostfixExpression_MethodCall();
@@ -2167,20 +2167,20 @@ namespace D_Parser.Parser
 					ae.PostfixForeExpression = leftExpr;
 					leftExpr = ae;
 
-					if (laKind != (CloseParenthesis))
-						ae.Arguments = ArgumentList().ToArray();
+					if (laKind != CloseParenthesis)
+						ae.Arguments = ArgumentList(Scope).ToArray();
 					Step();
 					ae.EndLocation = t.EndLocation;
 				}
 
 				// IndexExpression | SliceExpression
-				else if (laKind == (OpenSquareBracket))
+				else if (laKind == OpenSquareBracket)
 				{
 					Step();
 
-					if (laKind != (CloseSquareBracket))
+					if (laKind != CloseSquareBracket)
 					{
-						var firstEx = AssignExpression();
+						var firstEx = AssignExpression(Scope);
 						// [ AssignExpression .. AssignExpression ]
 						if (laKind == DoubleDot)
 						{
@@ -2190,7 +2190,7 @@ namespace D_Parser.Parser
 							{
 								FromExpression = firstEx,
 								PostfixForeExpression = leftExpr,
-								ToExpression = AssignExpression()
+								ToExpression = AssignExpression(Scope)
 							};
 							LastParsedObject = leftExpr;
 						}
@@ -2202,7 +2202,7 @@ namespace D_Parser.Parser
 							if (laKind == Comma)
 							{
 								Step();
-								args.AddRange(ArgumentList());
+								args.AddRange(ArgumentList(Scope));
 							}
 
 							leftExpr = new PostfixExpression_Index()
@@ -2274,7 +2274,7 @@ namespace D_Parser.Parser
 				return TemplateInstance();
 
 			if (IsLambaExpression())
-				return LambaExpression();
+				return LambaExpression(Scope);
 
 			// Identifier
 			if (laKind == (Identifier))
@@ -2703,11 +2703,11 @@ namespace D_Parser.Parser
 			return Lexer.CurrentPeekToken.Kind == OpenCurlyBrace;
 		}
 
-		FunctionLiteral LambaExpression()
+		FunctionLiteral LambaExpression(IBlockNode Scope=null)
 		{
-			var fl = new FunctionLiteral();
+			var fl = new FunctionLiteral { IsLambda=true };
 
-			fl.Location = la.Location;
+			fl.Location = fl.AnonymousMethod.StartLocation = la.Location;
 
 			if (laKind == Identifier)
 			{
@@ -2729,7 +2729,7 @@ namespace D_Parser.Parser
 
 			if (Expect(GoesTo))
 			{
-				fl.AnonymousMethod.Body = new BlockStatement { StartLocation=la.Location };
+				fl.AnonymousMethod.Body = new BlockStatement { StartLocation= la.Location };
 
 				var ae = AssignExpression(fl.AnonymousMethod);
 
@@ -2743,7 +2743,10 @@ namespace D_Parser.Parser
 				fl.AnonymousMethod.Body.EndLocation = t.EndLocation;
 			}
 
-			fl.EndLocation = t.EndLocation;
+			fl.EndLocation = fl.AnonymousMethod.EndLocation = t.EndLocation;
+
+			if (Scope != null)
+				Scope.Add(fl.AnonymousMethod);
 
 			return fl;
 		}
