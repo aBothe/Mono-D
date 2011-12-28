@@ -7,12 +7,20 @@ using MonoDevelop.D.Resolver;
 using D_Parser.Dom.Expressions;
 using D_Parser.Dom.Statements;
 using D_Parser.Parser;
+using System.IO;
 
 namespace MonoDevelop.D.Refactoring
 {
 	public class DDocumentationLauncher
 	{
 		public const string DigitalMarsUrl = "http://www.d-programming-language.org";
+
+		public static void LaunchRelativeDUrl(string relativeUrl)
+		{
+			var url=DigitalMarsUrl + '/' + relativeUrl;
+
+			System.Diagnostics.Process.Start(url);
+		}
 
 		/// <summary>
 		/// Reads the current caret context, and opens the adequate reference site in the default browser
@@ -29,42 +37,150 @@ namespace MonoDevelop.D.Refactoring
 
 		public static string GetReferenceUrl(ResolveResult result,ResolverContext ctxt, CodeLocation caret)
 		{
-			if (ctxt.ScopedStatement != null)
-			{
-				if (ctxt.ScopedStatement is IExpressionContainingStatement)
-				{
-					var exprs = (ctxt.ScopedStatement as IExpressionContainingStatement).SubExpressions;
-					IExpression targetExpr = null;
-
-					if (exprs != null)
-						foreach (var ex in exprs)
-							if ((targetExpr = ExpressionHelper.SearchExpressionDeeply(ex, caret))
-								!= ex)
-								break;
-
-					return GetRefUrlFor(targetExpr);
-				}
-
-				return GetRefUrlFor(ctxt.ScopedStatement);
-			}
-
-			if(result!=null)
+			if (result != null)
 			{
 				var n = DResolverWrapper.GetResultMember(result);
+
+				if (n!=null && n.NodeRoot is IAbstractSyntaxTree)
+				{
+					if (IsPhobosModule(n.NodeRoot as IAbstractSyntaxTree))
+					{
+						var phobos_url = "phobos/" + (n.NodeRoot as IAbstractSyntaxTree).ModuleName.Replace('.', '_') + ".html";
+
+						if (!(n is IAbstractSyntaxTree))
+							phobos_url += "#" + n.Name;
+
+						return phobos_url;
+					}
+				}
+				else if (result is StaticTypeResult)
+					return GetRefUrlFor( (result as StaticTypeResult).TypeDeclarationBase);
 			}
 
-			return "";
+			if (ctxt.ScopedStatement != null)
+			{
+				return GetRefUrlFor(ctxt.ScopedStatement, caret);
+			}
+			else if (ctxt.ScopedBlock is DClassLike)
+			{
+				var dc = ctxt.ScopedBlock as DClassLike;
+
+				if (dc.ClassType == DTokens.Class)
+					return "class.html";
+				else if (dc.ClassType == DTokens.Interface)
+					return "interface.html";
+				else if (dc.ClassType == DTokens.Struct || dc.ClassType == DTokens.Union)
+					return "struct.html";
+				else if (dc.ClassType == DTokens.Template)
+					return "template.html";
+			}
+			else if (ctxt.ScopedBlock is DEnum)
+				return "enum.html";
+			
+
+			return null;
 		}
 
 
-		public static string GetRefUrlFor(IStatement stmt)
+		public static bool IsPhobosModule(IAbstractSyntaxTree Module)
 		{
-			return "";
+			return 
+				Module.FileName.Contains(Path.DirectorySeparatorChar+"phobos"+Path.DirectorySeparatorChar) ||
+				Module.FileName.Contains(Path.DirectorySeparatorChar + "druntime" + Path.DirectorySeparatorChar+ "import"+ Path.DirectorySeparatorChar);
+		}
+
+		public static string GetRefUrlFor(IStatement s, CodeLocation caret)
+		{
+			if (s is IExpressionContainingStatement)
+			{
+				var exprs = (s as IExpressionContainingStatement).SubExpressions;
+				IExpression targetExpr = null;
+
+				if (exprs != null)
+					foreach (var ex in exprs)
+						if (caret>=ex.Location && 
+							caret<=ex.EndLocation &&
+							(targetExpr = ExpressionHelper.SearchExpressionDeeply(ex, caret))
+							!= ex)
+							break;
+
+				if(targetExpr!=null)
+					return GetRefUrlFor(targetExpr);
+			}
+
+			if (s is DeclarationStatement)
+			{
+				var ds = s as DeclarationStatement;
+
+				foreach (var decl in ds.Declarations)
+				{
+					if (caret >= decl.StartLocation && caret <= decl.EndLocation)
+					{
+						if (decl is DVariable)
+						{
+							var dv = decl as DVariable;
+
+							if (dv.Initializer != null &&
+								caret >= dv.StartLocation &&
+								caret <= dv.EndLocation)
+								return GetRefUrlFor(dv.Initializer);
+						}
+					}
+				}
+			}
+			
+			if (s is StatementContainingStatement)
+			{
+				var stmts = (s as StatementContainingStatement).SubStatements;
+
+				if(stmts!=null)
+					foreach (var stmt in stmts)
+					{
+						if (caret >= stmt.StartLocation &&
+							caret <= stmt.EndLocation)
+						{
+							var r = GetRefUrlFor(stmt, caret);
+
+							if (r != null)
+								return r;
+						}
+					}
+			}
+
+
+			var url = "statement.html#";
+
+			if (s is ForeachStatement && (s as ForeachStatement).IsRangeStatement)
+				url += "ForeachRangeStatement";
+			else if (s is ConditionStatement.DebugStatement)
+				url = "version.html#DebugCondition";
+			else if (s is ConditionStatement.VersionStatement)
+				url = "version.html#VersionCondition";
+			else if (s is IfStatement && (s as IfStatement).IsStatic)
+				url = "version.html#StaticIfCondition";
+			else
+				url += s.GetType().Name;
+
+			return url;
+		}
+
+		public static string GetRefUrlFor(ITypeDeclaration t)
+		{
+			var url = "declaration.html";
+
+			if (t is ArrayDecl || t is PointerDecl)
+				url = "arrays.html";
+			else if (t is TypeOfDeclaration)
+				url += "#Typeof";
+			else if (t is DTokenDeclaration)
+				url = "type.html";
+
+			return url;
 		}
 
 		public static string GetRefUrlFor(IExpression e)
 		{
-			var url = "expressions.html#";
+			var url = "expression.html#";
 
 			if (e is SimpleUnaryExpression || e is UnaryExpression_Type)
 				url += "UnaryExpression";
@@ -93,6 +209,8 @@ namespace MonoDevelop.D.Refactoring
 						url += "super";
 					else if (token == DTokens.Null)
 						url += "null";
+					else
+						url += "PrimaryExpression";
 				}
 				else if (e is IdentifierExpression)
 				{
@@ -128,6 +246,8 @@ namespace MonoDevelop.D.Refactoring
 				else
 					url += "PrimaryExpression";
 			}
+			else if (e is TypeDeclarationExpression)
+				return GetRefUrlFor((e as TypeDeclarationExpression).Declaration);
 			else
 				url += e.GetType().Name;
 

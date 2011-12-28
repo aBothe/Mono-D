@@ -155,6 +155,9 @@ namespace MonoDevelop.D
 		public void OpenDDocumentation()
 		{
 			var url=Refactoring.DDocumentationLauncher.GetReferenceUrl();
+
+			if (url != null)
+				Refactoring.DDocumentationLauncher.LaunchRelativeDUrl(url);
 		}
 	
 		[CommandHandler(Refactoring.Commands.FindReferences)]

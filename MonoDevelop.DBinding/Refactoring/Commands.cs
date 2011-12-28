@@ -70,8 +70,10 @@ namespace MonoDevelop.D.Refactoring
 
 		void OpenDDoc()
 		{
-			var caret=Ide.IdeApp.Workbench.ActiveDocument.Editor.Caret.Location;
-			var url=DDocumentationLauncher.GetReferenceUrl(res, ctxt, new CodeLocation(caret.Column, caret.Line));
+			var url=DDocumentationLauncher.GetReferenceUrl();
+
+			if (url != null)
+				Refactoring.DDocumentationLauncher.LaunchRelativeDUrl(url);
 		}
 
 

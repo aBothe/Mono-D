@@ -965,6 +965,20 @@ namespace D_Parser.Dom.Statements
 			get;
 			set;
 		}
+
+		public IExpression[] SubExpressions
+		{
+			get 
+			{
+				var l = new List<IExpression>();
+
+				foreach (var decl in Declarations)
+					if (decl is DVariable && (decl as DVariable).Initializer!=null)
+						l.Add((decl as DVariable).Initializer);
+
+				return l.ToArray();
+			}
+		}
 	}
 
 	public class TemplateMixin : AbstractStatement,IExpressionContainingStatement
