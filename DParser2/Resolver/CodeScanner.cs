@@ -413,6 +413,9 @@ namespace D_Parser.Resolver
 
 		static void SearchIn(ITypeDeclaration type, List<object> l)
 		{
+			if (type is IdentifierDeclaration && !(type is DTokenDeclaration))
+				l.Add(type as IdentifierDeclaration);
+
 			while (type != null)
 			{
 				if (type is DelegateDeclaration)
@@ -447,15 +450,15 @@ namespace D_Parser.Resolver
 							SearchIn(arg, l);
 				}
 
-				if (type is IdentifierDeclaration && !(type is DTokenDeclaration))
+				/*if (type is IdentifierDeclaration && !(type is DTokenDeclaration))
 					l.Add(type as IdentifierDeclaration);
 				else
 				{
 					type = type.InnerDeclaration;
 					continue;
-				}
+				}*/
 
-				break;
+				type = type.InnerDeclaration;
 			}
 		}
 
@@ -477,6 +480,7 @@ namespace D_Parser.Resolver
 					if(e is NewExpression || e is PostfixExpression_Access)
 					{
 						SearchIn(e.ExpressionTypeRepresentation,l);
+						continue;
 					}
 					else if (e is IdentifierExpression && (e as IdentifierExpression).IsIdentifier)
 					{

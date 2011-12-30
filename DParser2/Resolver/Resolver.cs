@@ -915,7 +915,12 @@ namespace D_Parser.Resolver
 			// Walk down recursively to resolve everything from the very first to declaration's base type declaration.
 			ResolveResult[] rbases = null;
 			if (declaration.InnerDeclaration != null)
+			{
 				rbases = ResolveType(declaration.InnerDeclaration, ctxtOverride);
+
+				if (rbases != null)
+					rbases = FilterOutByResultPriority(ctxt, rbases);
+			}
 
             // If it's a template, resolve the template id first
             if (declaration is TemplateInstanceExpression)
@@ -999,7 +1004,7 @@ namespace D_Parser.Resolver
 
 						if(decls!=null)
 							foreach (var decl in decls)
-								if (decl != null && decl.Name == searchIdentifier)
+								if (decl != null &&	decl.Name == searchIdentifier)
 									matches.Add(decl);
 
 						// First search along the hierarchy in the current module
@@ -1174,7 +1179,8 @@ namespace D_Parser.Resolver
 								if (scanResult is MemberResult)
 								{
 									var _m = (scanResult as MemberResult).MemberBaseTypes;
-									if (_m != null) nextResults.AddRange(_m);
+									if (_m != null) 
+										nextResults.AddRange(FilterOutByResultPriority(ctxt, _m));
 								}
 
 								else if (scanResult is TypeResult)
@@ -1190,11 +1196,11 @@ namespace D_Parser.Resolver
 										TypeDeclaration: declaration);
 
 									if (results != null)
-										returnedResults.AddRange(results);
+										returnedResults.AddRange(FilterOutByResultPriority(ctxt, results));
 								}
 								else if (scanResult is ModuleResult)
 								{
-									var modRes = (scanResult as ModuleResult);
+									var modRes = scanResult as ModuleResult;
 
 									if (modRes.IsOnlyModuleNamePartTyped())
 									{
@@ -1294,7 +1300,7 @@ namespace D_Parser.Resolver
 			{
 				ctxt.TryAddResults(declaration.ToString(), returnedResults.ToArray(), ctxtOverride.ScopedBlock);
 
-				return returnedResults.ToArray();
+				return FilterOutByResultPriority(ctxt, returnedResults.ToArray());
 			}
 
 			return null;
@@ -1504,6 +1510,48 @@ namespace D_Parser.Resolver
 
 				return null;
 			}
+		}
+
+		public static ResolveResult[] FilterOutByResultPriority(
+			ResolverContext ctxt,
+			ResolveResult[] results)
+		{
+			if (results != null && results.Length > 1)
+			{
+				var newRes = new List<ResolveResult>();
+				foreach (var rb in results)
+				{
+					var n = GetResultMember(rb);
+					if (n != null)
+					{
+						// Put priority on locals
+						if (n is DVariable && 
+							(n as DVariable).IsLocal)
+							return new[] { rb };
+
+						// If member/type etc. is part of the actual module, omit external symbols
+						if (n.NodeRoot == ctxt.ScopedBlock.NodeRoot)
+							newRes.Add(rb);
+					}
+				}
+
+				if (newRes.Count > 0)
+					return newRes.ToArray();
+			}
+
+			return results;
+		}
+
+		public static INode GetResultMember(ResolveResult res)
+		{
+			if (res is MemberResult)
+				return (res as MemberResult).ResolvedMember;
+			else if (res is TypeResult)
+				return (res as TypeResult).ResolvedTypeDefinition;
+			else if (res is ModuleResult)
+				return (res as ModuleResult).ResolvedModule;
+
+			return null;
 		}
 
 		/// <summary>
@@ -1738,8 +1786,7 @@ namespace D_Parser.Resolver
 				// For auto variables, use the initializer to get its type
 				if (memberbaseTypes == null && DoResolveBaseType && v.ContainsAttribute(DTokens.Auto) && v.Initializer != null)
 				{
-					var init = v.Initializer;
-					memberbaseTypes = ResolveType(init.ExpressionTypeRepresentation, ctxt, currentlyScopedNode);
+					memberbaseTypes = ResolveType(v.Initializer.ExpressionTypeRepresentation, ctxt, currentlyScopedNode);
 				}
 
 				// Resolve aliases if wished

@@ -59,7 +59,7 @@ namespace MonoDevelop.D.Resolver
 
 			// Resolve the hovered piece of code
 			IStatement stmt = null;
-			return DResolver.ResolveType(edData,
+			var results= DResolver.ResolveType(edData,
 				ResolverContext = new ResolverContext
 				{
 					ParseCache = edData.ParseCache,
@@ -68,18 +68,8 @@ namespace MonoDevelop.D.Resolver
 					ScopedStatement = stmt
 				},
 				true, true);
-		}
 
-		public static INode GetResultMember(ResolveResult res)
-		{
-			if (res is MemberResult)
-				return (res as MemberResult).ResolvedMember;
-			else if (res is TypeResult)
-				return (res as TypeResult).ResolvedTypeDefinition;
-			else if (res is ModuleResult)
-				return (res as ModuleResult).ResolvedModule;
-
-			return null;
+			return results;
 		}
 	}
 }

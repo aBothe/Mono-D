@@ -39,7 +39,7 @@ namespace MonoDevelop.D.Refactoring
 		{
 			if (result != null)
 			{
-				var n = DResolverWrapper.GetResultMember(result);
+				var n = DResolver.GetResultMember(result);
 
 				if (n!=null && n.NodeRoot is IAbstractSyntaxTree)
 				{

@@ -201,6 +201,15 @@ namespace D_Parser.Dom
         public IExpression Initializer; // Variable
         public bool IsAlias = false;
 
+		public bool IsLocal
+		{
+			get { return Parent is DMethod; }
+		}
+		public bool IsParameter
+		{
+			get { return IsLocal && (Parent as DMethod).Parameters.Contains(this); }
+		}
+
 		public override string ToString(bool Attributes, bool IncludePath)
         {
             return (IsAlias?"alias ":"")+base.ToString(Attributes,IncludePath)+(Initializer!=null?(" = "+Initializer.ToString()):"");

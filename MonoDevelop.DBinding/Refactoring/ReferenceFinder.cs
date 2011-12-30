@@ -113,18 +113,28 @@ namespace MonoDevelop.D.Refactoring
 			{
 				IdentifierDeclaration id = null;
 
-				if (o is IdentifierDeclaration)
-					id = (o as IdentifierDeclaration);
-				else if (o is TemplateInstanceExpression)
-					id = (o as TemplateInstanceExpression).TemplateIdentifier;
-				else
-					continue;
+				var curTypeDecl = o as ITypeDeclaration;
+				while(curTypeDecl !=null && id==null)
+				{
+					if (curTypeDecl is IdentifierDeclaration)
+						id = (curTypeDecl as IdentifierDeclaration);
+					else if (curTypeDecl is TemplateInstanceExpression)
+						id = (curTypeDecl as TemplateInstanceExpression).TemplateIdentifier;
 
-				if (!namesToCompareWith.Contains(id.Value as string))
+					curTypeDecl = curTypeDecl.InnerDeclaration;
+
+					if (!namesToCompareWith.Contains(id.Value as string))
+						id = null;
+				}
+
+				if (id == null)
 					continue;
 
 				// Get the context of the used identifier
-				resolveContext.ScopedBlock = DResolver.SearchBlockAt(scannedFileAST, (o as ITypeDeclaration).Location, out resolveContext.ScopedStatement);
+				resolveContext.ScopedBlock = DResolver.SearchBlockAt(
+					scannedFileAST, (o as ITypeDeclaration).Location, 
+					out resolveContext.ScopedStatement
+				);
 
 				// Resolve the symbol to which the identifier is related to
 				var resolveResults = DResolver.ResolveType(o as ITypeDeclaration, resolveContext);
@@ -134,29 +144,27 @@ namespace MonoDevelop.D.Refactoring
 
                 foreach (var targetSymbol in resolveResults)
                 {
-                    // Get the associated declaration node
-                    var targetSymbolNode = Resolver.DResolverWrapper.GetResultMember(targetSymbol);
+					var tsym=targetSymbol;
 
-                    if(targetSymbolNode==null)
-                        break;
+					while (tsym!=null && tsym.TypeDeclarationBase != id)
+						tsym = tsym.ResultBase;
 
-                    // Compare with the members whose references shall be looked up
-                    if (declarationsToCompareWith.Length==1? 
-						targetSymbolNode==declarationsToCompareWith[0] : 
+					// Get the associated declaration node
+					var targetSymbolNode = DResolver.GetResultMember(tsym);
+
+					if (targetSymbolNode == null)
+						break;
+
+					// Compare with the members whose references shall be looked up
+					if (declarationsToCompareWith.Length == 1 ?
+						targetSymbolNode == declarationsToCompareWith[0] :
 						declarationsToCompareWith.Contains(targetSymbolNode))
-                    {
-                        // ... Reference found!
-                        matchedReferences.Add(id);
-                    }
+					{
+						// ... Reference found!
+						matchedReferences.Add(id);
+					}
                 }
 			}
-
-
-
-			/* Sort matches
-			if(sortResults)
-				matchedReferences.Sort(new IdLocationComparer());
-			*/
 
 
 			return matchedReferences;

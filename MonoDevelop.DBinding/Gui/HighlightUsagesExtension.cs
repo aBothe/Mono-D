@@ -215,7 +215,7 @@ namespace MonoDevelop.D.Gui
 					(Document.Project as DProject).ParseCache :
 					DCompiler.Instance.GetDefaultCompiler().GlobalParseCache.ParseCache;
 
-			var referencedNode = DResolverWrapper.GetResultMember(rr[0]);
+			var referencedNode = DResolver.GetResultMember(rr[0]);
 
 			if (referencedNode == null)
 				return false;

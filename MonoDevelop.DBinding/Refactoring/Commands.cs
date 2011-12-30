@@ -55,7 +55,7 @@ namespace MonoDevelop.D.Refactoring
 			{
 				res = rr[rr.Length - 1];
 
-				n = Resolver.DResolverWrapper.GetResultMember(res);
+				n = DResolver.GetResultMember(res);
 
 				if (n != null)
 				{

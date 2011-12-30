@@ -146,9 +146,18 @@ namespace D_Parser.Dom.Statements
 					if(decls!=null)
 						foreach (var decl in decls)
 						{
-							// if i doesn't contain a Declaration OR is located after the caret's location, disregard it
-							if (Caret != CodeLocation.Empty ? (decl.StartLocation > Caret) : false)
-								continue;
+							if (Caret != CodeLocation.Empty)
+							{
+								if (Caret < decl.StartLocation)
+									continue;
+
+								var dv = decl as DVariable;
+								if (dv != null &&
+									dv.Initializer != null &&
+									!(Caret < dv.Initializer.Location ||
+									Caret > dv.Initializer.EndLocation))
+									continue;
+							}
 
 							l.Add(decl);
 						}

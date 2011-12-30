@@ -4,6 +4,7 @@ This document contains a list of to-do features:
 
 * Variable renaming
 	- Add preview/selection for code changes about to be done
+* Extend code symbol resolution by resolving the right method (argument-parameter-check)
 * Interface/Abstract class implementation
 * Import management
 	- Add missing imports
