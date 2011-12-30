@@ -148,7 +148,16 @@ namespace MonoDevelop.D.Building
 
 			// b.Execute compiler
 			string dmdOutput;
-			int exitCode = ExecuteCommand(Commands.Compiler, dmdArgs, Project.BaseDirectory, monitor, out dmdOutput);
+			
+			var compilerExecutable=Commands.Compiler;
+			if(!Path.IsPathRooted(compilerExecutable)){
+				compilerExecutable=Path.Combine(Compiler.BinPath,Commands.Compiler);
+				
+				if(!File.Exists(compilerExecutable))
+					compilerExecutable=Commands.Compiler;
+			}
+			
+			int exitCode = ExecuteCommand(compilerExecutable, dmdArgs, Project.BaseDirectory, monitor, out dmdOutput);
 
 			HandleCompilerOutput(dmdOutput);
 			HandleReturnCode(exitCode);
@@ -196,6 +205,7 @@ namespace MonoDevelop.D.Building
 
 			// Execute compiler
 			string output;
+			
 			int _exitCode = ExecuteCommand(Win32ResourceCompiler.Instance.Executable,
 				resCmpArgs,
 				Project.BaseDirectory,
@@ -255,7 +265,16 @@ namespace MonoDevelop.D.Building
 					Libraries = libs
 				});
 			var linkerOutput = "";
-			int exitCode = ExecuteCommand(Commands.Linker, linkArgs, Project.BaseDirectory, monitor, out linkerOutput);
+			
+			var linkerExecutable=Commands.Compiler;
+			if(!Path.IsPathRooted(linkerExecutable)){
+				linkerExecutable=Path.Combine(Compiler.BinPath,Commands.Linker);
+				
+				if(!File.Exists(linkerExecutable))
+					linkerExecutable=Commands.Linker;
+			}
+			
+			int exitCode = ExecuteCommand(linkerExecutable, linkArgs, Project.BaseDirectory, monitor, out linkerOutput);
 
 			compilerResults.NativeCompilerReturnValue = exitCode;
 

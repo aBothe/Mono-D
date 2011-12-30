@@ -46,7 +46,8 @@ namespace MonoDevelop.D.Building
 		}
 
 		public readonly ASTStorage GlobalParseCache = new ASTStorage();
-
+		
+		public string BinPath="";
 		public DCompilerVendor Vendor;
 
 		protected List<LinkTargetConfiguration> LinkTargetConfigurations = new List<LinkTargetConfiguration>();
@@ -135,6 +136,10 @@ namespace MonoDevelop.D.Building
 			while(x.Read())
 				switch (x.LocalName)
 				{
+					case "BinaryPath":
+						BinPath=x.ReadString();
+						break;
+				
 					case "TargetConfiguration":
 						s = x.ReadSubtree();
 
@@ -169,6 +174,10 @@ namespace MonoDevelop.D.Building
 
 		public void SaveTo(System.Xml.XmlWriter x)
 		{
+			x.WriteStartElement("BinaryPath");
+			x.WriteCData(BinPath);
+			x.WriteEndElement();
+			
 			foreach (var t in LinkTargetConfigurations)
 			{
 				x.WriteStartElement("TargetConfiguration");
@@ -202,7 +211,7 @@ namespace MonoDevelop.D.Building
 	public class LinkTargetConfiguration
 	{
 		public DCompileTarget TargetType;
-
+		
 		public string Compiler;
 		public string Linker;
 
@@ -228,7 +237,7 @@ namespace MonoDevelop.D.Building
 		public void SaveTo(System.Xml.XmlWriter x)
 		{
 			x.WriteAttributeString("Target",TargetType.ToString());
-
+			
 			x.WriteStartElement("CompilerCommand");
 			x.WriteCData(Compiler);
 			x.WriteEndElement();

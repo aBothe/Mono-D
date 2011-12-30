@@ -26,8 +26,7 @@ namespace MonoDevelop.D.OptionPanels
 		
 		public DCompilerOptions () 
 		{
-			this.Build ();	
-			
+			this.Build ();
 			
 			Gtk.CellRendererText textRenderer = new Gtk.CellRendererText ();
 			
@@ -48,7 +47,10 @@ namespace MonoDevelop.D.OptionPanels
 			configuration = config;
 			//for now, using Executable target compiler command for all targets source compiling
 			LinkTargetConfiguration targetConfig;
- 			targetConfig = config.GetTargetConfiguration(DCompileTarget.Executable); 			
+ 			targetConfig = config.GetTargetConfiguration(DCompileTarget.Executable);
+			
+			txtBinPath.Text=config.BinPath;
+			
 			txtCompiler.Text = targetConfig.Compiler;
 			
 			//linker targets 			
@@ -90,6 +92,8 @@ namespace MonoDevelop.D.OptionPanels
 			
 			Gtk.TreeIter iter;
 			string line;
+			
+			configuration.BinPath=txtBinPath.Text;
 			
 			//for now, using Executable target compiler command for all targets source compiling
 			LinkTargetConfiguration targetConfig;
@@ -214,12 +218,6 @@ namespace MonoDevelop.D.OptionPanels
 		
 		protected void btnBrowseIncludePath_Clicked (object sender, System.EventArgs e)
 		{
-			/*Gtk.ResponseType response;
-			AddPathDialog dialog = new AddPathDialog (System.IO.Directory.GetCurrentDirectory().ToString());
-			response = (Gtk.ResponseType) dialog.Run ();
-			if (response == Gtk.ResponseType.Ok)
-				txtIncludePath.Text = dialog.SelectedPath;*/
-			
 			Gtk.FileChooserDialog dialog = new Gtk.FileChooserDialog("Select D Source Folder", null , Gtk.FileChooserAction.SelectFolder, "Cancel", Gtk.ResponseType.Cancel, "Ok", Gtk.ResponseType.Ok);
 			try{
 				
@@ -228,9 +226,7 @@ namespace MonoDevelop.D.OptionPanels
 					txtIncludePath.Text = dialog.Filename;
 			}finally{
 				dialog.Destroy();
-			}			
-			
-			
+			}
 		}
 		
 		private void OnIncludePathAdded(object sender, System.EventArgs e)
@@ -286,6 +282,19 @@ namespace MonoDevelop.D.OptionPanels
 				releaseArgumentsDialog.Configuration = realConfig;
 				debugArgumentsDialog.Configuration = realConfig;
 			}				
+		}
+
+		protected void OnButtonBinPathBrowserClicked (object sender, System.EventArgs e)
+		{
+			Gtk.FileChooserDialog dialog = new Gtk.FileChooserDialog("Select Compiler's bin path", null , Gtk.FileChooserAction.SelectFolder, "Cancel", Gtk.ResponseType.Cancel, "Ok", Gtk.ResponseType.Ok);
+			try{
+				
+				dialog.WindowPosition = Gtk.WindowPosition.Center;
+				if (dialog.Run() == (int)Gtk.ResponseType.Ok)
+					txtBinPath.Text = dialog.Filename;
+			}finally{
+				dialog.Destroy();
+			}
 		}
 	}
 	
