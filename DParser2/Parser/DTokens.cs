@@ -680,7 +680,9 @@ Sys­tem func­tions are not co­vari­ant with trusted or safe func­tions.";
                     return "for(int i; i<500; i++)\n{\n   foo();\n}";
                 case Foreach_Reverse:
                 case Foreach: return
-                    "foreach(element; array)\n{\n   foo(element);\n}\n\nOr:\nforeach(element, index; array)\n{\n   foo(element);\n}";
+                    "foreach"+(token==Foreach_Reverse?"_reverse":"")+
+					"(element; array)\n{\n   foo(element);\n}\n\nOr:\nforeach" + (token == Foreach_Reverse ? "_reverse" : "") + 
+					"(element, index; array)\n{\n   foo(element);\n}";
                 case While:
                     return "while(a < b)\n{\n   foo();\n   a++;\n}";
                 case Do:

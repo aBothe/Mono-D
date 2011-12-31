@@ -49,6 +49,7 @@
 	</Span>
 
 	<Match color = "constant.digit">CSharpNumber</Match>
+	<Match color = "keyword.modifier">@[A-Za-z0-9_]+</Match>
 
 	<!-- Keywords -->
 
@@ -219,8 +220,4 @@
 			<Word>UNDONE</Word>
 		</Keywords>
 	</Rule>
-
-	<Rule name = "String">
-	</Rule>
-
 </SyntaxMode>
