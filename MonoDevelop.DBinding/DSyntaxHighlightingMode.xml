@@ -178,6 +178,7 @@
 		<Word>string</Word>
 		<Word>wstring</Word>
 		<Word>dstring</Word>
+		<Word>__ctfe</Word>
 	</Keywords>
 
 	<Keywords color = "constant.language.void">

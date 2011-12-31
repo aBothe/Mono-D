@@ -93,6 +93,23 @@ namespace D_Parser.Resolver
 	/// </summary>
 	public class DResolver
 	{
+		static DResolver()
+		{
+			__ctfe = new DVariable
+			{
+				Name = "__ctfe",
+				Type = new DTokenDeclaration(DTokens.Bool),
+				Initializer = new TokenExpression(DTokens.True),
+				Description = @"The __ctfe boolean pseudo-vari­able, 
+which eval­u­ates to true at com­pile time, but false at run time, 
+can be used to pro­vide an al­ter­na­tive ex­e­cu­tion path 
+to avoid op­er­a­tions which are for­bid­den at com­pile time.",
+			};
+
+			__ctfe.Attributes.Add(new DAttribute(DTokens.Static));
+			__ctfe.Attributes.Add(new DAttribute(DTokens.Const));
+		}
+
 		[Flags]
 		public enum MemberTypes
 		{
@@ -266,6 +283,10 @@ namespace D_Parser.Resolver
 
 				curScope = curScope.Parent as IBlockNode;
 			}
+
+			// Add __ctfe variable
+			ret.Add(__ctfe);
+
 			#endregion
 
 			#region Global members
@@ -784,6 +805,9 @@ namespace D_Parser.Resolver
 			return null;
 		}
 
+		#region ResolveType
+		static DVariable __ctfe;
+
 		public static ResolveResult[] ResolveType(IEditorData editor,
 			ResolverContext ctxt,
 			bool alsoParseBeyondCaret = false,
@@ -939,6 +963,13 @@ namespace D_Parser.Resolver
 				{
 					string searchIdentifier = (declaration as IdentifierDeclaration).Value as string;
 
+					// Compile time function evalation variable - a boolean value which is true at compile time, false at run time
+					if (searchIdentifier == "__ctfe")
+					{
+						returnedResults.Add(new MemberResult { ResolvedMember=__ctfe, TypeDeclarationBase=declaration });
+						return returnedResults.ToArray();
+					}
+
 					if (string.IsNullOrEmpty(searchIdentifier))
 						return null;
 
@@ -992,7 +1023,7 @@ namespace D_Parser.Resolver
 								BaseTypeToken = searchToken,
 								TypeDeclarationBase = declaration
 							});
-						// anything else is just a key word, not a type
+						// anything else is just a keyword, not a type
 					}
 					// (As usual) Go on searching in the local&global scope(s)
 					else
@@ -1305,6 +1336,7 @@ namespace D_Parser.Resolver
 
 			return null;
 		}
+		#endregion
 
 		public class StaticPropertyResolver
 		{
@@ -2575,51 +2607,6 @@ namespace D_Parser.Resolver
 			}
 
 			return IdentListStart;
-		}
-	}
-
-	public class DocumentHelper
-	{
-		public static CodeLocation OffsetToLocation(string Text, int Offset)
-		{
-			int line = 1;
-			int col = 1;
-
-			char c = '\0';
-			for (int i = 0; i < Offset; i++)
-			{
-				c = Text[i];
-
-				col++;
-
-				if (c == '\n')
-				{
-					line++;
-					col = 1;
-				}
-			}
-
-			return new CodeLocation(col, line);
-		}
-
-		public static int LocationToOffset(string Text, CodeLocation Location)
-		{
-			int line = 1;
-			int col = 1;
-
-			int i = 0;
-			for (; i < Text.Length && !(line >= Location.Line && col >= Location.Column); i++)
-			{
-				col++;
-
-				if (Text[i] == '\n')
-				{
-					line++;
-					col = 1;
-				}
-			}
-
-			return i;
 		}
 	}
 }
