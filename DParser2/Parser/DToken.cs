@@ -23,9 +23,9 @@ namespace D_Parser.Parser
         internal readonly int col;
         internal readonly int line;
 
-        internal readonly LiteralFormat literalFormat;
-        internal readonly object literalValue;
-        internal readonly string val;
+        internal LiteralFormat literalFormat;
+        internal object literalValue;
+        internal string val;
         internal DToken next;
         readonly CodeLocation endLocation;
 
@@ -92,6 +92,17 @@ namespace D_Parser.Parser
 			this.col = col;
 			this.line = line;
 			this.endLocation = new CodeLocation(col+TokenLength,line);
+		}
+
+		public DToken(int kind, int col, int line, int TokenLength, object literalValue)
+		{
+			this.Kind = kind;
+			this.col = col;
+			this.line = line;
+			this.endLocation = new CodeLocation(col + TokenLength, line);
+
+			this.literalValue = literalValue;
+			this.val = literalValue is string ? literalValue as string : literalValue.ToString();
 		}
 
         public DToken(int kind, int x, int y, string val, object literalValue, LiteralFormat literalFormat)

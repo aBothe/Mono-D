@@ -188,12 +188,18 @@ namespace D_Parser.Parser
 
         public const int TripleDot = 171; // ...
 
-        public const int empty5 = 172; // @trusted
+		// Meta tokens
+        public const int __VERSION__ = 172;
         public const int __FILE__ = 173;
         public const int __LINE__ = 174;
         public const int __EOF__ = 175;
 
-        public const int MaxToken = 176;
+		public const int __DATE__ = 176;
+		public const int __TIME__ = 177;
+		public const int __TIMESTAMP__ = 178;
+		public const int __VENDOR__ = 179;
+
+        public const int MaxToken = 180;
         public static BitArray NewSet(params int[] values)
         {
             BitArray bitArray = new BitArray(MaxToken);
@@ -213,6 +219,12 @@ namespace D_Parser.Parser
             {__LINE__,"__LINE__"},
             {__FILE__,"__FILE__"},
             {__EOF__,"__EOF__"},
+
+			{__VERSION__,"__VERSION__"},
+			{__DATE__,"__DATE__"},
+			{__TIME__,"__TIME__"},
+			{__TIMESTAMP__,"__TIMESTAMP__"},
+			{__VENDOR__,"__VENDOR__"},
 
             {Abstract,"abstract"},
             {Alias,"alias"},

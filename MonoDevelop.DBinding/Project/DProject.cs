@@ -151,7 +151,9 @@ namespace MonoDevelop.D
 			if (info != null)
 			{
 				Name = info.ProjectName;
-				binPath = info.BinPath;
+
+				if(info.BinPath!=null)
+					binPath = info.BinPath;
 			}
 
 			var libs = projectOptions.GetElementsByTagName("Lib");

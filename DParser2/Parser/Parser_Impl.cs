@@ -4022,85 +4022,51 @@ namespace D_Parser.Parser
 		#region Functions
 		void FunctionBody(DMethod par)
 		{
-			bool HadIn = false, HadOut = false;
-
-		check_again:
-			if (!HadIn && laKind == (In))
-			{
-				HadIn = true;
-				Step();
-
-				par.In = BlockStatement(par);
-
-				/*var tbn = new DBlockNode();
-
-				par.In=BlockStatement(tbn);
-
-				foreach (var decl in tbn)
-					par.In.Add(new DeclarationStatement() { 
-						StartLocation=decl.StartLocation,
-						EndLocation=decl.EndLocation,
-						Declarations=new[]{decl}
-					});*/
-
-				if (!HadOut && laKind == (Out))
-					goto check_again;
-			}
-
-			if (!HadOut && laKind == (Out))
-			{
-				HadOut = true;
-				Step();
-
-				if (laKind == (OpenParenthesis))
-				{
-					Step();
-					Expect(Identifier);
-					Expect(CloseParenthesis);
-				}
-
-				par.Out = BlockStatement(par);
-				/*
-				var tbn = new DBlockNode();
-
-				par.Out = BlockStatement(tbn);
-
-				foreach (var decl in tbn)
-					par.Out.Add(new DeclarationStatement()
-					{
-						StartLocation = decl.StartLocation,
-						EndLocation = decl.EndLocation,
-						Declarations = new[] { decl }
-					});*/
-
-				if (!HadIn && laKind == (In))
-					goto check_again;
-			}
-
-			// Although there can be in&out constraints, there doesn't have to be a direct body definition. Used on abstract class/interface methods.
-			if (laKind == (Body))
-				Step();
-
-			if (laKind == Semicolon) // A function declaration can be empty, of course. This here represents a simple abstract or virtual function
+			if (laKind == Semicolon) // Abstract or virtual functions
 			{
 				Step();
 				par.Description += CheckForPostSemicolonComment();
+				par.EndLocation = t.EndLocation;
+				return;
 			}
-			else
+
+			while (
+				(laKind == In && par.In == null) ||
+				(laKind == Out && par.Out == null))
+			{
+				if (laKind == In)
+				{
+					Step();
+
+					par.In = BlockStatement(par);
+				}
+
+				if (laKind == Out)
+				{
+					Step();
+
+					if (laKind == OpenParenthesis)
+					{
+						Step();
+						if (Expect(Identifier))
+						{
+							//TODO: Handle returned variable called t.Value
+						}
+						Expect(CloseParenthesis);
+					}
+
+					par.Out = BlockStatement(par);
+				}
+			}
+
+			// Although there can be in&out constraints, there doesn't have to be a direct body definition. Used on abstract class/interface methods.
+			if (laKind == Body)
+				Step();
+
+			if ((par.In==null && par.Out==null) || 
+				laKind == OpenCurlyBrace)
 			{
 				par.Body = BlockStatement(par);
-				/*
-				var tbn = new DBlockNode();
-
-				par.Body = BlockStatement(tbn);
-
-				foreach (var decl in tbn)
-					par.Body.Add(new DeclarationStatement()
-					{
-						StartLocation = decl.StartLocation,
-						EndLocation = decl.EndLocation,
-						Declarations = new[] { decl }
-					});*/
 			}
 
 			par.EndLocation = t.EndLocation;

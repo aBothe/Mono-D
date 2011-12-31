@@ -600,8 +600,43 @@ namespace D_Parser.Parser
 							int y = Line;
 							bool canBeKeyword;
 							string s = ReadIdent(ch, out canBeKeyword);
-							if (canBeKeyword && DTokens.Keywords.ContainsValue(s))
+							if (canBeKeyword)
 							{
+								// Fill in static string surrogates directly
+								if (s == "__DATE__")
+									return new DToken(DTokens.Literal, x, y, 8) { 
+										literalFormat= LiteralFormat.StringLiteral,
+										literalValue=DateTime.Now.ToString("MMM dd yyyy",System.Globalization.CultureInfo.InvariantCulture.DateTimeFormat)
+									};
+								else if (s == "__TIME__")
+									return new DToken(DTokens.Literal, x, y, 8)
+									{
+										literalFormat = LiteralFormat.StringLiteral,
+										literalValue = DateTime.Now.ToString("HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture.DateTimeFormat)
+									};
+								else if (s == "__TIMESTAMP__")
+									return new DToken(DTokens.Literal, x, y, 12)
+									{
+										literalFormat = LiteralFormat.StringLiteral,
+										literalValue = DateTime.Now.ToString("ddd MMM dd HH:mm:ss yyyy", System.Globalization.CultureInfo.InvariantCulture.DateTimeFormat)
+									};
+								else if (s == "__VENDOR__")
+									return new DToken(DTokens.Literal, x, y, 10)
+									{
+										literalFormat = LiteralFormat.StringLiteral,
+										literalValue = "D Lexer - by Alexander Bothe"
+									};
+								else if (s == "__VERSION__")
+								{
+									var lexerVersion=System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+									return new DToken(DTokens.Literal, x, y, 11)
+									{
+										literalFormat = LiteralFormat.Scalar,
+										literalValue = lexerVersion.Major*1000+lexerVersion.Minor
+									};
+								}
+
+
 								foreach (var kv in DTokens.Keywords)
 									if (s == kv.Value)
 										return new DToken(kv.Key, x, y, s.Length);

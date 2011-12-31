@@ -10,12 +10,17 @@ This document contains a list of to-do features:
 	- Add missing imports
 	- Remove unused imports
 * Code formatting
+	- Enable custom text indent properties (use spaces instead of tabs, tabsize etc.)
 	- Ensure correct indentation
 	- Reformat the entire document
 	- Policy system
 * Code completion
 	- Don't popup when typing declaration identifiers
 * Fade out inactive code parts
+* Semantic highlighting
+	- Highlight code symbols
+	- Highlight context-dependent keywords (__traits, default version keywords, variable arguments pointers, scope identifiers [success/exit/failure] etc.)
+		see http://www.d-programming-language.org/version.html#PredefinedVersions
 * Omit debug/versioned declarations 
   if not fitting to environment dependencied 
   ([debug/release] or [Windows/Mac/Unix/BSD] etc.)
