@@ -14,8 +14,6 @@ This document contains a list of to-do features:
 	- Ensure correct indentation
 	- Reformat the entire document
 	- Policy system
-* Code completion
-	- Don't popup when typing declaration identifiers
 * Fade out inactive code parts
 * Semantic highlighting
 	- Highlight code symbols

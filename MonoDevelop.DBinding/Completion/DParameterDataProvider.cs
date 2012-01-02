@@ -13,7 +13,7 @@ namespace MonoDevelop.D.Completion
 	public class DParameterDataProvider : IParameterDataProvider
 	{
 		Document doc;
-		DResolver.ArgumentsResolutionResult args;
+		ArgumentsResolutionResult args;
 		int selIndex = 0;
 		public ResolveResult CurrentResult { get { return args.ResolvedTypesOrMethods[selIndex]; } }		
 		
@@ -37,7 +37,7 @@ namespace MonoDevelop.D.Completion
 			try
 	
 			{
-				var argsResult = DResolver.ResolveArgumentContext(
+				var argsResult = ParameterContextResolution.ResolveArgumentContext(
 					doc.Editor.Text, 
 					caretOffset, 
 					caretLocation, 
@@ -52,7 +52,7 @@ namespace MonoDevelop.D.Completion
 			catch { return null; }
 		}
 		
-		private DParameterDataProvider(Document doc, DResolver.ArgumentsResolutionResult argsResult)
+		private DParameterDataProvider(Document doc, ArgumentsResolutionResult argsResult)
 		{
 			this.doc = doc;
 			args = argsResult;
@@ -83,10 +83,10 @@ namespace MonoDevelop.D.Completion
 		public int GetCurrentParameterIndex (ICompletionWidget widget, CodeCompletionContext ctx)
 		{
 			return args.CurrentlyTypedArgumentIndex+1;
-
+			/*
 			int cursor = widget.CurrentCodeCompletionContext.TriggerOffset;
-			int i =  ctx.TriggerOffset;
-			
+			int i =  ctx.TriggerOffset;		
+
 			if (i > cursor)
 				return -1;
 			if (i == cursor) 
@@ -100,23 +100,23 @@ namespace MonoDevelop.D.Completion
 				char c = widget.GetChar (i - 1);			
 				switch (c) {
 				case '{':
-					if (!DResolver.CommentSearching.IsInCommentAreaOrString(doc.Editor.Text, i - 1))
+					if (!CaretContextAnalyzer.IsInCommentAreaOrString(doc.Editor.Text, i - 1))
 						bracket++;
 					break;
 				case '}':
-					if (!DResolver.CommentSearching.IsInCommentAreaOrString(doc.Editor.Text, i - 1))
+					if (!CaretContextAnalyzer.IsInCommentAreaOrString(doc.Editor.Text, i - 1))
 						bracket--;
 					break;
 				case '(':
-					if (!DResolver.CommentSearching.IsInCommentAreaOrString(doc.Editor.Text, i - 1))
+					if (!CaretContextAnalyzer.IsInCommentAreaOrString(doc.Editor.Text, i - 1))
 						parentheses++;
 					break;
 				case ')':
-					if (!DResolver.CommentSearching.IsInCommentAreaOrString(doc.Editor.Text, i - 1))
+					if (!CaretContextAnalyzer.IsInCommentAreaOrString(doc.Editor.Text, i - 1))
 						parentheses--;
 					break;
 				case ',':
-					if (!DResolver.CommentSearching.IsInCommentAreaOrString(doc.Editor.Text, i - 1) && parentheses == 1 && bracket == 0)
+					if (!CaretContextAnalyzer.IsInCommentAreaOrString(doc.Editor.Text, i - 1) && parentheses == 1 && bracket == 0)
 						index++;
 					break;
 				}
@@ -124,7 +124,7 @@ namespace MonoDevelop.D.Completion
 			} while (i <= cursor && parentheses >= 0);
 			
 			return parentheses != 1 || bracket > 0 ? -1 : index;
-					
+			*/
 		}
 
 		public string GetMethodMarkup (int overload, string[] parameterMarkup, int currentParameter)

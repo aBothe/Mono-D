@@ -3,26 +3,6 @@ using D_Parser.Dom.Expressions;
 
 namespace D_Parser.Resolver
 {
-	/// <summary>
-	/// To enable resolving the element sizes parse-time, this enum represents the 3 different string types
-	/// </summary>
-	public enum StringType
-	{
-		None,
-		/// <summary>
-		/// string
-		/// </summary>
-		utf8,
-		/// <summary>
-		/// wstring
-		/// </summary>
-		utf16,
-		/// <summary>
-		/// dstring
-		/// </summary>
-		utf32
-	}
-
 	public abstract class ResolveResult
 	{
 		/// <summary>

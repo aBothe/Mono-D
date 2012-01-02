@@ -116,7 +116,9 @@ namespace D_Parser.Completion
 				IsIdentifierChar(EnteredText[0]))
 			{
 				// If typing a begun identifier, return immediately
-				if (Editor.CaretOffset > 0 && IsIdentifierChar(Editor.ModuleCode[Editor.CaretOffset - 1]))
+				if (EnteredText!=" " && 
+					Editor.CaretOffset > 0 && 
+					IsIdentifierChar(Editor.ModuleCode[Editor.CaretOffset - 1]))
 					return;
 
 				// 1) Get current context the caret is at.
@@ -129,38 +131,33 @@ namespace D_Parser.Completion
 					Editor.CaretLocation,
 					out trackVars);
 
-				bool CaretAfterLastParsedObject = false;
-
-				if (trackVars != null && trackVars.LastParsedObject != null)
-				{
-					var endLocation = CodeLocation.Empty;
-
-					if (trackVars.LastParsedObject is IExpression)
-						endLocation = (trackVars.LastParsedObject as IExpression).EndLocation;
-					else if (trackVars.LastParsedObject is INode)
-						endLocation = (trackVars.LastParsedObject as INode).EndLocation;
-
-					CaretAfterLastParsedObject = !endLocation.IsEmpty && Editor.CaretLocation > endLocation;
-				}
-
 				// 2) If in declaration and if node identifier is expected, do not show any data
-				if (trackVars == null ||
-					(trackVars.LastParsedObject is INode &&
-						!CaretAfterLastParsedObject &&
-						trackVars.ExpectingIdentifier) ||
-					(trackVars.LastParsedObject is TokenExpression &&
-						!CaretAfterLastParsedObject &&
-						DTokens.BasicTypes[(trackVars.LastParsedObject as TokenExpression).Token] &&
-						!string.IsNullOrEmpty(EnteredText) &&
-						IsIdentifierChar(EnteredText[0]))
-					)
+				if (trackVars == null)
 					return;
+
+				if (trackVars.LastParsedObject is INode &&
+					trackVars.ExpectingIdentifier)
+					return;
+
+				if (trackVars.LastParsedObject is TokenExpression &&
+					DTokens.BasicTypes[(trackVars.LastParsedObject as TokenExpression).Token] &&
+					!string.IsNullOrEmpty(EnteredText) &&
+					IsIdentifierChar(EnteredText[0]))
+					return;
+
+				if (trackVars.LastParsedObject is DAttribute)
+				{
+					var attr = trackVars.LastParsedObject as DAttribute;
+
+					if (attr.IsStorageClass && attr.Token!=DTokens.Abstract)
+						return;
+				}
 
 				var visibleMembers = DResolver.MemberTypes.All;
 
-				if (trackVars.LastParsedObject is ImportStatement && !CaretAfterLastParsedObject)
+				if (trackVars.LastParsedObject is ImportStatement /*&& !CaretAfterLastParsedObject*/)
 					visibleMembers = DResolver.MemberTypes.Imports;
-				else if (trackVars.LastParsedObject is NewExpression && (trackVars.IsParsingInitializer || !CaretAfterLastParsedObject))
+				else if (trackVars.LastParsedObject is NewExpression && (trackVars.IsParsingInitializer/* || !CaretAfterLastParsedObject*/))
 					visibleMembers = DResolver.MemberTypes.Imports | DResolver.MemberTypes.Types;
 				else if (EnteredText == " ")
 					return;
@@ -239,7 +236,7 @@ namespace D_Parser.Completion
 			if (listedItems != null)
 				foreach (var i in listedItems)
 				{
-					if (CanItemBeShownGenerally(i)/* && dm.IsStatic*/)
+					if (CanItemBeShownGenerally(i))
 						CompletionDataGenerator.Add(i);
 				}
 		}

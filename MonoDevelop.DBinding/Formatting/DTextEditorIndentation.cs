@@ -47,14 +47,14 @@ namespace MonoDevelop.D.Formatting
 			{
 				int lastBegin;
 				int lastEnd;
-				var caretCtxt=DResolver.CommentSearching.GetTokenContext(ed.Text, ed.Caret.Offset,out lastBegin, out lastEnd);
+				var caretCtxt = CaretContextAnalyzer.GetTokenContext(ed.Text, ed.Caret.Offset, out lastBegin, out lastEnd);
 
 				if (lastBegin>=0 &&
-					(caretCtxt ==DResolver.CommentSearching.TokenContext.BlockComment ||
-					caretCtxt == DResolver.CommentSearching.TokenContext.NestedComment))
+					(caretCtxt == TokenContext.BlockComment ||
+					caretCtxt == TokenContext.NestedComment))
 				{
 					char charToInsert =
-						caretCtxt == DResolver.CommentSearching.TokenContext.BlockComment ?
+						caretCtxt == TokenContext.BlockComment ?
 						'*' :
 						'+';
 

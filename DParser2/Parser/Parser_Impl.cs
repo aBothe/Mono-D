@@ -686,7 +686,8 @@ namespace D_Parser.Parser
 					ret.Add(otherNode);
 				}
 
-				Expect(Semicolon);
+				if (Expect(Semicolon))
+					LastParsedObject = null;
 
 				// Note: In DDoc, only the really last declaration will get the post semicolon comment appended
 				if (ret.Count > 0)
@@ -859,7 +860,13 @@ namespace D_Parser.Parser
 				var dd = new DelegateDeclaration() { Location=t.Location};
 				dd.IsFunction = t.Kind == Function;
 
+				var lpo = LastParsedObject;
+
 				dd.Parameters = Parameters(null);
+
+				if (!IsEOF)
+					LastParsedObject = lpo;
+
 				td = dd;
 				//TODO: add attributes to declaration
 				while (FunctionAttribute[laKind])
@@ -1505,7 +1512,7 @@ namespace D_Parser.Parser
 			s.PragmaIdentifier = t.Value;
 
 			var l = new List<IExpression>();
-			while (laKind == (Comma))
+			while (laKind == Comma)
 			{
 				Step();
 				l.Add(AssignExpression());
@@ -1534,27 +1541,29 @@ namespace D_Parser.Parser
 		private void AttributeSpecifier()
 		{
 			var attr = new DAttribute(laKind,la.Value);
-			if (laKind == (Extern) && Lexer.CurrentPeekToken.Kind == (OpenParenthesis))
+			if (laKind == Extern && Lexer.CurrentPeekToken.Kind == OpenParenthesis)
 			{
 				Step(); // Skip extern
 				Step(); // Skip (
-				while (!IsEOF && laKind != (CloseParenthesis))
+				while (!IsEOF && laKind != CloseParenthesis)
 					Step();
-				Expect(CloseParenthesis);
+				if (!Expect(CloseParenthesis))
+					return;
 			}
-			else if (laKind == (Align) && Lexer.CurrentPeekToken.Kind == (OpenParenthesis))
+			else if (laKind == Align && Lexer.CurrentPeekToken.Kind == OpenParenthesis)
 			{
 				Step();
 				Step();
 				Expect(Literal);
-				Expect(CloseParenthesis);
+				if (!Expect(CloseParenthesis))
+					return;
 			}
-			else if (laKind == (Pragma))
+			else if (laKind == Pragma)
 				_Pragma();
 			else
 				Step();
 
-			if (laKind == (Colon))
+			if (laKind == Colon)
 			{
 				PushAttribute(attr, true);
 				Step();
@@ -1609,22 +1618,18 @@ namespace D_Parser.Parser
 						if (laKind == Identifier)
 						{
 							// Skip initial identifier list
-							bool init = true;
-							//bool HadTemplateInst = false;
-							while (init || Lexer.CurrentPeekToken.Kind == (Dot))
+							do
 							{
-								//HadTemplateInst = false;
-								if (Lexer.CurrentPeekToken.Kind == Dot) Peek();
-								init = false;
+								if (Lexer.CurrentPeekToken.Kind == Dot) 
+									Peek();
 
 								if (Lexer.CurrentPeekToken.Kind == Identifier)
 									Peek();
 
-								if (Lexer.CurrentPeekToken.Kind == (Not))
+								if (Lexer.CurrentPeekToken.Kind == Not)
 								{
-									//HadTemplateInst = true;
 									Peek();
-									if (Lexer.CurrentPeekToken.Kind != (Is) && Lexer.CurrentPeekToken.Kind != (In))
+									if (Lexer.CurrentPeekToken.Kind != Is && Lexer.CurrentPeekToken.Kind != In)
 									{
 										if (Lexer.CurrentPeekToken.Kind == (OpenParenthesis))
 											OverPeekBrackets(OpenParenthesis);
@@ -1632,7 +1637,7 @@ namespace D_Parser.Parser
 									}
 								}
 							}
-							//if (!init && !HadTemplateInst) Peek();
+							while (Lexer.CurrentPeekToken.Kind == Dot);
 						}
 						else if (laKind == (Typeof) || MemberFunctionAttribute[laKind])
 						{
@@ -1646,12 +1651,12 @@ namespace D_Parser.Parser
 					Peek();
 
 				// Skip basictype2's
-				while (Lexer.CurrentPeekToken.Kind == (Times) || Lexer.CurrentPeekToken.Kind == (OpenSquareBracket))
+				while (Lexer.CurrentPeekToken.Kind == Times || Lexer.CurrentPeekToken.Kind == OpenSquareBracket)
 				{
 					if (PK(Times))
 						HadPointerDeclaration = true;
 
-					if (Lexer.CurrentPeekToken.Kind == (OpenSquareBracket))
+					if (Lexer.CurrentPeekToken.Kind == OpenSquareBracket)
 						OverPeekBrackets(OpenSquareBracket);
 					else Peek();
 
@@ -1666,7 +1671,14 @@ namespace D_Parser.Parser
 				// we check for an identifier or delegate declaration to ensure that there's a declaration and not an expression
 				// Addition: If a times token ('*') follows an identifier list, we can assume that we have a declaration and NOT an expression!
 				// Example: *a=b is an expression; a*=b is not possible - instead something like A* a should be taken...
-				if (HadPointerDeclaration || Lexer.CurrentPeekToken.Kind == (Identifier) || Lexer.CurrentPeekToken.Kind == (Delegate) || Lexer.CurrentPeekToken.Kind == (Function))
+				if (HadPointerDeclaration || 
+					Lexer.CurrentPeekToken.Kind == Identifier || 
+					Lexer.CurrentPeekToken.Kind == Delegate || 
+					Lexer.CurrentPeekToken.Kind == Function ||
+
+					// Also assume a declaration if no further token follows
+					Lexer.CurrentPeekToken.Kind==EOF ||
+					Lexer.CurrentPeekToken.Kind==__EOF__)
 				{
 					Peek(1);
 					return false;
@@ -2830,6 +2842,7 @@ namespace D_Parser.Parser
 
 			if (EmptyAllowed && laKind == Semicolon)
 			{
+				LastParsedObject = null;
 				Step();
 				return null;
 			}

@@ -174,6 +174,9 @@ namespace D_Parser.Parser
 			if (DTokens.VisModifiers[attr.Token])
 				DAttribute.CleanupAccessorAttributes(stk);
 
+			if (IsEOF)
+				LastParsedObject = attr;
+
 			stk.Push(attr);
 		}
 
