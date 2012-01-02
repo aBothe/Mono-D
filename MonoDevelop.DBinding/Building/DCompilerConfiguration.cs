@@ -6,7 +6,6 @@ using System;
 using System.Xml;
 using MonoDevelop.Core;
 using System.Threading;
-using D_Parser.Misc;
 
 namespace MonoDevelop.D.Building
 {
@@ -46,7 +45,6 @@ namespace MonoDevelop.D.Building
 			cmp.ResetCompilerConfiguration();						
 		}
 
-		public ParseCache GlobalParseCache_ = new ParseCache();
 		public readonly ASTStorage GlobalParseCache = new ASTStorage();
 		
 		public string BinPath="";
@@ -92,7 +90,6 @@ namespace MonoDevelop.D.Building
 		public void UpdateParseCacheAsync()
 		{
 			UpdateParseCacheAsync(GlobalParseCache);
-			//UpdateParseCacheAsync(GlobalParseCache_);
 		}
 
 		public static void UpdateParseCacheAsync(ASTStorage Cache)
@@ -117,39 +114,6 @@ namespace MonoDevelop.D.Building
 							perfData.BaseDirectory,
 							Math.Round(perfData.TotalDuration,3),
 							Math.Round( perfData.FileDuration*1000));
-					}
-				}
-				catch (Exception ex)
-				{
-					LoggingService.LogError("Error while updating parse caches", ex);
-				}
-			});
-
-			th.IsBackground = true;
-			th.Start();
-		}
-
-		public static void UpdateParseCacheAsync(ParseCache Cache)
-		{
-			if (Cache.Directories.Count < 1)
-				return;
-
-			var th = new Thread(() =>
-			{
-				try
-				{
-					LoggingService.LogInfo("Update parse cache ({0} directories) - this may take a while!", Cache.Directories.Count);
-
-					Cache.Parse();
-
-					foreach (var perfData in Cache.PerformanceData)
-					{
-						LoggingService.LogInfo(
-							"Parsed {0} files in \"{1}\" in {2}s (~{3}ms per file)",
-							perfData.AmountFiles,
-							perfData.BaseDirectory,
-							Math.Round(perfData.TotalDuration, 3),
-							Math.Round(perfData.FileDuration * 1000));
 					}
 				}
 				catch (Exception ex)
@@ -202,11 +166,7 @@ namespace MonoDevelop.D.Building
 						var paths = new List<string>();
 						while (s.Read())
 							if (s.LocalName == "Path")
-							{
-								var p = s.ReadString();
-								GlobalParseCache_.Directories.Add(p);
-								GlobalParseCache.Add(p);
-							}
+								GlobalParseCache.Add(s.ReadString());
 
 						s.Close();
 						break;

@@ -69,7 +69,6 @@
   <ItemGroup>
     <Compile Include="Completion\AbstractCompletionSupport.cs" />
     <Compile Include="Completion\ASTStorage.cs" />
-    <Compile Include="Misc\ParseCache.cs" />
     <Compile Include="Resolver\CaretContextAnalyzer.cs" />
     <Compile Include="Resolver\ParameterContextResolution.cs" />
     <Compile Include="Resolver\StaticPropertyResolver.cs" />
