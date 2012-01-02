@@ -1111,7 +1111,9 @@ namespace D_Parser.Parser
 				if (IsTemplateInstance)
 					ttd = TemplateInstance();
 				else if (Expect(Identifier))
-					ttd = new IdentifierDeclaration(t.Value) { Location=t.Location, EndLocation=t.EndLocation };
+					ttd = new IdentifierDeclaration(t.Value) { Location = t.Location, EndLocation = t.EndLocation };
+				else if (IsEOF)
+					return td;
 
 				if (ttd != null)
 					ttd.InnerDeclaration = td;
