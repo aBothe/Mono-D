@@ -3,6 +3,7 @@ using D_Parser.Dom.Expressions;
 using D_Parser.Dom.Statements;
 using D_Parser.Parser;
 using System;
+using System.IO;
 
 namespace D_Parser.Dom
 {
@@ -56,6 +57,16 @@ namespace D_Parser.Dom
 			{
 				_FileName = value;
 			}
+		}
+
+		/// <summary>
+		/// Returns a package-module name-combination (like std.stdio) in dependency of its base directory (e.g. C:\dmd2\src\phobos)
+		/// </summary>
+		public static string GetModuleName(string baseDirectory, IAbstractSyntaxTree ast)
+		{
+			return Path.ChangeExtension(
+					ast.FileName.Substring(baseDirectory.Length), null).
+						Replace(Path.DirectorySeparatorChar, '.');
 		}
 
 		public System.Collections.ObjectModel.ReadOnlyCollection<ParserError> ParseErrors

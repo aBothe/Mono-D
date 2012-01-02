@@ -12,7 +12,7 @@ namespace D_Parser.Resolver
 	{
 		public class CodeScanResult
 		{
-			public Dictionary<IdentifierDeclaration, ResolveResult> ResolvedIdentifiers = new Dictionary<IdentifierDeclaration, ResolveResult>();
+			public Dictionary<IdentifierDeclaration, INode> ResolvedIdentifiers = new Dictionary<IdentifierDeclaration, INode>();
 			public List<IdentifierDeclaration> UnresolvedIdentifiers = new List<IdentifierDeclaration>();
 			//public List<ITypeDeclaration> RawIdentifiers = new List<ITypeDeclaration>();
 
@@ -41,223 +41,112 @@ namespace D_Parser.Resolver
 		/// <param name="lastResCtxt"></param>
 		/// <param name="SyntaxTree"></param>
 		/// <returns></returns>
-		public static CodeScanResult ScanSymbols(ResolverContext lastResCtxt,IAbstractSyntaxTree SyntaxTree)
+		public static CodeScanResult ScanSymbols(ResolverContext lastResCtxt)
 		{
 			var csr = new CodeScanResult();
 
-			var compDict = new Dictionary<string, ResolveResult>();
+			var resCache = new ResolutionCache();
 
-			// Step 1: Enum all existing type id's that shall become resolved'n displayed
-			var typeObjects = CodeScanner.ScanForTypeIdentifiers(SyntaxTree);
+			foreach (var importedAST in lastResCtxt.ImportCache)
+				resCache.Add(importedAST);
+
+			var typeObjects = CodeScanner.ScanForTypeIdentifiers(lastResCtxt.ScopedBlock.NodeRoot);
 	
 			foreach (var o in typeObjects)
 			{
-				if (o == null)
-					continue;
-				
-				#region Identifier Declarations
-				if (o is IdentifierDeclaration)
-				{
-					HandleIdDeclaration(o as IdentifierDeclaration,
-						lastResCtxt,
-						SyntaxTree,
-						csr,
-						compDict);
-				}
-				#endregion
-					/*
-				#region Method call check
-				else if (o is PostfixExpression_MethodCall)
-				{
-					var mc=o as PostfixExpression_MethodCall;
-
-					int argc = mc.ArgumentCount;
-
-					var methodOverloads=HandleIdDeclaration(mc.ExpressionTypeRepresentation as IdentifierDeclaration,
-						lastResCtxt,
-						SyntaxTree,
-						csr,
-						compDict);
-
-					// Important: Also check template parameters and arguments!
-					IExpression[] TemplateArguments=null;
-
-					if (mc.PostfixForeExpression is TemplateInstanceExpression)
-						TemplateArguments = (mc.PostfixForeExpression as TemplateInstanceExpression).Arguments;
-
-					int TemplateArgCount = TemplateArguments == null ? 0 : TemplateArguments.Length;
-
-					// Note: If no method members were found, we already show the semantic error as a generically missing symbol
-					if (methodOverloads != null)
-					{
-						var l1 = new List<DMethod>();
-						var l2 = new List<DMethod>();
-
-						#region First add all available method overloads
-						foreach (var rr_ in methodOverloads)
-						{
-							// Like every time, remove unnecessary aliasing
-							var rr = DResolver.TryRemoveAliasesFromResult(rr_);
-							
-							// Can be either 1) a normal method OR 2) a type related opCall
-
-							// 1)
-							if (rr is MemberResult)
-							{
-								var mr = rr as MemberResult;
-
-								//FIXME: What about delegate aliases'n stuff?
-								if (!(mr.ResolvedMember is DMethod))
-									continue;
-
-								var dm = mr.ResolvedMember as DMethod;
-
-								// Even before checking argument types etc, pre-select possibly chosen overloads 
-								// by comparing the method's parameter count with the call's argument count
-								if (dm.Parameters.Count == argc && (dm.TemplateParameters==null?true:
-									dm.TemplateParameters.Length==TemplateArgCount))
-									l1.Add(dm);
-							}
-
-							// 2)
-							else if (rr is TypeResult)
-							{
-								var tr = rr as TypeResult;
-
-								// Scan the type for opCall members
-								var opCalls=DResolver.ScanNodeForIdentifier(tr.ResolvedTypeDefinition, "opCall", lastResCtxt);
-
-								if (opCalls != null)
-									foreach (var n in opCalls)
-									{
-										var dm = n as DMethod;
-
-										// Also pre-filter opCall members by param count comparison 
-										if (dm!=null &&
-											dm.Parameters.Count == argc && (dm.TemplateParameters == null ? true : 
-											dm.TemplateParameters.Length == TemplateArgCount))
-											l1.Add(dm);
-									}
-							}
-						}
-						#endregion
-
-						// Must be a semantic error - no method fits in any way
-						if(l1.Count<1)
-						{
-							csr.ParameterActions.Add(o as IExpression, null);
-							continue;
-						}
-
-						// Compare template arguments first
-					}
-				}
-				#endregion
-				*/
+				if (o is ITypeDeclaration)
+					FindAndEnlistType(csr,o as ITypeDeclaration,lastResCtxt,resCache);
+				else if(o is IExpression)
+					FindAndEnlistType(csr,(o as IExpression).ExpressionTypeRepresentation,lastResCtxt,resCache);
 			}
 
 			return csr;
 		}
 
-		static ResolveResult[] HandleIdDeclaration(IdentifierDeclaration typeId,
+		static IEnumerable<IBlockNode> FindAndEnlistType(
+			CodeScanResult csr,
+			ITypeDeclaration typeId,
 			ResolverContext lastResCtxt,
-			IAbstractSyntaxTree SyntaxTree,
-			CodeScanResult csr, 
-			Dictionary<string, ResolveResult> compDict)
+			ResolutionCache resCache)
 		{
-			var typeString = typeId.ToString();
-
-			bool WasAlreadyResolved = false;
-			ResolveResult[] allCurrentResults = null;
-			ResolveResult rr = null;
-
-			/*
-			 * string,wstring,dstring are highlighted by the editor's syntax definition automatically..
-			 * Anyway, allow to resolve e.g. "object.string"
-			 */
-			if (typeString == "" || typeString == "string" || typeString == "wstring" || typeString == "dstring")
+			if (typeId == null)
 				return null;
 
-			lastResCtxt.ScopedBlock = DResolver.SearchBlockAt(SyntaxTree, typeId.Location, out lastResCtxt.ScopedStatement);
+			/*
+			 * Note: For performance reasons, there is no resolution of type aliases or other contextual symbols!
+			 * TODO: Check relationships between the selected block and the found type.
+			 */
 
-			if (!(WasAlreadyResolved = compDict.TryGetValue(typeString, out rr)))
+			if (typeId.InnerDeclaration !=null)
 			{
-				allCurrentResults = DResolver.ResolveType(typeId, lastResCtxt);
+				var res = FindAndEnlistType(csr,typeId.InnerDeclaration, lastResCtxt, resCache);
 
-				if (allCurrentResults != null && allCurrentResults.Length > 0)
-					rr = allCurrentResults[0];
-			}
-
-			if (rr == null)
-			{
-				if (typeId is IdentifierDeclaration)
-					csr.UnresolvedIdentifiers.Add(typeId as IdentifierDeclaration);
-			}
-			else
-			{
-				/*
-				 * Note: It is of course possible to highlight more than one type in one type declaration!
-				 * So, we scan down the result hierarchy for TypeResults and highlight all of them later.
-				 */
-				var curRes = rr;
-
-				/*
-				 * Note: Since we want to use results multiple times,
-				 * we at least have to 'update' their type declarations
-				 * to ensure that the second, third, fourth etc. occurence of this result
-				 * are also highlit (and won't(!) cause an Already-Added-Exception of our finalDict-Array)
-				 */
-				var curTypeDeclBase = typeId as ITypeDeclaration;
-
-				while (curRes != null)
+				if (res != null)
 				{
-					if (curRes is MemberResult)
-					{
-						var mr = curRes as MemberResult;
+					var cmpName=typeId.ToString(false);
 
-						// If curRes is an alias or a template parameter, highlight it
-						if (mr.ResolvedMember is TemplateParameterNode ||
-							(mr.ResolvedMember is DVariable &&
-							(mr.ResolvedMember as DVariable).IsAlias))
-						{
-							try
+					foreach (var t in res)
+					{
+						foreach (var m in t)
+							if (m.Name == cmpName && (m is DEnum || m is DClassLike))
 							{
-								csr.ResolvedIdentifiers.Add(curTypeDeclBase as IdentifierDeclaration, curRes);
+								csr.ResolvedIdentifiers.Add(typeId as IdentifierDeclaration, m);
+								return new[]{m as IBlockNode};
 							}
-							catch { }
 
-							// See performance reasons
-							//if (curRes != rr && !WasAlreadyResolved && !) compDict.Add(curTypeDeclBase.ToString(), curRes);
-						}
-					}
-
-					else if (curRes is TypeResult)
-					{
-						// Yeah, in quite all cases we do identify a class via its name ;-)
-						if (curTypeDeclBase is IdentifierDeclaration &&
-							!(curTypeDeclBase is DTokenDeclaration) &&
-							!csr.ResolvedIdentifiers.ContainsKey(curTypeDeclBase as IdentifierDeclaration))
+						if (t is DClassLike)
 						{
-							csr.ResolvedIdentifiers.Add(curTypeDeclBase as IdentifierDeclaration, curRes);
+							var dc = t as DClassLike;
 
-							// See performance reasons
-							//if (curRes != rr && !WasAlreadyResolved) compDict.Add(curTypeDeclBase.ToString(), curRes);
+							var baseClasses=DResolver.ResolveBaseClass(dc, lastResCtxt);
+
+							if (baseClasses != null)
+							{
+								var l1 = new List<TypeResult>(baseClasses);
+								var l2 = new List<TypeResult>();
+
+								while (l1.Count > 0)
+								{
+									foreach (var tr in l1)
+									{
+										foreach (var m in tr.ResolvedTypeDefinition)
+											if (m.Name == cmpName && (m is DEnum || m is DClassLike))
+											{
+												csr.ResolvedIdentifiers.Add(typeId as IdentifierDeclaration, m);
+												return new[] { m as IBlockNode };
+											}
+
+										l2.AddRange(tr.BaseClass);
+									}
+
+									l1.Clear();
+									l1.AddRange(l2);
+									l2.Clear();
+								}
+							}
 						}
 					}
-
-					else if (curRes is ModuleResult)
-					{
-						if (curTypeDeclBase is IdentifierDeclaration &&
-							!csr.ResolvedIdentifiers.ContainsKey(curTypeDeclBase as IdentifierDeclaration))
-							csr.ResolvedIdentifiers.Add(curTypeDeclBase as IdentifierDeclaration, curRes);
-					}
-
-					curRes = curRes.ResultBase;
-					curTypeDeclBase = curTypeDeclBase.InnerDeclaration;
 				}
 			}
-			return allCurrentResults;
+
+			List<IBlockNode> types = null;
+			if (resCache.Types.TryGetValue(typeId.ToString(false), out types))
+			{
+				csr.ResolvedIdentifiers.Add(typeId as IdentifierDeclaration, types[0]);
+
+				return types;
+			}
+
+			IAbstractSyntaxTree module = null;
+			if(resCache.Modules.TryGetValue(typeId.ToString(true),out module))
+			{
+				return new[] { module };
+			}
+
+			return null;
 		}
+
+
 
 		public static List<object> ScanForTypeIdentifiers(INode Node)
 		{
