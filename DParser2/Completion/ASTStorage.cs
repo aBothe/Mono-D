@@ -225,7 +225,7 @@ namespace D_Parser.Completion
 
 		public bool ContainsDictionary(string file,bool ByModuleName)
 		{
-			foreach (var c in ToArray())
+			foreach (var c in this)
 				if (ByModuleName ? c.ModuleName == file : c.FileName == file)
 					return true;
 			return false;
