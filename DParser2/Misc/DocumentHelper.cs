@@ -49,7 +49,7 @@ namespace D_Parser
 		public static int GetLineEndOffset(string Text, int line)
 		{
 			int curline = 1;
-
+			
 			int i = 0;
 			for (; i < Text.Length && curline <= line; i++)
 				if (Text[i] == '\n')

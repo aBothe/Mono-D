@@ -3,6 +3,7 @@ using D_Parser.Dom;
 using D_Parser.Dom.Expressions;
 using D_Parser.Dom.Statements;
 using D_Parser.Parser;
+using System;
 
 namespace D_Parser.Resolver
 {
@@ -45,22 +46,27 @@ namespace D_Parser.Resolver
 		public static CodeScanResult ScanSymbols(ResolverContext lastResCtxt)
 		{
 			var csr = new CodeScanResult();
-
-			var resCache = new ResolutionCache();
-
-			foreach (var importedAST in lastResCtxt.ImportCache)
-				resCache.Add(importedAST);
-
-			var typeObjects = CodeScanner.ScanForTypeIdentifiers(lastResCtxt.ScopedBlock.NodeRoot);
-	
-			foreach (var o in typeObjects)
+			try
 			{
-				if (o is ITypeDeclaration)
-					FindAndEnlistType(csr,o as ITypeDeclaration,lastResCtxt,resCache);
-				else if(o is IExpression)
-					FindAndEnlistType(csr,(o as IExpression).ExpressionTypeRepresentation,lastResCtxt,resCache);
-			}
+				var resCache = new ResolutionCache();
 
+				if (lastResCtxt.ScopedBlock != null)
+					resCache.Add(lastResCtxt.ScopedBlock.NodeRoot as IAbstractSyntaxTree);
+
+				foreach (var importedAST in lastResCtxt.ImportCache)
+					resCache.Add(importedAST);
+
+				var typeObjects = CodeScanner.ScanForTypeIdentifiers(lastResCtxt.ScopedBlock.NodeRoot);
+
+				foreach (var o in typeObjects)
+				{
+					if (o is ITypeDeclaration)
+						FindAndEnlistType(csr, o as ITypeDeclaration, lastResCtxt, resCache);
+					else if (o is IExpression)
+						FindAndEnlistType(csr, (o as IExpression).ExpressionTypeRepresentation, lastResCtxt, resCache);
+				}
+			}
+			catch (Exception ex) {  }
 			return csr;
 		}
 

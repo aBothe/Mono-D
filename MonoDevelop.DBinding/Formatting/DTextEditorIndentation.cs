@@ -45,6 +45,8 @@ namespace MonoDevelop.D.Formatting
 
 			if (key == Key.Return)
 			{
+				ed.DeleteSelectedText(true);
+
 				int lastBegin;
 				int lastEnd;
 				var caretCtxt = CaretContextAnalyzer.GetTokenContext(ed.Text, ed.Caret.Offset, out lastBegin, out lastEnd);
@@ -84,18 +86,25 @@ namespace MonoDevelop.D.Formatting
 
 				if (keyChar=='{' || keyChar == '}')
 				{
+					ed.DeleteSelectedText(true);
+
 					ed.InsertAtCaret(keyChar.ToString());
+
 					int originalIndentation = ed.GetLineIndent(ed.Caret.Line).Length;
 
-					var cb = DCodeFormatter.NativeFormatterInstance.CalculateIndentation(ed.Text, ed.Caret.Offset);
-					newIndentation=cb == null ? 0 : cb.GetLineIndentation(ed.Caret.Line);
+					var cb = DCodeFormatter.NativeFormatterInstance.CalculateIndentation(ed.Text, ed.Caret.Line);
+					
+					newIndentation= cb == null ? 0 : cb.GetLineIndentation(ed.Caret.Line);
 
+					var newInd=CalculateIndentationString(newIndentation);
 					var line=Document.Editor.GetLine(ed.Caret.Line);
 
 					ed.Replace(
 						line.Offset, 
 						originalIndentation,
-						CalculateIndentationString(newIndentation));
+						newInd);
+
+					ed.Caret.Offset += newInd.Length - originalIndentation;
 
 					return false;
 				}
