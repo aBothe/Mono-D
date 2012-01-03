@@ -2,6 +2,7 @@
 using D_Parser.Dom;
 using D_Parser.Dom.Expressions;
 using D_Parser.Dom.Statements;
+using D_Parser.Parser;
 
 namespace D_Parser.Resolver
 {
@@ -74,7 +75,7 @@ namespace D_Parser.Resolver
 
 			/*
 			 * Note: For performance reasons, there is no resolution of type aliases or other contextual symbols!
-			 * TODO: Check relationships between the selected block and the found type.
+			 * TODO: Check relationships between the selected block and the found types.
 			 */
 
 			if (typeId.InnerDeclaration !=null)
@@ -144,6 +145,20 @@ namespace D_Parser.Resolver
 			}
 
 			return null;
+		}
+
+
+		static bool IsAccessible(IAbstractSyntaxTree identifiersModule, INode comparedNode, bool isInBaseClass = false)
+		{
+			if (isInBaseClass)
+				return !(comparedNode as DNode).ContainsAttribute(DTokens.Private);
+
+			if (comparedNode.NodeRoot != identifiersModule)
+			{
+
+			}
+
+			return true;
 		}
 
 
