@@ -44,7 +44,8 @@ namespace MonoDevelop.D.Refactoring
 					DResolver.ResolveImports(mod as DModule, parseCache),
 					member);
 
-				if ((member.NodeRoot as IAbstractSyntaxTree).FileName==mod.FileName)
+				if (member!=null && member.NodeRoot!=null &&
+					(member.NodeRoot as IAbstractSyntaxTree).FileName==mod.FileName)
 					references.Insert(0,new IdentifierDeclaration(member.Name) { 
 						Location=member.NameLocation ,
 						EndLocation=new CodeLocation(member.NameLocation.Column+member.Name.Length,

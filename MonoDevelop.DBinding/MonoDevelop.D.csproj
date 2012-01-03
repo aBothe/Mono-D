@@ -226,7 +226,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="templates\EmptyRCFile.xft.xml" />
     <Content Include="Remaining features.txt" />
-    <Content Include="unused extensions.txt" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DParser2\DParser2.csproj">

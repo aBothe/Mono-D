@@ -10,6 +10,7 @@ using D_Parser.Dom;
 using D_Parser.Resolver;
 using MonoDevelop.D.Building;
 using MonoDevelop.D.Resolver;
+using MonoDevelop.Core;
 
 // Code taken and modified from MonoDevelop.CSharp.Highlighting.HighlightUsagesExtension.cs
 
@@ -199,43 +200,48 @@ namespace MonoDevelop.D.Gui
 
 		bool UpdateMarkers()
 		{
-			var dom=SyntaxTree;
+			try
+			{
+				var dom = SyntaxTree;
 
-			ResolverContext ctxt;
-			var rr = DResolverWrapper.ResolveHoveredCode(out ctxt,Document);
+				if (dom == null)
+					return false;
 
-			if (rr == null || rr.Length < 1)
-				return false;
+				ResolverContext ctxt;
+				var rr = DResolverWrapper.ResolveHoveredCode(out ctxt, Document);
 
+				if (rr == null || rr.Length < 1)
+					return false;
 
+				var parseCache = Document.HasProject ?
+						(Document.Project as DProject).ParseCache :
+						DCompiler.Instance.GetDefaultCompiler().GlobalParseCache.ParseCache;
 
+				var referencedNode = DResolver.GetResultMember(rr[0]);
 
+				if (referencedNode == null)
+					return false;
 
-			var parseCache = Document.HasProject ?
-					(Document.Project as DProject).ParseCache :
-					DCompiler.Instance.GetDefaultCompiler().GlobalParseCache.ParseCache;
+				var references = Refactoring.DReferenceFinder.ScanNodeReferencesInModule(dom,
+							parseCache,
+							DResolver.ResolveImports(dom as DModule, parseCache),
+							referencedNode);
 
-			var referencedNode = DResolver.GetResultMember(rr[0]);
+				if (referencedNode.NodeRoot is IAbstractSyntaxTree &&
+					(referencedNode.NodeRoot as IAbstractSyntaxTree).FileName == dom.FileName)
+					references.Add(new IdentifierDeclaration(referencedNode.Name)
+					{
+						Location = referencedNode.NameLocation,
+						EndLocation = new CodeLocation(referencedNode.NameLocation.Column + referencedNode.Name.Length, referencedNode.NameLocation.Line)
+					});
 
-			if (referencedNode == null)
-				return false;
-
-			var references = Refactoring.DReferenceFinder.ScanNodeReferencesInModule(dom,
-						parseCache,
-						DResolver.ResolveImports(dom as DModule, parseCache),
-						referencedNode);
-
-			if (referencedNode.NodeRoot is IAbstractSyntaxTree &&
-				(referencedNode.NodeRoot as IAbstractSyntaxTree).FileName == dom.FileName)
-				references.Add(new IdentifierDeclaration(referencedNode.Name) 
-				{ 
-					Location = referencedNode.NameLocation,
-					EndLocation=new CodeLocation(referencedNode.NameLocation.Column+referencedNode.Name.Length,referencedNode.NameLocation.Line)
-				});
-
-			if(references.Count>0)
-				ShowReferences(references);
-
+				if (references.Count > 0)
+					ShowReferences(references);
+			}
+			catch (Exception ex)
+			{
+				LoggingService.LogDebug("Error while highlighting symbol usages", ex);
+			}
 			return false;
 		}
 

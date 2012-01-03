@@ -48,6 +48,7 @@
 		<End>&apos;</End>
 	</Span>
 
+	<Rule name = "Comment"></Rule>
 	<Rule name = "String"></Rule>
 
 	<Match color = "constant.digit">CSharpNumber</Match>
