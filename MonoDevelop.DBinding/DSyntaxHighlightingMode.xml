@@ -48,6 +48,8 @@
 		<End>&apos;</End>
 	</Span>
 
+	<Rule name = "String"></Rule>
+
 	<Match color = "constant.digit">CSharpNumber</Match>
 	<Match color = "keyword.modifier">@[A-Za-z0-9_]+</Match>
 
