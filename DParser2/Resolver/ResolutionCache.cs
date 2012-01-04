@@ -49,7 +49,7 @@ namespace D_Parser.Resolver
 				int lastDot=ast.ModuleName.LastIndexOf('.');
 
 				if (lastDot < 0)
-					modulePackage = ast.ModuleName;
+					modulePackage = "";
 				else
 					modulePackage = ast.ModuleName.Substring(0, lastDot);
 			}
@@ -93,7 +93,7 @@ namespace D_Parser.Resolver
 
 		protected bool HandleTypeEntry(INode n)
 		{
-			if (n is DEnum || n is DClassLike)
+			if ((n is DEnum || n is DClassLike) && n.Name!=null && n.Name!="")
 			{
 				List<IBlockNode> entries = null;
 
@@ -117,12 +117,15 @@ namespace D_Parser.Resolver
 
 		protected void HandleGlobalMemberEntry(INode n)
 		{
-			List<INode> entries = null;
+			if (n.Name != null && n.Name != "")
+			{
+				List<INode> entries = null;
 
-			if (!GloballyScopedSymbols.TryGetValue(n.Name, out entries))
-				GloballyScopedSymbols[n.Name] = new List<INode> { n };
-			else
-				entries.Add(n);
+				if (!GloballyScopedSymbols.TryGetValue(n.Name, out entries))
+					GloballyScopedSymbols[n.Name] = new List<INode> { n };
+				else
+					entries.Add(n);
+			}
 		}
 	}
 }

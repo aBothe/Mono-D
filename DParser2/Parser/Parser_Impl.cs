@@ -2291,7 +2291,7 @@ namespace D_Parser.Parser
 				return LambaExpression(Scope);
 
 			// Identifier
-			if (laKind == (Identifier))
+			if (laKind == Identifier)
 			{
 				Step();
 				return new IdentifierExpression(t.Value)
@@ -2702,7 +2702,9 @@ namespace D_Parser.Parser
 				return false;
 			}
 
-			OverPeekBrackets(OpenParenthesis, true);
+			StartPeek();
+
+			OverPeekBrackets(OpenParenthesis, false);
 
 			return Lexer.CurrentPeekToken.Kind == GoesTo;
 		}
@@ -2712,7 +2714,9 @@ namespace D_Parser.Parser
 			if (laKind != OpenParenthesis)
 				return false;
 
-			OverPeekBrackets(OpenParenthesis, true);
+			StartPeek();
+
+			OverPeekBrackets(OpenParenthesis, false);
 
 			return Lexer.CurrentPeekToken.Kind == OpenCurlyBrace;
 		}

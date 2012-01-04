@@ -46,8 +46,7 @@ namespace D_Parser.Resolver
 		public static CodeScanResult ScanSymbols(ResolverContext lastResCtxt)
 		{
 			var csr = new CodeScanResult();
-			try
-			{
+			//try{
 				var resCache = new ResolutionCache();
 
 				if (lastResCtxt.ScopedBlock != null)
@@ -65,8 +64,7 @@ namespace D_Parser.Resolver
 					else if (o is IExpression)
 						FindAndEnlistType(csr, (o as IExpression).ExpressionTypeRepresentation, lastResCtxt, resCache);
 				}
-			}
-			catch (Exception ex) {  }
+			//}catch (Exception ex) {  }
 			return csr;
 		}
 
@@ -123,7 +121,8 @@ namespace D_Parser.Resolver
 												return new[] { m as IBlockNode };
 											}
 
-										l2.AddRange(tr.BaseClass);
+										if(tr.BaseClass!=null)
+											l2.AddRange(tr.BaseClass);
 									}
 
 									l1.Clear();
@@ -147,6 +146,8 @@ namespace D_Parser.Resolver
 			IAbstractSyntaxTree module = null;
 			if(resCache.Modules.TryGetValue(typeId.ToString(true),out module))
 			{
+				csr.ResolvedIdentifiers.Add(typeId as IdentifierDeclaration, module);
+
 				return new[] { module };
 			}
 

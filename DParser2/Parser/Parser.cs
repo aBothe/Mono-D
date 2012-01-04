@@ -235,9 +235,9 @@ namespace D_Parser.Parser
             int i = LAIsOpenBracket?1:0;
             while (Lexer.CurrentPeekToken.Kind != EOF)
             {
-                if (PK(OpenBracketKind))
+                if (Lexer.CurrentPeekToken.Kind== OpenBracketKind)
                     i++;
-                else if (PK(CloseBracket))
+                else if (Lexer.CurrentPeekToken.Kind== CloseBracket)
                 {
                     i--;
                     if (i <= 0) { Peek(); break; }
