@@ -148,6 +148,7 @@ namespace MonoDevelop.D.Building
 
 			// b.Execute compiler
 			string dmdOutput;
+			string stdOutput;
 			
 			var compilerExecutable=Commands.Compiler;
 			if(!Path.IsPathRooted(compilerExecutable)){
@@ -157,9 +158,10 @@ namespace MonoDevelop.D.Building
 					compilerExecutable=Commands.Compiler;
 			}
 			
-			int exitCode = ExecuteCommand(compilerExecutable, dmdArgs, Project.BaseDirectory, monitor, out dmdOutput);
+			int exitCode = ExecuteCommand(compilerExecutable, dmdArgs, Project.BaseDirectory, monitor, out dmdOutput, out stdOutput);
 
 			HandleCompilerOutput(dmdOutput);
+			HandleCompilerOutput(stdOutput);
 			HandleReturnCode(compilerExecutable,exitCode);
 
 			monitor.Step(1);
@@ -205,16 +207,20 @@ namespace MonoDevelop.D.Building
 
 			// Execute compiler
 			string output;
+			string stdOutput;
 			
 			int _exitCode = ExecuteCommand(Win32ResourceCompiler.Instance.Executable,
 				resCmpArgs,
 				Project.BaseDirectory,
 				monitor,
-				out output);
+				out output,
+				out stdOutput);
 
 			// Error analysis
 			if (!string.IsNullOrEmpty(output))
 				compilerResults.Errors.Add(new CompilerError { FileName = f.FilePath, ErrorText = output });
+			if (!string.IsNullOrEmpty(stdOutput))
+				compilerResults.Errors.Add(new CompilerError { FileName = f.FilePath, ErrorText = stdOutput });
 			HandleReturnCode(Win32ResourceCompiler.Instance.Executable,_exitCode);
 
 			monitor.Step(1);
@@ -265,6 +271,7 @@ namespace MonoDevelop.D.Building
 					Libraries = libs
 				});
 			var linkerOutput = "";
+			var linkerErrorOutput = "";
 			
 			var linkerExecutable=Commands.Compiler;
 			if(!Path.IsPathRooted(linkerExecutable)){
@@ -274,12 +281,43 @@ namespace MonoDevelop.D.Building
 					linkerExecutable=Commands.Linker;
 			}
 			
-			int exitCode = ExecuteCommand(linkerExecutable, linkArgs, Project.BaseDirectory, monitor, out linkerOutput);
+			int exitCode = ExecuteCommand(linkerExecutable, linkArgs, Project.BaseDirectory, monitor, 
+				out linkerErrorOutput,
+				out linkerOutput);
+
+			HandleOptLinkOutput(linkerOutput);
 
 			HandleReturnCode(linkerExecutable,exitCode);
 
 			if (exitCode == 0)
 				monitor.ReportSuccess("Build successful!");
+		}
+
+		private void HandleOptLinkOutput(string linkerOutput)
+		{
+			var matches=optlinkRegex.Matches(linkerOutput);
+
+			foreach (Match match in matches)
+			{
+				var error = new CompilerError();
+
+				// Get associated D source file
+				if (match.Groups["obj"].Success)
+				{
+					var obj = Project.GetAbsoluteChildPath(new FilePath(match.Groups["obj"].Value));
+
+					foreach(var pf in Project.Files)
+						if (pf.LastGenOutput == obj)
+						{
+							error.FileName = pf.FilePath;
+							break;
+						}
+				}
+
+				error.ErrorText="Linker error "+match.Groups["code"].Value+" - "+match.Groups["message"].Value;
+
+				compilerResults.Errors.Add(error);
+			}
 		}
 
 		string HandleObjectFileNaming(ProjectFile f, string extension)
@@ -380,6 +418,13 @@ namespace MonoDevelop.D.Building
 
 		private static Regex gcclinkerRegex = new Regex(
 			@"^\s*(?<file>.*):(?<line>\d*):((?<column>\d*):)?\s*(?<level>.*)\s*:\s(?<message>.*)",
+			RegexOptions.Compiled | RegexOptions.ExplicitCapture);
+
+		/// <summary>
+		/// Default OptLink regex for recognizing errors and their origins
+		/// </summary>
+		private static Regex optlinkRegex = new Regex(
+			@"\n(?<obj>[a-zA-Z0-9/\\.]+)\((?<module>[a-zA-Z0-9]+)\) (?<offset>[a-zA-Z0-9 ]+)?(\r)?\n Error (?<code>\d*): (?<message>[a-zA-Z0-9_ :]+)",
 			RegexOptions.Compiled | RegexOptions.ExplicitCapture);
 
 		public static CompilerError FindError(string errorString, TextReader reader)
@@ -487,18 +532,33 @@ namespace MonoDevelop.D.Building
 			}
 		}
 
+		
+
 		/// <summary>
 		/// Executes a file and reports events related to the execution to the 'monitor' passed in the parameters.
 		/// </summary>
-		static int ExecuteCommand(string command, string args, string baseDirectory, IProgressMonitor monitor, out string errorOutput)
+		static int ExecuteCommand(
+			string command, 
+			string args, 
+			string baseDirectory, 
+
+			IProgressMonitor monitor, 
+			out string errorOutput,
+			out string programOutput)
 		{
 			errorOutput = string.Empty;
 			int exitCode = -1;
 
 			var swError = new StringWriter();
+			var swOutput = new StringWriter();
+
 			var chainedError = new LogTextWriter();
 			chainedError.ChainWriter(monitor.Log);
 			chainedError.ChainWriter(swError);
+
+			var chainedOutput = new LogTextWriter();
+			chainedOutput.ChainWriter(monitor.Log);
+			chainedOutput.ChainWriter(swOutput);
 
 			monitor.Log.WriteLine("{0} {1}", command, args);
 
@@ -506,11 +566,13 @@ namespace MonoDevelop.D.Building
 
 			try
 			{
-				var p = Runtime.ProcessService.StartProcess(command, args, baseDirectory, monitor.Log, chainedError, null);
+				var p = Runtime.ProcessService.StartProcess(command, args, baseDirectory, chainedOutput, chainedError, null);
 				operationMonitor.AddOperation(p); //handles cancellation
+				
 
 				p.WaitForOutput();
 				errorOutput = swError.ToString();
+				programOutput = swOutput.ToString();
 				exitCode = p.ExitCode;
 				p.Dispose();
 
