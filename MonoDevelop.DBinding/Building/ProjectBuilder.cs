@@ -160,7 +160,7 @@ namespace MonoDevelop.D.Building
 			int exitCode = ExecuteCommand(compilerExecutable, dmdArgs, Project.BaseDirectory, monitor, out dmdOutput);
 
 			HandleCompilerOutput(dmdOutput);
-			HandleReturnCode(exitCode);
+			HandleReturnCode(compilerExecutable,exitCode);
 
 			monitor.Step(1);
 
@@ -215,7 +215,7 @@ namespace MonoDevelop.D.Building
 			// Error analysis
 			if (!string.IsNullOrEmpty(output))
 				compilerResults.Errors.Add(new CompilerError { FileName = f.FilePath, ErrorText = output });
-			HandleReturnCode(_exitCode);
+			HandleReturnCode(Win32ResourceCompiler.Instance.Executable,_exitCode);
 
 			monitor.Step(1);
 
@@ -276,9 +276,7 @@ namespace MonoDevelop.D.Building
 			
 			int exitCode = ExecuteCommand(linkerExecutable, linkArgs, Project.BaseDirectory, monitor, out linkerOutput);
 
-			compilerResults.NativeCompilerReturnValue = exitCode;
-
-			HandleReturnCode(exitCode);
+			HandleReturnCode(linkerExecutable,exitCode);
 
 			if (exitCode == 0)
 				monitor.ReportSuccess("Build successful!");
@@ -472,9 +470,16 @@ namespace MonoDevelop.D.Building
 		/// <param name="cr">
 		/// A <see cref="CompilerResults"/>: The return code from a compilation run
 		/// </param>
-		void HandleReturnCode(int returnCode)
+		void HandleReturnCode(string executable,int returnCode)
 		{
 			compilerResults.NativeCompilerReturnValue = returnCode;
+
+			if (returnCode != 0)
+			{
+				if (monitor != null)
+					monitor.Log.WriteLine("Exit code " + returnCode.ToString());
+			}
+
 			if (0 != returnCode && 0 == compilerResults.Errors.Count)
 			{
 				compilerResults.Errors.Add(new CompilerError(string.Empty, 0, 0, string.Empty,
