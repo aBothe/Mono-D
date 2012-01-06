@@ -85,25 +85,34 @@ namespace MonoDevelop.D.Formatting
 					return false;
 				}
 
-				if (keyChar=='{' || keyChar == '}')
+				if (keyChar == '{' || keyChar == '}')
 				{
 					ed.DeleteSelectedText(true);
 
 					ed.InsertAtCaret(keyChar.ToString());
 
-					int originalIndentation = ed.GetLineIndent(ed.Caret.Line).Length;
+					var origInd = ed.GetLineIndent(ed.Caret.Line);
+					int originalIndentation = origInd.Length;
 
 					var cb = DCodeFormatter.NativeFormatterInstance.CalculateIndentation(ed.Text, ed.Caret.Line);
-					
-					newIndentation= cb == null ? 0 : cb.GetLineIndentation(ed.Caret.Line);
 
-					var newInd=CalculateIndentationString(newIndentation);
-					var line=Document.Editor.GetLine(ed.Caret.Line);
+					newIndentation = cb == null ? 0 : cb.GetLineIndentation(ed.Caret.Line);
+
+					var newInd = CalculateIndentationString(newIndentation);
+					var line = Document.Editor.GetLine(ed.Caret.Line);
 
 					ed.Replace(
-						line.Offset, 
+						line.Offset,
 						originalIndentation,
 						newInd);
+
+					// Convert spaces to tabs if not in the same format -- to ensure that the caret offset is moved correctly
+					if (origInd.Length > 0 && origInd[0] == ' ' &&
+					   newInd.Length > 0 && newInd[0] != ' ')
+					{
+						originalIndentation = originalIndentation / DefaultSourceEditorOptions.Instance.TabSize +
+							originalIndentation % DefaultSourceEditorOptions.Instance.TabSize;
+					}
 
 					ed.Caret.Offset += newInd.Length - originalIndentation;
 
