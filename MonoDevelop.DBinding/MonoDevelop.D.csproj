@@ -65,7 +65,7 @@
     </Reference>
     <Reference Include="Mono.Cairo, Version=2.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Program Files (x86)\GtkSharp\2.12\lib\Mono.Cairo\Mono.Cairo.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Mono.TextEditor">
       <HintPath>..\Mono.TextEditor.dll</HintPath>

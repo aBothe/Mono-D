@@ -7,6 +7,7 @@ using Gdk;
 using D_Parser.Formatting;
 using D_Parser.Resolver;
 using MonoDevelop.Ide.CodeCompletion;
+using MonoDevelop.SourceEditor;
 
 namespace MonoDevelop.D.Formatting
 {
@@ -62,7 +63,7 @@ namespace MonoDevelop.D.Formatting
 
 					var prevLineIndent=ed.GetLineIndent(ed.GetLineByOffset(lastBegin));
 
-					ed.InsertAtCaret('\n'+prevLineIndent+' '+charToInsert+' ');
+					ed.InsertAtCaret(Document.Editor.EolMarker +prevLineIndent+' '+charToInsert+' ');
 					return false;
 				}
 			}
@@ -73,7 +74,7 @@ namespace MonoDevelop.D.Formatting
 
 				if (key== Key.Return)
 				{
-					ed.InsertAtCaret("\n");
+					ed.InsertAtCaret(Document.Editor.EolMarker);
 
 					var cb=DCodeFormatter.NativeFormatterInstance.CalculateIndentation(ed.Text,ed.Caret.Line);
 
@@ -115,8 +116,8 @@ namespace MonoDevelop.D.Formatting
 
 		public static string CalculateIndentationString(int indentation)
 		{
-			return TextEditorProperties.ConvertTabsToSpaces ?
-				new string(' ', indentation * TextEditorProperties.TabIndent) :
+			return DefaultSourceEditorOptions.Instance.TabsToSpaces ?
+				new string(' ', indentation * DefaultSourceEditorOptions.Instance.TabSize) :
 				new string('\t', indentation);
 		}
 	}
