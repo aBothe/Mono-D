@@ -57,7 +57,7 @@ namespace D_Parser
 					curline++;
 
 					if (curline > line)
-						return i-1;
+						return i;
 				}
 
 			return i;
