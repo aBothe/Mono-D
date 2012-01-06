@@ -435,6 +435,7 @@ namespace D_Parser.Parser
             ,Scope
             ,Static
             ,Synchronized
+			,__gshared
             );
 
         /// <summary>

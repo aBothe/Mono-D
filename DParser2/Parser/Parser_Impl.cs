@@ -131,8 +131,11 @@ namespace D_Parser.Parser
 
 		void DeclDef(IBlockNode module)
 		{
+			if (laKind == Semicolon)
+				Step();
+
 			//AttributeSpecifier
-			if (IsAttributeSpecifier())
+			else if (IsAttributeSpecifier())
 				AttributeSpecifier();
 
 			//ImportDeclaration
@@ -627,9 +630,16 @@ namespace D_Parser.Parser
 			var StorageClass = DTokens.ContainsStorageClass(DeclarationAttributes.ToArray());
 
 			// If there's no explicit type declaration, leave our node's type empty!
-			if ((StorageClass.Token != DAttribute.Empty.Token && laKind == (Identifier) && DeclarationAttributes.Count > 0 &&
-				(PK(Assign) || PK(OpenParenthesis)))) // public auto var=0; // const foo(...) {} 
+			if ((StorageClass.Token != DAttribute.Empty.Token && laKind == (Identifier) && DeclarationAttributes.Count > 0)) // public auto var=0; // const foo(...) {} 
 			{
+				if (PK(Assign) || PK(OpenParenthesis))
+				{ }
+				else if (PK(Semicolon))
+				{
+					SemErr(StorageClass.Token, "Initializer expected for auto type, semicolon found!");
+				}
+				else
+					ttd = BasicType();
 			}
 			else
 				ttd = BasicType();
@@ -3928,6 +3938,18 @@ namespace D_Parser.Parser
 					Expect(Identifier);
 					mye.Name = t.Value;
 					mye.NameLocation = t.Location;
+				}
+			}
+
+			if (IsDeclaratorSuffix)
+			{
+				var _unused = new List<INode>();
+				var bt2=DeclaratorSuffixes(out mye.TemplateParameters, out _unused, mye.Attributes);
+
+				if (bt2 != null)
+				{
+					bt2.InnerDeclaration = mye.Type;
+					mye.Type = bt2;
 				}
 			}
 
