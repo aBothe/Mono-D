@@ -1242,7 +1242,7 @@ namespace D_Parser.Parser
 			while (laKind == (Comma))
 			{
 				Step();
-				if (laKind == TripleDot)
+				if (laKind == TripleDot || laKind==CloseParenthesis)
 					break;
 				var p = Parameter(Parent);
 				p.Parent = Parent;

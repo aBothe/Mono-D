@@ -101,6 +101,9 @@ namespace MonoDevelop.D.Formatting
 					var newInd = CalculateIndentationString(newIndentation);
 					var line = Document.Editor.GetLine(ed.Caret.Line);
 
+					if (origInd == newInd)
+						return false;
+
 					ed.Replace(
 						line.Offset,
 						originalIndentation,
@@ -110,12 +113,12 @@ namespace MonoDevelop.D.Formatting
 					if (origInd.Length > 0 && origInd[0] == ' ' &&
 					   newInd.Length > 0 && newInd[0] != ' ')
 					{
-						originalIndentation = originalIndentation / DefaultSourceEditorOptions.Instance.TabSize +
-							originalIndentation % DefaultSourceEditorOptions.Instance.TabSize;
+						originalIndentation = originalIndentation / Document.Editor.Options.TabSize +
+							originalIndentation % Document.Editor.Options.TabSize;
 					}
 
-					ed.Caret.Offset += newInd.Length - originalIndentation;
-
+					ed.Caret.Column += newInd.Length - originalIndentation;
+					
 					return false;
 				}
 			}
@@ -123,10 +126,10 @@ namespace MonoDevelop.D.Formatting
 			return base.KeyPress(key, keyChar, modifier);
 		}
 
-		public static string CalculateIndentationString(int indentation)
+		public string CalculateIndentationString(int indentation)
 		{
-			return DefaultSourceEditorOptions.Instance.TabsToSpaces ?
-				new string(' ', indentation * DefaultSourceEditorOptions.Instance.TabSize) :
+			return Document.Editor.Options.TabsToSpaces ?
+				new string(' ', indentation * Document.Editor.Options.TabSize) :
 				new string('\t', indentation);
 		}
 	}
