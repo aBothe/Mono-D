@@ -1,6 +1,13 @@
 ﻿
 This document contains a list of to-do features:
 
+* Alter block statement/body boundaries on new-line/delete line events 
+	so no wrong function scope's getting detected anymore
+* Add the out(resultVar) variable to the out test block's scope
+* Parse (also not yet added) D files in the project's base directory
+* Highlight context-dependent keywords (__traits, default version keywords, 
+	variable arguments pointers, scope identifiers [success/exit/failure] etc.)
+	see http://www.d-programming-language.org/version.html#PredefinedVersions
 
 * Variable renaming
 	- Add preview/selection for code changes about to be done
@@ -14,11 +21,10 @@ This document contains a list of to-do features:
 	- Ensure correct indentation
 	- Reformat the entire document
 	- Policy system
+	- Rewrite formatting engine - let the indent depent on the currently scoped statement/node -- better: It'll be easier to apply indent rules!
 * Fade out inactive code parts
 * Semantic highlighting
 	- Highlight code symbols
-	- Highlight context-dependent keywords (__traits, default version keywords, variable arguments pointers, scope identifiers [success/exit/failure] etc.)
-		see http://www.d-programming-language.org/version.html#PredefinedVersions
 * Omit debug/versioned declarations 
   if not fitting to environment dependencied 
   ([debug/release] or [Windows/Mac/Unix/BSD] etc.)
