@@ -204,6 +204,13 @@ namespace D_Parser.Formatting
 					}
 				}
 
+				// Don't indent these in front of function bodies
+				else if (t.Kind == DTokens.In || t.Kind == DTokens.Out || t.Kind == DTokens.Body)
+				{
+					if (block != null && block.Reason == CodeBlock.IndentReason.UnfinishedStatement)
+						PopBlock();
+				}
+
 
 				else if (block == null ||
 					block.Reason != CodeBlock.IndentReason.UnfinishedStatement &&

@@ -27,7 +27,7 @@ namespace D_Parser.Dom
         public new string ToString()
         {
 			if (Token == DTokens.PropertyAttribute)
-				return "@" + LiteralContent.ToString();
+				return "@" + (LiteralContent==null?"": LiteralContent.ToString());
             if (LiteralContent != null)
                 return DTokens.GetTokenString(Token) + "(" + LiteralContent.ToString() + ")";
 			return DTokens.GetTokenString(Token);

@@ -865,7 +865,10 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 					else if(typeOf.InstanceId!=null)
 					{
 						var wantedTypes=ResolveType(typeOf.InstanceId.ExpressionTypeRepresentation,ctxt,currentScopeOverride);
-						
+
+						if (wantedTypes == null)
+							return null;
+
 						// Scan down for variable's base types
 						var c1=new List<ResolveResult>(wantedTypes);
 						var c2=new List<ResolveResult>();
