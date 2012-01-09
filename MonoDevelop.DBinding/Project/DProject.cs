@@ -152,15 +152,18 @@ namespace MonoDevelop.D
 			{
 				Name = info.ProjectName;
 
+				BaseDirectory = info.ProjectBasePath;
+
 				if(info.BinPath!=null)
 					binPath = info.BinPath;
 			}
 
-			var libs = projectOptions.GetElementsByTagName("Lib");
-
-			foreach (XmlNode lib in libs)
-				if (!string.IsNullOrWhiteSpace(lib.InnerText))
-					ExtraLibraries.Add(lib.InnerText);
+			if (projectOptions != null)
+			{
+				foreach (XmlNode lib in projectOptions.GetElementsByTagName("Lib"))
+					if (!string.IsNullOrWhiteSpace(lib.InnerText))
+						ExtraLibraries.Add(lib.InnerText);
+			}
 
 			// Create a debug configuration
 			var cfg = CreateConfiguration("Debug") as DProjectConfiguration;
