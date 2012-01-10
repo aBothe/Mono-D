@@ -8,6 +8,7 @@ using MonoDevelop.Core;
 using MonoDevelop.Ide.Projects;
 using MonoDevelop.Ide.Gui.Dialogs;
 using MonoDevelop.D.Building;
+using MonoDevelop.Ide;
 
 namespace MonoDevelop.D.OptionPanels
 {
@@ -176,11 +177,9 @@ namespace MonoDevelop.D.OptionPanels
 			if (isDebug)
 				dialog = debugArgumentsDialog;								
 			else
-				dialog = releaseArgumentsDialog;								
-			
-			Gtk.ResponseType response;	
-			response = (Gtk.ResponseType) dialog.Run ();			
-			dialog.Hide();
+				dialog = releaseArgumentsDialog;
+
+			MessageService.RunCustomDialog(dialog, IdeApp.Workbench.RootWindow);
 		}
 		
 		protected void btnReleaseArguments_Clicked (object sender, System.EventArgs e)
@@ -194,10 +193,9 @@ namespace MonoDevelop.D.OptionPanels
 
 		protected void btnBrowseDefaultLib_Clicked (object sender, System.EventArgs e)
 		{
-			Gtk.ResponseType response;
-			AddLibraryDialog dialog = new AddLibraryDialog(AddLibraryDialog.FileFilterType.LibraryFiles);
-			response = (Gtk.ResponseType) dialog.Run ();
-			if (response == Gtk.ResponseType.Ok)
+			var dialog = new AddLibraryDialog(AddLibraryDialog.FileFilterType.LibraryFiles);
+
+			if (MessageService.RunCustomDialog(dialog, IdeApp.Workbench.RootWindow) == (int)Gtk.ResponseType.Ok)
 				txtDefaultLib.Text = dialog.Library;
 		}
 		
@@ -241,11 +239,17 @@ namespace MonoDevelop.D.OptionPanels
 		
 		protected void btnBrowseIncludePath_Clicked (object sender, System.EventArgs e)
 		{
-			Gtk.FileChooserDialog dialog = new Gtk.FileChooserDialog("Select D Source Folder", null , Gtk.FileChooserAction.SelectFolder, "Cancel", Gtk.ResponseType.Cancel, "Ok", Gtk.ResponseType.Ok);
+			Gtk.FileChooserDialog dialog = new Gtk.FileChooserDialog(
+				"Select D Source Folder",
+				Ide.IdeApp.Workbench.RootWindow, 
+				Gtk.FileChooserAction.SelectFolder, 
+				"Cancel", 
+				Gtk.ResponseType.Cancel, 
+				"Ok", 
+				Gtk.ResponseType.Ok);
 			try{
-				
 				dialog.WindowPosition = Gtk.WindowPosition.Center;
-				if (dialog.Run() == (int)Gtk.ResponseType.Ok)
+				if (MessageService.RunCustomDialog (dialog, IdeApp.Workbench.RootWindow) == (int) Gtk.ResponseType.Ok)
 					txtIncludePath.Text = dialog.Filename;
 			}finally{
 				dialog.Destroy();
@@ -313,7 +317,7 @@ namespace MonoDevelop.D.OptionPanels
 			try{
 				
 				dialog.WindowPosition = Gtk.WindowPosition.Center;
-				if (dialog.Run() == (int)Gtk.ResponseType.Ok)
+				if (MessageService.RunCustomDialog(dialog, IdeApp.Workbench.RootWindow) == (int)Gtk.ResponseType.Ok)
 					txtBinPath.Text = dialog.Filename;
 			}finally{
 				dialog.Destroy();

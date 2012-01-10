@@ -141,7 +141,7 @@ namespace MonoDevelop.D.Building
 			var dmdArgs = FillInMacros(Arguments.CompilerArguments + " " + BuildConfig.ExtraCompilerArguments, new DCompilerMacroProvider
 			{
 				IncludePathConcatPattern = Commands.IncludePathPattern,
-				SourceFile = f.FilePath,
+				SourceFile = f.ProjectVirtualPath,
 				ObjectFile = obj,
 				Includes = sourceFileIncludePaths,
 			});
@@ -201,7 +201,7 @@ namespace MonoDevelop.D.Building
 			var resCmpArgs = FillInMacros(Win32ResourceCompiler.Instance.Arguments,
 				new Win32ResourceCompiler.ArgProvider
 				{
-					RcFile = f.FilePath.ToString(),
+					RcFile = f.ProjectVirtualPath,
 					ResFile = res
 				});
 

@@ -1,6 +1,7 @@
 using System;
 using MonoDevelop.D.Building;
 using MonoDevelop.Ide.Gui.Dialogs;
+using MonoDevelop.Ide;
 
 namespace MonoDevelop.D.OptionPanels
 {
@@ -111,15 +112,11 @@ namespace MonoDevelop.D.OptionPanels
 		}
 		
 		private void OnIncludePathBrowseButtonClick (object sender, EventArgs e)
-		{			/*
-			AddPathDialog dialog = new AddPathDialog (configuration.SourcePath);
-			dialog.Run ();
-			includePathEntry.Text = dialog.SelectedPath;*/
-			
-			Gtk.FileChooserDialog dialog = new Gtk.FileChooserDialog ("Select D Source Folder", null, Gtk.FileChooserAction.SelectFolder, "Cancel", Gtk.ResponseType.Cancel, "Ok", Gtk.ResponseType.Ok);
+		{
+			var dialog = new Gtk.FileChooserDialog ("Select D Source Folder", null, Gtk.FileChooserAction.SelectFolder, "Cancel", Gtk.ResponseType.Cancel, "Ok", Gtk.ResponseType.Ok);
 			try {
-				dialog.WindowPosition = Gtk.WindowPosition.Center;				
-				if (dialog.Run () == (int)Gtk.ResponseType.Ok)
+				dialog.WindowPosition = Gtk.WindowPosition.Center;
+				if (MessageService.RunCustomDialog(dialog, IdeApp.Workbench.RootWindow) == (int)Gtk.ResponseType.Ok)
 					includePathEntry.Text = dialog.Filename;
 			} finally {
 				dialog.Destroy ();
