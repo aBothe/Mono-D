@@ -163,8 +163,9 @@ namespace MonoDevelop.D.OptionPanels
 				project.LocalIncludeCache.Add (line);
 				includePathStore.IterNext (ref iter);
 			}
+
 			// Parse local includes
-			project.LocalIncludeCache.UpdateCache ();
+			DCompilerConfiguration.UpdateParseCacheAsync(project.LocalIncludeCache);
 			
 			return true;
 		}

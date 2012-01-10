@@ -31,20 +31,12 @@ namespace MonoDevelop.D
 		public string ObjectDirectory = "objs";
 		#endregion
 
-		void Init()
-		{
-		}
-		
 		//if absent an exception occurs when opening project config	
-		public DProjectConfiguration()
-		{
-			Init();
-		}
+		public DProjectConfiguration()	{}
 		
 		public DProjectConfiguration(DProject Project)
 		{
 			this.Project=Project;
-			Init();
 		}
 
 		public event EventHandler Changed;

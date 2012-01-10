@@ -22,11 +22,6 @@ namespace MonoDevelop.D
 	[DataInclude(typeof(DProjectConfiguration))]
 	public class DProject:Project, ICustomDataItem
 	{
-		/// <summary>
-		/// Used to indentify the AST object of a project's D module
-		/// </summary>
-		public const string DParserPropertyKey="DDom";
-
 		#region Properties
 		/// <summary>
 		/// Used for incremental compiling&linking
@@ -41,6 +36,11 @@ namespace MonoDevelop.D
 		/// Stores parse information from project-wide includes
 		/// </summary>
 		public ASTStorage LocalIncludeCache { get; private set; }
+
+		/// <summary>
+		/// Stores parse information from files inside the project's base directory
+		/// </summary>
+		public ASTCollection LocalFileCache { get; private set; }
 
 		public IEnumerable<IAbstractSyntaxTree> ParseCache
 		{
@@ -79,18 +79,6 @@ namespace MonoDevelop.D
 		#endregion
 
 		#region Parsed project modules
-		public IEnumerable<IAbstractSyntaxTree> ParsedModules
-		{
-			get
-			{
-				var l = new List<IAbstractSyntaxTree>();
-				foreach (ProjectFile pf in Items)
-					if (pf != null && pf.ExtendedProperties.Contains(DParserPropertyKey))
-						l.Add( pf.ExtendedProperties[DParserPropertyKey] as IAbstractSyntaxTree);
-				return l;
-			}
-		}
-
 		public void UpdateLocalIncludeCache()
 		{
 			DCompilerConfiguration.UpdateParseCacheAsync(LocalIncludeCache);
@@ -108,7 +96,7 @@ namespace MonoDevelop.D
 				// Update relative module name
 				ddom.ModuleName = pf.ProjectVirtualPath.ChangeExtension(null).ToString().Replace(Path.DirectorySeparatorChar, '.');
 
-				pf.ExtendedProperties[DParserPropertyKey] = ddom;
+				LocalFileCache[pf.FilePath] = ddom;
 			}
 			catch (Exception ex)
 			{
@@ -126,18 +114,30 @@ namespace MonoDevelop.D
 		/// </summary>
 		public void UpdateParseCache()
 		{
-			foreach (ProjectFile pf in Items)
-				ReparseModule(pf);					
+			LocalFileCache.UpdateFromBaseDirectory();
+		}
+
+		protected override void OnFileRemovedFromProject(ProjectFileEventArgs e)
+		{
+			UpdateParseCache();
+
+			base.OnFileRemovedFromProject(e);
+		}
+
+		protected override void OnFileRenamedInProject(ProjectFileRenamedEventArgs e)
+		{
+			UpdateParseCache();
+
+			base.OnFileRenamedInProject(e);
 		}
 		#endregion
 
 		#region Init
 		void Init()
 		{
-			LocalIncludeCache = new ASTStorage();
+			LocalFileCache = new ASTCollection();
 
-			//if(DCompiler.Instance!=null)
-			//	UsedCompilerVendor = DCompiler.Instance.DefaultCompiler;
+			LocalIncludeCache = new ASTStorage();
 		}
 
 		public DProject() { Init(); }
@@ -321,16 +321,6 @@ namespace MonoDevelop.D
 
 			monitor.ReportSuccess("Cleanup successful!");
 		}
-
-		protected override void OnEndLoad ()
-		{
-			base.OnEndLoad();
-			
-			/*lock (LocalIncludeCache) {
-				LocalIncludeCache.ParsedGlobalDictionaries.Clear();
-				DLanguageBinding.DIncludesParser.AddDirectoryRange(IncludePaths, LocalIncludeCache);
-			}*/
-		}
 		#endregion
 
 		#region Execution
@@ -409,6 +399,34 @@ namespace MonoDevelop.D
 
 		#region Loading&Saving
 
+		protected override void OnModified(SolutionItemModifiedEventArgs args)
+		{
+			foreach (var arg in args)
+				if (arg.SolutionItem is DProject)
+				{
+					var dprj = arg.SolutionItem as DProject;
+
+					// Update the directory referenced by the local cache if base directory changed
+					if (arg.Hint == "BaseDirectory" && dprj != null && dprj.LocalFileCache.BaseDirectory != dprj.BaseDirectory)
+					{
+						dprj.LocalFileCache.BaseDirectory = dprj.BaseDirectory;
+						UpdateParseCache();
+					}
+				}
+
+			base.OnModified(args);
+		}
+
+		protected override void OnEndLoad()
+		{
+			LocalFileCache.BaseDirectory=BaseDirectory;
+
+			UpdateLocalIncludeCache();
+			UpdateParseCache();
+
+			base.OnEndLoad();
+		}
+
 		[ItemProperty("Includes")]
 		[ItemProperty("Path", Scope = "*")]
 		List<string> tempIncludes = new List<string>();
@@ -419,9 +437,6 @@ namespace MonoDevelop.D
 
 			foreach (var p in tempIncludes)
 				LocalIncludeCache.Add(p);
-
-			UpdateLocalIncludeCache();
-			UpdateParseCache();
 		}
 
 		public DataCollection Serialize(ITypeSerializer handler)

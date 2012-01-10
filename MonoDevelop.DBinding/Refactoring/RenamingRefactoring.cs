@@ -58,7 +58,7 @@ namespace MonoDevelop.D.Refactoring
 				DCompiler.Instance.GetDefaultCompiler().GlobalParseCache.ParseCache;
 
             var modules = project!=null? 
-				project.ParsedModules : 
+				project.LocalFileCache as IEnumerable<IAbstractSyntaxTree> : 
 				new[]{ (Ide.IdeApp.Workbench.ActiveDocument.ParsedDocument as MonoDevelop.D.Parser.ParsedDModule).DDom };
 
 			foundReferences = new Dictionary<string, List<CodeLocation>>();

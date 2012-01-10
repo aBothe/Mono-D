@@ -27,8 +27,8 @@ namespace MonoDevelop.D.Refactoring
 				project.ParseCache : 
 				DCompiler.Instance.GetDefaultCompiler().GlobalParseCache.ParseCache;
 
-            var modules = project!=null? 
-				project.ParsedModules : 
+            var modules = project==null? 
+				project.LocalFileCache as IEnumerable<IAbstractSyntaxTree> : 
 				new[]{ (Ide.IdeApp.Workbench.ActiveDocument.ParsedDocument as MonoDevelop.D.Parser.ParsedDModule).DDom };
 
 			if(monitor!=null)

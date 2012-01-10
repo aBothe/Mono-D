@@ -123,27 +123,50 @@ namespace MonoDevelop.D.OptionPanels
 				configuration.DefaultLibraries.Add (line);
 				defaultLibStore.IterNext (ref iter);
 			}
-					
-			// Store new include paths
+
+			#region Store new include paths
+			var paths = new List<string>();
+
 			includePathStore.GetIterFirst (out iter);
-			configuration.GlobalParseCache.ParsedGlobalDictionaries.Clear();
 			while (includePathStore.IterIsValid (iter)) {
 				line = (string)includePathStore.GetValue (iter, 0);
-				// Add it to the compiler's global parse cache
-				configuration.GlobalParseCache.Add(line);
+				
+				paths.Add(line);
+
 				includePathStore.IterNext (ref iter);
 			}
 
-			try
+			// If current dir count != the new dir count
+			bool cacheUpdateRequired = paths.Count!= configuration.GlobalParseCache.ParsedGlobalDictionaries.Count;
+
+			// If there's a new directory in it
+			if(!cacheUpdateRequired)
+				foreach(var path in paths)
+					if (!configuration.GlobalParseCache.ContainsDictionary(path))
+					{
+						cacheUpdateRequired = true;
+						break;
+					}
+
+			if (cacheUpdateRequired)
 			{
-				// Update parse cache immediately
-				configuration.GlobalParseCache.UpdateCache();
+				configuration.GlobalParseCache.ParsedGlobalDictionaries.Clear();
+
+				foreach (var path in paths)
+					configuration.GlobalParseCache.Add(path);
+
+				try
+				{
+					// Update parse cache immediately
+					DCompilerConfiguration.UpdateParseCacheAsync(configuration.GlobalParseCache);
+				}
+				catch (Exception ex)
+				{
+					LoggingService.LogError("Include path analysis error", ex);
+				}
 			}
-			catch (Exception ex)
-			{
-				LoggingService.LogError("Include path analysis error",ex);
-			}
-					
+			#endregion
+
 			return true;
 		}
 		

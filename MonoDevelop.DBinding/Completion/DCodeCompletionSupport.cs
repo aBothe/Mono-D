@@ -57,7 +57,7 @@ namespace MonoDevelop.D.Completion
 			if (Project != null)
 			{
 				// Add the project's parsed modules to the reachable-packages list
-				ret.AddRange(Project.ParsedModules);
+				ret.AddRange(Project.LocalFileCache);
 				
 				// Add all parsed project include modules that belong to the project's configuration
 				foreach (var astColl in Project.LocalIncludeCache)

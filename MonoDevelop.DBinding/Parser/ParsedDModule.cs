@@ -20,32 +20,28 @@ namespace MonoDevelop.D.Parser
 			get { 
 				var sln=Ide.IdeApp.ProjectOperations.CurrentSelectedSolution;
 				if(sln!=null)
-				{
-					var prj = sln.GetProjectContainingFile(this.FileName);
+					foreach (var prj in sln.GetAllProjects())
+						if (prj is DProject && FileName.StartsWith(prj.BaseDirectory))
+						{
+							var dprj = prj as DProject;
 
-					if (prj != null && prj.IsFileInProject(FileName))
-					{
-						var pf = prj.GetProjectFile(FileName);
-
-						return pf.ExtendedProperties[DProject.DParserPropertyKey] as IAbstractSyntaxTree;
-					}
-				}
+							return dprj.LocalFileCache[FileName];
+						}
+				
 				return _ddom;
 			}
 			set
 			{
 				var sln = Ide.IdeApp.ProjectOperations.CurrentSelectedSolution;
 				if (sln != null)
-				{
-					var prj = sln.GetProjectContainingFile(this.FileName);
+					foreach(var prj in sln.GetAllProjects())
+						if (prj is DProject && FileName.StartsWith(prj.BaseDirectory))
+						{
+							var dprj = prj as DProject;
 
-					if (prj != null && prj.IsFileInProject(FileName))
-					{
-						var pf = prj.GetProjectFile(FileName);
-
-						pf.ExtendedProperties[DProject.DParserPropertyKey] = value;
-					}
-				}
+							dprj.LocalFileCache[FileName] = value;
+						}
+				
 				_ddom=value;
 			}
 		}
@@ -72,15 +68,10 @@ namespace MonoDevelop.D.Parser
 
 				// Build appropriate module name
 				if (pf != null)
-				{
 					ast.ModuleName = pf.ProjectVirtualPath.ChangeExtension(null).ToString().Replace(Path.DirectorySeparatorChar, '.');
-
-					pf.ExtendedProperties[DProject.DParserPropertyKey] = ast;
-				}
 			}
-			else
-				doc._ddom = ast;
 
+			doc.DDom = ast;
 
 			// Serialize to NRefactory Dom structure
 			var cu = new CompilationUnit(file);
@@ -295,7 +286,7 @@ namespace MonoDevelop.D.Parser
 
 		#endregion
 
-
+		#region Folding management
 		public override IEnumerable<FoldingRegion> GenerateFolds()
 		{
 			var l = new List<FoldingRegion>();
@@ -374,6 +365,7 @@ namespace MonoDevelop.D.Parser
 				if (s is StatementContainingStatement)
 					GenerateFoldsInternal(l, s as StatementContainingStatement);
 		}
+		#endregion
 	}
 
 }
