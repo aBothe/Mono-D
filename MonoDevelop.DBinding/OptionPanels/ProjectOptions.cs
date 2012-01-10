@@ -106,17 +106,25 @@ namespace MonoDevelop.D.OptionPanels
 		
 		private void OnBrowseButtonClick (object sender, EventArgs e)
 		{
-			AddLibraryDialog dialog = new AddLibraryDialog ();
+			AddLibraryDialog dialog = new AddLibraryDialog()
+			{
+				TransientFor = Toplevel as Gtk.Window,
+				WindowPosition = Gtk.WindowPosition.Center
+			};
+
 			dialog.Run ();
 			libAddEntry.Text = dialog.Library;
 		}
 		
 		private void OnIncludePathBrowseButtonClick (object sender, EventArgs e)
 		{
-			var dialog = new Gtk.FileChooserDialog ("Select D Source Folder", null, Gtk.FileChooserAction.SelectFolder, "Cancel", Gtk.ResponseType.Cancel, "Ok", Gtk.ResponseType.Ok);
+			var dialog = new Gtk.FileChooserDialog("Select D Source Folder", null, Gtk.FileChooserAction.SelectFolder, "Cancel", Gtk.ResponseType.Cancel, "Ok", Gtk.ResponseType.Ok)
+			{
+				TransientFor = Toplevel as Gtk.Window,
+				WindowPosition = Gtk.WindowPosition.Center
+			};
 			try {
-				dialog.WindowPosition = Gtk.WindowPosition.Center;
-				if (MessageService.RunCustomDialog(dialog, IdeApp.Workbench.RootWindow) == (int)Gtk.ResponseType.Ok)
+				if (dialog.Run() == (int)Gtk.ResponseType.Ok)
 					includePathEntry.Text = dialog.Filename;
 			} finally {
 				dialog.Destroy ();

@@ -193,9 +193,13 @@ namespace MonoDevelop.D.OptionPanels
 
 		protected void btnBrowseDefaultLib_Clicked (object sender, System.EventArgs e)
 		{
-			var dialog = new AddLibraryDialog(AddLibraryDialog.FileFilterType.LibraryFiles);
+			var dialog = new AddLibraryDialog(AddLibraryDialog.FileFilterType.LibraryFiles)
+			{
+				TransientFor = Toplevel as Gtk.Window,
+				WindowPosition = Gtk.WindowPosition.Center
+			};
 
-			if (MessageService.RunCustomDialog(dialog, IdeApp.Workbench.RootWindow) == (int)Gtk.ResponseType.Ok)
+			if (dialog.Run() == (int)Gtk.ResponseType.Ok)
 				txtDefaultLib.Text = dialog.Library;
 		}
 		
@@ -241,15 +245,19 @@ namespace MonoDevelop.D.OptionPanels
 		{
 			Gtk.FileChooserDialog dialog = new Gtk.FileChooserDialog(
 				"Select D Source Folder",
-				Ide.IdeApp.Workbench.RootWindow, 
-				Gtk.FileChooserAction.SelectFolder, 
-				"Cancel", 
-				Gtk.ResponseType.Cancel, 
-				"Ok", 
-				Gtk.ResponseType.Ok);
+				Ide.IdeApp.Workbench.RootWindow,
+				Gtk.FileChooserAction.SelectFolder,
+				"Cancel",
+				Gtk.ResponseType.Cancel,
+				"Ok",
+				Gtk.ResponseType.Ok) 
+			{ 
+				TransientFor=Toplevel as Gtk.Window,
+				WindowPosition = Gtk.WindowPosition.Center
+			};
+
 			try{
-				dialog.WindowPosition = Gtk.WindowPosition.Center;
-				if (MessageService.RunCustomDialog (dialog, IdeApp.Workbench.RootWindow) == (int) Gtk.ResponseType.Ok)
+				if (dialog.Run() == (int) Gtk.ResponseType.Ok)
 					txtIncludePath.Text = dialog.Filename;
 			}finally{
 				dialog.Destroy();
@@ -313,11 +321,14 @@ namespace MonoDevelop.D.OptionPanels
 
 		protected void OnButtonBinPathBrowserClicked (object sender, System.EventArgs e)
 		{
-			Gtk.FileChooserDialog dialog = new Gtk.FileChooserDialog("Select Compiler's bin path", null , Gtk.FileChooserAction.SelectFolder, "Cancel", Gtk.ResponseType.Cancel, "Ok", Gtk.ResponseType.Ok);
+			var dialog = new Gtk.FileChooserDialog("Select Compiler's bin path", null, Gtk.FileChooserAction.SelectFolder, "Cancel", Gtk.ResponseType.Cancel, "Ok", Gtk.ResponseType.Ok)
+			{
+				TransientFor = Toplevel as Gtk.Window,
+				WindowPosition = Gtk.WindowPosition.Center
+			};
+
 			try{
-				
-				dialog.WindowPosition = Gtk.WindowPosition.Center;
-				if (MessageService.RunCustomDialog(dialog, IdeApp.Workbench.RootWindow) == (int)Gtk.ResponseType.Ok)
+				if (dialog.Run() == (int)Gtk.ResponseType.Ok)
 					txtBinPath.Text = dialog.Filename;
 			}finally{
 				dialog.Destroy();
