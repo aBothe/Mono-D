@@ -169,6 +169,7 @@ namespace MonoDevelop.D
 			var cfg = CreateConfiguration("Debug") as DProjectConfiguration;
 
 			cfg.DebugMode = true;
+			cfg.ObjectDirectory += Path.DirectorySeparatorChar + "Debug";
 
 			Configurations.Add(cfg);
 
@@ -177,6 +178,7 @@ namespace MonoDevelop.D
 
 			cfg.DebugMode = false;
 			cfg.ExtraCompilerArguments = "-o";
+			cfg.ObjectDirectory += Path.DirectorySeparatorChar + "Release";
 
 			Configurations.Add(cfg);
 			

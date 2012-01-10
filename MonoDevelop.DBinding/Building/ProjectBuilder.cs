@@ -54,7 +54,7 @@ namespace MonoDevelop.D.Building
 
 			BuiltObjects.Clear();
 			AbsoluteObjectDirectory = Path.Combine(Project.BaseDirectory, BuildConfig.ObjectDirectory);
-
+			
 			if (!Directory.Exists(AbsoluteObjectDirectory))
 				Directory.CreateDirectory(AbsoluteObjectDirectory);
 

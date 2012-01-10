@@ -30,16 +30,21 @@ namespace MonoDevelop.D
 		[ItemProperty("ObjectsDirectory", DefaultValue="objs")]
 		public string ObjectDirectory = "objs";
 		#endregion
+
+		void Init()
+		{
+		}
 		
 		//if absent an exception occurs when opening project config	
 		public DProjectConfiguration()
 		{
-			
+			Init();
 		}
 		
 		public DProjectConfiguration(DProject Project)
 		{
 			this.Project=Project;
+			Init();
 		}
 
 		public event EventHandler Changed;

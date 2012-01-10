@@ -11,7 +11,7 @@
     <widget-library name="../../ext/MonoDevelop.SourceEditor2.dll" />
     <widget-library name="../bin/Debug/MonoDevelop.D.dll" internal="true" />
   </import>
-  <widget class="Gtk.Bin" id="MonoDevelop.D.OptionPanels.ProjectOptions" design-size="611 396">
+  <widget class="Gtk.Bin" id="MonoDevelop.D.OptionPanels.ProjectOptions" design-size="641 425">
     <property name="MemberName" />
     <child>
       <widget class="Gtk.Notebook" id="notebook1">
@@ -27,7 +27,6 @@
               <widget class="Gtk.Frame" id="frame2">
                 <property name="MemberName" />
                 <property name="ShadowType">Out</property>
-                <property name="LabelXalign">0.5</property>
                 <property name="LabelYalign">0</property>
                 <child>
                   <widget class="Gtk.Alignment" id="GtkAlignment">
@@ -38,7 +37,7 @@
                     <child>
                       <widget class="Gtk.Table" id="table5">
                         <property name="MemberName" />
-                        <property name="NRows">3</property>
+                        <property name="NRows">5</property>
                         <property name="RowSpacing">6</property>
                         <property name="ColumnSpacing">9</property>
                         <property name="BorderWidth">6</property>
@@ -102,14 +101,34 @@
                           </packing>
                         </child>
                         <child>
+                          <widget class="Gtk.Label" id="label5">
+                            <property name="MemberName" />
+                            <property name="Xalign">0</property>
+                            <property name="LabelProp" translatable="yes">Objects directory</property>
+                          </widget>
+                          <packing>
+                            <property name="TopAttach">1</property>
+                            <property name="BottomAttach">2</property>
+                            <property name="AutoSize">True</property>
+                            <property name="XOptions">Fill</property>
+                            <property name="YOptions">Fill</property>
+                            <property name="XExpand">False</property>
+                            <property name="XFill">True</property>
+                            <property name="XShrink">False</property>
+                            <property name="YExpand">False</property>
+                            <property name="YFill">True</property>
+                            <property name="YShrink">False</property>
+                          </packing>
+                        </child>
+                        <child>
                           <widget class="Gtk.Label" id="label7">
                             <property name="MemberName" />
                             <property name="Xalign">0</property>
                             <property name="LabelProp" translatable="yes">Extra Compiler Options</property>
                           </widget>
                           <packing>
-                            <property name="TopAttach">1</property>
-                            <property name="BottomAttach">2</property>
+                            <property name="TopAttach">3</property>
+                            <property name="BottomAttach">4</property>
                             <property name="AutoSize">False</property>
                             <property name="XOptions">Fill</property>
                             <property name="YOptions">Fill</property>
@@ -140,13 +159,34 @@ Example:
                             </child>
                           </widget>
                           <packing>
-                            <property name="TopAttach">2</property>
-                            <property name="BottomAttach">3</property>
+                            <property name="TopAttach">4</property>
+                            <property name="BottomAttach">5</property>
                             <property name="AutoSize">False</property>
                             <property name="XExpand">True</property>
                             <property name="XFill">True</property>
                             <property name="XShrink">False</property>
                             <property name="YExpand">True</property>
+                            <property name="YFill">True</property>
+                            <property name="YShrink">False</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="Gtk.Entry" id="text_ObjectsDirectory">
+                            <property name="MemberName" />
+                            <property name="CanFocus">True</property>
+                            <property name="IsEditable">True</property>
+                            <property name="InvisibleChar">●</property>
+                          </widget>
+                          <packing>
+                            <property name="TopAttach">2</property>
+                            <property name="BottomAttach">3</property>
+                            <property name="AutoSize">True</property>
+                            <property name="XOptions">Fill</property>
+                            <property name="YOptions">Fill</property>
+                            <property name="XExpand">False</property>
+                            <property name="XFill">True</property>
+                            <property name="XShrink">False</property>
+                            <property name="YExpand">False</property>
                             <property name="YFill">True</property>
                             <property name="YShrink">False</property>
                           </packing>
@@ -177,7 +217,6 @@ Example:
               <widget class="Gtk.Frame" id="frame3">
                 <property name="MemberName" />
                 <property name="ShadowType">Out</property>
-                <property name="LabelXalign">0.5</property>
                 <property name="LabelYalign">0</property>
                 <child>
                   <widget class="Gtk.Alignment" id="GtkAlignment1">
@@ -188,7 +227,7 @@ Example:
                     <child>
                       <widget class="Gtk.Table" id="table6">
                         <property name="MemberName" />
-                        <property name="NRows">2</property>
+                        <property name="NRows">4</property>
                         <property name="RowSpacing">6</property>
                         <property name="ColumnSpacing">9</property>
                         <property name="BorderWidth">6</property>
@@ -199,7 +238,27 @@ Example:
                             <property name="LabelProp" translatable="yes">Extra Linker Options</property>
                           </widget>
                           <packing>
+                            <property name="TopAttach">2</property>
+                            <property name="BottomAttach">3</property>
                             <property name="AutoSize">False</property>
+                            <property name="XOptions">Fill</property>
+                            <property name="YOptions">Fill</property>
+                            <property name="XExpand">False</property>
+                            <property name="XFill">True</property>
+                            <property name="XShrink">False</property>
+                            <property name="YExpand">False</property>
+                            <property name="YFill">True</property>
+                            <property name="YShrink">False</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="Gtk.Label" id="label6">
+                            <property name="MemberName" />
+                            <property name="Xalign">0</property>
+                            <property name="LabelProp" translatable="yes">Output directory</property>
+                          </widget>
+                          <packing>
+                            <property name="AutoSize">True</property>
                             <property name="XOptions">Fill</property>
                             <property name="YOptions">Fill</property>
                             <property name="XExpand">False</property>
@@ -229,13 +288,34 @@ Example:
                             </child>
                           </widget>
                           <packing>
-                            <property name="TopAttach">1</property>
-                            <property name="BottomAttach">2</property>
+                            <property name="TopAttach">3</property>
+                            <property name="BottomAttach">4</property>
                             <property name="AutoSize">False</property>
                             <property name="XExpand">True</property>
                             <property name="XFill">True</property>
                             <property name="XShrink">False</property>
                             <property name="YExpand">True</property>
+                            <property name="YFill">True</property>
+                            <property name="YShrink">False</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="Gtk.Entry" id="text_BinDirectory">
+                            <property name="MemberName" />
+                            <property name="CanFocus">True</property>
+                            <property name="IsEditable">True</property>
+                            <property name="InvisibleChar">●</property>
+                          </widget>
+                          <packing>
+                            <property name="TopAttach">1</property>
+                            <property name="BottomAttach">2</property>
+                            <property name="AutoSize">True</property>
+                            <property name="XOptions">Fill</property>
+                            <property name="YOptions">Fill</property>
+                            <property name="XExpand">False</property>
+                            <property name="XFill">True</property>
+                            <property name="XShrink">False</property>
+                            <property name="YExpand">False</property>
                             <property name="YFill">True</property>
                             <property name="YShrink">False</property>
                           </packing>

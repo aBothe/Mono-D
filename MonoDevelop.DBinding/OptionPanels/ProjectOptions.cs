@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using MonoDevelop.D.Building;
 using MonoDevelop.Ide.Gui.Dialogs;
 
@@ -11,12 +11,11 @@ namespace MonoDevelop.D.OptionPanels
 	{
 		private DProject project;
 		private DProjectConfiguration configuration;
-
-		private Gtk.ListStore compilerStore = new Gtk.ListStore(typeof(string), typeof(DCompilerVendor));
+		private Gtk.ListStore compilerStore = new Gtk.ListStore (typeof(string), typeof(DCompilerVendor));
 		private Gtk.ListStore libStore = new Gtk.ListStore (typeof(string));
 		private Gtk.ListStore includePathStore = new Gtk.ListStore (typeof(string));
 		
-		public ProjectOptions () 
+		public ProjectOptions ()
 		{
 			this.Build ();
 			
@@ -28,17 +27,17 @@ namespace MonoDevelop.D.OptionPanels
 			
 			includePathTreeView.Model = includePathStore;
 			includePathTreeView.HeadersVisible = false;
-			includePathTreeView.AppendColumn("Path", textRenderer, "text", 0);
+			includePathTreeView.AppendColumn ("Path", textRenderer, "text", 0);
 
-			cmbCompiler.Clear();			
-			Gtk.CellRendererText cellRenderer = new Gtk.CellRendererText();			
-			cmbCompiler.PackStart(cellRenderer, false);
-			cmbCompiler.AddAttribute(cellRenderer, "text", 0);
+			cmbCompiler.Clear ();			
+			Gtk.CellRendererText cellRenderer = new Gtk.CellRendererText ();			
+			cmbCompiler.PackStart (cellRenderer, false);
+			cmbCompiler.AddAttribute (cellRenderer, "text", 0);
 
 			cmbCompiler.Model = compilerStore;
-            compilerStore.AppendValues("DMD", DCompilerVendor.DMD);			
-            compilerStore.AppendValues("GDC", DCompilerVendor.GDC);			
-            compilerStore.AppendValues("LDC", DCompilerVendor.LDC);	
+			compilerStore.AppendValues ("DMD", DCompilerVendor.DMD);			
+			compilerStore.AppendValues ("GDC", DCompilerVendor.GDC);			
+			compilerStore.AppendValues ("LDC", DCompilerVendor.LDC);	
 			
 		}
 		
@@ -48,27 +47,30 @@ namespace MonoDevelop.D.OptionPanels
 			configuration = config;
 			
 			cbUseDefaultCompiler.Active = proj.UseDefaultCompilerVendor;
-			OnUseDefaultCompilerChanged();
+			OnUseDefaultCompilerChanged ();
 			Gtk.TreeIter iter;
 			if (cmbCompiler.Model.GetIterFirst (out iter)) {
 				do {
-					if (proj.UsedCompilerVendor == (DCompilerVendor)cmbCompiler.Model.GetValue(iter, 1)) {
-						cmbCompiler.SetActiveIter(iter);
+					if (proj.UsedCompilerVendor == (DCompilerVendor)cmbCompiler.Model.GetValue (iter, 1)) {
+						cmbCompiler.SetActiveIter (iter);
 						break;
 					} 
 				} while (cmbCompiler.Model.IterNext (ref iter));
-			}			
+			}
 				
 			extraCompilerTextView.Buffer.Text = config.ExtraCompilerArguments;
-			extraLinkerTextView.Buffer.Text = config.ExtraLinkerArguments;			
+			extraLinkerTextView.Buffer.Text = config.ExtraLinkerArguments;
 			
-			libStore.Clear();
+			text_BinDirectory.Text = config.OutputDirectory;
+			text_ObjectsDirectory.Text = config.ObjectDirectory;
+			
+			libStore.Clear ();
 			foreach (string lib in proj.ExtraLibraries)
 				libStore.AppendValues (lib);
 
-			includePathStore.Clear();
-			foreach(var p in project.LocalIncludeCache.DirectoryPaths)
-				includePathStore.AppendValues(p);
+			includePathStore.Clear ();
+			foreach (var p in project.LocalIncludeCache.DirectoryPaths)
+				includePathStore.AppendValues (p);
 		}
 		
 		private void OnIncludePathAdded (object sender, EventArgs e)
@@ -114,13 +116,13 @@ namespace MonoDevelop.D.OptionPanels
 			dialog.Run ();
 			includePathEntry.Text = dialog.SelectedPath;*/
 			
-			Gtk.FileChooserDialog dialog = new Gtk.FileChooserDialog("Select D Source Folder", null, Gtk.FileChooserAction.SelectFolder, "Cancel", Gtk.ResponseType.Cancel, "Ok", Gtk.ResponseType.Ok);
-			try{
+			Gtk.FileChooserDialog dialog = new Gtk.FileChooserDialog ("Select D Source Folder", null, Gtk.FileChooserAction.SelectFolder, "Cancel", Gtk.ResponseType.Cancel, "Ok", Gtk.ResponseType.Ok);
+			try {
 				dialog.WindowPosition = Gtk.WindowPosition.Center;				
-				if (dialog.Run() == (int)Gtk.ResponseType.Ok)
+				if (dialog.Run () == (int)Gtk.ResponseType.Ok)
 					includePathEntry.Text = dialog.Filename;
-			}finally{
-				dialog.Destroy();
+			} finally {
+				dialog.Destroy ();
 			}
 		}
 		
@@ -134,37 +136,40 @@ namespace MonoDevelop.D.OptionPanels
 			// Store used compiler vendor
 			project.UseDefaultCompilerVendor = cbUseDefaultCompiler.Active;
 			Gtk.TreeIter iter;
-			if (cmbCompiler.GetActiveIter(out iter))
-				project.UsedCompilerVendor = (DCompilerVendor)cmbCompiler.Model.GetValue (iter,1);
+			if (cmbCompiler.GetActiveIter (out iter))
+				project.UsedCompilerVendor = (DCompilerVendor)cmbCompiler.Model.GetValue (iter, 1);
 			
 			// Store args
 			configuration.ExtraCompilerArguments = extraCompilerTextView.Buffer.Text;
 			configuration.ExtraLinkerArguments = extraLinkerTextView.Buffer.Text;
 			
+			configuration.OutputDirectory = text_BinDirectory.Text;
+			configuration.ObjectDirectory = text_ObjectsDirectory.Text;
+			
 			// Store libs
 			libStore.GetIterFirst (out iter);
-			project.ExtraLibraries.Clear();
+			project.ExtraLibraries.Clear ();
 			while (libStore.IterIsValid (iter)) {
 				line = (string)libStore.GetValue (iter, 0);
-				project.ExtraLibraries.Add(line);
+				project.ExtraLibraries.Add (line);
 				libStore.IterNext (ref iter);
 			}
 			
 			// Store includes
 			includePathStore.GetIterFirst (out iter);
-			project.LocalIncludeCache.ParsedGlobalDictionaries.Clear();
+			project.LocalIncludeCache.ParsedGlobalDictionaries.Clear ();
 			while (includePathStore.IterIsValid (iter)) {
 				line = (string)includePathStore.GetValue (iter, 0);
-				project.LocalIncludeCache.Add(line);
+				project.LocalIncludeCache.Add (line);
 				includePathStore.IterNext (ref iter);
 			}
 			// Parse local includes
-			project.LocalIncludeCache.UpdateCache();
+			project.LocalIncludeCache.UpdateCache ();
 			
 			return true;
 		}
 			
-		protected virtual void OnUseDefaultCompilerChanged()
+		protected virtual void OnUseDefaultCompilerChanged ()
 		{
 			cmbCompiler.Sensitive = (!cbUseDefaultCompiler.Active);			
 		}
@@ -172,7 +177,7 @@ namespace MonoDevelop.D.OptionPanels
 		protected void cbUseDefaultCompiler_Clicked (object sender, System.EventArgs e)
 		{
 			OnUseDefaultCompilerChanged ();
-		}		
+		}
 		
 		protected virtual void OnLibAddEntryChanged (object sender, EventArgs e)
 		{
@@ -232,9 +237,8 @@ namespace MonoDevelop.D.OptionPanels
 		
 		public override void LoadConfigData ()
 		{
-			panel.Load((DProject)ConfiguredProject, (DProjectConfiguration) CurrentConfiguration);
+			panel.Load ((DProject)ConfiguredProject, (DProjectConfiguration)CurrentConfiguration);
 		}
-
 		
 		public override void ApplyChanges ()
 		{
