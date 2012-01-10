@@ -1,21 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using MonoDevelop.Projects;
-using MonoDevelop.Core.Serialization;
-using System.Xml;
 using System.IO;
-using MonoDevelop.Core.Execution;
-using MonoDevelop.Core;
-using MonoDevelop.Ide;
-using MonoDevelop.Core.ProgressMonitoring;
-using MonoDevelop.D.Parser;
+using System.Xml;
+using D_Parser.Completion;
 using D_Parser.Dom;
 using D_Parser.Parser;
-using D_Parser.Completion;
+using MonoDevelop.Core;
+using MonoDevelop.Core.Execution;
+using MonoDevelop.Core.ProgressMonitoring;
+using MonoDevelop.Core.Serialization;
 using MonoDevelop.D.Building;
 using MonoDevelop.D.Completion;
+using MonoDevelop.Ide;
+using MonoDevelop.Projects;
 
 namespace MonoDevelop.D
 {
@@ -94,7 +91,7 @@ namespace MonoDevelop.D
 				var ddom = DParser.ParseFile(pf.FilePath.ToAbsolute(BaseDirectory));
 
 				// Update relative module name
-				ddom.ModuleName = pf.ProjectVirtualPath.ChangeExtension(null).ToString().Replace(Path.DirectorySeparatorChar, '.');
+				ddom.ModuleName = MonoDevelop.D.Parser.ParsedDModule.BuildModuleName(pf);
 
 				LocalFileCache[pf.FilePath] = ddom;
 			}

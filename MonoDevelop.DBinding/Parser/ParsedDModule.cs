@@ -8,6 +8,7 @@ using MonoDevelop.Projects.Dom.Parser;
 using System.IO;
 using D_Parser.Parser;
 using D_Parser.Dom.Statements;
+using MonoDevelop.Projects;
 
 namespace MonoDevelop.D.Parser
 {
@@ -68,7 +69,7 @@ namespace MonoDevelop.D.Parser
 
 				// Build appropriate module name
 				if (pf != null)
-					ast.ModuleName = pf.ProjectVirtualPath.ChangeExtension(null).ToString().Replace(Path.DirectorySeparatorChar, '.');
+					ast.ModuleName = BuildModuleName(pf);
 			}
 
 			doc.DDom = ast;
@@ -135,6 +136,11 @@ namespace MonoDevelop.D.Parser
 			}
 
 			return doc;
+		}
+
+		public static string BuildModuleName(ProjectFile pf)
+		{
+			return pf.ProjectVirtualPath.ChangeExtension(null).ToString().Replace(Path.DirectorySeparatorChar, '.');
 		}
 
 		#region Converter methods
