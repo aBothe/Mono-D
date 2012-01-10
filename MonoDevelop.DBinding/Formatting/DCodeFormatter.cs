@@ -11,7 +11,7 @@ namespace MonoDevelop.D.Formatting
 	{
 		public static readonly DFormatter NativeFormatterInstance=new DFormatter();
 
-		public override bool SupportsOnTheFlyFormatting	{	get	{return true;}	}
+		public override bool SupportsOnTheFlyFormatting	{	get	{return false;}	}
 
 		// CorrectIndenting is completely unused in the entire MonoDevelopment code environment - doesn't have to be implemented
 
@@ -28,7 +28,7 @@ namespace MonoDevelop.D.Formatting
 		/// </summary>
 		public override string FormatText(PolicyContainer policyParent, IEnumerable<string> mimeTypeChain, string input, int startOffset, int endOffset)
 		{
-			return input;
+			return input.Substring(startOffset,endOffset-startOffset);
 		}
 	}
 }
