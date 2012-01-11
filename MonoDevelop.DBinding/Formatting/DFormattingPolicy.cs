@@ -1,22 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using MonoDevelop.Projects.Policies;
+using MonoDevelop.Ide.Gui.Content;
 
 namespace MonoDevelop.D.Formatting
 {
 	[PolicyType("D formatting")]
-	public class DFormattingPolicy:IEquatable<DFormattingPolicy>
+	public class DFormattingPolicy: IEquatable<DFormattingPolicy>
 	{
-		static DFormattingPolicy ()
+		public bool Equals (DFormattingPolicy other)
 		{
-			PolicyService.InvariantPolicies.Set<DFormattingPolicy> (new DFormattingPolicy (), "text/x-d");
+			return base.Equals (other);
 		}
-
-		public bool Equals(DFormattingPolicy other)
+		
+		public DFormattingPolicy Clone ()
 		{
-			throw new NotImplementedException();
+			//TODO: Clone object with all its properties!
+			return new DFormattingPolicy ();	
 		}
 	}
 }

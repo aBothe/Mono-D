@@ -51,7 +51,14 @@
 			<File pattern="*.rc" />
 		</MimeType>
 	</Extension>
-	
+
+	<Extension path = "/MonoDevelop/ProjectModel/Gui/MimeTypePolicyPanels">
+		<Panel id = "DFormatting" _label = "D Format" mimeType="text/x-d" class="MonoDevelop.D.Formatting.FormattingPanel" />
+	</Extension>
+
+	<Extension path = "/MonoDevelop/ProjectModel/PolicySets/Mono" >
+		<Policies resource="DPolicy.xml" />
+	</Extension>
 	
 	<!-- Language Binding -->
 

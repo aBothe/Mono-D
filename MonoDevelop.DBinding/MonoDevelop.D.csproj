@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -121,6 +121,7 @@
     <Compile Include="Building\ProjectBuilder.cs" />
     <Compile Include="Formatting\DFormattingPolicy.cs" />
     <Compile Include="Formatting\DTextEditorIndentation.cs" />
+    <Compile Include="Formatting\FormattingPanel.cs" />
     <Compile Include="gtk-gui\generated.cs" />
     <Compile Include="Building\DCompiler.cs" />
     <Compile Include="Completion\DCodeCompletionSupport.cs" />
@@ -161,6 +162,8 @@
     <Compile Include="Gui\EditorPathbarProvider.cs" />
     <Compile Include="Refactoring\RenamingRefactoring.cs" />
     <Compile Include="Resolver\DResolverWrapper.cs" />
+    <Compile Include="Formatting\FormattingPanelWidget.cs" />
+    <Compile Include="gtk-gui\MonoDevelop.D.FormattingPanelWidget.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />
@@ -225,6 +228,7 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="templates\EmptyRCFile.xft.xml" />
+    <Content Include="Formatting\DPolicy.xml" />
     <Content Include="Remaining features.txt" />
   </ItemGroup>
   <ItemGroup>

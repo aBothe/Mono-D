@@ -1,0 +1,4 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<DFormattingPolicy scope="text/x-d" allowDiffSerialize="True">
+	<DefaultFormat/>
+</DFormattingPolicy>

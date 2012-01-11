@@ -407,7 +407,7 @@ namespace MonoDevelop.D
 					if (arg.Hint == "BaseDirectory" && dprj != null && dprj.LocalFileCache.BaseDirectory != dprj.BaseDirectory)
 					{
 						dprj.LocalFileCache.BaseDirectory = dprj.BaseDirectory;
-						UpdateParseCache();
+						//UpdateParseCache();
 					}
 				}
 
