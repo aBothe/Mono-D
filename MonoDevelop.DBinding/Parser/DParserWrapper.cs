@@ -20,29 +20,19 @@ namespace MonoDevelop.D.Parser
 	/// Note: For natively parsing the code, the D_Parser engine will be used. 
 	/// To make it compatible to the MonoDevelop.Dom, its output will be wrapped afterwards!
 	/// </summary>
-	public class DParserWrapper : IParser
+	public class DParserWrapper : AbstractParser
 	{
 		public bool CanParse(string fileName)
 		{
 			return DLanguageBinding.IsDFile(fileName);
 		}
 
-		public IExpressionFinder CreateExpressionFinder(ProjectDom dom)
-		{
-			return null;
-		}
-
-		public IResolver CreateResolver(ProjectDom dom, object editor, string fileName)
-		{
-			return null;
-		}
-
-		public ParsedDocument Parse(ProjectDom dom, string fileName, TextReader content)
+		public override ParsedDocument Parse(ProjectDom dom, string fileName, TextReader content)
 		{
 			return ParsedDModule.CreateFromDFile(dom,fileName, content);
 		}
 
-		public Projects.Dom.ParsedDocument Parse(ProjectDom dom, string fileName, string content)
+		public override Projects.Dom.ParsedDocument Parse(ProjectDom dom, string fileName, string content)
 		{
 			return Parse(dom, fileName, new StringReader(content));
 		}
