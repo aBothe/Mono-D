@@ -57,6 +57,7 @@ namespace D_Parser.Formatting
 			}
 		}
 
+		int maxLine;
 		Lexer Lexer;
 
 		CodeBlock PushBlock(CodeBlock previousBlock=null)
@@ -78,19 +79,34 @@ namespace D_Parser.Formatting
 
 		public CodeBlock CalculateIndentation(string code, int line)
 		{
+			var sr=new StringReader(code);
+			var cb= CalculateIndentation(sr, line);
+
+			sr.Close();
+
+			return cb;
+		}
+
+		public bool IsEOF
+		{
+			get {
+				return Lexer.IsEOF || (t != null && t.line > maxLine);
+			}
+		}
+
+		public CodeBlock CalculateIndentation(TextReader code, int line)
+		{
 			block = null;
 
-			var clippedCode = code.Substring(0, DocumentHelper.GetLineEndOffset(code, line));
-
-			Lexer = new Lexer(new StringReader(clippedCode));
+			Lexer = new Lexer(code);
+			maxLine = line;
 
 			Lexer.NextToken();
 			DToken lastToken = null;
-			CodeBlock tBlock = null;
 
-			while (!Lexer.IsEOF && (t==null || t.Location.Line <= line))
+			while (!Lexer.IsEOF)
 			{
-				if (t != null && la.line > t.line)
+				if (t != null && la.line > t.line && t.line < maxLine)
 				{
 					RemoveNextLineUnindentBlocks();
 				}
@@ -98,9 +114,12 @@ namespace D_Parser.Formatting
 				lastToken = t;
 				Lexer.NextToken();
 
-				if (Lexer.IsEOF && la.line > t.line)
+				if (IsEOF)
 				{
-					lastLineIndent = null;
+					if (la.line > maxLine)
+						lastLineIndent = null;
+
+					break;
 				}
 
 				/*
@@ -110,7 +129,7 @@ namespace D_Parser.Formatting
 				 *				foo();
 				 *	// No indentation anymore!
 				 */
-				if (t.Kind == DTokens.Comma || t.Kind == DTokens.Semicolon && la.line > t.line)
+				if (t.Kind == DTokens.Comma || t.Kind == DTokens.Semicolon && maxLine>t.line && la.line > t.line)
 				{
 					if (block == null)
 						continue;
@@ -130,13 +149,12 @@ namespace D_Parser.Formatting
 					t.Kind == DTokens.OpenSquareBracket ||
 					t.Kind == DTokens.OpenCurlyBrace)
 				{
-					tBlock = null;
+					var tBlock = block;
 
 					if (block != null && (
 						block.Reason == CodeBlock.IndentReason.SingleLineStatement ||
 						block.Reason == CodeBlock.IndentReason.UnfinishedStatement))
 					{
-						tBlock = block;
 						PopBlock();
 					}
 
@@ -231,7 +249,7 @@ namespace D_Parser.Formatting
 					PushBlock().Reason = CodeBlock.IndentReason.UnfinishedStatement;
 			}
 
-			if (Lexer.IsEOF && la.line > t.line)
+			if (la.line > t.line)
 				RemoveNextLineUnindentBlocks();
 
 			return lastLineIndent ?? block;

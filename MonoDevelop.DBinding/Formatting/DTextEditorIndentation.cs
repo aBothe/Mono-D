@@ -76,7 +76,9 @@ namespace MonoDevelop.D.Formatting
 				{
 					ed.InsertAtCaret(Document.Editor.EolMarker);
 
-					var cb=DCodeFormatter.NativeFormatterInstance.CalculateIndentation(ed.Text,ed.Caret.Line);
+					var tr=ed.Document.OpenTextReader();
+					var cb=DCodeFormatter.NativeFormatterInstance.CalculateIndentation(tr,ed.Caret.Line);
+					tr.Close();
 
 					newIndentation=cb==null?0:cb.GetLineIndentation(ed.Caret.Line);
 
@@ -94,7 +96,9 @@ namespace MonoDevelop.D.Formatting
 					var origInd = ed.GetLineIndent(ed.Caret.Line);
 					int originalIndentation = origInd.Length;
 
-					var cb = DCodeFormatter.NativeFormatterInstance.CalculateIndentation(ed.Text, ed.Caret.Line);
+					var tr = ed.Document.OpenTextReader();
+					var cb = DCodeFormatter.NativeFormatterInstance.CalculateIndentation(tr, ed.Caret.Line);
+					tr.Close();
 
 					newIndentation = cb == null ? 0 : cb.GetLineIndentation(ed.Caret.Line);
 
