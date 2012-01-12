@@ -57,7 +57,12 @@ namespace D_Parser
 					curline++;
 
 					if (curline > line)
+					{
+						if (i > 0 && Text[i - 1] == '\r')
+							return i-1;
+
 						return i;
+					}
 				}
 
 			return i;
