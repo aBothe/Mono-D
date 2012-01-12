@@ -5,6 +5,8 @@ using D_Parser.Dom;
 using D_Parser.Parser;
 using System.IO;
 using D_Parser.Resolver;
+using D_Parser.Dom.Statements;
+using D_Parser.Dom.Expressions;
 
 namespace D_Parser.Formatting
 {
@@ -57,9 +59,10 @@ namespace D_Parser.Formatting
 
 		Lexer Lexer;
 
-		CodeBlock PushBlock()
+		CodeBlock PushBlock(CodeBlock previousBlock=null)
 		{
 			return block = new CodeBlock { 
+				previousBlock=previousBlock,
 				LastPreBlockIdentifier=Lexer.LastToken ?? null,
 				Parent=block,
 				StartLocation = t.Location
@@ -82,16 +85,23 @@ namespace D_Parser.Formatting
 			Lexer = new Lexer(new StringReader(clippedCode));
 
 			Lexer.NextToken();
+			DToken lastToken = null;
+			CodeBlock tBlock = null;
 
 			while (!Lexer.IsEOF && (t==null || t.Location.Line <= line))
 			{
 				if (t != null && la.line > t.line)
-					lastLineIndent = null;
+				{
+					RemoveNextLineUnindentBlocks();
+				}
 
+				lastToken = t;
 				Lexer.NextToken();
 
 				if (Lexer.IsEOF && la.line > t.line)
+				{
 					lastLineIndent = null;
+				}
 
 				/*
 				 * if(..)
@@ -120,12 +130,17 @@ namespace D_Parser.Formatting
 					t.Kind == DTokens.OpenSquareBracket ||
 					t.Kind == DTokens.OpenCurlyBrace)
 				{
-					if(block != null && (
-						block.Reason == CodeBlock.IndentReason.SingleLineStatement || 
+					tBlock = null;
+
+					if (block != null && (
+						block.Reason == CodeBlock.IndentReason.SingleLineStatement ||
 						block.Reason == CodeBlock.IndentReason.UnfinishedStatement))
+					{
+						tBlock = block;
 						PopBlock();
-					
-					PushBlock().BlockStartToken = t.Kind;
+					}
+
+					PushBlock(tBlock).BlockStartToken = t.Kind;
 				}
 
 				// ),],}
@@ -136,18 +151,18 @@ namespace D_Parser.Formatting
 				{
 					if (t.Kind == DTokens.CloseCurlyBrace)
 					{
-						bool isBraceInLineOnly = true;
 						while (block != null && !block.IsClampBlock)
-						{
-							isBraceInLineOnly = block.StartLocation.Line == t.line && la.line > t.line;
-
-							if (!isBraceInLineOnly && block.Reason == CodeBlock.IndentReason.StatementLabel)
-								PopBlock();
-
 							PopBlock();
-						}
 
-						if (isBraceInLineOnly)
+						/*
+						 * If the last token was on this line OR if it's eof but on the following line, 
+						 * decrement indent on next line only.
+						 */
+						if (lastToken!=null && lastToken.line == t.line && block != null)
+						{
+							block.PopOnNextLine = true;
+						}
+						else
 							PopBlock();
 					}
 					else
@@ -163,9 +178,8 @@ namespace D_Parser.Formatting
 							block.BlockStartToken == DTokens.OpenParenthesis && 
 							la.Kind!=DTokens.OpenCurlyBrace)
 						{
-							PopBlock();
+							block=block.previousBlock;
 
-							PushBlock().Reason = CodeBlock.IndentReason.UnfinishedStatement;
 							continue;
 						}
 						else
@@ -176,11 +190,10 @@ namespace D_Parser.Formatting
 							block != null &&
 							block.BlockStartToken == DTokens.OpenParenthesis)
 						{
-							PopBlock();
 							if (la.Kind == DTokens.OpenCurlyBrace && la.line > t.line)
-							{ }
+								PopBlock();
 							else if (block==null || block.LastPreBlockIdentifier!=null && IsPreStatementToken(block.LastPreBlockIdentifier.Kind))
-								PushBlock().Reason = CodeBlock.IndentReason.SingleLineStatement;
+								block = block.previousBlock;
 						}
 					}
 				}
@@ -218,7 +231,43 @@ namespace D_Parser.Formatting
 					PushBlock().Reason = CodeBlock.IndentReason.UnfinishedStatement;
 			}
 
+			if (Lexer.IsEOF && la.line > t.line)
+				RemoveNextLineUnindentBlocks();
+
 			return lastLineIndent ?? block;
+		}
+
+		void RemoveNextLineUnindentBlocks()
+		{
+			while (block != null && block.PopOnNextLine)
+				block = block.Parent;
+
+			var curBlock = block;
+
+			while (curBlock != null)
+			{
+				if (curBlock.Parent != null && curBlock.Parent.PopOnNextLine)
+					curBlock.Parent = curBlock.Parent.Parent;
+
+				curBlock = curBlock.Parent;
+			}
+		}
+
+		public static int CalculateIndentation() { return 0; }
+
+		public static int CalculateRelativeIndentation(INode Scope, CodeLocation Caret)
+		{
+			return 0;
+		}
+
+		public static int CalculateRelativeIndentation(IStatement Statement, CodeLocation Caret)
+		{
+			return 0;
+		}
+
+		public static int CalculateRelativeIndentation(IExpression Expression, CodeLocation Caret)
+		{
+			return 0;
 		}
 	}
 
@@ -234,8 +283,12 @@ namespace D_Parser.Formatting
 
 		public IndentReason Reason= IndentReason.Other;
 
+		public CodeBlock previousBlock;
+
 		public CodeLocation StartLocation;
 		//public CodeLocation EndLocation;
+
+		public bool PopOnNextLine;
 
 		public int BlockStartToken;
 
