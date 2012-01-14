@@ -96,13 +96,13 @@ namespace MonoDevelop.D.Parser
 					cu.Add(ch as IType);
 			}
 
-
-			
+			// Add parser errors to the parser output
 			foreach(ParserError parserError in parser.ParseErrors)
 			{
 				doc.Errors.Add(new Error(ErrorType.Error, parserError.Location.Line, parserError.Location.Column,parserError.Message));
 			}
 
+			// Provide comment fold support by addin them to the IDE document object
 			foreach (var cm in parser.TrackerVariables.Comments)
 			{
 				var c = new Projects.Dom.Comment(cm.CommentText);
@@ -134,6 +134,7 @@ namespace MonoDevelop.D.Parser
 
 				doc.Comments.Add(c);
 
+				// Enlist TODO/FIXME/HACK etc. stuff in the IDE's project task list
 				foreach(var sct in ProjectDomService.SpecialCommentTags)
 					if (c.Text.StartsWith(sct.Tag))
 					{
