@@ -133,6 +133,13 @@ namespace MonoDevelop.D.Parser
 				c.Region = new DomRegion(cm.StartPosition.Line, cm.StartPosition.Column-2, cm.EndPosition.Line, cm.EndPosition.Column);
 
 				doc.Comments.Add(c);
+
+				foreach(var sct in ProjectDomService.SpecialCommentTags)
+					if (c.Text.StartsWith(sct.Tag))
+					{
+						doc.Add(new Tag(sct.Tag, c.Text, c.Region));
+						break;
+					}
 			}
 
 			return doc;

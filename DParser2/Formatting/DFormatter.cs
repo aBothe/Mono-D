@@ -116,10 +116,11 @@ namespace D_Parser.Formatting
 
 				if (IsEOF)
 				{
-					if (la.line > maxLine)
+					if (la.line > maxLine || Lexer.IsEOF)
 						lastLineIndent = null;
-
-					break;
+					
+					if (!Lexer.IsEOF)
+						break;
 				}
 
 				/*
