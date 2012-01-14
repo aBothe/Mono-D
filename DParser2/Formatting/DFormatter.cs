@@ -250,7 +250,7 @@ namespace D_Parser.Formatting
 					PushBlock().Reason = CodeBlock.IndentReason.UnfinishedStatement;
 			}
 
-			if (la.line > t.line)
+			if (t!=null && la.line > t.line)
 				RemoveNextLineUnindentBlocks();
 
 			return lastLineIndent ?? block;

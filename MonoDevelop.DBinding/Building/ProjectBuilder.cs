@@ -320,16 +320,33 @@ namespace MonoDevelop.D.Building
 			}
 		}
 
+		string GetRelObjFilename(string obj)
+		{
+			return obj.StartsWith(Project.BaseDirectory) ?
+				obj.Substring(Project.BaseDirectory.ToString().Length + 1) :
+				obj;
+		}
+
 		string HandleObjectFileNaming(ProjectFile f, string extension)
 		{
 			var obj= Path.Combine(AbsoluteObjectDirectory, Path.GetFileNameWithoutExtension(f.FilePath)) + extension;
 
-			if (File.Exists(obj) && 
-				!BuiltObjects.Contains(
-				obj.StartsWith(Project.BaseDirectory) ? obj.Substring(Project.BaseDirectory.ToString().Length + 1) : obj
-				))
+			if (!BuiltObjects.Contains(GetRelObjFilename(obj)))
 			{
-				File.Delete(obj);
+				if (File.Exists(obj))
+					File.Delete(obj);
+				return obj;
+			}
+
+			// Take the package name + module name otherwise
+			obj = Path.Combine(AbsoluteObjectDirectory, 
+				Path.GetDirectoryName(f.ProjectVirtualPath).Replace(Path.DirectorySeparatorChar, '.') + "." +
+				Path.GetFileNameWithoutExtension(f.FilePath)) + extension;
+
+			if (!BuiltObjects.Contains(GetRelObjFilename(obj)))
+			{
+				if (File.Exists(obj))
+					File.Delete(obj);
 				return obj;
 			}
 
@@ -394,7 +411,12 @@ namespace MonoDevelop.D.Building
 			{
 				var error = FindError(next, reader);
 				if (error != null)
+				{
+					if(!Path.IsPathRooted(error.FileName))
+						error.FileName = Project.GetAbsoluteChildPath(error.FileName);
+
 					compilerResults.Errors.Add(error);
+				}
 			}
 
 			reader.Close();
