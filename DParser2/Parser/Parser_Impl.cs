@@ -1068,14 +1068,23 @@ namespace D_Parser.Parser
 				if (laKind != (CloseSquareBracket))
 				{
 					ITypeDeclaration keyType=null;
+					var la_backup = la;
 					if (!IsAssignExpression())
 					{
+						
+						var weakType = AllowWeakTypeParsing;
 						AllowWeakTypeParsing = true;
+						
 						keyType= ad.KeyType = Type();
-						AllowWeakTypeParsing = false;
+
+						AllowWeakTypeParsing = weakType;
 					}
-					if (keyType==null)
+					if (keyType == null || laKind != CloseSquareBracket)
+					{
+						keyType = ad.KeyType = null;
+						la = la_backup;
 						ad.KeyExpression = AssignExpression();
+					}
 				}
 				Expect(CloseSquareBracket);
 				ad.EndLocation = t.EndLocation;
