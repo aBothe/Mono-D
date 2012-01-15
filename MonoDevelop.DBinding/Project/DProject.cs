@@ -304,7 +304,11 @@ namespace MonoDevelop.D
 				{
 					monitor.ReportError("Error while removing " + f, ex);
 				}
-				monitor.Step(1);
+				finally
+				{
+					f.LastGenOutput = string.Empty;
+					monitor.Step(1);
+				}
 			}
 			monitor.EndTask();
 

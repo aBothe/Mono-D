@@ -125,7 +125,7 @@ namespace MonoDevelop.D.Building
 		}
 
 		void CompileSource(ProjectFile f)
-		{			
+		{
 			string obj = null;
 
 			if (!string.IsNullOrWhiteSpace(f.LastGenOutput))
@@ -152,7 +152,8 @@ namespace MonoDevelop.D.Building
 			string stdOutput;
 			
 			var compilerExecutable=Commands.Compiler;
-			if(!Path.IsPathRooted(compilerExecutable)){
+			if(!Path.IsPathRooted(compilerExecutable))
+			{
 				compilerExecutable=Path.Combine(Compiler.BinPath,Commands.Compiler);
 				
 				if(!File.Exists(compilerExecutable))
@@ -174,14 +175,11 @@ namespace MonoDevelop.D.Building
 			else
 			{
 				f.LastGenOutput = obj;
+
 				targetBuildResult.BuildCount++;
 				Project.LastModificationTimes[f] = File.GetLastWriteTime(f.FilePath);
 
-				// Especially when compiling large projects, do only add the relative part of the obj file due to command shortness
-				if (obj.StartsWith(Project.BaseDirectory))
-					BuiltObjects.Add(obj.Substring(Project.BaseDirectory.ToString().Length).TrimStart(Path.DirectorySeparatorChar));
-				else
-					BuiltObjects.Add(obj);
+				BuiltObjects.Add(GetRelObjFilename(obj));
 			}
 		}
 
@@ -189,11 +187,12 @@ namespace MonoDevelop.D.Building
 		{
 			string res = null;
 
-			if (File.Exists(f.LastGenOutput))
+			if (!string.IsNullOrWhiteSpace(f.LastGenOutput))
 			{
 				res = f.LastGenOutput;
 
-				File.Delete(res);
+				if (File.Exists(f.LastGenOutput))
+					File.Delete(res);
 			}
 			else
 				res = HandleObjectFileNaming(f, ".res");
@@ -202,7 +201,7 @@ namespace MonoDevelop.D.Building
 			var resCmpArgs = FillInMacros(Win32ResourceCompiler.Instance.Arguments,
 				new Win32ResourceCompiler.ArgProvider
 				{
-					RcFile = f.ProjectVirtualPath,
+					RcFile = f.FilePath,
 					ResFile = res
 				});
 
@@ -233,14 +232,11 @@ namespace MonoDevelop.D.Building
 			else
 			{
 				f.LastGenOutput = res;
+
 				targetBuildResult.BuildCount++;
 				Project.LastModificationTimes[f] = File.GetLastWriteTime(f.FilePath);
 
-				// Especially when compiling large projects, do only add the relative part of the r file due to command shortness
-				if (res.StartsWith(Project.BaseDirectory))
-					BuiltObjects.Add(res.Substring(Project.BaseDirectory.ToString().Length).TrimStart(Path.DirectorySeparatorChar));
-				else
-					BuiltObjects.Add(res);
+				BuiltObjects.Add(GetRelObjFilename(res));
 			}
 		}
 
@@ -330,7 +326,7 @@ namespace MonoDevelop.D.Building
 
 		string HandleObjectFileNaming(ProjectFile f, string extension)
 		{
-			var obj= Path.Combine(AbsoluteObjectDirectory, Path.GetFileNameWithoutExtension(f.FilePath)) + extension;
+			var obj= Path.Combine(AbsoluteObjectDirectory, f.FilePath.FileNameWithoutExtension) + extension;
 
 			if (!BuiltObjects.Contains(GetRelObjFilename(obj)))
 			{
@@ -341,8 +337,8 @@ namespace MonoDevelop.D.Building
 
 			// Take the package name + module name otherwise
 			obj = Path.Combine(AbsoluteObjectDirectory, 
-				Path.GetDirectoryName(f.ProjectVirtualPath).Replace(Path.DirectorySeparatorChar, '.') + "." +
-				Path.GetFileNameWithoutExtension(f.FilePath)) + extension;
+				f.ProjectVirtualPath.ParentDirectory.ToString().Replace(Path.DirectorySeparatorChar, '.') + "." +
+				f.FilePath.FileNameWithoutExtension) + extension;
 
 			if (!BuiltObjects.Contains(GetRelObjFilename(obj)))
 			{
@@ -352,10 +348,12 @@ namespace MonoDevelop.D.Building
 			}
 
 			int i = 2;
-			while (File.Exists(obj))
+			while (BuiltObjects.Contains(GetRelObjFilename(obj)) && File.Exists(obj))
 			{
 				// Simply add a number between the obj name and its extension
-				obj = Path.Combine(AbsoluteObjectDirectory, Path.GetFileNameWithoutExtension(f.FilePath)) + i + extension;
+				obj =	Path.Combine(AbsoluteObjectDirectory,
+						f.ProjectVirtualPath.ParentDirectory.ToString().Replace(Path.DirectorySeparatorChar, '.') + "." +
+						f.FilePath.FileNameWithoutExtension) + i + extension;
 				i++;
 			}
 
