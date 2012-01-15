@@ -128,11 +128,12 @@ namespace MonoDevelop.D.Building
 		{			
 			string obj = null;
 
-			if (File.Exists(f.LastGenOutput))
+			if (!string.IsNullOrWhiteSpace(f.LastGenOutput))
 			{
 				obj = f.LastGenOutput;
 
-				File.Delete(obj);
+				if (File.Exists(f.LastGenOutput))
+					File.Delete(obj);
 			}
 			else
 				obj = HandleObjectFileNaming(f, DCompiler.ObjectExtension);

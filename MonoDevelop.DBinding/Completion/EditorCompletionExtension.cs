@@ -71,10 +71,6 @@ namespace MonoDevelop.D
 				return null;
 			}
 
-			// Check if in comment or string literal
-			if (CaretContextAnalyzer.IsInCommentAreaOrString(Document.Editor.Text, completionContext.TriggerOffset))
-				return null;
-
 			var l = new CompletionDataList();
 
 			DCodeCompletionSupport.BuildCompletionData(Document,dom.DDom,completionContext,l,triggerChar=='\0'?"":triggerChar.ToString());
