@@ -285,9 +285,6 @@ namespace MonoDevelop.D.Building
 			HandleOptLinkOutput(linkerOutput);
 
 			HandleReturnCode(linkerExecutable,exitCode);
-
-			if (exitCode == 0)
-				monitor.ReportSuccess("Build successful!");
 		}
 
 		private void HandleOptLinkOutput(string linkerOutput)
