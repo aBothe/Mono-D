@@ -47,8 +47,13 @@ namespace MonoDevelop.D.Building
 			Configuration.Vendor = DCompilerVendor.DMD;
 			Configuration.DefaultLibraries.Clear();
 
-			Configuration.SetAllCompilerCommands("dmd");
-			Configuration.SetAllLinkerCommands("dmd");
+			var dmd = "dmd";
+
+			if (OS.IsWindows)
+				dmd += ".exe";
+
+			Configuration.SetAllCompilerCommands(dmd);
+			Configuration.SetAllLinkerCommands(dmd);
 			
 			// Add phobos.lib/.a by default
 			Configuration.DefaultLibraries.Clear();
@@ -101,10 +106,15 @@ namespace MonoDevelop.D.Building
 			Configuration.Vendor = DCompilerVendor.GDC;
 			Configuration.DefaultLibraries.Clear();
 
-			Configuration.SetAllCompilerCommands("gdc");
-			Configuration.SetAllLinkerCommands("gdc");
+			var gdc = "gdc";
 
-			Configuration.GetTargetConfiguration(DCompileTarget.StaticLibrary).Linker = "ar";
+			if (OS.IsWindows)
+				gdc += ".exe";
+
+			Configuration.SetAllCompilerCommands(gdc);
+			Configuration.SetAllLinkerCommands(gdc);
+
+			Configuration.GetTargetConfiguration(DCompileTarget.StaticLibrary).Linker = "ar" + (OS.IsWindows?".exe":"");
 			
 			Configuration.DefaultLibraries.Clear();
 			if (OS.IsWindows)
@@ -154,10 +164,15 @@ namespace MonoDevelop.D.Building
 			Configuration.Vendor = DCompilerVendor.LDC;
 			Configuration.DefaultLibraries.Clear();
 
-			Configuration.SetAllCompilerCommands("ldc");
-			Configuration.SetAllLinkerCommands("ldc");
+			var ldc = "ldc";
 
-			Configuration.GetTargetConfiguration(DCompileTarget.StaticLibrary).Linker="ar";
+			if (OS.IsWindows)
+				ldc += ".exe";
+
+			Configuration.SetAllCompilerCommands(ldc);
+			Configuration.SetAllLinkerCommands(ldc);
+
+			Configuration.GetTargetConfiguration(DCompileTarget.StaticLibrary).Linker = "ar" + (OS.IsWindows ? ".exe" : "");
 			
 			Configuration.DefaultLibraries.Clear();
 			if (OS.IsWindows)
