@@ -263,6 +263,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.DefaultWidth = 400;
 			this.DefaultHeight = 343;
 			this.Hide ();
+			this.buttonCancel.Clicked += new global::System.EventHandler (this.OnButtonCancelClicked);
 			this.buttonOk.Clicked += new global::System.EventHandler (this.buttonOk_Clicked);
 		}
 	}
