@@ -25,7 +25,7 @@ namespace MonoDevelop.D.Gui
 		public TooltipItem GetItem(TextEditor editor, int offset)
 		{
 			// Note: Normally, the document already should be open
-			var doc=IdeApp.Workbench.OpenDocument(editor.Document.FileName);
+			var doc=IdeApp.Workbench.GetDocument(editor.Document.FileName);
 
 			if (doc == null || !(doc.ParsedDocument is ParsedDModule))
 				return null;
