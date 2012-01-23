@@ -82,9 +82,9 @@ namespace MonoDevelop.D
 							break;
 					}
 	
-					return Path.ChangeExtension(Output, ext);
+					return Path.ChangeExtension(ProjectBuilder.EnsureCorrectPathSeparators(Output), ext);
 				}
-				return Output;
+				return ProjectBuilder.EnsureCorrectPathSeparators(Output);
 			}
 		}
 	}

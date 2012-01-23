@@ -437,7 +437,7 @@ namespace MonoDevelop.D
 			handler.Deserialize(this, data);
 
 			foreach (var p in tempIncludes)
-				LocalIncludeCache.Add(p);
+				LocalIncludeCache.Add(ProjectBuilder.EnsureCorrectPathSeparators(p));
 		}
 
 		public DataCollection Serialize(ITypeSerializer handler)

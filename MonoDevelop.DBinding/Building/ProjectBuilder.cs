@@ -53,7 +53,11 @@ namespace MonoDevelop.D.Building
 			BuildTargetType = Project.CompileTarget;
 
 			BuiltObjects.Clear();
-			AbsoluteObjectDirectory = Path.Combine(Project.BaseDirectory, BuildConfig.ObjectDirectory);
+
+			if (Path.IsPathRooted(BuildConfig.ObjectDirectory))
+				AbsoluteObjectDirectory = BuildConfig.ObjectDirectory;
+			else
+				AbsoluteObjectDirectory = Path.Combine(Project.BaseDirectory, EnsureCorrectPathSeparators(BuildConfig.ObjectDirectory));
 			
 			if (!Directory.Exists(AbsoluteObjectDirectory))
 				Directory.CreateDirectory(AbsoluteObjectDirectory);
@@ -130,7 +134,8 @@ namespace MonoDevelop.D.Building
 
 			if (!string.IsNullOrWhiteSpace(f.LastGenOutput))
 			{
-				obj = f.LastGenOutput;
+				// Ensure the correct intermediate file extension, e.g. if the same project shall be built on different platforms
+				obj = EnsureCorrectPathSeparators(Path.ChangeExtension(f.LastGenOutput, DCompiler.ObjectExtension));
 
 				if (File.Exists(f.LastGenOutput))
 					File.Delete(obj);
@@ -243,7 +248,7 @@ namespace MonoDevelop.D.Building
 		void LinkToTarget(bool modificationsDone)
 		{
 			/// The target file to which all objects will be linked to
-			var LinkTargetFile = BuildConfig.OutputDirectory.Combine(BuildConfig.CompiledOutputName);
+			var LinkTargetFile = Project.GetOutputFileName(BuildConfig.Selector);
 
 			if (!modificationsDone &&
 				File.Exists(LinkTargetFile))
@@ -285,6 +290,14 @@ namespace MonoDevelop.D.Building
 			HandleOptLinkOutput(linkerOutput);
 
 			HandleReturnCode(linkerExecutable,exitCode);
+		}
+
+		public static string EnsureCorrectPathSeparators(string file)
+		{
+			if (OS.IsWindows)
+				return file.Replace('/', '\\');
+			else
+				return file.Replace('\\','/');
 		}
 
 		private void HandleOptLinkOutput(string linkerOutput)
