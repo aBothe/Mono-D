@@ -85,6 +85,7 @@ namespace MonoDevelop.D.Building
 
 				// a.Check if source file was modified and if object file still exists
 				if (Project.EnableIncrementalLinking &&
+					f.LastGenOutput.StartsWith(AbsoluteObjectDirectory) &&
 					Project.LastModificationTimes.ContainsKey(f) &&
 					Project.LastModificationTimes[f] == File.GetLastWriteTime(f.FilePath) &&
 					File.Exists(f.LastGenOutput))
@@ -130,18 +131,20 @@ namespace MonoDevelop.D.Building
 
 		void CompileSource(ProjectFile f)
 		{
+			if (File.Exists(f.LastGenOutput))
+				File.Delete(f.LastGenOutput);
+			/*
 			string obj = null;
-
+			
 			if (!string.IsNullOrWhiteSpace(f.LastGenOutput))
 			{
 				// Ensure the correct intermediate file extension, e.g. if the same project shall be built on different platforms
 				obj = EnsureCorrectPathSeparators(Path.ChangeExtension(f.LastGenOutput, DCompiler.ObjectExtension));
 
-				if (File.Exists(f.LastGenOutput))
-					File.Delete(obj);
+				
 			}
-			else
-				obj = HandleObjectFileNaming(f, DCompiler.ObjectExtension);
+			else*/
+			var	obj = HandleObjectFileNaming(f, DCompiler.ObjectExtension);
 
 			// Create argument string for source file compilation.
 			var dmdArgs = FillInMacros(Arguments.CompilerArguments + " " + BuildConfig.ExtraCompilerArguments, new DCompilerMacroProvider

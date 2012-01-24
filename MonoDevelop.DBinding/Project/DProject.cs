@@ -45,6 +45,11 @@ namespace MonoDevelop.D
 				return DCodeCompletionSupport.EnumAvailableModules(this);
 			}
 		}
+
+		protected override void OnDefaultConfigurationChanged(ConfigurationEventArgs args)
+		{
+			base.OnDefaultConfigurationChanged(args);
+		}
 		
 		[ItemProperty("UseDefaultCompiler")]
 		public bool UseDefaultCompilerVendor = true;
@@ -166,7 +171,6 @@ namespace MonoDevelop.D
 			var cfg = CreateConfiguration("Debug") as DProjectConfiguration;
 
 			cfg.DebugMode = true;
-			cfg.ObjectDirectory += Path.DirectorySeparatorChar + "Debug";
 
 			Configurations.Add(cfg);
 
@@ -174,15 +178,23 @@ namespace MonoDevelop.D
 			cfg = CreateConfiguration("Release") as DProjectConfiguration;
 
 			cfg.DebugMode = false;
-			cfg.ExtraCompilerArguments = "-o";
-			cfg.ObjectDirectory += Path.DirectorySeparatorChar + "Release";
 
 			Configurations.Add(cfg);
-			
+
+			// Create unittest configuration
+			var unittestConfig = CreateConfiguration("Unittest") as DProjectConfiguration;
+
+			unittestConfig.DebugMode = true;
+			unittestConfig.ExtraCompilerArguments += "-unittest ";
+
+			Configurations.Add(unittestConfig);
+
+
 			// Prepare all configurations
 			foreach (DProjectConfiguration c in Configurations)
 			{
-				c.OutputDirectory = Path.Combine(binPath, c.Id);
+				c.OutputDirectory = Path.Combine(this.GetRelativeChildPath(binPath), c.Id);
+				c.ObjectDirectory += Path.DirectorySeparatorChar + c.Id;
 				c.Output = Name;
 
 				if (projectOptions != null)
@@ -206,11 +218,11 @@ namespace MonoDevelop.D
 					// Set extra compiler&linker args
 					if (projectOptions.Attributes["CompilerArgs"].InnerText != null)
 					{
-						c.ExtraCompilerArguments = projectOptions.Attributes["CompilerArgs"].InnerText;
+						c.ExtraCompilerArguments += projectOptions.Attributes["CompilerArgs"].InnerText;
 					}
 					if (projectOptions.Attributes["LinkerArgs"].InnerText != null)
 					{
-						c.ExtraLinkerArguments = projectOptions.Attributes["LinkerArgs"].InnerText;
+						c.ExtraLinkerArguments += projectOptions.Attributes["LinkerArgs"].InnerText;
 					}
 
 					if (projectOptions.GetAttribute("ExternalConsole") == "True")

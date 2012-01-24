@@ -27,8 +27,8 @@ namespace MonoDevelop.D
 		[ItemProperty("ExtraLinkerArguments", DefaultValue = "")]
 		public string ExtraLinkerArguments = "";
 
-		[ItemProperty("ObjectsDirectory", DefaultValue="objs")]
-		public string ObjectDirectory = "objs";
+		[ItemProperty("ObjectsDirectory", DefaultValue="obj")]
+		public string ObjectDirectory = "obj";
 		#endregion
 
 		//if absent an exception occurs when opening project config	

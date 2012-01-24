@@ -1,9 +1,6 @@
 ﻿
 This document contains a list of to-do features:
 
-
-* Put in a Unittest configuration -- compiles with -unittest flag to an executable
-
 * Alter block statement/body boundaries on new-line/delete line events 
 	so no wrong function scope's getting detected anymore
 * Add the out(resultVar) variable to the out test block's scope
