@@ -246,6 +246,7 @@ namespace D_Parser.Dom
 
 		BlockStatement _In;
 		BlockStatement _Out;
+		public IdentifierDeclaration OutResultVariable;
 		BlockStatement _Body;
 
 		public BlockStatement GetSubBlockAt(CodeLocation Where)

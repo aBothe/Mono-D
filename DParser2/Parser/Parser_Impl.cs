@@ -4100,7 +4100,7 @@ namespace D_Parser.Parser
 						Step();
 						if (Expect(Identifier))
 						{
-							//TODO: Handle returned variable called t.Value
+							par.OutResultVariable = new IdentifierDeclaration(t.Value) { Location=t.Location, EndLocation=t.EndLocation };
 						}
 						Expect(CloseParenthesis);
 					}

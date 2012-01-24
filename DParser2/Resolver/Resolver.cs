@@ -161,6 +161,12 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 				{
 					var dm = curScope as DMethod;
 
+					// Add 'out' variable if typing in the out test block currently
+					if (dm.OutResultVariable != null && dm.Out != null && dm.GetSubBlockAt(Caret) == dm.Out)
+					{
+						ret.Add(BuildOutResultVariable(dm));
+					}
+
 					if (VisibleMembers.HasFlag(MemberTypes.Variables))
 						ret.AddRange(dm.Parameters);
 
@@ -525,6 +531,31 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 		#region ResolveType
 		static DVariable __ctfe;
 
+		/// <summary>
+		/// Returns a variable wrapper for the out test variable defined in the out(Identifier)-section
+		/// 
+		/// int foo()
+		/// out(result)
+		/// {
+		///		assert(result>0); // 'result' is of type int
+		/// }
+		/// { ... }
+		/// </summary>
+		/// <param name="dm"></param>
+		/// <returns></returns>
+		static DVariable BuildOutResultVariable(DMethod dm)
+		{
+			return new DVariable
+			{
+				Name = dm.OutResultVariable.Value as string,
+				NameLocation = dm.OutResultVariable.Location,
+				Type = dm.Type, // TODO: What to do on auto functions?
+				Parent = dm,
+				StartLocation = dm.OutResultVariable.Location,
+				EndLocation = dm.OutResultVariable.EndLocation,
+			};
+		}
+
 		public static ResolveResult[] ResolveType(IEditorData editor,
 			ResolverContext ctxt,
 			bool alsoParseBeyondCaret = false,
@@ -779,6 +810,14 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 									var nestedBlock = parDM.GetSubBlockAt(declaration.Location);
 									if (nestedBlock != null)
 									{
+										// Make out test variable resolvable
+										if (parDM.OutResultVariable != null && 
+											nestedBlock == parDM.Out && 
+											parDM.OutResultVariable.Value as string == searchIdentifier)
+										{
+											matches.Add(BuildOutResultVariable(parDM));
+										}
+
 										// Search for the deepest statement scope and test all declarations done in the entire scope hierarchy
 										decls = BlockStatement.GetItemHierarchy(nestedBlock.SearchStatementDeeply(declaration.Location), declaration.Location);
 
@@ -787,6 +826,14 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 											if (decl != null && decl.Name == searchIdentifier)
 												matches.Add(decl);
 									}
+								}
+
+								// Make out test variable resolvable
+								if (dm.OutResultVariable != null && 
+									dm.GetSubBlockAt(declaration.Location)==dm.Out && 
+									dm.OutResultVariable.Value as string == searchIdentifier)
+								{
+									matches.Add(BuildOutResultVariable(dm));
 								}
 
 								// Do not check further method's children but its (template) parameters
