@@ -215,7 +215,7 @@ namespace D_Parser.Resolver
 			 *	2) An end of a context block is still expected
 			 */
 			bool isBeyondCaret = false; // Only reset bool states if NOT beyond target offset
-			while (off < Offset - 1 ||
+			while (off < Offset ||
 				(isBeyondCaret = (lastBeginOffset != -1 && lastEndOffset == -1 && off < Text.Length)))
 			{
 				cur = Text[off];

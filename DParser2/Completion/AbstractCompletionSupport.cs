@@ -76,6 +76,16 @@ namespace D_Parser.Completion
 			if (curBlock == null)
 				return;
 
+			// If typing a begun identifier, return immediately
+			if ((EnteredText!=null && EnteredText.Length>0 ? IsIdentifierChar(EnteredText[0]):true) &&
+				Editor.CaretOffset > 0 &&
+				IsIdentifierChar(Editor.ModuleCode[Editor.CaretOffset - 1]))
+				return;
+
+			if (CaretContextAnalyzer.IsInCommentAreaOrString(Editor.ModuleCode, Editor.CaretOffset))
+				return;
+
+
 			IEnumerable<INode> listedItems = null;
 
 			// Usually shows variable members
@@ -115,13 +125,7 @@ namespace D_Parser.Completion
 				EnteredText.Length < 1 ||
 				IsIdentifierChar(EnteredText[0]))
 			{
-				// If typing a begun identifier, return immediately
-				if (EnteredText!=" " && 
-					Editor.CaretOffset > 0 && 
-					IsIdentifierChar(Editor.ModuleCode[Editor.CaretOffset - 1]))
-					return;
-
-				// 1) Get current context the caret is at.
+				// 1) Get current context the caret is at
 				ParserTrackerVariables trackVars = null;
 
 				var parsedBlock = DResolver.FindCurrentCaretContext(
