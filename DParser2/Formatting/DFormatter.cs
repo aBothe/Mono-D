@@ -118,8 +118,8 @@ namespace D_Parser.Formatting
 				{
 					if (la.line > maxLine || Lexer.IsEOF)
 						lastLineIndent = null;
-					
-					if (!Lexer.IsEOF)
+
+					if (t.line>maxLine)
 						break;
 				}
 
