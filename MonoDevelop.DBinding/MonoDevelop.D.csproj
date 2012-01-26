@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -228,6 +228,10 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="templates\EmptyRCFile.xft.xml" />
+    <EmbeddedResource Include="Building\CompilerPresets\dmd.xml" />
+    <EmbeddedResource Include="Building\CompilerPresets\gdc.xml" />
+    <EmbeddedResource Include="Building\CompilerPresets\ldc.xml" />
+    <EmbeddedResource Include="Building\CompilerPresets\presets.xml" />
     <Content Include="Formatting\DPolicy.xml" />
     <Content Include="Remaining features.txt" />
   </ItemGroup>
