@@ -7,6 +7,9 @@ using MonoDevelop.Ide.Gui;
 using D_Parser.Resolver;
 using D_Parser.Dom;
 using D_Parser.Dom.Statements;
+using D_Parser.Parser;
+using System.IO;
+using D_Parser.Dom.Expressions;
 
 namespace MonoDevelop.D.Completion
 {
@@ -16,8 +19,8 @@ namespace MonoDevelop.D.Completion
 		ArgumentsResolutionResult args;
 
 		int selIndex = 0;
-		public ResolveResult CurrentResult { get { return args.ResolvedTypesOrMethods[selIndex]; } }		
-		
+		public ResolveResult CurrentResult { get { return args.ResolvedTypesOrMethods[selIndex]; } }
+		DMethod scopeMethod = null;
 		
 		public static DParameterDataProvider Create(Document doc, IAbstractSyntaxTree SyntaxTree, CodeCompletionContext ctx)
 		{		
@@ -27,9 +30,6 @@ namespace MonoDevelop.D.Completion
 			IStatement stmt = null;
 			var curBlock = DResolver.SearchBlockAt(SyntaxTree, caretLocation, out stmt);
 
-			if (curBlock == null)
-				return null;
-			
 			if (!(curBlock is D_Parser.Dom.DMethod))
 				return null;
 
@@ -48,7 +48,7 @@ namespace MonoDevelop.D.Completion
 				if (argsResult == null || argsResult.ResolvedTypesOrMethods == null || argsResult.ResolvedTypesOrMethods.Length < 1)
 					return null;
 
-				return new DParameterDataProvider(doc, argsResult);
+				return new DParameterDataProvider(doc, argsResult) { scopeMethod=curBlock as DMethod };
 			}
 			catch { return null; }
 		}
@@ -83,26 +83,47 @@ namespace MonoDevelop.D.Completion
 		
 		public int GetCurrentParameterIndex (ICompletionWidget widget, CodeCompletionContext ctx)
 		{
+			/*
 			int cursor = widget.CurrentCodeCompletionContext.TriggerOffset;
 			var loc=new CodeLocation(ctx.TriggerLineOffset,ctx.TriggerLine);
 
-			var ex=args.ParsedExpression;
-
-			if (ex is D_Parser.Dom.Expressions.PostfixExpression_MethodCall)
+			if (args.IsTemplateInstanceArguments)
 			{
-				var mc = ex as D_Parser.Dom.Expressions.PostfixExpression_MethodCall;
 
-				int argc=1;
-				foreach (var par in mc.Arguments)
-				{
-					if (loc >= par.Location && loc <= par.EndLocation)
-						return argc;
-
-					argc++;
-				}
 			}
-			
-			return -1; 
+			else
+			{
+				var firstArgLocation = CodeLocation.Empty;
+
+				if (args.ParsedExpression is PostfixExpression_MethodCall)
+					firstArgLocation = (args.ParsedExpression as PostfixExpression_MethodCall).Arguments[0].Location;
+				else if (args.ParsedExpression is NewExpression)
+					firstArgLocation = (args.ParsedExpression as NewExpression).Arguments[0].Location;
+				else
+					return -1;
+
+				if (loc < firstArgLocation)
+					loc = firstArgLocation;
+
+				var code = doc.Editor.Document.GetTextBetween(firstArgLocation.Line,firstArgLocation.Column, scopeMethod.EndLocation.Line, scopeMethod.EndLocation.Column);
+
+				var tr = new StringReader(code);
+				var parser = new DParser(new Lexer(tr));
+				parser.Lexer.SetInitialLocation(firstArgLocation);
+				parser.Step();
+
+				var updatedArguments = parser.ArgumentList();
+				tr.Close();
+
+				var lastArg = updatedArguments[updatedArguments.Count - 1];
+
+				for (int i = 0; i < updatedArguments.Count; i++)
+					if ((loc >= updatedArguments[i].Location && loc <= updatedArguments[i].EndLocation) ||
+						(i==updatedArguments.Count-1 && loc <= updatedArguments[i].EndLocation))
+						return i + 1;
+			}
+			*/
+			return 0;
 		}
 
 		public string GetMethodMarkup (int overload, string[] parameterMarkup, int currentParameter)

@@ -7,6 +7,8 @@ namespace D_Parser.Parser
 {
     public class DTokens
     {
+		public const int INVALID = -1;
+
         // ----- terminal classes -----
         public const int EOF = 0;
         public const int Identifier = 1;
@@ -478,6 +480,7 @@ namespace D_Parser.Parser
 
 		static Dictionary<int, string> NonKeywords = new Dictionary<int, string> {
 			// Meta
+			{INVALID,"<Invalid Token>"},
 			{EOF,"<EOF>"},
 			{Identifier,"<Identifier>"},
 			{Literal,"<Literal>"},

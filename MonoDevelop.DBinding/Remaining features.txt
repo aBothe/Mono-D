@@ -3,7 +3,6 @@ This document contains a list of to-do features:
 
 * Alter block statement/body boundaries on new-line/delete line events 
 	so no wrong function scope's getting detected anymore
-* Close parameter insight on ) or ;
 * Highlight context-dependent keywords (__traits, default version keywords, 
 	variable arguments pointers, scope identifiers [success/exit/failure] etc.)
 	see http://www.d-programming-language.org/version.html#PredefinedVersions
@@ -27,6 +26,7 @@ This document contains a list of to-do features:
 * Omit debug/versioned declarations 
   if not fitting to environment dependencied 
   ([debug/release] or [Windows/Mac/Unix/BSD] etc.)
-* Add array index completion
+* Fix parameter insight
+	- Add array index completion
 	- Add delegate parameter recognition
 

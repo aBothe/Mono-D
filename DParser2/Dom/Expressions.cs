@@ -1572,7 +1572,7 @@ namespace D_Parser.Dom.Expressions
 
 	public class TokenExpression : PrimaryExpression
 	{
-		public int Token;
+		public int Token=DTokens.INVALID;
 
 		public TokenExpression() { }
 		public TokenExpression(int T) { Token = T; }

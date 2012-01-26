@@ -112,6 +112,14 @@ namespace MonoDevelop.D
 
 		#region Parameter completion
 
+		public override bool KeyPress(Gdk.Key key, char keyChar, Gdk.ModifierType modifier)
+		{
+			if (this.CompletionWidget != null && (keyChar == ')' || keyChar == ';'))
+				ParameterInformationWindowManager.HideWindow(this.CompletionWidget);
+			
+			return base.KeyPress(key, keyChar, modifier);
+		}
+
 		public override IParameterDataProvider ParameterCompletionCommand(CodeCompletionContext completionContext)
 		{
 			return base.ParameterCompletionCommand(completionContext);
