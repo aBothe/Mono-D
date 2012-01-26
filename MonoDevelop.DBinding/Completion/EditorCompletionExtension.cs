@@ -122,10 +122,15 @@ namespace MonoDevelop.D
 			return base.GetParameterCompletionCommandOffset(out cpos);
 		}
 
+
 		public override IParameterDataProvider HandleParameterCompletion(CodeCompletionContext completionContext, char completionChar)
 		{
-			if (!(((completionChar == ',') && (!ParameterInformationWindowManager.IsWindowVisible)) || completionChar == '(' || completionChar=='!'))
+			if (completionChar != ',' &&
+				completionChar != '(' &&
+				completionChar != '!')
+			{
 				return null;
+			}
 						
 			// Require a parsed D source
 			var dom = base.Document.ParsedDocument as ParsedDModule;

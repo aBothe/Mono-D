@@ -15,6 +15,7 @@ namespace D_Parser.Resolver
 		public bool IsTemplateInstanceArguments;
 
 		public IExpression ParsedExpression;
+		public ITypeDeclaration MethodIdentifier;
 
 		public ResolveResult[] ResolvedTypesOrMethods;
 
@@ -51,16 +52,25 @@ namespace D_Parser.Resolver
 
 	public class ParameterContextResolution
 	{
-		public static ArgumentsResolutionResult ResolveArgumentContext(
-			string code,
-			int caretOffset,
+		/// <summary>
+		/// Reparses the given method's fucntion body until the cursor position,
+		/// searches the last occurring method call or template instantiation,
+		/// counts its already typed arguments
+		/// and returns a wrapper containing all the information.
+		/// </summary>
+		/// <param name="code"></param>
+		/// <param name="caret"></param>
+		/// <param name="caretLocation"></param>
+		/// <param name="MethodScope"></param>
+		/// <param name="scopedStatement"></param>
+		/// <returns></returns>
+		public static ArgumentsResolutionResult LookupArgumentRelatedStatement(
+			string code, 
+			int caret, 
 			CodeLocation caretLocation,
-			DMethod MethodScope,
-			IEnumerable<IAbstractSyntaxTree> parseCache, IEnumerable<IAbstractSyntaxTree> ImportCache)
+			DMethod MethodScope)
 		{
-			var ctxt = new ResolverContext { ScopedBlock = MethodScope, ParseCache = parseCache, ImportCache = ImportCache };
-
-			#region Parse the code between the last block opener and the caret
+			IStatement scopedStatement = null;
 
 			var curMethodBody = MethodScope.GetSubBlockAt(caretLocation);
 
@@ -77,22 +87,20 @@ namespace D_Parser.Resolver
 			var blockOpenerOffset = blockOpenerLocation.Line <= 0 ? blockOpenerLocation.Column :
 				DocumentHelper.LocationToOffset(code, blockOpenerLocation);
 
-			if (blockOpenerOffset >= 0 && caretOffset - blockOpenerOffset > 0)
+			if (blockOpenerOffset >= 0 && caret - blockOpenerOffset > 0)
 			{
-				var codeToParse = code.Substring(blockOpenerOffset, caretOffset - blockOpenerOffset);
+				var codeToParse = code.Substring(blockOpenerOffset, caret - blockOpenerOffset);
 
 				curMethodBody = DParser.ParseBlockStatement(codeToParse, blockOpenerLocation, MethodScope);
 
 				if (curMethodBody != null)
-					ctxt.ScopedStatement = curMethodBody.SearchStatementDeeply(caretLocation);
+					scopedStatement = curMethodBody.SearchStatementDeeply(caretLocation);
 			}
 
-			if (curMethodBody == null || ctxt.ScopedStatement == null)
+			if (curMethodBody == null || scopedStatement == null)
 				return null;
-			#endregion
 
-			// Scan statement for method calls or template instantiations
-			var e = SearchForMethodCallsOrTemplateInstances(ctxt.ScopedStatement, caretLocation);
+			var e= SearchForMethodCallsOrTemplateInstances(scopedStatement, caretLocation);
 
 			/*
 			 * 1) foo(			-- normal arguments only
@@ -104,8 +112,6 @@ namespace D_Parser.Resolver
 			 * 7) mystruct(		-- opCall call
 			 */
 			var res = new ArgumentsResolutionResult() { ParsedExpression = e };
-
-			ITypeDeclaration methodIdentifier = null;
 
 			// 1), 2)
 			if (e is PostfixExpression_MethodCall)
@@ -127,7 +133,7 @@ namespace D_Parser.Resolver
 					}
 				}
 
-				methodIdentifier = call.PostfixForeExpression.ExpressionTypeRepresentation;
+				res.MethodIdentifier = call.PostfixForeExpression.ExpressionTypeRepresentation;
 
 			}
 			// 3)
@@ -151,7 +157,7 @@ namespace D_Parser.Resolver
 					}
 				}
 
-				methodIdentifier = new IdentifierDeclaration(templ.TemplateIdentifier.Value) { InnerDeclaration = templ.InnerDeclaration };
+				res.MethodIdentifier = new IdentifierDeclaration(templ.TemplateIdentifier.Value) { InnerDeclaration = templ.InnerDeclaration };
 			}
 			else if (e is NewExpression)
 			{
@@ -171,20 +177,34 @@ namespace D_Parser.Resolver
 					}
 				}
 
-				methodIdentifier = ne.ExpressionTypeRepresentation;
+				res.MethodIdentifier = ne.ExpressionTypeRepresentation;
 			}
 
-			if (methodIdentifier == null)
+			return res;
+		}
+
+		public static ArgumentsResolutionResult ResolveArgumentContext(
+			string code,
+			int caretOffset,
+			CodeLocation caretLocation,
+			DMethod MethodScope,
+			IEnumerable<IAbstractSyntaxTree> parseCache, IEnumerable<IAbstractSyntaxTree> ImportCache)
+		{
+			var ctxt = new ResolverContext { ScopedBlock = MethodScope, ParseCache = parseCache, ImportCache = ImportCache };
+
+			var res = LookupArgumentRelatedStatement(code, caretOffset, caretLocation, MethodScope);
+
+			if (res.MethodIdentifier == null)
 				return null;
 
 			// Resolve all types, methods etc. which belong to the methodIdentifier
-			res.ResolvedTypesOrMethods = DResolver.ResolveType(methodIdentifier, ctxt);
+			res.ResolvedTypesOrMethods = DResolver.ResolveType(res.MethodIdentifier, ctxt);
 
 			if (res.ResolvedTypesOrMethods == null)
 				return res;
 
 			// 4),5),6)
-			if (e is NewExpression)
+			if (res.ParsedExpression is NewExpression)
 			{
 				var substitutionList = new List<ResolveResult>();
 				foreach (var rr in res.ResolvedTypesOrMethods)
@@ -206,7 +226,7 @@ namespace D_Parser.Resolver
 			}
 
 			// 7)
-			else if (e is PostfixExpression_MethodCall)
+			else if (res.ParsedExpression is PostfixExpression_MethodCall)
 			{
 				var substitutionList = new List<ResolveResult>();
 

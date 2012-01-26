@@ -27,4 +27,6 @@ This document contains a list of to-do features:
 * Omit debug/versioned declarations 
   if not fitting to environment dependencied 
   ([debug/release] or [Windows/Mac/Unix/BSD] etc.)
+* Add array index completion
+	- Add delegate parameter recognition
 

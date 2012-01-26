@@ -14,6 +14,7 @@ namespace MonoDevelop.D.Completion
 	{
 		Document doc;
 		ArgumentsResolutionResult args;
+
 		int selIndex = 0;
 		public ResolveResult CurrentResult { get { return args.ResolvedTypesOrMethods[selIndex]; } }		
 		
@@ -29,20 +30,20 @@ namespace MonoDevelop.D.Completion
 			if (curBlock == null)
 				return null;
 			
-			
-			//doc.Edito
 			if (!(curBlock is D_Parser.Dom.DMethod))
 				return null;
 
 			try
-	
 			{
+				var parseCache=DCodeCompletionSupport.EnumAvailableModules(doc);
+				var importCache=DResolver.ResolveImports(SyntaxTree as DModule,parseCache);
 				var argsResult = ParameterContextResolution.ResolveArgumentContext(
 					doc.Editor.Text, 
 					caretOffset, 
 					caretLocation, 
 					curBlock as D_Parser.Dom.DMethod, 
-					DCodeCompletionSupport.EnumAvailableModules(doc),null);
+					parseCache,
+					importCache);
 				
 				if (argsResult == null || argsResult.ResolvedTypesOrMethods == null || argsResult.ResolvedTypesOrMethods.Length < 1)
 					return null;
@@ -82,49 +83,26 @@ namespace MonoDevelop.D.Completion
 		
 		public int GetCurrentParameterIndex (ICompletionWidget widget, CodeCompletionContext ctx)
 		{
-			return args.CurrentlyTypedArgumentIndex+1;
-			/*
 			int cursor = widget.CurrentCodeCompletionContext.TriggerOffset;
-			int i =  ctx.TriggerOffset;		
+			var loc=new CodeLocation(ctx.TriggerLineOffset,ctx.TriggerLine);
 
-			if (i > cursor)
-				return -1;
-			if (i == cursor) 
-				return 1; // parameters are 1 based
-			//IEnumerable<string> types = MonoDevelop.Ide.DesktopService.GetMimeTypeInheritanceChain (CSharpFormatter.MimeType);
-			//CSharpIndentEngine engine = new CSharpIndentEngine (MonoDevelop.Projects.Policies.PolicyService.GetDefaultPolicy<CSharpFormattingPolicy> (types));
-			int index = 0 + 1;
-			int parentheses = 0;
-			int bracket = 0;
-			do {
-				char c = widget.GetChar (i - 1);			
-				switch (c) {
-				case '{':
-					if (!CaretContextAnalyzer.IsInCommentAreaOrString(doc.Editor.Text, i - 1))
-						bracket++;
-					break;
-				case '}':
-					if (!CaretContextAnalyzer.IsInCommentAreaOrString(doc.Editor.Text, i - 1))
-						bracket--;
-					break;
-				case '(':
-					if (!CaretContextAnalyzer.IsInCommentAreaOrString(doc.Editor.Text, i - 1))
-						parentheses++;
-					break;
-				case ')':
-					if (!CaretContextAnalyzer.IsInCommentAreaOrString(doc.Editor.Text, i - 1))
-						parentheses--;
-					break;
-				case ',':
-					if (!CaretContextAnalyzer.IsInCommentAreaOrString(doc.Editor.Text, i - 1) && parentheses == 1 && bracket == 0)
-						index++;
-					break;
+			var ex=args.ParsedExpression;
+
+			if (ex is D_Parser.Dom.Expressions.PostfixExpression_MethodCall)
+			{
+				var mc = ex as D_Parser.Dom.Expressions.PostfixExpression_MethodCall;
+
+				int argc=1;
+				foreach (var par in mc.Arguments)
+				{
+					if (loc >= par.Location && loc <= par.EndLocation)
+						return argc;
+
+					argc++;
 				}
-				i++;
-			} while (i <= cursor && parentheses >= 0);
+			}
 			
-			return parentheses != 1 || bracket > 0 ? -1 : index;
-			*/
+			return -1; 
 		}
 
 		public string GetMethodMarkup (int overload, string[] parameterMarkup, int currentParameter)
