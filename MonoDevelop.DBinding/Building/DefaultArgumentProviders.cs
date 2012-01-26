@@ -44,7 +44,7 @@ namespace MonoDevelop.D.Building
 
 		public override void ResetCompilerConfiguration()
 		{
-			Configuration.Vendor = DCompilerVendor.DMD;
+			Configuration.Vendor = "dmd";
 			Configuration.DefaultLibraries.Clear();
 
 			var dmd = "dmd";
@@ -58,7 +58,7 @@ namespace MonoDevelop.D.Building
 			// Add phobos.lib/.a by default
 			Configuration.DefaultLibraries.Clear();
 			if(OS.IsWindows)
-				Configuration.DefaultLibraries.Add("phobos"+DCompiler.StaticLibraryExtension);
+				Configuration.DefaultLibraries.Add("phobos" + DCompilerService.StaticLibraryExtension);
 		}
 
 		public override void ResetBuildArguments(DCompileTarget LinkTarget, bool IsDebug)
@@ -103,7 +103,7 @@ namespace MonoDevelop.D.Building
 
 		public override void ResetCompilerConfiguration()
 		{
-			Configuration.Vendor = DCompilerVendor.GDC;
+			Configuration.Vendor = "gdc";
 			Configuration.DefaultLibraries.Clear();
 
 			var gdc = "gdc";
@@ -118,7 +118,7 @@ namespace MonoDevelop.D.Building
 			
 			Configuration.DefaultLibraries.Clear();
 			if (OS.IsWindows)
-				Configuration.DefaultLibraries.Add("phobos"+DCompiler.StaticLibraryExtension);
+				Configuration.DefaultLibraries.Add("phobos" + DCompilerService.StaticLibraryExtension);
 		}
 
 		public override void ResetBuildArguments(DCompileTarget LinkTarget, bool IsDebug)
@@ -161,7 +161,7 @@ namespace MonoDevelop.D.Building
 
 		public override void ResetCompilerConfiguration()
 		{
-			Configuration.Vendor = DCompilerVendor.LDC;
+			Configuration.Vendor = "ldc";
 			Configuration.DefaultLibraries.Clear();
 
 			var ldc = "ldc";
@@ -176,7 +176,7 @@ namespace MonoDevelop.D.Building
 			
 			Configuration.DefaultLibraries.Clear();
 			if (OS.IsWindows)
-				Configuration.DefaultLibraries.Add("phobos"+DCompiler.StaticLibraryExtension);
+				Configuration.DefaultLibraries.Add("phobos" + DCompilerService.StaticLibraryExtension);
 		}
 
 		public override void ResetBuildArguments(DCompileTarget LinkTarget, bool IsDebug)

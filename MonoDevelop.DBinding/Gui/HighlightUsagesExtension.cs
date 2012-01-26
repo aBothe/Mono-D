@@ -215,7 +215,7 @@ namespace MonoDevelop.D.Gui
 
 				var parseCache = Document.HasProject ?
 						(Document.Project as DProject).ParseCache :
-						DCompiler.Instance.GetDefaultCompiler().GlobalParseCache.ParseCache;
+						DCompilerService.Instance.GetDefaultCompiler().GlobalParseCache.ParseCache;
 
 				var referencedNode = DResolver.GetResultMember(rr[0]);
 

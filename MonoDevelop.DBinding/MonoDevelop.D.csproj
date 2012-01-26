@@ -117,13 +117,17 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="Building\ArgumentMacroProvider.cs" />
+    <Compile Include="Building\CompilerPresets\ConfigPresets.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ConfigPresets.resx</DependentUpon>
+    </Compile>
     <Compile Include="Building\DefaultArgumentProviders.cs" />
     <Compile Include="Building\ProjectBuilder.cs" />
     <Compile Include="Formatting\DFormattingPolicy.cs" />
     <Compile Include="Formatting\DTextEditorIndentation.cs" />
     <Compile Include="Formatting\FormattingPanel.cs" />
     <Compile Include="gtk-gui\generated.cs" />
-    <Compile Include="Building\DCompiler.cs" />
     <Compile Include="Completion\DCodeCompletionSupport.cs" />
     <Compile Include="Completion\EditorCompletionExtension.cs" />
     <Compile Include="DLanguageBinding.cs" />
@@ -164,6 +168,8 @@
     <Compile Include="Resolver\DResolverWrapper.cs" />
     <Compile Include="Formatting\FormattingPanelWidget.cs" />
     <Compile Include="gtk-gui\MonoDevelop.D.FormattingPanelWidget.cs" />
+    <Compile Include="Building\DCompilerService.cs" />
+    <Compile Include="Building\CompilerPresets\PresetLoader.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />
@@ -179,6 +185,10 @@
     </MonoDevelop>
   </ProjectExtensions>
   <ItemGroup>
+    <EmbeddedResource Include="Building\CompilerPresets\ConfigPresets.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ConfigPresets.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Include="icons\dfile16.png">
       <LogicalName>dfile16.png</LogicalName>
     </EmbeddedResource>
@@ -228,10 +238,15 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="templates\EmptyRCFile.xft.xml" />
-    <EmbeddedResource Include="Building\CompilerPresets\dmd.xml" />
-    <EmbeddedResource Include="Building\CompilerPresets\gdc.xml" />
-    <EmbeddedResource Include="Building\CompilerPresets\ldc.xml" />
-    <EmbeddedResource Include="Building\CompilerPresets\presets.xml" />
+    <EmbeddedResource Include="Building\CompilerPresets\dmd.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Building\CompilerPresets\gdc.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Building\CompilerPresets\ldc.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <Content Include="Formatting\DPolicy.xml" />
     <Content Include="Remaining features.txt" />
   </ItemGroup>

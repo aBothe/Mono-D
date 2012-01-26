@@ -53,9 +53,22 @@ namespace MonoDevelop.D
 		
 		[ItemProperty("UseDefaultCompiler")]
 		public bool UseDefaultCompilerVendor = true;
-		
+
 		[ItemProperty("Compiler")]
-		public DCompilerVendor UsedCompilerVendor= DCompilerVendor.DMD;
+		string _compilerVendor;
+
+		public string UsedCompilerVendor
+		{
+			get {
+				if (UseDefaultCompilerVendor)
+					return DCompilerService.Instance.DefaultCompiler;
+				return _compilerVendor;
+			}
+			set
+			{
+				_compilerVendor = value;
+			}
+		}
 
 		[ItemProperty("Target")]
 		public DCompileTarget CompileTarget = DCompileTarget.Executable;
@@ -71,10 +84,12 @@ namespace MonoDevelop.D
 		/// Returns the actual compiler configuration used by this project
 		/// </summary>
 		public DCompilerConfiguration Compiler
-		{		
+		{
 			get 
-			{ 
-				return DCompiler.Instance.GetCompiler(UseDefaultCompilerVendor?DCompiler.Instance.DefaultCompiler : UsedCompilerVendor); 
+			{
+				return string.IsNullOrEmpty(UsedCompilerVendor)? 
+					DCompilerService.Instance.GetDefaultCompiler() : 
+					DCompilerService.Instance.GetCompiler(UsedCompilerVendor); 
 			}
 			set { UsedCompilerVendor = value.Vendor; }
 		}
@@ -210,9 +225,7 @@ namespace MonoDevelop.D
 					// Set project's compiler
 					if (projectOptions.Attributes["Compiler"] != null)
 					{
-						UsedCompilerVendor = (DCompilerVendor)Enum.Parse(
-							typeof(DCompilerVendor), 
-							projectOptions.Attributes["Compiler"].InnerText);
+						UsedCompilerVendor = projectOptions.Attributes["Compiler"].InnerText;
 					}
 
 					// Set extra compiler&linker args

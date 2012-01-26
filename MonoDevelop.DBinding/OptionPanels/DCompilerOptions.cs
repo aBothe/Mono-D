@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,20 +17,26 @@ namespace MonoDevelop.D.OptionPanels
 	/// </summary>
 	public partial class DCompilerOptions : Gtk.Bin
 	{
+		private Gtk.ListStore compilerStore = new Gtk.ListStore (typeof(string), typeof(DCompilerConfiguration));
 		private DCompilerConfiguration configuration;
-		
 		private Gtk.ListStore defaultLibStore = new Gtk.ListStore (typeof(string));
-		private Gtk.ListStore includePathStore = new Gtk.ListStore (typeof(string));		
-
+		private Gtk.ListStore includePathStore = new Gtk.ListStore (typeof(string));
 		private BuildArgumentOptions releaseArgumentsDialog = null;
-		private BuildArgumentOptions debugArgumentsDialog = null;	
+		private BuildArgumentOptions debugArgumentsDialog = null;
 		
-		public DCompilerOptions () 
+		public DCompilerOptions ()
 		{
 			this.Build ();
 			
 			Gtk.CellRendererText textRenderer = new Gtk.CellRendererText ();
 			
+			cmbCompilers.Clear ();			
+
+			cmbCompilers.PackStart (textRenderer, false);
+			cmbCompilers.AddAttribute (textRenderer, "text", 0);
+
+			cmbCompilers.Model = compilerStore;
+
 			tvDefaultLibs.Model = defaultLibStore;
 			tvDefaultLibs.HeadersVisible = false;
 			tvDefaultLibs.AppendColumn ("Library", textRenderer, "text", 0);
@@ -39,54 +45,103 @@ namespace MonoDevelop.D.OptionPanels
 			tvIncludePaths.HeadersVisible = false;
 			tvIncludePaths.AppendColumn ("Include", textRenderer, "text", 0);	
 			
-			releaseArgumentsDialog = new BuildArgumentOptions();
-			debugArgumentsDialog = new BuildArgumentOptions();
+			releaseArgumentsDialog = new BuildArgumentOptions ();
+			debugArgumentsDialog = new BuildArgumentOptions ();
 		}
 	
+		public void ReloadCompilerList ()
+		{
+			compilerStore.Clear ();
+			
+			foreach (var cmp in DCompilerService.Instance.Compilers) {
+				var virtCopy = new DCompilerConfiguration ();
+				virtCopy.CopyFrom (cmp);
+				compilerStore.AppendValues (cmp.Vendor, virtCopy);
+			}
+			
+			Gtk.TreeIter iter;
+			compilerStore.GetIterFirst (out iter);
+			cmbCompilers.SetActiveIter (iter);
+		}
+		
+		protected void OnCmbCompilersChanged (object sender, System.EventArgs e)
+		{
+			if (configuration != null) {
+				ApplyToVirtConfiguration ();
+			}
+			
+			Gtk.TreeIter iter;
+			if (cmbCompilers.GetActiveIter (out iter)) {
+				configuration = cmbCompilers.Model.GetValue (iter, 1) as DCompilerConfiguration;
+				
+				Load (configuration);
+			}
+		}
+		
 		public void Load (DCompilerConfiguration config)
 		{
 			configuration = config;
 			//for now, using Executable target compiler command for all targets source compiling
 			LinkTargetConfiguration targetConfig;
- 			targetConfig = config.GetTargetConfiguration(DCompileTarget.Executable);
+			targetConfig = config.GetTargetConfiguration (DCompileTarget.Executable);
 			
-			txtBinPath.Text=config.BinPath;
+			txtBinPath.Text = config.BinPath;
 			
 			txtCompiler.Text = targetConfig.Compiler;
 			
 			//linker targets 			
- 			targetConfig = config.GetTargetConfiguration(DCompileTarget.Executable); 						
+			targetConfig = config.GetTargetConfiguration (DCompileTarget.Executable); 						
 			txtConsoleAppLinker.Text = targetConfig.Linker;			
 			
- 			targetConfig = config.GetTargetConfiguration(DCompileTarget.ConsolelessExecutable); 						
+			targetConfig = config.GetTargetConfiguration (DCompileTarget.ConsolelessExecutable); 						
 			txtGUIAppLinker.Text = targetConfig.Linker;			
 			
- 			targetConfig = config.GetTargetConfiguration(DCompileTarget.SharedLibrary); 						
+			targetConfig = config.GetTargetConfiguration (DCompileTarget.SharedLibrary); 						
 			txtSharedLibLinker.Text = targetConfig.Linker;
 			
- 			targetConfig = config.GetTargetConfiguration(DCompileTarget.StaticLibrary); 						
+			targetConfig = config.GetTargetConfiguration (DCompileTarget.StaticLibrary); 						
 			txtStaticLibLinker.Text = targetConfig.Linker;
 			
-			releaseArgumentsDialog.Load(config, false);		
-			debugArgumentsDialog.Load(config, true);				
+			releaseArgumentsDialog.Load (config, false);		
+			debugArgumentsDialog.Load (config, true);				
 
-			defaultLibStore.Clear();
+			defaultLibStore.Clear ();
 			foreach (string lib in config.DefaultLibraries)
 				defaultLibStore.AppendValues (lib);
 
-			includePathStore.Clear();
-			foreach(var p in config.GlobalParseCache.DirectoryPaths)
-				includePathStore.AppendValues(p);
-										
+			includePathStore.Clear ();
+			foreach (var p in config.GlobalParseCache.DirectoryPaths)
+				includePathStore.AppendValues (p);
 		}
 
-
-		public bool Validate()
+		public bool Validate ()
 		{
 			return true;
 		}
+
+		public bool Store()
+		{
+			ApplyToVirtConfiguration();
+
+			Gtk.TreeIter iter;
+			compilerStore.GetIterFirst(out iter);
+
+			do
+			{
+				var virtCmp=compilerStore.GetValue(iter,1) as DCompilerConfiguration;
+				var cmp = DCompilerService.Instance.GetCompiler(virtCmp.Vendor);
+
+				if (cmp != null)
+					cmp.CopyFrom(virtCmp);
+				else
+					DCompilerService.Instance.Compilers.Add(virtCmp);
+			}
+			while (compilerStore.IterNext(ref iter));
+
+			return true;
+		}
 		
-		public bool Store ()
+		public bool ApplyToVirtConfiguration ()
 		{
 			if (configuration == null)
 				return false;
@@ -94,31 +149,31 @@ namespace MonoDevelop.D.OptionPanels
 			Gtk.TreeIter iter;
 			string line;
 			
-			configuration.BinPath=txtBinPath.Text;
+			configuration.BinPath = txtBinPath.Text;
 			
 			//for now, using Executable target compiler command for all targets source compiling
 			LinkTargetConfiguration targetConfig;
- 			targetConfig = configuration.GetTargetConfiguration(DCompileTarget.Executable); 			
+			targetConfig = configuration.GetTargetConfiguration (DCompileTarget.Executable); 			
 			targetConfig.Compiler = txtCompiler.Text;
 			
 			//linker targets 			
- 			targetConfig = configuration.GetTargetConfiguration(DCompileTarget.Executable); 						
+			targetConfig = configuration.GetTargetConfiguration (DCompileTarget.Executable); 						
 			targetConfig.Linker = txtConsoleAppLinker.Text;			
 			
- 			targetConfig = configuration.GetTargetConfiguration(DCompileTarget.ConsolelessExecutable); 						
+			targetConfig = configuration.GetTargetConfiguration (DCompileTarget.ConsolelessExecutable); 						
 			targetConfig.Linker = txtGUIAppLinker.Text;			
 			
- 			targetConfig = configuration.GetTargetConfiguration(DCompileTarget.SharedLibrary); 						
+			targetConfig = configuration.GetTargetConfiguration (DCompileTarget.SharedLibrary); 						
 			targetConfig.Linker = txtSharedLibLinker.Text;
 			
- 			targetConfig = configuration.GetTargetConfiguration(DCompileTarget.StaticLibrary); 						
+			targetConfig = configuration.GetTargetConfiguration (DCompileTarget.StaticLibrary); 						
 			targetConfig.Linker = txtStaticLibLinker.Text;
 			
-			releaseArgumentsDialog.Store();			
-			debugArgumentsDialog.Store();					
+			releaseArgumentsDialog.Store ();			
+			debugArgumentsDialog.Store ();					
 			
 			defaultLibStore.GetIterFirst (out iter);
-			configuration.DefaultLibraries.Clear();
+			configuration.DefaultLibraries.Clear ();
 			while (defaultLibStore.IterIsValid (iter)) {
 				line = (string)defaultLibStore.GetValue (iter, 0);
 				configuration.DefaultLibraries.Add (line);
@@ -126,44 +181,39 @@ namespace MonoDevelop.D.OptionPanels
 			}
 
 			#region Store new include paths
-			var paths = new List<string>();
+			var paths = new List<string> ();
 
 			includePathStore.GetIterFirst (out iter);
 			while (includePathStore.IterIsValid (iter)) {
 				line = (string)includePathStore.GetValue (iter, 0);
 				
-				paths.Add(line);
+				paths.Add (line);
 
 				includePathStore.IterNext (ref iter);
 			}
 
 			// If current dir count != the new dir count
-			bool cacheUpdateRequired = paths.Count!= configuration.GlobalParseCache.ParsedGlobalDictionaries.Count;
+			bool cacheUpdateRequired = paths.Count != configuration.GlobalParseCache.ParsedGlobalDictionaries.Count;
 
 			// If there's a new directory in it
-			if(!cacheUpdateRequired)
-				foreach(var path in paths)
-					if (!configuration.GlobalParseCache.ContainsDictionary(path))
-					{
+			if (!cacheUpdateRequired)
+				foreach (var path in paths)
+					if (!configuration.GlobalParseCache.ContainsDictionary (path)) {
 						cacheUpdateRequired = true;
 						break;
 					}
 
-			if (cacheUpdateRequired)
-			{
-				configuration.GlobalParseCache.ParsedGlobalDictionaries.Clear();
+			if (cacheUpdateRequired) {
+				configuration.GlobalParseCache.ParsedGlobalDictionaries.Clear ();
 
 				foreach (var path in paths)
-					configuration.GlobalParseCache.Add(path);
+					configuration.GlobalParseCache.Add (path);
 
-				try
-				{
+				try {
 					// Update parse cache immediately
-					DCompilerConfiguration.UpdateParseCacheAsync(configuration.GlobalParseCache);
-				}
-				catch (Exception ex)
-				{
-					LoggingService.LogError("Include path analysis error", ex);
+					DCompilerConfiguration.UpdateParseCacheAsync (configuration.GlobalParseCache);
+				} catch (Exception ex) {
+					LoggingService.LogError ("Include path analysis error", ex);
 				}
 			}
 			#endregion
@@ -171,57 +221,58 @@ namespace MonoDevelop.D.OptionPanels
 			return true;
 		}
 		
-		private void ShowArgumentsDialog(bool isDebug)
+		private void ShowArgumentsDialog (bool isDebug)
 		{
 			BuildArgumentOptions dialog = null;
 			if (isDebug)
-				dialog = debugArgumentsDialog;								
+				dialog = debugArgumentsDialog;
 			else
 				dialog = releaseArgumentsDialog;
 
-			MessageService.RunCustomDialog(dialog, IdeApp.Workbench.RootWindow);
+			MessageService.RunCustomDialog (dialog, IdeApp.Workbench.RootWindow);
 		}
 		
 		protected void btnReleaseArguments_Clicked (object sender, System.EventArgs e)
 		{			
-			ShowArgumentsDialog(false);						
+			ShowArgumentsDialog (false);						
 		}
+
 		protected void btnDebugArguments_Clicked (object sender, System.EventArgs e)
 		{
-			ShowArgumentsDialog(true);			
+			ShowArgumentsDialog (true);			
 		}
 
 		protected void btnBrowseDefaultLib_Clicked (object sender, System.EventArgs e)
 		{
-			var dialog = new AddLibraryDialog(AddLibraryDialog.FileFilterType.LibraryFiles)
+			var dialog = new AddLibraryDialog (AddLibraryDialog.FileFilterType.LibraryFiles)
 			{
 				TransientFor = Toplevel as Gtk.Window,
 				WindowPosition = Gtk.WindowPosition.Center
 			};
 
-			if (dialog.Run() == (int)Gtk.ResponseType.Ok)
+			if (dialog.Run () == (int)Gtk.ResponseType.Ok)
 				txtDefaultLib.Text = dialog.Library;
 		}
 		
-		private void OnDefaultLibAdded(object sender, System.EventArgs e)
+		private void OnDefaultLibAdded (object sender, System.EventArgs e)
 		{
 			if (txtDefaultLib.Text.Length > 0) {				
 				defaultLibStore.AppendValues (txtDefaultLib.Text);
 				txtDefaultLib.Text = string.Empty;
 			}			
-		}		
+		}
 		
 		protected void btnAddDefaultLib_Click (object sender, System.EventArgs e)
 		{
-			OnDefaultLibAdded(sender, e);
-		}		
+			OnDefaultLibAdded (sender, e);
+		}
 		
 		protected void btnRemoveDefaultLib_Clicked (object sender, System.EventArgs e)
 		{
 			Gtk.TreeIter iter;
 			tvDefaultLibs.Selection.GetSelected (out iter);
 			defaultLibStore.Remove (ref iter);
-		}				
+		}
 
 		protected void tvDefaultLibs_CursorChanged (object sender, System.EventArgs e)
 		{
@@ -238,12 +289,12 @@ namespace MonoDevelop.D.OptionPanels
 
 		protected void txtDefaultLib_Activated (object sender, System.EventArgs e)
 		{
-			OnDefaultLibAdded(sender, e);
-		}		
+			OnDefaultLibAdded (sender, e);
+		}
 		
 		protected void btnBrowseIncludePath_Clicked (object sender, System.EventArgs e)
 		{
-			Gtk.FileChooserDialog dialog = new Gtk.FileChooserDialog(
+			Gtk.FileChooserDialog dialog = new Gtk.FileChooserDialog (
 				"Select D Source Folder",
 				Ide.IdeApp.Workbench.RootWindow,
 				Gtk.FileChooserAction.SelectFolder,
@@ -256,15 +307,15 @@ namespace MonoDevelop.D.OptionPanels
 				WindowPosition = Gtk.WindowPosition.Center
 			};
 
-			try{
-				if (dialog.Run() == (int) Gtk.ResponseType.Ok)
+			try {
+				if (dialog.Run () == (int)Gtk.ResponseType.Ok)
 					txtIncludePath.Text = dialog.Filename;
-			}finally{
-				dialog.Destroy();
+			} finally {
+				dialog.Destroy ();
 			}
 		}
 		
-		private void OnIncludePathAdded(object sender, System.EventArgs e)
+		private void OnIncludePathAdded (object sender, System.EventArgs e)
 		{
 			if (txtIncludePath.Text.Length > 0) {				
 				includePathStore.AppendValues (txtIncludePath.Text);
@@ -274,7 +325,7 @@ namespace MonoDevelop.D.OptionPanels
 		
 		protected void btnAddIncludePath_Clicked (object sender, System.EventArgs e)
 		{
-			OnIncludePathAdded(sender, e);
+			OnIncludePathAdded (sender, e);
 		}
 
 		protected void btnRemoveIncludePath_Clicked (object sender, System.EventArgs e)
@@ -299,7 +350,7 @@ namespace MonoDevelop.D.OptionPanels
 
 		protected void txtIncludePath_Activated (object sender, System.EventArgs e)
 		{
-			OnIncludePathAdded(sender, e);
+			OnIncludePathAdded (sender, e);
 		}
 
 		protected void btnDefaults_Clicked (object sender, System.EventArgs e)
@@ -307,12 +358,12 @@ namespace MonoDevelop.D.OptionPanels
 			//need new object, because the user can still hit canel at the config screen
 			//so we don't want to update the real object yet
 			DCompilerConfiguration realConfig = configuration;			
-			try
-			{
-				DCompilerConfiguration tempConfig = new DCompilerConfiguration{Vendor = configuration.Vendor};		
-				DCompilerConfiguration.ResetToDefaults(tempConfig, configuration.Vendor);	
-				Load (tempConfig);				
-			}finally{
+			try {
+				var tempConfig = new DCompilerConfiguration{Vendor = configuration.Vendor};		
+				if (DCompilerConfiguration.ResetToDefaults (tempConfig))	
+					Load (tempConfig);
+				
+			} finally {
 				configuration = realConfig;	
 				releaseArgumentsDialog.Configuration = realConfig;
 				debugArgumentsDialog.Configuration = realConfig;
@@ -321,100 +372,45 @@ namespace MonoDevelop.D.OptionPanels
 
 		protected void OnButtonBinPathBrowserClicked (object sender, System.EventArgs e)
 		{
-			var dialog = new Gtk.FileChooserDialog("Select Compiler's bin path", null, Gtk.FileChooserAction.SelectFolder, "Cancel", Gtk.ResponseType.Cancel, "Ok", Gtk.ResponseType.Ok)
+			var dialog = new Gtk.FileChooserDialog ("Select Compiler's bin path", null, Gtk.FileChooserAction.SelectFolder, "Cancel", Gtk.ResponseType.Cancel, "Ok", Gtk.ResponseType.Ok)
 			{
 				TransientFor = Toplevel as Gtk.Window,
 				WindowPosition = Gtk.WindowPosition.Center
 			};
 
-			try{
-				if (dialog.Run() == (int)Gtk.ResponseType.Ok)
+			try {
+				if (dialog.Run () == (int)Gtk.ResponseType.Ok)
 					txtBinPath.Text = dialog.Filename;
-			}finally{
-				dialog.Destroy();
+			} finally {
+				dialog.Destroy ();
 			}
 		}
 	}
 	
-	public class DMDCompilerOptionsBinding : OptionsPanel
+	public class DCompilerOptionsBinding : OptionsPanel
 	{
 		private DCompilerOptions panel;
 		
 		public override Gtk.Widget CreatePanelWidget ()
 		{
 			panel = new DCompilerOptions ();
-			LoadConfigData();
-			return panel;
-		}
-		
-		public void LoadConfigData ()
-		{					
-			panel.Load(DCompiler.Instance.Dmd);
-		}		
-
-		public override bool ValidateChanges()
-		{
-			return panel.Validate();
-		}
-			
-		public override void ApplyChanges ()
-		{
-			panel.Store ();
-		}
-	}
-	
-	public class GDCCompilerOptionsBinding : OptionsPanel
-	{
-		private DCompilerOptions panel;
-		
-		public override Gtk.Widget CreatePanelWidget ()
-		{
-			panel = new DCompilerOptions ();
-			LoadConfigData();
+			LoadConfigData ();
 			return panel;
 		}
 		
 		public void LoadConfigData ()
 		{
-			panel.Load(DCompiler.Instance.Gdc);
-		}		
+			panel.ReloadCompilerList ();
+		}
 
-		public override bool ValidateChanges()
+		public override bool ValidateChanges ()
 		{
-			return panel.Validate();
+			return panel.Validate ();
 		}
 			
 		public override void ApplyChanges ()
 		{
-			panel.Store ();
-		}
-	}
-	
-	public class LDCCompilerOptionsBinding : OptionsPanel
-	{
-		private DCompilerOptions panel;
-
-		public override Gtk.Widget CreatePanelWidget ()
-		{
-			panel = new DCompilerOptions ();
-			LoadConfigData();
-			return panel;
-		}
-			
-		public void LoadConfigData ()
-		{		
-			panel.Load(DCompiler.Instance.Ldc);
-		}		
-
-		public override bool ValidateChanges()
-		{
-			return panel.Validate();
-		}
-			
-		public override void ApplyChanges ()
-		{
-			panel.Store ();
+			panel.Store();
 		}
 	}	
-	
 }

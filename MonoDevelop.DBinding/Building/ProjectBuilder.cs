@@ -144,7 +144,7 @@ namespace MonoDevelop.D.Building
 				
 			}
 			else*/
-			var	obj = HandleObjectFileNaming(f, DCompiler.ObjectExtension);
+			var obj = HandleObjectFileNaming(f, DCompilerService.ObjectExtension);
 
 			// Create argument string for source file compilation.
 			var dmdArgs = FillInMacros(Arguments.CompilerArguments + " " + BuildConfig.ExtraCompilerArguments, new DCompilerMacroProvider

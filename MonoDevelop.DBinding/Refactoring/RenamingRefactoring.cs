@@ -54,8 +54,8 @@ namespace MonoDevelop.D.Refactoring
 
 			// Setup locals
 			var parseCache = project != null ? 
-				project.ParseCache : 
-				DCompiler.Instance.GetDefaultCompiler().GlobalParseCache.ParseCache;
+				project.ParseCache :
+				DCompilerService.Instance.GetDefaultCompiler().GlobalParseCache.ParseCache;
 
             var modules = project!=null? 
 				project.LocalFileCache as IEnumerable<IAbstractSyntaxTree> : 

@@ -24,18 +24,18 @@ namespace MonoDevelop.D
 			Instance = this;
 
 			// Init compiler configurations if not done yet
-			if (!DCompiler.IsInitialized)
+			if (!DCompilerService.IsInitialized)
 			{
-				DCompiler.Load();
+				DCompilerService.Load();
 
 				// Init global parse cache
-				DCompiler.Instance.UpdateParseCachesAsync();
+				DCompilerService.Instance.UpdateParseCachesAsync();
 			}
 		}
 
 		~DLanguageBinding()
 		{
-			DCompiler.Instance.Save();
+			DCompilerService.Instance.Save();
 		}
 
 		public static bool IsDFile(string fileName)

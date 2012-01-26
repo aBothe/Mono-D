@@ -28,21 +28,14 @@ namespace MonoDevelop.D.Building
 		SharedLibrary,
 		StaticLibrary
 	}
-
-	public enum DCompilerVendor
-	{
-		DMD,
-		GDC,
-		LDC
-	}
-
+	
 	/// <summary>
 	/// Central class which enables build support for D projects in MonoDevelop.
 	/// </summary>
 	public class DCompilerService : ICustomXmlSerializer
 	{
-		static DCompiler _instance = null;
-		public static DCompiler Instance
+		static DCompilerService _instance = null;
+		public static DCompilerService Instance
 		{
 			get
 			{
@@ -58,18 +51,18 @@ namespace MonoDevelop.D.Building
 		public static void Load()
 		{
 			// Deserialize config data
-			_instance=PropertyService.Get<DCompiler>(GlobalPropertyName);
+			_instance=PropertyService.Get<DCompilerService>(GlobalPropertyName);
 
 			//LoggingService.AddLogger(new MonoDevelop.Core.Logging.FileLogger("A:\\monoDev.log", true));
 
-			if (_instance == null)
-				_instance = new DCompiler
-				{
-					Dmd = DCompilerConfiguration.CreateWithDefaults(DCompilerVendor.DMD),
-					Gdc = DCompilerConfiguration.CreateWithDefaults(DCompilerVendor.GDC),
-					Ldc = DCompilerConfiguration.CreateWithDefaults(DCompilerVendor.LDC)
-				};
+			if (_instance == null){
+				_instance = new DCompilerService();
+
+				CompilerPresets.PresetLoader.LoadPresets(_instance);
+			}
 		}
+
+		
 
 		public void Save()
 		{
@@ -97,21 +90,11 @@ namespace MonoDevelop.D.Building
 			get{return OS.IsWindows?".obj":".o";}	
 		}
 
-		public DCompilerVendor DefaultCompiler = DCompilerVendor.DMD;
+		public string DefaultCompiler;
 
 		public static bool IsInitialized { get { return _instance != null; } }
-
-		/// <summary>
-		/// Static object which stores all global information about the dmd installation which probably exists on the programmer's machine.
-		/// </summary>
-		public DCompilerConfiguration Dmd = new DCompilerConfiguration { Vendor = DCompilerVendor.DMD };
-		public DCompilerConfiguration Gdc = new DCompilerConfiguration { Vendor = DCompilerVendor.GDC };
-		public DCompilerConfiguration Ldc = new DCompilerConfiguration { Vendor = DCompilerVendor.LDC };
-
-		public IEnumerable<DCompilerConfiguration> Compilers
-		{
-			get { return new[] { Dmd,Gdc,Ldc }; }
-		}
+		
+		public readonly List<DCompilerConfiguration> Compilers=new List<DCompilerConfiguration>();
 
 		public void UpdateParseCachesAsync()
 		{
@@ -123,21 +106,17 @@ namespace MonoDevelop.D.Building
 		/// Returns the default compiler configuration
 		/// </summary>
 		public DCompilerConfiguration GetDefaultCompiler()
-		{
+		{			
 			return GetCompiler(DefaultCompiler);
 		}
 
-		public DCompilerConfiguration GetCompiler(DCompilerVendor type)
+		public DCompilerConfiguration GetCompiler(string vendor)
 		{
-			switch (type)
-			{
-				case DCompilerVendor.GDC:
-					return Gdc;
-				case DCompilerVendor.LDC:
-					return Ldc;
-			}
-
-			return Dmd;
+			foreach(var cmp in Compilers)
+				if(cmp.Vendor==vendor)
+					return cmp;
+			
+			return null;
 		}
 		
 		#region Loading & Saving
@@ -150,27 +129,29 @@ namespace MonoDevelop.D.Building
 			{
 				switch (x.LocalName)
 				{
-					case "DefaultCompiler":
+				case "DefaultCompiler":
 						if (x.MoveToAttribute("Name"))
-							DefaultCompiler = (DCompilerVendor)Enum.Parse(typeof(DCompilerVendor), x.ReadContentAsString());
-						break;
+							DefaultCompiler = x.ReadContentAsString();
+						else
+							DefaultCompiler = x.ReadString();
+					break;
 
-					case "Compiler":
-						var vendor = DCompilerVendor.DMD;
+				case "Compiler":
+					var vendor = "";
 
-						if (x.MoveToAttribute("Name"))
-						{
-							vendor = (DCompilerVendor)Enum.Parse(typeof(DCompilerVendor), x.ReadContentAsString());
+					if (x.MoveToAttribute("Name"))
+					{
+						vendor = x.ReadContentAsString();
 
-							x.MoveToElement();
-						}
-
-						var cmp=GetCompiler(vendor);
-						cmp.Vendor = vendor;
-
-						cmp.ReadFrom(x.ReadSubtree());
-						break;
+						x.MoveToElement();
+					}
 					
+					var cmp=GetCompiler(vendor) ?? new DCompilerConfiguration { Vendor = vendor};
+
+					cmp.ReadFrom(x.ReadSubtree());
+
+					Compilers.Add(cmp);
+					break;					
 					
 				case "ResCmp":
 					Win32ResourceCompiler.Instance.Load( x.ReadSubtree());
@@ -184,13 +165,13 @@ namespace MonoDevelop.D.Building
 		public void WriteTo(XmlWriter x)
 		{
 			x.WriteStartElement("DefaultCompiler");
-			x.WriteAttributeString("Name", DefaultCompiler.ToString());
+			x.WriteString(DefaultCompiler);
 			x.WriteEndElement();
 
 			foreach (var cmp in Compilers)
 			{
 				x.WriteStartElement("Compiler");
-				x.WriteAttributeString("Name", cmp.Vendor.ToString());
+				x.WriteAttributeString("Name", cmp.Vendor);
 
 				cmp.SaveTo(x);
 

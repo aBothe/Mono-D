@@ -1,1 +1,66 @@
-﻿<?xml version="1.0" encoding="utf-8" ?> 
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Compiler>
+	<TargetConfiguration Target="Executable">
+		<CompilerCommand>gdc</CompilerCommand>
+		<LinkerCommand>gdc</LinkerCommand>
+		<ObjectLinkPattern><![CDATA["{0}"]]></ObjectLinkPattern>
+		<IncludePathPattern><![CDATA[-I"{0}"]]></IncludePathPattern>
+		<DebugArgs>
+			<CompilerArg><![CDATA[-c "$src" -o "$obj" $includes -g]]></CompilerArg>
+			<LinkerArgs><![CDATA[-o "$target" -g $objs $libs]]></LinkerArgs>
+		</DebugArgs>
+		<ReleaseArgs>
+			<CompilerArg><![CDATA[-c "$src" -o "$obj" $includes -O3]]></CompilerArg>
+			<LinkerArgs><![CDATA[-o "$target" -O3 $objs $libs]]></LinkerArgs>
+		</ReleaseArgs>
+	</TargetConfiguration>
+	
+	<TargetConfiguration Target="ConsolelessExecutable">
+		<CompilerCommand>gdc</CompilerCommand>
+		<LinkerCommand>gdc</LinkerCommand>
+		<ObjectLinkPattern><![CDATA["{0}"]]></ObjectLinkPattern>
+		<IncludePathPattern><![CDATA[-I"{0}"]]></IncludePathPattern>
+		<DebugArgs>
+			<CompilerArg><![CDATA[-c "$src" -o "$obj" $includes -g]]></CompilerArg>
+			<LinkerArgs><![CDATA[-o "$target" -g $objs $libs -L/su:windows -L/exet:nt]]></LinkerArgs>
+		</DebugArgs>
+		<ReleaseArgs>
+			<CompilerArg><![CDATA[-c "$src" -o "$obj" $includes -O3]]></CompilerArg>
+			<LinkerArgs><![CDATA[-o "$target" -O3 $objs $libs -L/su:windows -L/exet:nt]]></LinkerArgs>
+		</ReleaseArgs>
+	</TargetConfiguration>
+	
+	<TargetConfiguration Target="SharedLibrary">
+		<CompilerCommand>gdc</CompilerCommand>
+		<LinkerCommand>gdc</LinkerCommand>
+		<ObjectLinkPattern><![CDATA["{0}"]]></ObjectLinkPattern>
+		<IncludePathPattern><![CDATA[-I"{0}"]]></IncludePathPattern>
+		<DebugArgs>
+			<CompilerArg><![CDATA[-fPIC -c "$src" -o "$obj" $includes -g]]></CompilerArg>
+			<LinkerArgs><![CDATA[-o "$target" -g $objs $libs -shared]]></LinkerArgs>
+		</DebugArgs>
+		<ReleaseArgs>
+			<CompilerArg><![CDATA[-fPIC -c "$src" -o "$obj" $includes -O3]]></CompilerArg>
+			<LinkerArgs><![CDATA[-o "$target" -O3 $objs $libs -shared]]></LinkerArgs>
+		</ReleaseArgs>
+	</TargetConfiguration>
+	
+	<TargetConfiguration Target="StaticLibrary">
+		<CompilerCommand>gdc</CompilerCommand>
+		<LinkerCommand>ar</LinkerCommand>
+		<ObjectLinkPattern><![CDATA["{0}"]]></ObjectLinkPattern>
+		<IncludePathPattern><![CDATA[-I"{0}"]]></IncludePathPattern>
+		<DebugArgs>
+			<CompilerArg><![CDATA[-c "$src" -o "$obj" $includes -g]]></CompilerArg>
+			<LinkerArgs><![CDATA[rcs "$target" $objs]]></LinkerArgs>
+		</DebugArgs>
+		<ReleaseArgs>
+			<CompilerArg><![CDATA[-c "$src" -o "$obj" $includes -O3]]></CompilerArg>
+			<LinkerArgs><![CDATA[rcs "$target" $objs]]></LinkerArgs>
+		</ReleaseArgs>
+	</TargetConfiguration>
+	
+	<DefaultLibs>
+		<lib>phobos.lib</lib>
+	</DefaultLibs>
+</Compiler>

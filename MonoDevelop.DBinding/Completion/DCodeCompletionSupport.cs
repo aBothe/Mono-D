@@ -68,7 +68,7 @@ namespace MonoDevelop.D.Completion
 					ret.AddRange(astColl);
 			}
 			else
-				foreach (var astColl in DCompiler.Instance.GetDefaultCompiler().GlobalParseCache)
+				foreach (var astColl in DCompilerService.Instance.GetDefaultCompiler().GlobalParseCache)
 					ret.AddRange(astColl);
 
 			return ret;

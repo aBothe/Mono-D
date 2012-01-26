@@ -12,7 +12,7 @@ namespace MonoDevelop.D.OptionPanels
 	{
 		private DProject project;
 		private DProjectConfiguration configuration;
-		private Gtk.ListStore compilerStore = new Gtk.ListStore (typeof(string), typeof(DCompilerVendor));
+		private Gtk.ListStore compilerStore = new Gtk.ListStore (typeof(string));
 		private Gtk.ListStore libStore = new Gtk.ListStore (typeof(string));
 		private Gtk.ListStore includePathStore = new Gtk.ListStore (typeof(string));
 		
@@ -36,10 +36,9 @@ namespace MonoDevelop.D.OptionPanels
 			cmbCompiler.AddAttribute (cellRenderer, "text", 0);
 
 			cmbCompiler.Model = compilerStore;
-			compilerStore.AppendValues ("DMD", DCompilerVendor.DMD);			
-			compilerStore.AppendValues ("GDC", DCompilerVendor.GDC);			
-			compilerStore.AppendValues ("LDC", DCompilerVendor.LDC);	
-			
+
+			foreach (var cmp in DCompilerService.Instance.Compilers)
+				compilerStore.AppendValues(cmp.Vendor);
 		}
 		
 		public void Load (DProject proj, DProjectConfiguration config)
@@ -50,14 +49,13 @@ namespace MonoDevelop.D.OptionPanels
 			cbUseDefaultCompiler.Active = proj.UseDefaultCompilerVendor;
 			OnUseDefaultCompilerChanged ();
 			Gtk.TreeIter iter;
-			if (cmbCompiler.Model.GetIterFirst (out iter)) {
+			if (cmbCompiler.Model.GetIterFirst (out iter))
 				do {
-					if (proj.UsedCompilerVendor == (DCompilerVendor)cmbCompiler.Model.GetValue (iter, 1)) {
+					if (proj.UsedCompilerVendor == cmbCompiler.Model.GetValue (iter, 0) as string) {
 						cmbCompiler.SetActiveIter (iter);
 						break;
 					} 
 				} while (cmbCompiler.Model.IterNext (ref iter));
-			}
 				
 			extraCompilerTextView.Buffer.Text = config.ExtraCompilerArguments;
 			extraLinkerTextView.Buffer.Text = config.ExtraLinkerArguments;
@@ -142,7 +140,7 @@ namespace MonoDevelop.D.OptionPanels
 			project.UseDefaultCompilerVendor = cbUseDefaultCompiler.Active;
 			Gtk.TreeIter iter;
 			if (cmbCompiler.GetActiveIter (out iter))
-				project.UsedCompilerVendor = (DCompilerVendor)cmbCompiler.Model.GetValue (iter, 1);
+				project.UsedCompilerVendor = cmbCompiler.Model.GetValue (iter, 0) as string;
 			
 			// Store args
 			configuration.ExtraCompilerArguments = extraCompilerTextView.Buffer.Text;

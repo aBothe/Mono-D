@@ -46,7 +46,7 @@ namespace MonoDevelop.D.Resolver
 				return null;
 
 			// Encapsule editor data for resolving
-			var parseCache = Project != null ? Project.ParseCache : DCompiler.Instance.GetDefaultCompiler().GlobalParseCache.ParseCache;
+			var parseCache = Project != null ? Project.ParseCache : DCompilerService.Instance.GetDefaultCompiler().GlobalParseCache.ParseCache;
 			var edData = new EditorData
 			{
 				CaretLocation = new CodeLocation(column, line),

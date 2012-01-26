@@ -129,24 +129,10 @@
 
 	<Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Other/DGlobalOptions/CompilerOptions">
 		<Section
-			id = "DMDCompilerOptions"
-			_label = "DMD"
-			class = "MonoDevelop.D.OptionPanels.DMDCompilerOptionsBinding"/>
-	</Extension>		
-	
-	<Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Other/DGlobalOptions/CompilerOptions">
-		<Section
-			id = "GDCCompilerOptions"
-			_label = "GDC"
-			class = "MonoDevelop.D.OptionPanels.GDCCompilerOptionsBinding"/>
-	</Extension>		
-	
-	<Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Other/DGlobalOptions/CompilerOptions">
-		<Section
-			id = "LDCCompilerOptions"
-			_label = "LDC"
-			class = "MonoDevelop.D.OptionPanels.LDCCompilerOptionsBinding"/>
-	</Extension>	
+			id = "DCompilerOptions"
+			_label = "Configurations"
+			class = "MonoDevelop.D.OptionPanels.DCompilerOptionsBinding"/>
+	</Extension>			
 
 	<Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Other/DGlobalOptions/CompilerOptions">
 		<Section

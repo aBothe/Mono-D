@@ -1,1 +1,66 @@
-﻿<?xml version="1.0" encoding="utf-8" ?> 
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Compiler>
+	<TargetConfiguration Target="Executable">
+		<CompilerCommand><![CDATA[ldc]]></CompilerCommand>
+		<LinkerCommand><![CDATA[ldc]]></LinkerCommand>
+		<ObjectLinkPattern><![CDATA["{0}"]]></ObjectLinkPattern>
+		<IncludePathPattern><![CDATA[-I"{0}"]]></IncludePathPattern>
+		<DebugArgs>
+			<CompilerArg><![CDATA[-c "$src" -of "$obj" $includes -g]]></CompilerArg>
+			<LinkerArgs><![CDATA[-of "$target" -g $objs $libs]]></LinkerArgs>
+		</DebugArgs>
+		<ReleaseArgs>
+			<CompilerArg><![CDATA[-c "$src" -of "$obj" $includes -O3 -release]]></CompilerArg>
+			<LinkerArgs><![CDATA[-of "$target" -O3 -release $objs $libs]]></LinkerArgs>
+		</ReleaseArgs>
+	</TargetConfiguration>
+	
+	<TargetConfiguration Target="ConsolelessExecutable">
+		<CompilerCommand><![CDATA[ldc]]></CompilerCommand>
+		<LinkerCommand><![CDATA[ldc]]></LinkerCommand>
+		<ObjectLinkPattern><![CDATA["{0}"]]></ObjectLinkPattern>
+		<IncludePathPattern><![CDATA[-I"{0}"]]></IncludePathPattern>
+		<DebugArgs>
+			<CompilerArg><![CDATA[-c "$src" -of "$obj" $includes -g]]></CompilerArg>
+			<LinkerArgs><![CDATA[-of "$target" -g $objs $libs -L/su:windows -L/exet:nt]]></LinkerArgs>
+		</DebugArgs>
+		<ReleaseArgs>
+			<CompilerArg><![CDATA[-c "$src" -of "$obj" $includes -O3 -release]]></CompilerArg>
+			<LinkerArgs><![CDATA[-of "$target" -O3 -release $objs $libs -L/su:windows -L/exet:nt]]></LinkerArgs>
+		</ReleaseArgs>
+	</TargetConfiguration>
+	<TargetConfiguration Target="SharedLibrary">
+		
+		<CompilerCommand>ldc</CompilerCommand>
+		<LinkerCommand>ldc</LinkerCommand>
+		<ObjectLinkPattern><![CDATA["{0}"]]></ObjectLinkPattern>
+		<IncludePathPattern><![CDATA[-I"{0}"]]></IncludePathPattern>
+		<DebugArgs>
+			<CompilerArg><![CDATA[-relocation-model=pic -c "$src" -of "$obj" $includes -g]]></CompilerArg>
+			<LinkerArgs><![CDATA[-of "$target" -g $objs $libs -L-shared]]></LinkerArgs>
+		</DebugArgs>
+		<ReleaseArgs>
+			<CompilerArg><![CDATA[-relocation-model=pic -c "$src" -of "$obj" $includes -O3 -release]]></CompilerArg>
+			<LinkerArgs><![CDATA[-of "$target" -O3 -release $objs $libs -L-shared]]></LinkerArgs>
+		</ReleaseArgs>
+	</TargetConfiguration>
+	
+	<TargetConfiguration Target="StaticLibrary">
+		<CompilerCommand><![CDATA[ldc]]></CompilerCommand>
+		<LinkerCommand><![CDATA[ar]]></LinkerCommand>
+		<ObjectLinkPattern><![CDATA["{0}"]]></ObjectLinkPattern>
+		<IncludePathPattern><![CDATA[-I"{0}"]]></IncludePathPattern>
+		<DebugArgs>
+			<CompilerArg><![CDATA[-c "$src" -of "$obj" $includes -g]]></CompilerArg>
+			<LinkerArgs><![CDATA[rcs "$target" $objs]]></LinkerArgs>
+		</DebugArgs>
+		<ReleaseArgs>
+			<CompilerArg><![CDATA[-c "$src" -of "$obj" $includes -O3 -release]]></CompilerArg>
+			<LinkerArgs><![CDATA[rcs "$target" $objs]]></LinkerArgs>
+		</ReleaseArgs>
+	</TargetConfiguration>
+	
+	<DefaultLibs>
+		<lib>phobos.lib</lib>
+	</DefaultLibs>
+</Compiler>

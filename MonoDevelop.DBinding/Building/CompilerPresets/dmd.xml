@@ -1,1 +1,66 @@
-﻿<?xml version="1.0" encoding="utf-8" ?> 
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Compiler>
+	<TargetConfiguration Target="Executable">
+		<CompilerCommand>dmd</CompilerCommand>
+		<LinkerCommand>dmd</LinkerCommand>
+		<ObjectLinkPattern><![CDATA["{0}"]]></ObjectLinkPattern>
+		<IncludePathPattern><![CDATA[-I"{0}"]]></IncludePathPattern>
+		<DebugArgs>
+			<CompilerArg><![CDATA[-c "$src" -of"$obj" $includes -gc -debug]]></CompilerArg>
+			<LinkerArgs><![CDATA[-L/NOLOGO -gc -debug -of"$target" $objs $libs]]></LinkerArgs>
+		</DebugArgs>
+		<ReleaseArgs>
+			<CompilerArg><![CDATA[-c "$src" -of"$obj" $includes -O -release]]></CompilerArg>
+			<LinkerArgs><![CDATA[-L/NOLOGO -O -release -of"$target" $objs $libs]]></LinkerArgs>
+		</ReleaseArgs>
+	</TargetConfiguration>
+	
+	<TargetConfiguration Target="ConsolelessExecutable">
+		<CompilerCommand>dmd</CompilerCommand>
+		<LinkerCommand>dmd</LinkerCommand>
+		<ObjectLinkPattern><![CDATA["{0}"]]></ObjectLinkPattern>
+		<IncludePathPattern><![CDATA[-I"{0}"]]></IncludePathPattern>
+		<DebugArgs>
+			<CompilerArg><![CDATA[-c "$src" -of"$obj" $includes -gc -debug]]></CompilerArg>
+			<LinkerArgs><![CDATA[-L/NOLOGO -gc -debug -of"$target" $objs $libs -L/su:windows -L/exet:nt]]></LinkerArgs>
+		</DebugArgs>
+		<ReleaseArgs>
+			<CompilerArg><![CDATA[-c "$src" -of"$obj" $includes -O -release]]></CompilerArg>
+			<LinkerArgs><![CDATA[-L/NOLOGO -O -release -of"$target" $objs $libs -L/su:windows -L/exet:nt]]></LinkerArgs>
+		</ReleaseArgs>
+	</TargetConfiguration>
+	
+	<TargetConfiguration Target="SharedLibrary">
+		<CompilerCommand>dmd</CompilerCommand>
+		<LinkerCommand>dmd</LinkerCommand>
+		<ObjectLinkPattern><![CDATA["{0}"]]></ObjectLinkPattern>
+		<IncludePathPattern><![CDATA[-I"{0}"]]></IncludePathPattern>
+		<DebugArgs>
+			<CompilerArg><![CDATA[-c "$src" -of"$obj" $includes -gc -debug]]></CompilerArg>
+			<LinkerArgs><![CDATA[-L/NOLOGO -gc -debug -of"$target" $objs $libs -L/IMPLIB:$relativeTargetDir ]]></LinkerArgs>
+		</DebugArgs>
+		<ReleaseArgs>
+			<CompilerArg><![CDATA[-c "$src" -of"$obj" $includes -O -release]]></CompilerArg>
+			<LinkerArgs><![CDATA[-L/NOLOGO -O -release -of"$target" $objs $libs -L/IMPLIB:$relativeTargetDir ]]></LinkerArgs>
+		</ReleaseArgs>
+	</TargetConfiguration>
+	
+	<TargetConfiguration Target="StaticLibrary">
+		<CompilerCommand>dmd</CompilerCommand>
+		<LinkerCommand>dmd</LinkerCommand>
+		<ObjectLinkPattern><![CDATA["{0}"]]></ObjectLinkPattern>
+		<IncludePathPattern><![CDATA[-I"{0}"]]></IncludePathPattern>
+		<DebugArgs>
+			<CompilerArg><![CDATA[-c "$src" -of"$obj" $includes -gc -debug]]></CompilerArg>
+			<LinkerArgs><![CDATA[-lib -of"$target" $objs]]></LinkerArgs>
+		</DebugArgs>
+		<ReleaseArgs>
+			<CompilerArg><![CDATA[-c "$src" -of"$obj" $includes -O -release]]></CompilerArg>
+			<LinkerArgs><![CDATA[-lib -of"$target" $objs]]></LinkerArgs>
+		</ReleaseArgs>
+	</TargetConfiguration>
+	
+	<DefaultLibs>
+		<lib>phobos.lib</lib>
+	</DefaultLibs>
+</Compiler>

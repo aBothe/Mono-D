@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,26 +16,25 @@ namespace MonoDevelop.D.OptionPanels
 	/// </summary>
 	public partial class CompilerOptions : Gtk.Bin
 	{
-		private Gtk.ListStore compilerStore = new Gtk.ListStore(typeof(string), typeof(DCompilerVendor));		
-		private DCompiler configuration;
+		private Gtk.ListStore compilerStore = new Gtk.ListStore (typeof(string));
+		private DCompilerService configuration;
 
-		public CompilerOptions () 
+		public CompilerOptions ()
 		{
 			this.Build ();			
 			
-        	cmbCompiler.Clear();			
-			Gtk.CellRendererText cellRenderer = new Gtk.CellRendererText();
-			cmbCompiler.PackStart(cellRenderer, false);
-			cmbCompiler.AddAttribute(cellRenderer, "text", 0);
+			cmbCompiler.Clear ();			
+			Gtk.CellRendererText cellRenderer = new Gtk.CellRendererText ();
+			cmbCompiler.PackStart (cellRenderer, false);
+			cmbCompiler.AddAttribute (cellRenderer, "text", 0);
 
 			cmbCompiler.Model = compilerStore;
-            compilerStore.AppendValues("DMD", DCompilerVendor.DMD);			
-            compilerStore.AppendValues("GDC", DCompilerVendor.GDC);			
-            compilerStore.AppendValues("LDC", DCompilerVendor.LDC);						
-			
+
+			foreach (var cmp in DCompilerService.Instance.Compilers)
+				compilerStore.AppendValues (cmp.Vendor);
 		}
 		
-		public void Load (DCompiler config)
+		public void Load (DCompilerService config)
 		{
 			configuration = config;
 			
@@ -44,16 +43,15 @@ namespace MonoDevelop.D.OptionPanels
 			cmbCompiler.Model.GetIterFirst (out iter);
 			if (cmbCompiler.Model.GetIterFirst (out iter)) {
 				do {
-					if (config.DefaultCompiler == (DCompilerVendor)cmbCompiler.Model.GetValue(iter, 1)) {
-						cmbCompiler.SetActiveIter(iter);
+					if (config.DefaultCompiler == cmbCompiler.Model.GetValue (iter, 0) as string) {
+						cmbCompiler.SetActiveIter (iter);
 						break;
 					}
 				} while (cmbCompiler.Model.IterNext (ref iter));
 			}			
 		}
 
-
-		public bool Validate()
+		public bool Validate ()
 		{
 			return true;
 		}
@@ -65,8 +63,8 @@ namespace MonoDevelop.D.OptionPanels
 			
 			//configuration.DefaultCompiler = (DCompilerVendor)cmbCompiler.Active;			
 			Gtk.TreeIter iter;
-			if (cmbCompiler.GetActiveIter(out iter))
-				configuration.DefaultCompiler = (DCompilerVendor)cmbCompiler.Model.GetValue (iter,1);
+			if (cmbCompiler.GetActiveIter (out iter))
+				configuration.DefaultCompiler = cmbCompiler.Model.GetValue (iter, 0) as string;
 			
 			return true;
 		}
@@ -80,13 +78,13 @@ namespace MonoDevelop.D.OptionPanels
 		public override Gtk.Widget CreatePanelWidget ()
 		{
 			panel = new CompilerOptions ();
-			panel.Load(DCompiler.Instance);
+			panel.Load (DCompilerService.Instance);
 			return panel;
 		}
 
-		public override bool ValidateChanges()
+		public override bool ValidateChanges ()
 		{
-			return panel.Validate();
+			return panel.Validate ();
 		}
 			
 		public override void ApplyChanges ()

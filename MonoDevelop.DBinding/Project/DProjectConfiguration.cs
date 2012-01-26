@@ -72,13 +72,13 @@ namespace MonoDevelop.D
 					switch(Project.CompileTarget)
 					{
 						case DCompileTarget.SharedLibrary:
-							ext=DCompiler.SharedLibraryExtension;
+							ext = DCompilerService.SharedLibraryExtension;
 							break;
 						case DCompileTarget.StaticLibrary:
-							ext=DCompiler.StaticLibraryExtension;
+							ext = DCompilerService.StaticLibraryExtension;
 							break;
 						default:
-							ext=DCompiler.ExecutableExtension;
+							ext = DCompilerService.ExecutableExtension;
 							break;
 					}
 	
