@@ -57,7 +57,7 @@
 	</Extension>
 
 	<Extension path = "/MonoDevelop/ProjectModel/PolicySets/Mono" >
-		<Policies resource="DPolicy.xml" />
+		<Policies resource="MonoDevelop.D.Formatting.DPolicy.xml" />
 	</Extension>
 	
 	<!-- Language Binding -->
