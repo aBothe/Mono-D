@@ -47,7 +47,21 @@ namespace MonoDevelop.D.OptionPanels
 		public void Load (DCompilerConfiguration config, bool isDebug)
 		{
 			Configuration = config;
-			this.isDebug = isDebug;			 
+			this.isDebug = isDebug;
+
+			if (config == null)
+			{
+				consoleCompiler=
+				consoleLinker=
+				guiLinker =
+				guiCompiler =
+				sharedlibCompiler =
+				sharedlibLinker =
+				staticlibCompiler =
+				staticlibLinker = null;
+
+				return;
+			}
 			
 			LinkTargetConfiguration targetConfig;			
 			BuildConfiguration arguments;
@@ -90,7 +104,7 @@ namespace MonoDevelop.D.OptionPanels
 		
 		public void Store ()
 		{
-			if ((Configuration == null))				
+			if (Configuration == null)			
 				return;
 			
 			LinkTargetConfiguration targetConfig;			

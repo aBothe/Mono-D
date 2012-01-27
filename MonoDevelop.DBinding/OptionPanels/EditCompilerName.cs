@@ -9,10 +9,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.Build ();
 		}
 		
-		
-		
-		public string PresetName
-		{ 
+		public string PresetName { 
 			get { return txtPresetName.Text.Trim (); } 
 			set { txtPresetName.Text = value; }
 		}

@@ -1014,9 +1014,9 @@ Example:
             <child>
               <widget class="Gtk.HBox" id="hbox4">
                 <property name="MemberName" />
-                <property name="Spacing">6</property>
+                <property name="Spacing">2</property>
                 <child>
-                  <widget class="Gtk.ComboBox" id="cmbCompilers">
+                  <widget class="Gtk.ComboBoxEntry" id="cmbCompilers">
                     <property name="MemberName" />
                     <property name="IsTextCombo">True</property>
                     <property name="Items" translatable="yes" />
@@ -1028,13 +1028,13 @@ Example:
                   </packing>
                 </child>
                 <child>
-                  <widget class="Gtk.Button" id="btnRenameCompiler">
+                  <widget class="Gtk.Button" id="btnApplyRenaming">
                     <property name="MemberName" />
                     <property name="CanFocus">True</property>
                     <property name="Type">TextOnly</property>
-                    <property name="Label" translatable="yes">Rename</property>
+                    <property name="Label" translatable="yes">Apply new name</property>
                     <property name="UseUnderline">True</property>
-                    <signal name="Clicked" handler="OnBtnRenameCompilerClicked" />
+                    <signal name="Pressed" handler="OnBtnApplyRenamingPressed" />
                   </widget>
                   <packing>
                     <property name="Position">1</property>
@@ -1046,6 +1046,7 @@ Example:
                 <child>
                   <widget class="Gtk.Button" id="btnAddCompiler">
                     <property name="MemberName" />
+                    <property name="WidthRequest">24</property>
                     <property name="CanFocus">True</property>
                     <property name="Type">TextAndIcon</property>
                     <property name="Icon">stock:gtk-add Menu</property>
@@ -1063,6 +1064,7 @@ Example:
                 <child>
                   <widget class="Gtk.Button" id="btnRemoveCompiler">
                     <property name="MemberName" />
+                    <property name="WidthRequest">24</property>
                     <property name="CanFocus">True</property>
                     <property name="Type">TextAndIcon</property>
                     <property name="Icon">stock:gtk-remove Menu</property>
@@ -1072,6 +1074,24 @@ Example:
                   </widget>
                   <packing>
                     <property name="Position">3</property>
+                    <property name="AutoSize">True</property>
+                    <property name="Expand">False</property>
+                    <property name="Fill">False</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="Gtk.ToggleButton" id="btnMakeDefault">
+                    <property name="MemberName" />
+                    <property name="Sensitive">False</property>
+                    <property name="CanFocus">True</property>
+                    <property name="Type">TextOnly</property>
+                    <property name="Label" translatable="yes">Is Default</property>
+                    <property name="UseUnderline">True</property>
+                    <property name="Active">True</property>
+                    <signal name="Pressed" handler="OnTogglebuttonMakeDefaultPressed" />
+                  </widget>
+                  <packing>
+                    <property name="Position">4</property>
                     <property name="AutoSize">True</property>
                     <property name="Expand">False</property>
                     <property name="Fill">False</property>

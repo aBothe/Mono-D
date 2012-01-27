@@ -10,7 +10,6 @@ using MonoDevelop.Ide.Gui.Dialogs;
 using MonoDevelop.D.Building;
 using MonoDevelop.Ide;
 
-
 namespace MonoDevelop.D.OptionPanels
 {
 	/// <summary>
@@ -18,13 +17,14 @@ namespace MonoDevelop.D.OptionPanels
 	/// </summary>
 	public partial class DCompilerOptions : Gtk.Bin
 	{
+		#region Properties & Init
 		private Gtk.ListStore compilerStore = new Gtk.ListStore (typeof(string), typeof(DCompilerConfiguration));
 		private DCompilerConfiguration configuration;
+		string defaultCompilerVendor;
 		private Gtk.ListStore defaultLibStore = new Gtk.ListStore (typeof(string));
 		private Gtk.ListStore includePathStore = new Gtk.ListStore (typeof(string));
 		private BuildArgumentOptions releaseArgumentsDialog = null;
 		private BuildArgumentOptions debugArgumentsDialog = null;
-		
 		private List<DCompilerConfiguration> pendingPresetDeletes;
 		
 		public DCompilerOptions ()
@@ -51,9 +51,11 @@ namespace MonoDevelop.D.OptionPanels
 			releaseArgumentsDialog = new BuildArgumentOptions ();
 			debugArgumentsDialog = new BuildArgumentOptions ();
 			
-			pendingPresetDeletes = new List<DCompilerConfiguration>();
+			pendingPresetDeletes = new List<DCompilerConfiguration> ();
 		}
-	
+		#endregion
+
+		#region Preset management
 		public void ReloadCompilerList ()
 		{
 			compilerStore.Clear ();
@@ -68,6 +70,12 @@ namespace MonoDevelop.D.OptionPanels
 			compilerStore.GetIterFirst (out iter);
 			cmbCompilers.SetActiveIter (iter);
 		}
+
+		string ComboBox_CompilersLabel {
+			get {
+				return cmbCompilers.ActiveText;
+			}
+		}
 		
 		protected void OnCmbCompilersChanged (object sender, System.EventArgs e)
 		{
@@ -78,19 +86,96 @@ namespace MonoDevelop.D.OptionPanels
 			Gtk.TreeIter iter;
 			if (cmbCompilers.GetActiveIter (out iter)) {
 				configuration = cmbCompilers.Model.GetValue (iter, 1) as DCompilerConfiguration;
-				
+
 				Load (configuration);
-			}
-			
-			//only allow NON default compiler preset to be renamed and removed
-			//ToDo: figure out how best to determine this
-			//btnRenameCompiler.Sensitive = ?
-			//btnRemoveCompiler.Sensitive = ?
+			} else
+				Load (new DCompilerConfiguration ());
 		}
 		
+		private void CreateNewPreset (string name)
+		{
+			//ToDo: prevent adding a preset name that already exists
+
+			DCompilerConfiguration newpreset = new DCompilerConfiguration ();
+			newpreset.CopyFrom (configuration);
+			newpreset.Vendor = name;
+			Gtk.TreeIter iter;
+			iter = compilerStore.AppendValues (newpreset.Vendor, newpreset);
+			cmbCompilers.SetActiveIter (iter);
+			foreach (var delConfig in pendingPresetDeletes) {
+				if (delConfig.Vendor == configuration.Vendor) {
+					pendingPresetDeletes.Remove (delConfig);
+					break;
+				}
+			}
+		}
+
+		void RenameCurrentPreset (string newName)
+		{
+			if (configuration == null) {
+				CreateNewPreset (newName);
+				return;
+			}
+
+
+		}
+
+		void MakeCurrentConfigDefault()
+		{
+
+		}
+
+		protected void OnBtnAddCompilerClicked (object sender, System.EventArgs e)
+		{
+			CreateNewPreset (ComboBox_CompilersLabel);
+		}
+
+		protected void OnBtnRemoveCompilerClicked (object sender, System.EventArgs e)
+		{
+			Gtk.TreeIter iter;
+			if (cmbCompilers.GetActiveIter (out iter)) {
+				Gtk.TreeIter iter2 = iter;
+				compilerStore.Remove (ref iter2);
+
+				if (compilerStore.IterNext (ref iter) || compilerStore.GetIterFirst (out iter))
+					cmbCompilers.SetActiveIter (iter);
+				else
+					Load (null);
+			}
+		}
+
+		protected void OnTogglebuttonMakeDefaultPressed (object sender, System.EventArgs e)
+		{
+			
+		}
+
+		protected void OnBtnApplyRenamingPressed (object sender, System.EventArgs e)
+		{
+			RenameCurrentPreset (ComboBox_CompilersLabel);
+		}
+		#endregion
+
+		#region Save&Load
 		public void Load (DCompilerConfiguration config)
 		{
 			configuration = config;
+
+			if (config == null) {
+				txtBinPath.Text =
+					txtCompiler.Text =
+					txtConsoleAppLinker.Text =
+					txtGUIAppLinker.Text =
+					txtSharedLibLinker.Text =
+					txtStaticLibLinker.Text = null;
+
+				defaultLibStore.Clear ();
+				includePathStore.Clear ();
+
+				releaseArgumentsDialog.Load (null, false);
+				debugArgumentsDialog.Load (null, true);
+
+				return;
+			}
 			//for now, using Executable target compiler command for all targets source compiling
 			LinkTargetConfiguration targetConfig;
 			targetConfig = config.GetTargetConfiguration (DCompileTarget.Executable);
@@ -129,43 +214,38 @@ namespace MonoDevelop.D.OptionPanels
 			return true;
 		}
 
-		public bool Store()
+		public bool Store ()
 		{
-			ApplyToVirtConfiguration();
+			ApplyToVirtConfiguration ();
 
 			Gtk.TreeIter iter;
-			compilerStore.GetIterFirst(out iter);
+			compilerStore.GetIterFirst (out iter);
 
-			do
-			{
-				var virtCmp=compilerStore.GetValue(iter,1) as DCompilerConfiguration;
-				var cmp = DCompilerService.Instance.GetCompiler(virtCmp.Vendor);
+			do {
+				var virtCmp = compilerStore.GetValue (iter, 1) as DCompilerConfiguration;
+				var cmp = DCompilerService.Instance.GetCompiler (virtCmp.Vendor);
 
 				//check for renames
-				var newVendorName = compilerStore.GetValue(iter, 0) as string;
+				var newVendorName = compilerStore.GetValue (iter, 0) as string;
 				if (virtCmp.Vendor != newVendorName)
 					virtCmp.Vendor = newVendorName;					
 				
 				if (cmp != null)
-					cmp.CopyFrom(virtCmp);
+					cmp.CopyFrom (virtCmp);
 				else
-					DCompilerService.Instance.Compilers.Add(virtCmp);
-			}
-			while (compilerStore.IterNext(ref iter));
+					DCompilerService.Instance.Compilers.Add (virtCmp);
+			} while (compilerStore.IterNext(ref iter));
 			
 			//process pending config deletions
-			foreach(var delConfig in pendingPresetDeletes)
-			{
-				foreach(var config in DCompilerService.Instance.Compilers)
-				{				
-					if (delConfig.Vendor == config.Vendor)
-					{
-						DCompilerService.Instance.Compilers.Remove(config);
+			foreach (var delConfig in pendingPresetDeletes) {
+				foreach (var config in DCompilerService.Instance.Compilers) {				
+					if (delConfig.Vendor == config.Vendor) {
+						DCompilerService.Instance.Compilers.Remove (config);
 						break;
 					}
 				}
 			}
-			pendingPresetDeletes.Clear();
+			pendingPresetDeletes.Clear ();
 			
 			
 			return true;
@@ -250,7 +330,9 @@ namespace MonoDevelop.D.OptionPanels
 
 			return true;
 		}
-		
+		#endregion
+
+		#region Setting edititing helper methods
 		private void ShowArgumentsDialog (bool isDebug)
 		{
 			BuildArgumentOptions dialog = null;
@@ -415,70 +497,7 @@ namespace MonoDevelop.D.OptionPanels
 				dialog.Destroy ();
 			}
 		}
-
-		private void CreateNewPreset(string name)
-		{
-			//ToDo: prevent adding a preset name that already exists
-			
-			DCompilerConfiguration newpreset = new DCompilerConfiguration ();
-			newpreset.CopyFrom (configuration);		
-			newpreset.Vendor = name;			
-			Gtk.TreeIter iter;			
-			iter = compilerStore.AppendValues(newpreset.Vendor, newpreset);
-			cmbCompilers.SetActiveIter (iter);			
-			foreach(var delConfig in pendingPresetDeletes)
-			{
-				if (delConfig.Vendor == configuration.Vendor)
-				{
-					pendingPresetDeletes.Remove(delConfig);
-					break;
-				}
-			}			
-		}
-		
-		protected void OnBtnAddCompilerClicked (object sender, System.EventArgs e)
-		{			
-			EditCompilerName dialog = new EditCompilerName();
-			try {
-				if ((dialog.Run () == (int)Gtk.ResponseType.Ok) && (dialog.PresetName != ""))
-					CreateNewPreset(dialog.PresetName);
-			} finally {
-				dialog.Destroy ();
-			}			
-		}
-		
-		protected void OnBtnRenameCompilerClicked (object sender, System.EventArgs e)
-		{
-			Gtk.TreeIter iter;
-			if (cmbCompilers.GetActiveIter (out iter)) 
-			{					
-				EditCompilerName dialog = new EditCompilerName();
-				try {
-					dialog.PresetName = cmbCompilers.Model.GetValue (iter, 0) as string;		
-					if ((dialog.Run () == (int)Gtk.ResponseType.Ok) && (dialog.PresetName != ""))
-					{						
-						var config = cmbCompilers.Model.GetValue(iter, 1) as DCompilerConfiguration;
-						cmbCompilers.Model.SetValue(iter, 0, dialog.PresetName);						
-					}
-				} finally {
-					dialog.Destroy ();
-				}		
-			}
-		}
-		
-		protected void OnBtnRemoveCompilerClicked (object sender, System.EventArgs e)
-		{
-			Gtk.TreeIter iter;
-			if (cmbCompilers.GetActiveIter (out iter)) 
-			{
-				if (!pendingPresetDeletes.Contains(configuration))
-					pendingPresetDeletes.Add(configuration);				
-				compilerStore.Remove(ref iter);
-				compilerStore.GetIterFirst (out iter);
-				cmbCompilers.SetActiveIter (iter);	
-			}
-		}		
-		
+		#endregion
 	}
 	
 	public class DCompilerOptionsBinding : OptionsPanel
@@ -504,7 +523,7 @@ namespace MonoDevelop.D.OptionPanels
 			
 		public override void ApplyChanges ()
 		{
-			panel.Store();
+			panel.Store ();
 		}
 	}	
 }
