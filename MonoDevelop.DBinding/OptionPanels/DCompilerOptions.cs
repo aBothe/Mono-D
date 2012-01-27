@@ -10,6 +10,7 @@ using MonoDevelop.Ide.Gui.Dialogs;
 using MonoDevelop.D.Building;
 using MonoDevelop.Ide;
 
+
 namespace MonoDevelop.D.OptionPanels
 {
 	/// <summary>
@@ -23,6 +24,8 @@ namespace MonoDevelop.D.OptionPanels
 		private Gtk.ListStore includePathStore = new Gtk.ListStore (typeof(string));
 		private BuildArgumentOptions releaseArgumentsDialog = null;
 		private BuildArgumentOptions debugArgumentsDialog = null;
+		
+		private List<DCompilerConfiguration> pendingPresetDeletes;
 		
 		public DCompilerOptions ()
 		{
@@ -47,6 +50,8 @@ namespace MonoDevelop.D.OptionPanels
 			
 			releaseArgumentsDialog = new BuildArgumentOptions ();
 			debugArgumentsDialog = new BuildArgumentOptions ();
+			
+			pendingPresetDeletes = new List<DCompilerConfiguration>();
 		}
 	
 		public void ReloadCompilerList ()
@@ -76,6 +81,11 @@ namespace MonoDevelop.D.OptionPanels
 				
 				Load (configuration);
 			}
+			
+			//only allow NON default compiler preset to be renamed and removed
+			//ToDo: figure out how best to determine this
+			//btnRenameCompiler.Sensitive = ?
+			//btnRemoveCompiler.Sensitive = ?
 		}
 		
 		public void Load (DCompilerConfiguration config)
@@ -131,13 +141,33 @@ namespace MonoDevelop.D.OptionPanels
 				var virtCmp=compilerStore.GetValue(iter,1) as DCompilerConfiguration;
 				var cmp = DCompilerService.Instance.GetCompiler(virtCmp.Vendor);
 
+				//check for renames
+				var newVendorName = compilerStore.GetValue(iter, 0) as string;
+				if (virtCmp.Vendor != newVendorName)
+					virtCmp.Vendor = newVendorName;					
+				
 				if (cmp != null)
 					cmp.CopyFrom(virtCmp);
 				else
 					DCompilerService.Instance.Compilers.Add(virtCmp);
 			}
 			while (compilerStore.IterNext(ref iter));
-
+			
+			//process pending config deletions
+			foreach(var delConfig in pendingPresetDeletes)
+			{
+				foreach(var config in DCompilerService.Instance.Compilers)
+				{				
+					if (delConfig.Vendor == config.Vendor)
+					{
+						DCompilerService.Instance.Compilers.Remove(config);
+						break;
+					}
+				}
+			}
+			pendingPresetDeletes.Clear();
+			
+			
 			return true;
 		}
 		
@@ -385,6 +415,70 @@ namespace MonoDevelop.D.OptionPanels
 				dialog.Destroy ();
 			}
 		}
+
+		private void CreateNewPreset(string name)
+		{
+			//ToDo: prevent adding a preset name that already exists
+			
+			DCompilerConfiguration newpreset = new DCompilerConfiguration ();
+			newpreset.CopyFrom (configuration);		
+			newpreset.Vendor = name;			
+			Gtk.TreeIter iter;			
+			iter = compilerStore.AppendValues(newpreset.Vendor, newpreset);
+			cmbCompilers.SetActiveIter (iter);			
+			foreach(var delConfig in pendingPresetDeletes)
+			{
+				if (delConfig.Vendor == configuration.Vendor)
+				{
+					pendingPresetDeletes.Remove(delConfig);
+					break;
+				}
+			}			
+		}
+		
+		protected void OnBtnAddCompilerClicked (object sender, System.EventArgs e)
+		{			
+			EditCompilerName dialog = new EditCompilerName();
+			try {
+				if ((dialog.Run () == (int)Gtk.ResponseType.Ok) && (dialog.PresetName != ""))
+					CreateNewPreset(dialog.PresetName);
+			} finally {
+				dialog.Destroy ();
+			}			
+		}
+		
+		protected void OnBtnRenameCompilerClicked (object sender, System.EventArgs e)
+		{
+			Gtk.TreeIter iter;
+			if (cmbCompilers.GetActiveIter (out iter)) 
+			{					
+				EditCompilerName dialog = new EditCompilerName();
+				try {
+					dialog.PresetName = cmbCompilers.Model.GetValue (iter, 0) as string;		
+					if ((dialog.Run () == (int)Gtk.ResponseType.Ok) && (dialog.PresetName != ""))
+					{						
+						var config = cmbCompilers.Model.GetValue(iter, 1) as DCompilerConfiguration;
+						cmbCompilers.Model.SetValue(iter, 0, dialog.PresetName);						
+					}
+				} finally {
+					dialog.Destroy ();
+				}		
+			}
+		}
+		
+		protected void OnBtnRemoveCompilerClicked (object sender, System.EventArgs e)
+		{
+			Gtk.TreeIter iter;
+			if (cmbCompilers.GetActiveIter (out iter)) 
+			{
+				if (!pendingPresetDeletes.Contains(configuration))
+					pendingPresetDeletes.Add(configuration);				
+				compilerStore.Remove(ref iter);
+				compilerStore.GetIterFirst (out iter);
+				cmbCompilers.SetActiveIter (iter);	
+			}
+		}		
+		
 	}
 	
 	public class DCompilerOptionsBinding : OptionsPanel

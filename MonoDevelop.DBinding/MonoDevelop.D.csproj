@@ -169,6 +169,8 @@
     <Compile Include="gtk-gui\MonoDevelop.D.FormattingPanelWidget.cs" />
     <Compile Include="Building\DCompilerService.cs" />
     <Compile Include="Building\CompilerPresets\PresetLoader.cs" />
+    <Compile Include="OptionPanels\EditCompilerName.cs" />
+    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.EditCompilerName.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />
