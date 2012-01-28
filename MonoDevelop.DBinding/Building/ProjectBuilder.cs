@@ -96,6 +96,7 @@ namespace MonoDevelop.D.Building
 
 				// a.Check if source file was modified and if object file still exists
 				if (Project.EnableIncrementalLinking &&
+					!string.IsNullOrEmpty(f.LastGenOutput) &&
 					f.LastGenOutput.StartsWith(AbsoluteObjectDirectory) &&
 					Project.LastModificationTimes.ContainsKey(f) &&
 					Project.LastModificationTimes[f] == File.GetLastWriteTime(f.FilePath) &&

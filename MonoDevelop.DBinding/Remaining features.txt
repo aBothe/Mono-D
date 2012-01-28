@@ -1,8 +1,6 @@
 ﻿
 This document contains a list of to-do features:
 
-* Establish more flexible compiler configurations. Perhaps defining default stuff via embedded xml resources?
-
 * Alter block statement/body boundaries on new-line/delete line events 
 	so no wrong function scope's getting detected anymore
 * Highlight context-dependent keywords (__traits, default version keywords, 
