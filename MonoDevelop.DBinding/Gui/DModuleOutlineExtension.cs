@@ -139,6 +139,7 @@ namespace MonoDevelop.D.Gui
 		{
 			DispatchService.AssertGuiThread();
 			Gdk.Threads.Enter();
+
 			refreshingOutline = false;
 			if (TreeStore == null || !TreeView.IsRealized)
 			{
@@ -150,15 +151,17 @@ namespace MonoDevelop.D.Gui
 			TreeStore.Clear();
 			try
 			{
-				SyntaxTree = (Document.ParsedDocument as ParsedDModule).DDom;
-
-				var caretLocation = Document.Editor.Caret.Location;
-
-				if (SyntaxTree != null)
+				if (Document.ParsedDocument is ParsedDModule)
 				{
-					BuildTreeChildren(TreeIter.Zero, SyntaxTree, new CodeLocation(caretLocation.Column, caretLocation.Line));
+					SyntaxTree = (Document.ParsedDocument as ParsedDModule).DDom;
 
-					TreeView.ExpandAll();
+					if (SyntaxTree != null)
+					{
+						var caretLocation = Document.Editor.Caret.Location;
+						BuildTreeChildren(TreeIter.Zero, SyntaxTree, new CodeLocation(caretLocation.Column, caretLocation.Line));
+
+						TreeView.ExpandAll();
+					}
 				}
 			}
 			catch (Exception ex)

@@ -68,6 +68,17 @@ namespace MonoDevelop.D.Building
 
 			monitor.BeginTask("Build Project", Project.Files.Count + 1);
 
+			if (Compiler == null)
+			{
+				monitor.EndTask();
+
+				string msg="Project compiler \""+Project.UsedCompilerVendor+"\" not found";
+				targetBuildResult.AddError(msg);
+				targetBuildResult.FailedBuildCount++;
+
+				return targetBuildResult;
+			}
+
 			sourceFileIncludePaths.Clear();
 			sourceFileIncludePaths.AddRange(Compiler.GlobalParseCache.DirectoryPaths);
 			sourceFileIncludePaths.AddRange(Project.LocalIncludeCache.DirectoryPaths);
