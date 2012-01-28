@@ -43,20 +43,24 @@ namespace MonoDevelop.D.Building.CompilerPresets
 
 		public static bool TryLoadPresets(DCompilerConfiguration compiler)
 		{
-			foreach (var kv in presetFileContents)
-			{
-				if (kv.Key == compiler.Vendor)
+			if(compiler!=null)
+				foreach (var kv in presetFileContents)
 				{
-					var x = new XmlTextReader(new StringReader(kv.Value));
-					x.Read();
+					if (kv.Key == compiler.Vendor)
+					{
+						var x = new XmlTextReader(new StringReader(kv.Value));
+						x.Read();
 
-					compiler.ReadFrom(x);
+						compiler.DefaultLibraries.Clear();
+						compiler.GlobalParseCache.Clear();
 
-					x.Close();
-					FitFileExtensions(compiler);
-					return true;
+						compiler.ReadFrom(x);
+
+						x.Close();
+						FitFileExtensions(compiler);
+						return true;
+					}
 				}
-			}
 
 			return false;
 		}

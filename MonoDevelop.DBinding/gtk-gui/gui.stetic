@@ -946,7 +946,7 @@ Example:
                 <property name="Type">TextOnly</property>
                 <property name="Label" translatable="yes">Defaults</property>
                 <property name="UseUnderline">True</property>
-                <signal name="Clicked" handler="btnDefaults_Clicked" />
+                <signal name="Clicked" handler="OnBtnDefaultsClicked" />
               </widget>
               <packing>
                 <property name="TopAttach">7</property>
@@ -1082,13 +1082,11 @@ Example:
                 <child>
                   <widget class="Gtk.ToggleButton" id="btnMakeDefault">
                     <property name="MemberName" />
-                    <property name="Sensitive">False</property>
-                    <property name="CanFocus">True</property>
                     <property name="Type">TextOnly</property>
-                    <property name="Label" translatable="yes">Is Default</property>
+                    <property name="Label" translatable="yes">Make Default</property>
                     <property name="UseUnderline">True</property>
                     <property name="Active">True</property>
-                    <signal name="Pressed" handler="OnTogglebuttonMakeDefaultPressed" />
+                    <signal name="Released" handler="OnTogglebuttonMakeDefaultPressed" />
                   </widget>
                   <packing>
                     <property name="Position">4</property>

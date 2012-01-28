@@ -10,6 +10,7 @@ using MonoDevelop.Ide.Gui.Dialogs;
 using MonoDevelop.D.Building;
 using MonoDevelop.Ide;
 using Gtk;
+using MonoDevelop.D.Building.CompilerPresets;
 
 namespace MonoDevelop.D.OptionPanels
 {
@@ -67,7 +68,7 @@ namespace MonoDevelop.D.OptionPanels
 			}
 
 			Gtk.TreeIter iter;
-			if(compilerStore.GetIterFirst (out iter))
+			if (compilerStore.GetIterFirst (out iter))
 				cmbCompilers.SetActiveIter (iter);
 		}
 
@@ -80,60 +81,55 @@ namespace MonoDevelop.D.OptionPanels
 		protected void OnCmbCompilersChanged (object sender, System.EventArgs e)
 		{
 			Gtk.TreeIter iter;
-			if (cmbCompilers.GetActiveIter(out iter))
-			{
-				var newConfig = cmbCompilers.Model.GetValue(iter, 1) as DCompilerConfiguration;
+			if (cmbCompilers.GetActiveIter (out iter)) {
+				var newConfig = cmbCompilers.Model.GetValue (iter, 1) as DCompilerConfiguration;
 
 				if (configuration == newConfig)
 					return;
 				else
-					ApplyToVirtConfiguration();
+					ApplyToVirtConfiguration ();
 
-				Load(newConfig);
-			}
-			else if(!compilerStore.GetIterFirst(out iter))
-			{
-				ApplyToVirtConfiguration();
-				Load(null);
+				Load (newConfig);
+			} else if (!compilerStore.GetIterFirst (out iter)) {
+				ApplyToVirtConfiguration ();
+				Load (null);
 			}
 		}
 		
 		private void CreateNewPreset (string name)
 		{
-			if (!CanUseNewName(name))
+			if (!CanUseNewName (name))
 				return;
 
-			ApplyToVirtConfiguration();
+			ApplyToVirtConfiguration ();
 
 			configuration = new DCompilerConfiguration { 
 				Vendor=name
 			};
 
-			ApplyToVirtConfiguration();
+			ApplyToVirtConfiguration ();
 
 			Gtk.TreeIter iter;
 			iter = compilerStore.AppendValues (configuration.Vendor, configuration);
 			cmbCompilers.SetActiveIter (iter);
 		}
 
-		bool CanUseNewName(string newName)
+		bool CanUseNewName (string newName)
 		{
-			if (!System.Text.RegularExpressions.Regex.IsMatch(newName,"[\\w-]+"))
-			{
-				MessageService.ShowError("Compiler configuration", "Compiler name can only contain letters/digits/'-'");
+			if (!System.Text.RegularExpressions.Regex.IsMatch (newName, "[\\w-]+")) {
+				MessageService.ShowError ("Compiler configuration", "Compiler name can only contain letters/digits/'-'");
 
 				return false;
 			}
 
 			Gtk.TreeIter iter;
-			compilerStore.GetIterFirst(out iter);
+			compilerStore.GetIterFirst (out iter);
 
-			do
-			{
-				var virtCmp = compilerStore.GetValue(iter, 1) as DCompilerConfiguration;
+			do {
+				var virtCmp = compilerStore.GetValue (iter, 1) as DCompilerConfiguration;
 				
-				if (virtCmp.Vendor == newName){
-					MessageService.ShowError("Compiler configuration", "Compiler name already taken");
+				if (virtCmp.Vendor == newName) {
+					MessageService.ShowError ("Compiler configuration", "Compiler name already taken");
 					return false;
 				}
 
@@ -144,13 +140,12 @@ namespace MonoDevelop.D.OptionPanels
 
 		void RenameCurrentPreset (string newName)
 		{
-			if (configuration==null)
-			{
+			if (configuration == null) {
 				CreateNewPreset (newName);
 				return;
 			}
 
-			if (configuration.Vendor==newName || !CanUseNewName(newName))
+			if (configuration.Vendor == newName || !CanUseNewName (newName))
 				return;
 
 			// If default compiler affected, update the default compiler's name, too
@@ -161,11 +156,10 @@ namespace MonoDevelop.D.OptionPanels
 			configuration.Vendor = newName;
 
 			// + to the compiler store model
-			compilerStore.Foreach((TreeModel tree, TreePath path, TreeIter iter) =>
+			compilerStore.Foreach ((TreeModel tree, TreePath path, TreeIter iter) =>
 			{
-				if (compilerStore.GetValue(iter, 1) == configuration)
-				{
-					compilerStore.SetValue(iter, 0, configuration.Vendor);
+				if (compilerStore.GetValue (iter, 1) == configuration) {
+					compilerStore.SetValue (iter, 0, configuration.Vendor);
 					return true;
 				}
 
@@ -173,14 +167,11 @@ namespace MonoDevelop.D.OptionPanels
 			});
 		}
 
-		void MakeCurrentConfigDefault()
+		void MakeCurrentConfigDefault ()
 		{
-			if (configuration != null)
-			{
+			if (configuration != null) {
 				defaultCompilerVendor = configuration.Vendor;
-
 				btnMakeDefault.Active = true;
-				btnMakeDefault.Sensitive = false;
 			}
 		}
 
@@ -205,7 +196,10 @@ namespace MonoDevelop.D.OptionPanels
 
 		protected void OnTogglebuttonMakeDefaultPressed (object sender, System.EventArgs e)
 		{
-			MakeCurrentConfigDefault();
+			if (configuration != null && configuration.Vendor == defaultCompilerVendor)
+				btnMakeDefault.Active = true;
+			else
+				MakeCurrentConfigDefault ();
 		}
 
 		protected void OnBtnApplyRenamingPressed (object sender, System.EventArgs e)
@@ -268,9 +262,9 @@ namespace MonoDevelop.D.OptionPanels
 			foreach (var p in config.GlobalParseCache.DirectoryPaths)
 				includePathStore.AppendValues (p);
 
-			bool isDefault= configuration.Vendor == defaultCompilerVendor;
-			btnMakeDefault.Active = isDefault;
-			btnMakeDefault.Sensitive = !isDefault;
+			btnMakeDefault.Active = 
+				configuration.Vendor == defaultCompilerVendor;
+			btnMakeDefault.Sensitive = true;
 		}
 
 		public bool Validate ()
@@ -282,7 +276,7 @@ namespace MonoDevelop.D.OptionPanels
 		{
 			ApplyToVirtConfiguration ();
 
-			DCompilerService.Instance.Compilers.Clear();
+			DCompilerService.Instance.Compilers.Clear ();
 
 			Gtk.TreeIter iter;
 			compilerStore.GetIterFirst (out iter);
@@ -290,8 +284,7 @@ namespace MonoDevelop.D.OptionPanels
 				var virtCmp = compilerStore.GetValue (iter, 1) as DCompilerConfiguration;
 				
 				DCompilerService.Instance.Compilers.Add (virtCmp);
-			} 
-			while (compilerStore.IterNext(ref iter));
+			} while (compilerStore.IterNext(ref iter));
 
 			DCompilerService.Instance.DefaultCompiler = defaultCompilerVendor;
 
@@ -512,23 +505,6 @@ namespace MonoDevelop.D.OptionPanels
 			OnIncludePathAdded (sender, e);
 		}
 
-		protected void btnDefaults_Clicked (object sender, System.EventArgs e)
-		{			
-			//need new object, because the user can still hit canel at the config screen
-			//so we don't want to update the real object yet
-			DCompilerConfiguration realConfig = configuration;			
-			try {
-				var tempConfig = new DCompilerConfiguration{Vendor = configuration.Vendor};		
-				if (DCompilerConfiguration.ResetToDefaults (tempConfig))	
-					Load (tempConfig);
-				
-			} finally {
-				configuration = realConfig;	
-				releaseArgumentsDialog.Configuration = realConfig;
-				debugArgumentsDialog.Configuration = realConfig;
-			}				
-		}
-
 		protected void OnButtonBinPathBrowserClicked (object sender, System.EventArgs e)
 		{
 			var dialog = new Gtk.FileChooserDialog ("Select Compiler's bin path", null, Gtk.FileChooserAction.SelectFolder, "Cancel", Gtk.ResponseType.Cancel, "Ok", Gtk.ResponseType.Ok)
@@ -543,6 +519,22 @@ namespace MonoDevelop.D.OptionPanels
 			} finally {
 				dialog.Destroy ();
 			}
+		}
+
+		protected void OnBtnDefaultsClicked (object sender, System.EventArgs e)
+		{
+			if (configuration == null)
+				return;
+
+			if (!PresetLoader.HasPresetsAvailable(configuration))
+			{
+				MessageService.ShowMessage("No defaults available for "+configuration.Vendor);
+				return;
+			}
+
+			if(MessageService.AskQuestion("Reset current compiler preset?",AlertButton.Yes,AlertButton.No)==AlertButton.Yes && 
+				PresetLoader.TryLoadPresets(configuration))
+				Load(configuration);
 		}
 		#endregion
 	}

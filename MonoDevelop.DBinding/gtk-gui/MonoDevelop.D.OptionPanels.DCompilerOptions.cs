@@ -187,12 +187,10 @@ namespace MonoDevelop.D.OptionPanels
 			w24.Fill = false;
 			// Container child hbox4.Gtk.Box+BoxChild
 			this.btnMakeDefault = new global::Gtk.ToggleButton ();
-			this.btnMakeDefault.Sensitive = false;
-			this.btnMakeDefault.CanFocus = true;
 			this.btnMakeDefault.Name = "btnMakeDefault";
 			this.btnMakeDefault.UseUnderline = true;
 			this.btnMakeDefault.Active = true;
-			this.btnMakeDefault.Label = global::Mono.Unix.Catalog.GetString ("Is Default");
+			this.btnMakeDefault.Label = global::Mono.Unix.Catalog.GetString ("Make Default");
 			this.hbox4.Add (this.btnMakeDefault);
 			global::Gtk.Box.BoxChild w25 = ((global::Gtk.Box.BoxChild)(this.hbox4 [this.btnMakeDefault]));
 			w25.Position = 4;
@@ -606,9 +604,9 @@ namespace MonoDevelop.D.OptionPanels
 			this.btnApplyRenaming.Pressed += new global::System.EventHandler (this.OnBtnApplyRenamingPressed);
 			this.btnAddCompiler.Clicked += new global::System.EventHandler (this.OnBtnAddCompilerClicked);
 			this.btnRemoveCompiler.Clicked += new global::System.EventHandler (this.OnBtnRemoveCompilerClicked);
-			this.btnMakeDefault.Pressed += new global::System.EventHandler (this.OnTogglebuttonMakeDefaultPressed);
+			this.btnMakeDefault.Released += new global::System.EventHandler (this.OnTogglebuttonMakeDefaultPressed);
 			this.button_BinPathBrowser.Clicked += new global::System.EventHandler (this.OnButtonBinPathBrowserClicked);
-			this.btnDefaults.Clicked += new global::System.EventHandler (this.btnDefaults_Clicked);
+			this.btnDefaults.Clicked += new global::System.EventHandler (this.OnBtnDefaultsClicked);
 			this.btnRemoveDefaultLib.Clicked += new global::System.EventHandler (this.btnRemoveDefaultLib_Clicked);
 			this.tvDefaultLibs.CursorChanged += new global::System.EventHandler (this.tvDefaultLibs_CursorChanged);
 			this.txtDefaultLib.Changed += new global::System.EventHandler (this.txtDefaultLib_Changed);

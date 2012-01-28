@@ -41,6 +41,12 @@ namespace D_Parser.Completion
 			}
 		}
 
+		public void Clear()
+		{
+			ParsedGlobalDictionaries.Clear();
+			ParseCache = null;
+		}
+
 		/* Notes:
 		 *  When a single, unbound module looks up files, it's allowed only to seek within the global files.
 		 *  

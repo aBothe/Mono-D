@@ -118,23 +118,16 @@
 			id = "DGlobalOptions"
 			_label = "D"
 			class = "MonoDevelop.D.OptionPanels.DGlobalOptionsBinding"/>
-	</Extension>	
+	</Extension>
 
 	<Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Other/DGlobalOptions">
 		<Section
-			id = "CompilerOptions"
-			_label = "Compilers"
-			class = "MonoDevelop.D.OptionPanels.CompilerOptionsBinding"/>
-	</Extension>	
-
-	<Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Other/DGlobalOptions/CompilerOptions">
-		<Section
 			id = "DCompilerOptions"
-			_label = "Configurations"
+			_label = "Compiler toolchains"
 			class = "MonoDevelop.D.OptionPanels.DCompilerOptionsBinding"/>
 	</Extension>			
 
-	<Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Other/DGlobalOptions/CompilerOptions">
+	<Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Other/DGlobalOptions">
 		<Section
 			id = "ResCompilerOptions"
 			_label = "Win32 Resource Compiler"
