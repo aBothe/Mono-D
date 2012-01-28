@@ -9,6 +9,7 @@ using MonoDevelop.Ide.Projects;
 using MonoDevelop.Ide.Gui.Dialogs;
 using MonoDevelop.D.Building;
 using MonoDevelop.Ide;
+using Gtk;
 
 namespace MonoDevelop.D.OptionPanels
 {
@@ -25,15 +26,14 @@ namespace MonoDevelop.D.OptionPanels
 		private Gtk.ListStore includePathStore = new Gtk.ListStore (typeof(string));
 		private BuildArgumentOptions releaseArgumentsDialog = null;
 		private BuildArgumentOptions debugArgumentsDialog = null;
-		private List<DCompilerConfiguration> pendingPresetDeletes;
-		
+
 		public DCompilerOptions ()
 		{
 			this.Build ();
 			
 			Gtk.CellRendererText textRenderer = new Gtk.CellRendererText ();
 			
-			cmbCompilers.Clear ();			
+			cmbCompilers.Clear ();
 
 			cmbCompilers.PackStart (textRenderer, false);
 			cmbCompilers.AddAttribute (textRenderer, "text", 0);
@@ -50,8 +50,6 @@ namespace MonoDevelop.D.OptionPanels
 			
 			releaseArgumentsDialog = new BuildArgumentOptions ();
 			debugArgumentsDialog = new BuildArgumentOptions ();
-			
-			pendingPresetDeletes = new List<DCompilerConfiguration> ();
 		}
 		#endregion
 
@@ -59,16 +57,18 @@ namespace MonoDevelop.D.OptionPanels
 		public void ReloadCompilerList ()
 		{
 			compilerStore.Clear ();
-			
+
+			defaultCompilerVendor = DCompilerService.Instance.DefaultCompiler;
+
 			foreach (var cmp in DCompilerService.Instance.Compilers) {
 				var virtCopy = new DCompilerConfiguration ();
 				virtCopy.CopyFrom (cmp);
 				compilerStore.AppendValues (cmp.Vendor, virtCopy);
 			}
-			
+
 			Gtk.TreeIter iter;
-			compilerStore.GetIterFirst (out iter);
-			cmbCompilers.SetActiveIter (iter);
+			if(compilerStore.GetIterFirst (out iter))
+				cmbCompilers.SetActiveIter (iter);
 		}
 
 		string ComboBox_CompilersLabel {
@@ -79,50 +79,109 @@ namespace MonoDevelop.D.OptionPanels
 		
 		protected void OnCmbCompilersChanged (object sender, System.EventArgs e)
 		{
-			if (configuration != null) {
-				ApplyToVirtConfiguration ();
-			}
-			
 			Gtk.TreeIter iter;
-			if (cmbCompilers.GetActiveIter (out iter)) {
-				configuration = cmbCompilers.Model.GetValue (iter, 1) as DCompilerConfiguration;
+			if (cmbCompilers.GetActiveIter(out iter))
+			{
+				var newConfig = cmbCompilers.Model.GetValue(iter, 1) as DCompilerConfiguration;
 
-				Load (configuration);
-			} else
-				Load (new DCompilerConfiguration ());
+				if (configuration == newConfig)
+					return;
+				else
+					ApplyToVirtConfiguration();
+
+				Load(newConfig);
+			}
+			else if(!compilerStore.GetIterFirst(out iter))
+			{
+				ApplyToVirtConfiguration();
+				Load(null);
+			}
 		}
 		
 		private void CreateNewPreset (string name)
 		{
-			//ToDo: prevent adding a preset name that already exists
+			if (!CanUseNewName(name))
+				return;
 
-			DCompilerConfiguration newpreset = new DCompilerConfiguration ();
-			newpreset.CopyFrom (configuration);
-			newpreset.Vendor = name;
+			ApplyToVirtConfiguration();
+
+			configuration = new DCompilerConfiguration { 
+				Vendor=name
+			};
+
+			ApplyToVirtConfiguration();
+
 			Gtk.TreeIter iter;
-			iter = compilerStore.AppendValues (newpreset.Vendor, newpreset);
+			iter = compilerStore.AppendValues (configuration.Vendor, configuration);
 			cmbCompilers.SetActiveIter (iter);
-			foreach (var delConfig in pendingPresetDeletes) {
-				if (delConfig.Vendor == configuration.Vendor) {
-					pendingPresetDeletes.Remove (delConfig);
-					break;
-				}
+		}
+
+		bool CanUseNewName(string newName)
+		{
+			if (!System.Text.RegularExpressions.Regex.IsMatch(newName,"[\\w-]+"))
+			{
+				MessageService.ShowError("Compiler configuration", "Compiler name can only contain letters/digits/'-'");
+
+				return false;
 			}
+
+			Gtk.TreeIter iter;
+			compilerStore.GetIterFirst(out iter);
+
+			do
+			{
+				var virtCmp = compilerStore.GetValue(iter, 1) as DCompilerConfiguration;
+				
+				if (virtCmp.Vendor == newName){
+					MessageService.ShowError("Compiler configuration", "Compiler name already taken");
+					return false;
+				}
+
+			} while (compilerStore.IterNext(ref iter));
+
+			return true;
 		}
 
 		void RenameCurrentPreset (string newName)
 		{
-			if (configuration == null) {
+			if (configuration==null)
+			{
 				CreateNewPreset (newName);
 				return;
 			}
 
+			if (configuration.Vendor==newName || !CanUseNewName(newName))
+				return;
 
+			// If default compiler affected, update the default compiler's name, too
+			if (defaultCompilerVendor == configuration.Vendor)
+				defaultCompilerVendor = newName;
+
+			// Apply new name to the cfg object
+			configuration.Vendor = newName;
+
+			// + to the compiler store model
+			compilerStore.Foreach((TreeModel tree, TreePath path, TreeIter iter) =>
+			{
+				if (compilerStore.GetValue(iter, 1) == configuration)
+				{
+					compilerStore.SetValue(iter, 0, configuration.Vendor);
+					return true;
+				}
+
+				return false;
+			});
 		}
 
 		void MakeCurrentConfigDefault()
 		{
+			if (configuration != null)
+			{
+				defaultCompilerVendor = configuration.Vendor;
 
+				btnMakeDefault.Active = true;
+				btnMakeDefault.Sensitive = false;
+			}
 		}
 
 		protected void OnBtnAddCompilerClicked (object sender, System.EventArgs e)
@@ -146,7 +205,7 @@ namespace MonoDevelop.D.OptionPanels
 
 		protected void OnTogglebuttonMakeDefaultPressed (object sender, System.EventArgs e)
 		{
-			
+			MakeCurrentConfigDefault();
 		}
 
 		protected void OnBtnApplyRenamingPressed (object sender, System.EventArgs e)
@@ -174,6 +233,7 @@ namespace MonoDevelop.D.OptionPanels
 				releaseArgumentsDialog.Load (null, false);
 				debugArgumentsDialog.Load (null, true);
 
+				btnMakeDefault.Sensitive = false;
 				return;
 			}
 			//for now, using Executable target compiler command for all targets source compiling
@@ -207,6 +267,10 @@ namespace MonoDevelop.D.OptionPanels
 			includePathStore.Clear ();
 			foreach (var p in config.GlobalParseCache.DirectoryPaths)
 				includePathStore.AppendValues (p);
+
+			bool isDefault= configuration.Vendor == defaultCompilerVendor;
+			btnMakeDefault.Active = isDefault;
+			btnMakeDefault.Sensitive = !isDefault;
 		}
 
 		public bool Validate ()
@@ -218,36 +282,19 @@ namespace MonoDevelop.D.OptionPanels
 		{
 			ApplyToVirtConfiguration ();
 
+			DCompilerService.Instance.Compilers.Clear();
+
 			Gtk.TreeIter iter;
 			compilerStore.GetIterFirst (out iter);
-
 			do {
 				var virtCmp = compilerStore.GetValue (iter, 1) as DCompilerConfiguration;
-				var cmp = DCompilerService.Instance.GetCompiler (virtCmp.Vendor);
-
-				//check for renames
-				var newVendorName = compilerStore.GetValue (iter, 0) as string;
-				if (virtCmp.Vendor != newVendorName)
-					virtCmp.Vendor = newVendorName;					
 				
-				if (cmp != null)
-					cmp.CopyFrom (virtCmp);
-				else
-					DCompilerService.Instance.Compilers.Add (virtCmp);
-			} while (compilerStore.IterNext(ref iter));
-			
-			//process pending config deletions
-			foreach (var delConfig in pendingPresetDeletes) {
-				foreach (var config in DCompilerService.Instance.Compilers) {				
-					if (delConfig.Vendor == config.Vendor) {
-						DCompilerService.Instance.Compilers.Remove (config);
-						break;
-					}
-				}
-			}
-			pendingPresetDeletes.Clear ();
-			
-			
+				DCompilerService.Instance.Compilers.Add (virtCmp);
+			} 
+			while (compilerStore.IterNext(ref iter));
+
+			DCompilerService.Instance.DefaultCompiler = defaultCompilerVendor;
+
 			return true;
 		}
 		
