@@ -86,6 +86,16 @@ namespace D_Parser.Resolver
 						hadString = true;
 				}
 
+				// Vector!float>.< does not mean T but Vector --> !float needs to get skipped
+				if (c == '!')
+				{
+					hadBraceOpener = false;
+					identBuffer = "";
+					expectDot = false;
+					hadDot = true;
+					continue;
+				}
+
 				// If string or comment, just continue
 				if (isString || isComment > 0)
 					continue;

@@ -1443,21 +1443,27 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 				 * 2) Resolve the returned expression
 				 * 3) Use that one as the method's type
 				 */
-				//TODO: What about handling 'null'-returns?
 				if (methodType == null && method.Body != null)
 				{
 					ReturnStatement returnStmt = null;
 					var list = new List<IStatement> { method.Body };
 					var list2 = new List<IStatement>();
 
-					while (returnStmt == null && list.Count > 0)
+					bool foundMatch = false;
+					while (!foundMatch && list.Count > 0)
 					{
 						foreach (var stmt in list)
 						{
 							if (stmt is ReturnStatement)
 							{
 								returnStmt = stmt as ReturnStatement;
-								break;
+
+								if (!(returnStmt.ReturnExpression is TokenExpression) ||
+									(returnStmt.ReturnExpression as TokenExpression).Token != DTokens.Null)
+								{
+									foundMatch = true;
+									break;
+								}
 							}
 
 							if (stmt is StatementContainingStatement)
@@ -1546,39 +1552,13 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 		{
 			var rl = new List<ResolveResult>();
 
-			var propertyMethodsToIgnore = new List<string>();
-
 			if (matches != null)
 				foreach (var m in matches)
 				{
 					if (m == null)
 						continue;
 
-					var n = m;
-
-					// Replace getter&setter methods inline
-					if (m is DMethod && 
-						(m as DNode).ContainsPropertyAttribute())
-					{
-						if (propertyMethodsToIgnore.Contains(m.Name))
-							continue;
-
-						var dm = m as DMethod;
-						bool isGetter = dm.Parameters.Count < 1;
-
-						var virtPropNode = new DVariable();
-
-						virtPropNode.AssignFrom(dm);
-
-						if (!isGetter)
-							virtPropNode.Type = dm.Parameters[0].Type;
-
-						propertyMethodsToIgnore.Add(m.Name);
-
-						n = virtPropNode;
-					}
-
-					var res = HandleNodeMatch(n, ctxt, currentlyScopedNode, resultBase, typeBase: TypeDeclaration);
+					var res = HandleNodeMatch(m, ctxt, currentlyScopedNode, resultBase, typeBase: TypeDeclaration);
 					if (res != null)
 						rl.Add(res);
 				}
