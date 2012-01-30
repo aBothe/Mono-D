@@ -526,15 +526,14 @@ namespace MonoDevelop.D.OptionPanels
 			if (configuration == null)
 				return;
 
-			if (!PresetLoader.HasPresetsAvailable(configuration))
-			{
-				MessageService.ShowMessage("No defaults available for "+configuration.Vendor);
+			if (!PresetLoader.HasPresetsAvailable (configuration)) {
+				MessageService.ShowMessage ("No defaults available for " + configuration.Vendor);
 				return;
 			}
 
-			if(MessageService.AskQuestion("Reset current compiler preset?",AlertButton.Yes,AlertButton.No)==AlertButton.Yes && 
-				PresetLoader.TryLoadPresets(configuration))
-				Load(configuration);
+			if (MessageService.AskQuestion ("Reset current compiler preset?", AlertButton.Yes, AlertButton.No) == AlertButton.Yes && 
+				PresetLoader.TryLoadPresets (configuration))
+				Load (configuration);
 		}
 		#endregion
 	}

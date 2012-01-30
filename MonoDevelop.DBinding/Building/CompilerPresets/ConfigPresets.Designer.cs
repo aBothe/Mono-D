@@ -66,13 +66,14 @@ namespace MonoDevelop.D.Building.CompilerPresets {
         ///	&lt;TargetConfiguration Target=&quot;Executable&quot;&gt;
         ///		&lt;CompilerCommand&gt;dmd&lt;/CompilerCommand&gt;
         ///		&lt;LinkerCommand&gt;dmd&lt;/LinkerCommand&gt;
-        ///		&lt;ObjectLinkPattern&gt;&lt;![CDATA[&quot;{0}&quot;]]&gt;&lt;/ObjectLinkPattern&gt;
-        ///		&lt;IncludePathPattern&gt;&lt;![CDATA[-I&quot;{0}&quot;]]&gt;&lt;/IncludePathPattern&gt;
+        ///		&lt;ObjectLinkPattern&gt;&quot;{0}&quot;&lt;/ObjectLinkPattern&gt;
+        ///		&lt;IncludePathPattern&gt;-I&quot;{0}&quot;&lt;/IncludePathPattern&gt;
         ///		&lt;DebugArgs&gt;
-        ///			&lt;CompilerArg&gt;&lt;![CDATA[-c &quot;$src&quot; -of&quot;$obj&quot; $includes -gc -debug]]&gt;&lt;/CompilerArg&gt;
-        ///			&lt;LinkerArgs&gt;&lt;![CDATA[-L/NOLOGO -gc -debug -of&quot;$target&quot; $objs $libs]]&gt;&lt;/LinkerArgs&gt;
+        ///			&lt;CompilerArg&gt;-c &quot;$src&quot; -of&quot;$obj&quot; $includes -gc -debug&lt;/CompilerArg&gt;
+        ///			&lt;LinkerArgs&gt;-gc -debug -of&quot;$target&quot; $objs $libs&lt;/LinkerArgs&gt;
         ///		&lt;/DebugArgs&gt;
-        ///		&lt;Release [Rest der Zeichenfolge wurde abgeschnitten]&quot;; ähnelt.
+        ///		&lt;ReleaseArgs&gt;
+        ///			&lt;CompilerArg&gt;-c &quot;$src&quot; -of&quot;$obj&quot; $includes -O -r [Rest der Zeichenfolge wurde abgeschnitten]&quot;; ähnelt.
         /// </summary>
         public static string dmd {
             get {
@@ -86,14 +87,15 @@ namespace MonoDevelop.D.Building.CompilerPresets {
         ///	&lt;TargetConfiguration Target=&quot;Executable&quot;&gt;
         ///		&lt;CompilerCommand&gt;gdc&lt;/CompilerCommand&gt;
         ///		&lt;LinkerCommand&gt;gdc&lt;/LinkerCommand&gt;
-        ///		&lt;ObjectLinkPattern&gt;&lt;![CDATA[&quot;{0}&quot;]]&gt;&lt;/ObjectLinkPattern&gt;
-        ///		&lt;IncludePathPattern&gt;&lt;![CDATA[-I&quot;{0}&quot;]]&gt;&lt;/IncludePathPattern&gt;
+        ///		&lt;ObjectLinkPattern&gt;&quot;{0}&quot;&lt;/ObjectLinkPattern&gt;
+        ///		&lt;IncludePathPattern&gt;-I&quot;{0}&quot;&lt;/IncludePathPattern&gt;
         ///		&lt;DebugArgs&gt;
-        ///			&lt;CompilerArg&gt;&lt;![CDATA[-c &quot;$src&quot; -o &quot;$obj&quot; $includes -g]]&gt;&lt;/CompilerArg&gt;
-        ///			&lt;LinkerArgs&gt;&lt;![CDATA[-o &quot;$target&quot; -g $objs $libs]]&gt;&lt;/LinkerArgs&gt;
+        ///			&lt;CompilerArg&gt;-c &quot;$src&quot; -o &quot;$obj&quot; $includes -g&lt;/CompilerArg&gt;
+        ///			&lt;LinkerArgs&gt;-o &quot;$target&quot; -g $objs $libs&lt;/LinkerArgs&gt;
         ///		&lt;/DebugArgs&gt;
         ///		&lt;ReleaseArgs&gt;
-        ///			&lt;CompilerArg&gt;&lt;![ [Rest der Zeichenfolge wurde abgeschnitten]&quot;; ähnelt.
+        ///			&lt;CompilerArg&gt;-c &quot;$src&quot; -o &quot;$obj&quot; $includes -O3&lt;/CompilerArg&gt;
+        ///		 [Rest der Zeichenfolge wurde abgeschnitten]&quot;; ähnelt.
         /// </summary>
         public static string gdc {
             get {
@@ -105,19 +107,41 @@ namespace MonoDevelop.D.Building.CompilerPresets {
         ///   Sucht eine lokalisierte Zeichenfolge, die &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
         ///&lt;Compiler&gt;
         ///	&lt;TargetConfiguration Target=&quot;Executable&quot;&gt;
-        ///		&lt;CompilerCommand&gt;&lt;![CDATA[ldc]]&gt;&lt;/CompilerCommand&gt;
-        ///		&lt;LinkerCommand&gt;&lt;![CDATA[ldc]]&gt;&lt;/LinkerCommand&gt;
-        ///		&lt;ObjectLinkPattern&gt;&lt;![CDATA[&quot;{0}&quot;]]&gt;&lt;/ObjectLinkPattern&gt;
-        ///		&lt;IncludePathPattern&gt;&lt;![CDATA[-I&quot;{0}&quot;]]&gt;&lt;/IncludePathPattern&gt;
+        ///		&lt;CompilerCommand&gt;ldc&lt;/CompilerCommand&gt;
+        ///		&lt;LinkerCommand&gt;ldc&lt;/LinkerCommand&gt;
+        ///		&lt;ObjectLinkPattern&gt;&quot;{0}&quot;&lt;/ObjectLinkPattern&gt;
+        ///		&lt;IncludePathPattern&gt;-I&quot;{0}&quot;&lt;/IncludePathPattern&gt;
         ///		&lt;DebugArgs&gt;
-        ///			&lt;CompilerArg&gt;&lt;![CDATA[-c &quot;$src&quot; -of &quot;$obj&quot; $includes -g]]&gt;&lt;/CompilerArg&gt;
-        ///			&lt;LinkerArgs&gt;&lt;![CDATA[-of &quot;$target&quot; -g $objs $libs]]&gt;&lt;/LinkerArgs&gt;
+        ///			&lt;CompilerArg&gt;-c &quot;$src&quot; -of &quot;$obj&quot; $includes -g&lt;/CompilerArg&gt;
+        ///			&lt;LinkerArgs&gt;-of &quot;$target&quot; -g $objs $libs&lt;/LinkerArgs&gt;
         ///		&lt;/DebugArgs&gt;
-        ///		&lt;Release [Rest der Zeichenfolge wurde abgeschnitten]&quot;; ähnelt.
+        ///		&lt;ReleaseArgs&gt;
+        ///			&lt;CompilerArg&gt;-c &quot;$src&quot; -of &quot;$obj&quot; $includes -O3 -release&lt;/Comp [Rest der Zeichenfolge wurde abgeschnitten]&quot;; ähnelt.
         /// </summary>
         public static string ldc {
             get {
                 return ResourceManager.GetString("ldc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+        ///&lt;Compiler&gt;
+        ///	&lt;TargetConfiguration Target=&quot;Executable&quot;&gt;
+        ///		&lt;CompilerCommand&gt;ldc2&lt;/CompilerCommand&gt;
+        ///		&lt;LinkerCommand&gt;ldc2&lt;/LinkerCommand&gt;
+        ///		&lt;ObjectLinkPattern&gt;&quot;{0}&quot;&lt;/ObjectLinkPattern&gt;
+        ///		&lt;IncludePathPattern&gt;-I&quot;{0}&quot;&lt;/IncludePathPattern&gt;
+        ///		&lt;DebugArgs&gt;
+        ///			&lt;CompilerArg&gt;-c &quot;$src&quot; -of &quot;$obj&quot; $includes -g&lt;/CompilerArg&gt;
+        ///			&lt;LinkerArgs&gt;-of &quot;$target&quot; -g $objs $libs&lt;/LinkerArgs&gt;
+        ///		&lt;/DebugArgs&gt;
+        ///		&lt;ReleaseArgs&gt;
+        ///			&lt;CompilerArg&gt;-c &quot;$src&quot; -of &quot;$obj&quot; $includes -O3 -release&lt;/Co [Rest der Zeichenfolge wurde abgeschnitten]&quot;; ähnelt.
+        /// </summary>
+        public static string ldc2 {
+            get {
+                return ResourceManager.GetString("ldc2", resourceCulture);
             }
         }
     }

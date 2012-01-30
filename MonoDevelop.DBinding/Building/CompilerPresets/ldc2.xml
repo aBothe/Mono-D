@@ -1,8 +1,23 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Compiler>
 	<TargetConfiguration Target="Executable">
-		<CompilerCommand>ldc</CompilerCommand>
-		<LinkerCommand>ldc</LinkerCommand>
+		<CompilerCommand>ldc2</CompilerCommand>
+		<LinkerCommand>ldc2</LinkerCommand>
+		<ObjectLinkPattern>"{0}"</ObjectLinkPattern>
+		<IncludePathPattern>-I"{0}"</IncludePathPattern>
+		<DebugArgs>
+			<CompilerArg>-c "$src" -of "$obj" $includes -g</CompilerArg>
+			<LinkerArgs>-of "$target" -g $objs $libs</LinkerArgs>
+		</DebugArgs>
+		<ReleaseArgs>
+			<CompilerArg>-c "$src" -of "$obj" $includes -O3 -release</CompilerArg>
+			<LinkerArgs>-of "$target" -O3 -release $objs $libs</LinkerArgs>
+		</ReleaseArgs>
+	</TargetConfiguration>
+
+	<TargetConfiguration Target="ConsolelessExecutable">
+		<CompilerCommand>ldc2</CompilerCommand>
+		<LinkerCommand>ldc2</LinkerCommand>
 		<ObjectLinkPattern>"{0}"</ObjectLinkPattern>
 		<IncludePathPattern>-I"{0}"</IncludePathPattern>
 		<DebugArgs>
@@ -15,52 +30,33 @@
 		</ReleaseArgs>
 	</TargetConfiguration>
 	
-	<TargetConfiguration Target="ConsolelessExecutable">
-		<CompilerCommand>ldc</CompilerCommand>
-		<LinkerCommand>ldc</LinkerCommand>
-		<ObjectLinkPattern>"{0}"</ObjectLinkPattern>
-		<IncludePathPattern>-I"{0}"</IncludePathPattern>
-		<DebugArgs>
-			<CompilerArg>-c "$src" -of "$obj" $includes -g</CompilerArg>
-			<LinkerArgs>-of "$target" -g $objs $libs</LinkerArgs>
-		</DebugArgs>
-		<ReleaseArgs>
-			<CompilerArg>-c "$src" -of "$obj" $includes -O3 -release</CompilerArg>
-			<LinkerArgs>-of "$target" -O3 -release $objs $libs</LinkerArgs>
-		</ReleaseArgs>
-	</TargetConfiguration>
 	<TargetConfiguration Target="SharedLibrary">
-		
-		<CompilerCommand>ldc</CompilerCommand>
-		<LinkerCommand>ldc</LinkerCommand>
+		<CompilerCommand>ldc2</CompilerCommand>
+		<LinkerCommand>ldc2</LinkerCommand>
 		<ObjectLinkPattern>"{0}"</ObjectLinkPattern>
 		<IncludePathPattern>-I"{0}"</IncludePathPattern>
 		<DebugArgs>
 			<CompilerArg>-relocation-model=pic -c "$src" -of "$obj" $includes -g</CompilerArg>
-			<LinkerArgs>-of "$target" -g $objs $libs -L-shared</LinkerArgs>
+			<LinkerArgs>-of "$target" -g $objs $libs -shared</LinkerArgs>
 		</DebugArgs>
 		<ReleaseArgs>
 			<CompilerArg>-relocation-model=pic -c "$src" -of "$obj" $includes -O3 -release</CompilerArg>
-			<LinkerArgs>-of "$target" -O3 -release $objs $libs -L-shared</LinkerArgs>
+			<LinkerArgs>-of "$target" -O3 -release $objs $libs -shared</LinkerArgs>
 		</ReleaseArgs>
 	</TargetConfiguration>
-	
+
 	<TargetConfiguration Target="StaticLibrary">
-		<CompilerCommand>ldc</CompilerCommand>
-		<LinkerCommand>ar</LinkerCommand>
+		<CompilerCommand>ldc2</CompilerCommand>
+		<LinkerCommand>ldc2</LinkerCommand>
 		<ObjectLinkPattern>"{0}"</ObjectLinkPattern>
 		<IncludePathPattern>-I"{0}"</IncludePathPattern>
 		<DebugArgs>
 			<CompilerArg>-c "$src" -of "$obj" $includes -g</CompilerArg>
-			<LinkerArgs>rcs "$target" $objs</LinkerArgs>
+			<LinkerArgs>-lib "$target" $objs</LinkerArgs>
 		</DebugArgs>
 		<ReleaseArgs>
 			<CompilerArg>-c "$src" -of "$obj" $includes -O3 -release</CompilerArg>
-			<LinkerArgs>rcs "$target" $objs</LinkerArgs>
+			<LinkerArgs>-lib "$target" $objs</LinkerArgs>
 		</ReleaseArgs>
 	</TargetConfiguration>
-	
-	<DefaultLibs>
-		<lib>phobos.lib</lib>
-	</DefaultLibs>
 </Compiler>

@@ -11,7 +11,8 @@ namespace MonoDevelop.D.Building.CompilerPresets
 		static Dictionary<string, string> presetFileContents = new Dictionary<string, string> { 
 			{"DMD", ConfigPresets.dmd},
 			{"GDC", ConfigPresets.gdc},
-			{"LDC", ConfigPresets.ldc}
+			{"LDC", ConfigPresets.ldc},
+			{"ldc2", ConfigPresets.ldc2}
 		};
 
 		public static void LoadPresets(DCompilerService svc)
@@ -102,6 +103,14 @@ namespace MonoDevelop.D.Building.CompilerPresets
 			{
 				lt.Compiler = Path.ChangeExtension(lt.Compiler, DCompilerService.ExecutableExtension);
 				lt.Linker = Path.ChangeExtension(lt.Linker,DCompilerService.ExecutableExtension);
+
+				//HACK: On windows systems, add subsystem flag to the linker to hide console window
+				if (lt.TargetType == DCompileTarget.ConsolelessExecutable && OS.IsWindows)
+				{
+					const string subsystemExt = " -L/su:windows -L/exet:nt";
+					lt.DebugArguments.LinkerArguments += subsystemExt;
+					lt.ReleaseArguments.LinkerArguments += subsystemExt;
+				}
 			}
 		}
 	}

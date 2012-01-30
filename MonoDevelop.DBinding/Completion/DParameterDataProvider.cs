@@ -137,7 +137,12 @@ namespace MonoDevelop.D.Completion
 				var dv = mr.ResolvedMember as DMethod;
 
 				if (dv == null)
-					return (mr.ResolvedMember as DNode).ToString(false);
+				{
+					if (mr.ResolvedMember is DNode)
+						return (mr.ResolvedMember as DNode).ToString(false);
+					else
+						return null;
+				}
 
 				switch(dv.SpecialType)
 				{

@@ -249,6 +249,9 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Formatting\DPolicy.xml" />
+    <Content Include="Building\CompilerPresets\ldc2.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Remaining features.txt" />
   </ItemGroup>
   <ItemGroup>

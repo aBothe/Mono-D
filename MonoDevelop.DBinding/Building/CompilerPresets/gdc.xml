@@ -3,60 +3,60 @@
 	<TargetConfiguration Target="Executable">
 		<CompilerCommand>gdc</CompilerCommand>
 		<LinkerCommand>gdc</LinkerCommand>
-		<ObjectLinkPattern><![CDATA["{0}"]]></ObjectLinkPattern>
-		<IncludePathPattern><![CDATA[-I"{0}"]]></IncludePathPattern>
+		<ObjectLinkPattern>"{0}"</ObjectLinkPattern>
+		<IncludePathPattern>-I"{0}"</IncludePathPattern>
 		<DebugArgs>
-			<CompilerArg><![CDATA[-c "$src" -o "$obj" $includes -g]]></CompilerArg>
-			<LinkerArgs><![CDATA[-o "$target" -g $objs $libs]]></LinkerArgs>
+			<CompilerArg>-c "$src" -o "$obj" $includes -g</CompilerArg>
+			<LinkerArgs>-o "$target" -g $objs $libs</LinkerArgs>
 		</DebugArgs>
 		<ReleaseArgs>
-			<CompilerArg><![CDATA[-c "$src" -o "$obj" $includes -O3]]></CompilerArg>
-			<LinkerArgs><![CDATA[-o "$target" -O3 $objs $libs]]></LinkerArgs>
+			<CompilerArg>-c "$src" -o "$obj" $includes -O3</CompilerArg>
+			<LinkerArgs>-o "$target" -O3 $objs $libs</LinkerArgs>
 		</ReleaseArgs>
 	</TargetConfiguration>
 	
 	<TargetConfiguration Target="ConsolelessExecutable">
 		<CompilerCommand>gdc</CompilerCommand>
 		<LinkerCommand>gdc</LinkerCommand>
-		<ObjectLinkPattern><![CDATA["{0}"]]></ObjectLinkPattern>
-		<IncludePathPattern><![CDATA[-I"{0}"]]></IncludePathPattern>
+		<ObjectLinkPattern>"{0}"</ObjectLinkPattern>
+		<IncludePathPattern>-I"{0}"</IncludePathPattern>
 		<DebugArgs>
-			<CompilerArg><![CDATA[-c "$src" -o "$obj" $includes -g]]></CompilerArg>
-			<LinkerArgs><![CDATA[-o "$target" -g $objs $libs -L/su:windows -L/exet:nt]]></LinkerArgs>
+			<CompilerArg>-c "$src" -o "$obj" $includes -g</CompilerArg>
+			<LinkerArgs>-o "$target" -g $objs $libs</LinkerArgs>
 		</DebugArgs>
 		<ReleaseArgs>
-			<CompilerArg><![CDATA[-c "$src" -o "$obj" $includes -O3]]></CompilerArg>
-			<LinkerArgs><![CDATA[-o "$target" -O3 $objs $libs -L/su:windows -L/exet:nt]]></LinkerArgs>
+			<CompilerArg>-c "$src" -o "$obj" $includes -O3</CompilerArg>
+			<LinkerArgs>-o "$target" -O3 $objs $libs</LinkerArgs>
 		</ReleaseArgs>
 	</TargetConfiguration>
 	
 	<TargetConfiguration Target="SharedLibrary">
 		<CompilerCommand>gdc</CompilerCommand>
 		<LinkerCommand>gdc</LinkerCommand>
-		<ObjectLinkPattern><![CDATA["{0}"]]></ObjectLinkPattern>
-		<IncludePathPattern><![CDATA[-I"{0}"]]></IncludePathPattern>
+		<ObjectLinkPattern>"{0}"</ObjectLinkPattern>
+		<IncludePathPattern>-I"{0}"</IncludePathPattern>
 		<DebugArgs>
-			<CompilerArg><![CDATA[-fPIC -c "$src" -o "$obj" $includes -g]]></CompilerArg>
-			<LinkerArgs><![CDATA[-o "$target" -g $objs $libs -shared]]></LinkerArgs>
+			<CompilerArg>-fPIC -c "$src" -o "$obj" $includes -g</CompilerArg>
+			<LinkerArgs>-o "$target" -g $objs $libs -shared</LinkerArgs>
 		</DebugArgs>
 		<ReleaseArgs>
-			<CompilerArg><![CDATA[-fPIC -c "$src" -o "$obj" $includes -O3]]></CompilerArg>
-			<LinkerArgs><![CDATA[-o "$target" -O3 $objs $libs -shared]]></LinkerArgs>
+			<CompilerArg>-fPIC -c "$src" -o "$obj" $includes -O3</CompilerArg>
+			<LinkerArgs>-o "$target" -O3 $objs $libs -shared</LinkerArgs>
 		</ReleaseArgs>
 	</TargetConfiguration>
 	
 	<TargetConfiguration Target="StaticLibrary">
 		<CompilerCommand>gdc</CompilerCommand>
 		<LinkerCommand>ar</LinkerCommand>
-		<ObjectLinkPattern><![CDATA["{0}"]]></ObjectLinkPattern>
-		<IncludePathPattern><![CDATA[-I"{0}"]]></IncludePathPattern>
+		<ObjectLinkPattern>"{0}"</ObjectLinkPattern>
+		<IncludePathPattern>-I"{0}"</IncludePathPattern>
 		<DebugArgs>
-			<CompilerArg><![CDATA[-c "$src" -o "$obj" $includes -g]]></CompilerArg>
-			<LinkerArgs><![CDATA[rcs "$target" $objs]]></LinkerArgs>
+			<CompilerArg>-c "$src" -o "$obj" $includes -g</CompilerArg>
+			<LinkerArgs>rcs "$target" $objs</LinkerArgs>
 		</DebugArgs>
 		<ReleaseArgs>
-			<CompilerArg><![CDATA[-c "$src" -o "$obj" $includes -O3]]></CompilerArg>
-			<LinkerArgs><![CDATA[rcs "$target" $objs]]></LinkerArgs>
+			<CompilerArg>-c "$src" -o "$obj" $includes -O3</CompilerArg>
+			<LinkerArgs>rcs "$target" $objs</LinkerArgs>
 		</ReleaseArgs>
 	</TargetConfiguration>
 	
