@@ -126,6 +126,7 @@ namespace MonoDevelop.D.OptionPanels
 			w5.Position = 0;
 			// Container child hbox4.Gtk.Box+BoxChild
 			this.btnApplyRenaming = new global::Gtk.Button ();
+			this.btnApplyRenaming.TooltipMarkup = "Press to rename current compiler configuration";
 			this.btnApplyRenaming.CanFocus = true;
 			this.btnApplyRenaming.Name = "btnApplyRenaming";
 			this.btnApplyRenaming.UseUnderline = true;
@@ -137,6 +138,7 @@ namespace MonoDevelop.D.OptionPanels
 			w6.Fill = false;
 			// Container child hbox4.Gtk.Box+BoxChild
 			this.btnAddCompiler = new global::Gtk.Button ();
+			this.btnAddCompiler.TooltipMarkup = "Click to add an empty configuration with the name entered in the drop-down";
 			this.btnAddCompiler.WidthRequest = 24;
 			this.btnAddCompiler.CanFocus = true;
 			this.btnAddCompiler.Name = "btnAddCompiler";
@@ -162,6 +164,7 @@ namespace MonoDevelop.D.OptionPanels
 			w15.Fill = false;
 			// Container child hbox4.Gtk.Box+BoxChild
 			this.btnRemoveCompiler = new global::Gtk.Button ();
+			this.btnRemoveCompiler.TooltipMarkup = "Remove current configuration";
 			this.btnRemoveCompiler.WidthRequest = 24;
 			this.btnRemoveCompiler.CanFocus = true;
 			this.btnRemoveCompiler.Name = "btnRemoveCompiler";
@@ -187,6 +190,7 @@ namespace MonoDevelop.D.OptionPanels
 			w24.Fill = false;
 			// Container child hbox4.Gtk.Box+BoxChild
 			this.btnMakeDefault = new global::Gtk.ToggleButton ();
+			this.btnMakeDefault.TooltipMarkup = "Click to make the current configuration default";
 			this.btnMakeDefault.Name = "btnMakeDefault";
 			this.btnMakeDefault.UseUnderline = true;
 			this.btnMakeDefault.Active = true;

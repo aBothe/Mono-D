@@ -1030,6 +1030,7 @@ Example:
                 <child>
                   <widget class="Gtk.Button" id="btnApplyRenaming">
                     <property name="MemberName" />
+                    <property name="Tooltip" translatable="yes">Press to rename current compiler configuration</property>
                     <property name="CanFocus">True</property>
                     <property name="Type">TextOnly</property>
                     <property name="Label" translatable="yes">Apply new name</property>
@@ -1047,6 +1048,7 @@ Example:
                   <widget class="Gtk.Button" id="btnAddCompiler">
                     <property name="MemberName" />
                     <property name="WidthRequest">24</property>
+                    <property name="Tooltip" translatable="yes">Click to add an empty configuration with the name entered in the drop-down</property>
                     <property name="CanFocus">True</property>
                     <property name="Type">TextAndIcon</property>
                     <property name="Icon">stock:gtk-add Menu</property>
@@ -1065,6 +1067,7 @@ Example:
                   <widget class="Gtk.Button" id="btnRemoveCompiler">
                     <property name="MemberName" />
                     <property name="WidthRequest">24</property>
+                    <property name="Tooltip" translatable="yes">Remove current configuration</property>
                     <property name="CanFocus">True</property>
                     <property name="Type">TextAndIcon</property>
                     <property name="Icon">stock:gtk-remove Menu</property>
@@ -1082,6 +1085,7 @@ Example:
                 <child>
                   <widget class="Gtk.ToggleButton" id="btnMakeDefault">
                     <property name="MemberName" />
+                    <property name="Tooltip" translatable="yes">Click to make the current configuration default</property>
                     <property name="Type">TextOnly</property>
                     <property name="Label" translatable="yes">Make Default</property>
                     <property name="UseUnderline">True</property>
