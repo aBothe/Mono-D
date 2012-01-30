@@ -29,8 +29,8 @@
 			<LinkerArgs>-of "$target" -O3 -release $objs $libs</LinkerArgs>
 		</ReleaseArgs>
 	</TargetConfiguration>
+	
 	<TargetConfiguration Target="SharedLibrary">
-		
 		<CompilerCommand>ldc</CompilerCommand>
 		<LinkerCommand>ldc</LinkerCommand>
 		<ObjectLinkPattern>"{0}"</ObjectLinkPattern>

@@ -93,7 +93,7 @@ namespace MonoDevelop.D.Building
 				return objects;
 			if (Input == "target")
 				return TargetFile;
-			if (Input == "relativeTargetDirectory")
+			if (Input == "relativeTargetDirectory" || Input=="relativeTargetDir")
 				return RelativeTargetDirectory;
 			if (Input == "target_noExt")
 				return Path.ChangeExtension(TargetFile, null);
