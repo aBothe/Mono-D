@@ -51,7 +51,7 @@
 	<Rule name = "Comment"></Rule>
 	<Rule name = "String"></Rule>
 
-	<Match color = "constant.digit">((0((x|X)[0-9a-fA-F_]+|(b|B)[0-1_]+))|[0-9_]+)[L|U|u|f|i]?</Match>
+	<Match color = "constant.digit">((0((x|X)[0-9a-fA-F_]+|(b|B)[0-1_]+))|[0-9]+[_0-9]+)[L|U|u|f|i]?</Match>
 	<!-- @property-like Attributes -->
 	<Match color = "keyword.modifier">@[\w0-9_]+</Match>
 
