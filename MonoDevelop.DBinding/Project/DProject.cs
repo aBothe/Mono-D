@@ -427,7 +427,7 @@ namespace MonoDevelop.D
 
 		protected override void OnModified(SolutionItemModifiedEventArgs args)
 		{
-			foreach (var arg in args)
+			foreach (SolutionItemModifiedEventInfo arg in args)
 				if (arg.SolutionItem is DProject)
 				{
 					var dprj = arg.SolutionItem as DProject;
