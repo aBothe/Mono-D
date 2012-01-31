@@ -304,7 +304,13 @@ namespace MonoDevelop.D.Gui
 			if(n==null)
 				return;
 
-			var openedDoc=IdeApp.Workbench.OpenDocument(SyntaxTree.FileName, n.StartLocation.Line, n.StartLocation.Column);
+			var openedDoc=IdeApp.Workbench.GetDocument(SyntaxTree.FileName);
+
+			if (openedDoc == null)
+				return;
+
+			openedDoc.Editor.SetCaretTo(n.StartLocation.Line, n.StartLocation.Column);
+			openedDoc.Editor.ScrollToCaret();
 
 			if (focusEditor)
 			{
