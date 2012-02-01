@@ -131,6 +131,7 @@ namespace MonoDevelop.D
 		/// </summary>
 		public void UpdateParseCache()
 		{
+			LocalFileCache.BaseDirectory = BaseDirectory;
 			LocalFileCache.UpdateFromBaseDirectory();
 		}
 
@@ -425,7 +426,7 @@ namespace MonoDevelop.D
 
 		#region Loading&Saving
 
-		protected override void OnModified(SolutionItemModifiedEventArgs args)
+		/*protected override void OnModified(SolutionItemModifiedEventArgs args)
 		{
 			foreach (var arg in args)
 				if (arg.SolutionItem is DProject)
@@ -441,7 +442,7 @@ namespace MonoDevelop.D
 				}
 
 			base.OnModified(args);
-		}
+		}*/
 
 		protected override void OnEndLoad()
 		{
