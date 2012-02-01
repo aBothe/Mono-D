@@ -22,7 +22,7 @@ namespace MonoDevelop.D.Parser
 	/// </summary>
 	public class DParserWrapper : AbstractParser
 	{
-		public bool CanParse(string fileName)
+		public override bool CanParse(string fileName)
 		{
 			return DLanguageBinding.IsDFile(fileName);
 		}
