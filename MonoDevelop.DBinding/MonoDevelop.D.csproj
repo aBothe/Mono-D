@@ -55,12 +55,13 @@
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="gdk-sharp"></Reference>
+    <Reference Include="gdk-sharp">
+    </Reference>
     <Reference Include="Mono.Addins">
       <HintPath>..\ext\Mono.Addins.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Mono.Cairo"/>
+    <Reference Include="Mono.Cairo, Version=2.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL" />
     <Reference Include="Mono.TextEditor">
       <HintPath>..\Mono.TextEditor.dll</HintPath>
       <Private>False</Private>
@@ -82,14 +83,14 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="gtk-sharp"/>
+    <Reference Include="gtk-sharp" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Data" />
-    <Reference Include="gtk-dotnet"/>
-    <Reference Include="Mono.Posix"/>
-    <Reference Include="atk-sharp"/>
-    <Reference Include="glib-sharp"/>
-    <Reference Include="pango-sharp"/>
+    <Reference Include="gtk-dotnet" />
+    <Reference Include="Mono.Posix" />
+    <Reference Include="atk-sharp" />
+    <Reference Include="glib-sharp" />
+    <Reference Include="pango-sharp" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
