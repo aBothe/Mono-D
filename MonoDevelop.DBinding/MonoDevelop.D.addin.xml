@@ -18,7 +18,8 @@
 	</Dependencies>
 
 	<Runtime>
-		<Import assembly="D_Parser.dll" />
+		<Import assembly="Mono.Cairo.dll"/>
+		<Import assembly="D_Parser.dll"/>
 	</Runtime>
 	
 	<Extension path = "/MonoDevelop/Core/StockIcons">
