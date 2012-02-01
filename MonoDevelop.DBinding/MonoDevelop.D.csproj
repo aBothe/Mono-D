@@ -61,10 +61,6 @@
       <HintPath>..\ext\Mono.Addins.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Mono.Cairo">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\ext\Mono.Cairo.dll</HintPath>
-    </Reference>
     <Reference Include="Mono.TextEditor">
       <HintPath>..\Mono.TextEditor.dll</HintPath>
       <Private>False</Private>
@@ -116,7 +112,7 @@
     <Compile Include="Gui\DToolTipProvider.cs" />
     <Compile Include="Gui\DToolTipWindow.cs" />
     <Compile Include="Gui\EditorPathBarExtension.cs" />
-    <Compile Include="Gui\HighlightUsagesExtension.cs" />
+    <None Include="Gui\HighlightUsagesExtension.cs" />
     <Compile Include="OptionPanels\ProjectOptions.cs" />
     <Compile Include="Parser\DParserWrapper.cs" />
     <Compile Include="Parser\ParsedDModule.cs" />

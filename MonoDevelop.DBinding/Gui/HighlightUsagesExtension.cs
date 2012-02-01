@@ -14,6 +14,12 @@ using MonoDevelop.Core;
 
 // Code taken and modified from MonoDevelop.CSharp.Highlighting.HighlightUsagesExtension.cs
 
+/*
+ * Can't use this extension on Windows -- Mono.Cairo isn't released in Version 4.0 over there but on all Linux systems
+ * Only if MD will be linked to v4.0 this feature (it's also required to add a reference to Mono.Cairo)
+ */
+
+
 namespace MonoDevelop.D.Gui
 {
 	class HighlightUsagesExtension:TextEditorExtension

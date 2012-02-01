@@ -18,7 +18,6 @@
 	</Dependencies>
 
 	<Runtime>
-		<Import assembly="Mono.Cairo.dll"/>
 		<Import assembly="D_Parser.dll"/>
 	</Runtime>
 	
