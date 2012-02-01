@@ -139,7 +139,7 @@ namespace MonoDevelop.D.Gui
 				return usages.Any(u => u.Offset <= offset && offset <= u.EndOffset);
 			}
 
-			public bool DrawBackground(Mono.TextEditor.TextEditor editor, Cairo.Context cr, Mono.TextEditor.TextViewMargin.LayoutWrapper layout, int selectionStart, int selectionEnd, int startOffset, int endOffset, double y, double startXPos, double endXPos, ref bool drawBg)
+			bool IBackgroundMarker.DrawBackground(Mono.TextEditor.TextEditor editor, Cairo.Context cr, Mono.TextEditor.TextViewMargin.LayoutWrapper layout, int selectionStart, int selectionEnd, int startOffset, int endOffset, double y, double startXPos, double endXPos, ref bool drawBg)
 			{
 				drawBg = false;
 				if (selectionStart >= 0 || editor.CurrentMode is TextLinkEditMode)
