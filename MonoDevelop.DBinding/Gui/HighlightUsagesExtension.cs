@@ -125,6 +125,7 @@ namespace MonoDevelop.D.Gui
 			return result;
 		}
 
+
 		public class UsageMarker : TextMarker, IBackgroundMarker
 		{
 			List<ISegment> usages = new List<ISegment>();
