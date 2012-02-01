@@ -55,17 +55,12 @@
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="gdk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
-      <Private>False</Private>
-      <SpecificVersion>False</SpecificVersion>
-    </Reference>
+    <Reference Include="gdk-sharp"></Reference>
     <Reference Include="Mono.Addins">
       <HintPath>..\ext\Mono.Addins.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Mono.Cairo, Version=2.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-    </Reference>
+    <Reference Include="Mono.Cairo"/>
     <Reference Include="Mono.TextEditor">
       <HintPath>..\Mono.TextEditor.dll</HintPath>
       <Private>False</Private>
@@ -87,31 +82,14 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="gtk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
-      <SpecificVersion>False</SpecificVersion>
-      <Private>False</Private>
-    </Reference>
+    <Reference Include="gtk-sharp"/>
     <Reference Include="System.Xml" />
     <Reference Include="System.Data" />
-    <Reference Include="gtk-dotnet, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
-      <Private>False</Private>
-      <SpecificVersion>False</SpecificVersion>
-    </Reference>
-    <Reference Include="Mono.Posix">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="atk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
-      <Private>False</Private>
-      <SpecificVersion>False</SpecificVersion>
-    </Reference>
-    <Reference Include="glib-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
-      <Private>False</Private>
-      <SpecificVersion>False</SpecificVersion>
-    </Reference>
-    <Reference Include="pango-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
-      <Private>False</Private>
-      <SpecificVersion>False</SpecificVersion>
-    </Reference>
+    <Reference Include="gtk-dotnet"/>
+    <Reference Include="Mono.Posix"/>
+    <Reference Include="atk-sharp"/>
+    <Reference Include="glib-sharp"/>
+    <Reference Include="pango-sharp"/>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
