@@ -182,17 +182,22 @@ namespace MonoDevelop.D.Gui
 					to = System.Math.Max(to, editor.TextViewMargin.XOffset);
 					if (@from < to)
 					{
-						cr.Color = (HslColor)editor.ColorStyle.BracketHighlightRectangle.BackgroundColor;
+						cr.Color = ToCairoColor(editor.ColorStyle.BracketHighlightRectangle.BackgroundColor);
 						cr.Rectangle(@from + 1, y + 1, to - @from - 1, editor.LineHeight - 2);
 						cr.Fill();
 
-						cr.Color = (HslColor)editor.ColorStyle.BracketHighlightRectangle.Color;
+						cr.Color = ToCairoColor(editor.ColorStyle.BracketHighlightRectangle.Color);
 						cr.Rectangle(@from, y, to - @from, editor.LineHeight - 1);
 						cr.Fill();
 					}
 				}
 				return true;
 			}
+		}
+
+		public static Cairo.Color ToCairoColor(Gdk.Color c)
+		{
+			return new Cairo.Color(c.Red, c.Green, c.Blue, c.Pixel);
 		}
 		#endregion
 
