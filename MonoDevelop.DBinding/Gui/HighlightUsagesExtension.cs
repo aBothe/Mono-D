@@ -144,6 +144,10 @@ namespace MonoDevelop.D.Gui
 				drawBg = false;
 				if (selectionStart >= 0 || editor.CurrentMode is TextLinkEditMode)
 					return true;
+
+				var color_Bg = ToCairoColor(editor.ColorStyle.BracketHighlightRectangle.BackgroundColor);
+				var color_Rect=ToCairoColor(editor.ColorStyle.BracketHighlightRectangle.Color);
+
 				foreach (ISegment usage in Usages)
 				{
 					int markerStart = usage.Offset;
@@ -182,11 +186,11 @@ namespace MonoDevelop.D.Gui
 					to = System.Math.Max(to, editor.TextViewMargin.XOffset);
 					if (@from < to)
 					{
-						cr.Color = ToCairoColor(editor.ColorStyle.BracketHighlightRectangle.BackgroundColor);
+						cr.Color = color_Bg;
 						cr.Rectangle(@from + 1, y + 1, to - @from - 1, editor.LineHeight - 2);
 						cr.Fill();
 
-						cr.Color = ToCairoColor(editor.ColorStyle.BracketHighlightRectangle.Color);
+						cr.Color = color_Rect;
 						cr.Rectangle(@from, y, to - @from, editor.LineHeight - 1);
 						cr.Fill();
 					}
