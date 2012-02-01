@@ -145,8 +145,8 @@ namespace MonoDevelop.D.Gui
 				if (selectionStart >= 0 || editor.CurrentMode is TextLinkEditMode)
 					return true;
 
-				var color_Bg = ToCairoColor(editor.ColorStyle.BracketHighlightRectangle.BackgroundColor);
-				var color_Rect=ToCairoColor(editor.ColorStyle.BracketHighlightRectangle.Color);
+				var color_Bg = (HslColor)editor.ColorStyle.BracketHighlightRectangle.BackgroundColor;
+				var color_Rect=(HslColor)editor.ColorStyle.BracketHighlightRectangle.Color;
 
 				foreach (ISegment usage in Usages)
 				{
@@ -197,11 +197,6 @@ namespace MonoDevelop.D.Gui
 				}
 				return true;
 			}
-		}
-
-		public static Cairo.Color ToCairoColor(Gdk.Color c)
-		{
-			return new Cairo.Color(c.Red, c.Green, c.Blue, c.Pixel);
 		}
 		#endregion
 
