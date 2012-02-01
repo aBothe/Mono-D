@@ -21,15 +21,15 @@
 
 			<Files>
 				<File name = "main.d" AddStandardHeader="True">
-					<![CDATA[import std.stdio, std.cstream;
+					<![CDATA[import std.stdio;
 
 void main(string[] args)
 {
-	// Prints "Hello World" string in console
-	writeln("Hello World!");
-
-	// Lets the user press <Return> before program stops
-	din.getc();
+    // Prints "Hello World" string in console
+    writeln("Hello World!");
+    
+    // Lets the user press <Return> before program returns
+    stdin.readln();
 }
 ]]>
 				</File>
