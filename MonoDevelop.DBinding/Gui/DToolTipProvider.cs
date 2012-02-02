@@ -86,7 +86,8 @@ namespace MonoDevelop.D.Gui
 
 				if (!string.IsNullOrEmpty( r.Description))
 				{
-					var descLabel = new Label(r.Description);
+					const int maximumDescriptionLength = 300;
+					var descLabel = new Label(r.Description.Length>maximumDescriptionLength ? (r.Description.Substring(0,maximumDescriptionLength)+"...") : r.Description);
 
 					descLabel.ModifyFont(new Pango.FontDescription() { AbsoluteSize = 10 * (int)Pango.Scale.PangoScale });
 					descLabel.SetAlignment(0, 0);
