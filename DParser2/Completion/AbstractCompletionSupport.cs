@@ -898,6 +898,11 @@ namespace D_Parser.Completion
 		void Add(INode Node);
 
 		/// <summary>
+		/// Adds a set of equally named overloads
+		/// </summary>
+		void Add(IEnumerable<INode> Overloads);
+
+		/// <summary>
 		/// Adds a module (name stub) to the completion data
 		/// </summary>
 		/// <param name="ModuleName"></param>

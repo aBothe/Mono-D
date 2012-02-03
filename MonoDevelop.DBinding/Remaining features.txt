@@ -30,4 +30,5 @@ This document contains a list of to-do features:
 	- Add array index completion
 	- Add delegate parameter recognition
 	- Extend code symbol resolution by resolving the right method (argument-parameter-check)
+* Example syntax highlighting in tooltips in DDoc comments
 

@@ -174,6 +174,108 @@ namespace MonoDevelop.D.Completion
 		{
 			CompletionDataList.Add(new CompletionData("@"+AttributeText,new IconId("md-keyword"), DTokens.GetDescription("@"+AttributeText)));
 		}
+
+		public void Add(IEnumerable<INode> Overloads)
+		{
+			var od = new OverloadsCompletionData();
+
+			foreach (var o in Overloads)
+				od.Overloads.Add(new DCompletionData(o));
+
+			CompletionDataList.Add(od);
+		}
+	}
+
+	public class OverloadsCompletionData : CompletionData
+	{
+		public List<CompletionData> Overloads=new List<CompletionData>();
+
+		public override bool IsOverloaded
+		{
+			get
+			{
+				return Overloads.Count>1;
+			}
+		}
+
+		public override IEnumerable<CompletionData> OverloadedData
+		{
+			get
+			{
+				return Overloads;
+			}
+		}
+
+		public int DefaultOverloadIndex = 0;
+
+		public CompletionData DefaultOverload
+		{
+			get { return Overloads[DefaultOverloadIndex]; }
+			set {
+				var i = Overloads.IndexOf(value);
+
+				if (i < 0)
+					i = 0;
+
+				DefaultOverloadIndex = i;
+			}
+		}
+
+		public override IconId Icon
+		{
+			get{ return DefaultOverload.Icon; }
+			set{}
+		}
+
+		public override CompletionCategory CompletionCategory
+		{
+			get{ return DefaultOverload.CompletionCategory; }
+			set{}
+		}
+
+		public override string CompletionText
+		{
+			get{ return DefaultOverload.CompletionText; }
+			set{}
+		}
+
+		public override string Description
+		{
+			get
+			{
+				return DefaultOverload.Description;
+			}
+			set
+			{}
+		}
+
+		public override string DisplayDescription
+		{
+			get
+			{ return DefaultOverload.DisplayDescription; }
+			set
+			{}
+		}
+
+		public override DisplayFlags DisplayFlags
+		{
+			get
+			{
+				return DefaultOverload.DisplayFlags;
+			}
+			set
+			{}
+		}
+
+		public override string DisplayText
+		{
+			get
+			{
+				return DefaultOverload.DisplayText;
+			}
+			set
+			{}
+		}
 	}
 
 	public class TokenCompletionData : CompletionData
