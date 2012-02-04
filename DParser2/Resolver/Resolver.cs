@@ -620,6 +620,10 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 				{
 					expr = ExpressionHelper.SearchExpressionDeeply(expr, editor.CaretLocation);
 
+					// Do not accept numbers or similar stuff
+					if (expr is IdentifierExpression && (expr as IdentifierExpression).Format.HasFlag(LiteralFormat.Scalar))
+						return null;
+
 					var ret = ResolveType(expr.ExpressionTypeRepresentation, ctxt);
 
 					if (ret == null && expr != null && !(expr is TokenExpression))

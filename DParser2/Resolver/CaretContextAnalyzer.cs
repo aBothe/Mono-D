@@ -16,7 +16,8 @@ namespace D_Parser.Resolver
 		LineComment = 2 << 5,
 		BlockComment = 2 << 2,
 		NestedComment = 2 << 3,
-		CharLiteral = 2 << 4
+		CharLiteral = 2 << 4,
+		NumberLiteral= 2 << 6
 	}
 
 	public class CaretContextAnalyzer
@@ -361,6 +362,10 @@ namespace D_Parser.Resolver
 			}
 
 			var ret = TokenContext.None;
+
+			if (char.IsDigit(Text[Offset]) || 
+				(Offset>0 && char.IsDigit(Text[Offset-1])))
+				ret |= TokenContext.NumberLiteral;
 
 			if (IsChar)
 				ret |= TokenContext.CharLiteral;
