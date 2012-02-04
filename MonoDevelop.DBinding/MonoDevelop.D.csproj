@@ -112,7 +112,8 @@
     <Compile Include="Gui\DToolTipProvider.cs" />
     <Compile Include="Gui\DToolTipWindow.cs" />
     <Compile Include="Gui\EditorPathBarExtension.cs" />
-    <None Include="Gui\HighlightUsagesExtension.cs" />
+    <None Include="Highlighting\HighlightUsagesExtension.cs" />
+    <Compile Include="Highlighting\DSyntaxMode.cs" />
     <Compile Include="OptionPanels\ProjectOptions.cs" />
     <Compile Include="Parser\DParserWrapper.cs" />
     <Compile Include="Parser\ParsedDModule.cs" />

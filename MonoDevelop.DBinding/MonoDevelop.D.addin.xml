@@ -145,8 +145,8 @@
 				
 	<!-- Syntax Highlighting and Formatting -->
 
-	<Extension path="/MonoDevelop/SourceEditor2/SyntaxModes">
-		<Templates resource="MonoDevelop.D.DSyntaxHighlightingMode.xml"/>
+	<Extension path = "/MonoDevelop/SourceEditor2/CustomModes">
+		<SyntaxMode mimeTypes="text/x-d" class="MonoDevelop.D.Highlighting.DSyntaxMode"/>
 	</Extension>
 	
 	<Extension path = "/MonoDevelop/Ide/CodeFormatters">
@@ -166,7 +166,7 @@
 		<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.Gui.EditorPathBarExtension" />
 
 		<!-- Usages highlighting -->
-	  <!--<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.Gui.HighlightUsagesExtension" />-->
+	  <!--<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.Highlighting.HighlightUsagesExtension" />-->
 	</Extension>
 	
 	<Extension path = "/MonoDevelop/SourceEditor2/TooltipProviders">
