@@ -59,8 +59,4 @@
 			<LinkerArgs>-lib -of"$target" $objs</LinkerArgs>
 		</ReleaseArgs>
 	</TargetConfiguration>
-	
-	<DefaultLibs>
-		<lib>phobos.lib</lib>
-	</DefaultLibs>
 </Compiler>
