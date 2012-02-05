@@ -1418,7 +1418,9 @@ namespace D_Parser.Dom.Expressions
 
 		public override string ToString()
 		{
-			var ret = PostfixForeExpression.ToString() + "[";
+			var ret = PostfixForeExpression!=null ? PostfixForeExpression.ToString():"";
+				
+			ret += "[";
 
 			if (FromExpression != null)
 				ret += FromExpression.ToString();
