@@ -170,7 +170,7 @@ namespace D_Parser.Parser
         public const int PropertyAttribute = 155;
         public const int GoesTo = 156; // =>  (lambda expressions)
         public const int INVALID = 157;
-        public const int empty4 = 158;
+        public const int __vector = 158;
 
         // Additional operators
         public const int PowAssign = 159; // ^^=
@@ -215,6 +215,7 @@ namespace D_Parser.Parser
             {__gshared,"__gshared"},
             {__thread,	    "__thread"},
             {__traits,	    "__traits"},
+			{__vector, "__vector"},
 
             {__LINE__,"__LINE__"},
             {__FILE__,"__FILE__"},

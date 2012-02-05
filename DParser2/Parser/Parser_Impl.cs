@@ -248,13 +248,20 @@ namespace D_Parser.Parser
 					Expect(Semicolon);
 			}
 
-			//TemplateMixin
-			else if (laKind == Mixin && Peek(1).Kind == Identifier)
-				TemplateMixin();
+			//TemplateMixinDeclaration
+			else if(laKind == Mixin)
+			{
+				if (Peek(1).Kind == Template)
+					module.Add(TemplateDeclaration());
 
-			//MixinDeclaration
-			else if (laKind == (Mixin))
-				MixinDeclaration();
+				//TemplateMixin
+				else if (Lexer.CurrentPeekToken.Kind == Identifier)
+					TemplateMixin();
+
+				//MixinDeclaration
+				else if (Lexer.CurrentPeekToken.Kind==OpenParenthesis)
+					MixinDeclaration();
+			}
 
 			//;
 			else if (laKind == (Semicolon))
@@ -460,37 +467,21 @@ namespace D_Parser.Parser
 		}
 
 
-		INode MixinDeclaration()
+		MixinStatement MixinDeclaration()
 		{
 			Expect(Mixin);
+			var mx = new MixinStatement();
+			mx.StartLocation = t.Location;
 
-			if (LA(OpenParenthesis))
+			if (Expect(OpenParenthesis))
 			{
-				Step();
-				AssignExpression();
+				mx.MixinExpression= AssignExpression();
 				Expect(CloseParenthesis);
 			}
-			else
-			{
-				// TemplateMixinDeclaration
-				if (LA(Template))
-					return TemplateDeclaration();
 
-				// TemplateMixin
-				else if (LA(Identifier))
-				{
-					if (PK(Not))
-						TemplateInstance();
-					else
-						Expect(Identifier);
-
-					// MixinIdentifier
-					if (LA(Identifier))
-						Step();
-				}
-			}
 			Expect(Semicolon);
-			return null;
+			mx.EndLocation = t.EndLocation;
+			return mx;
 		}
 		#endregion
 
@@ -1118,13 +1109,8 @@ namespace D_Parser.Parser
 		{
 			ITypeDeclaration td = null;
 
-			bool init = true;
-			while (init|| laKind == Dot)
+			do
 			{
-				if(!init)
-					Step();
-				init = false;
-				
 				ITypeDeclaration ttd = null;
 
 				if (IsTemplateInstance)
@@ -1138,6 +1124,7 @@ namespace D_Parser.Parser
 					ttd.InnerDeclaration = td;
 				td = ttd;
 			}
+			while (laKind == Dot && Step()!=null);
 
 			ExpectingIdentifier = false;
 
@@ -2495,11 +2482,11 @@ namespace D_Parser.Parser
 				Step();
 				var e = new MixinExpression() { Location=t.Location};
 				LastParsedObject = e;
-				Expect(OpenParenthesis);
-
-				e.AssignExpression = AssignExpression();
-
-				Expect(CloseParenthesis);
+				if (Expect(OpenParenthesis))
+				{
+					e.AssignExpression = AssignExpression();
+					Expect(CloseParenthesis);
+				}
 				e.EndLocation = t.EndLocation;
 				return e;
 			}
@@ -3449,25 +3436,10 @@ namespace D_Parser.Parser
 			//TODO: Handle this one in terms of adding it to the node structure
 			else if (laKind == (Mixin))
 			{
-				// TemplateMixin
-				if (Peek(1).Kind != OpenParenthesis)
-					return TemplateMixin();
+				if (Peek(1).Kind == OpenParenthesis)
+					return MixinDeclaration();
 				else
-				{
-					Step();
-					var s = new MixinStatement() { StartLocation = t.Location, Parent = Parent };
-					LastParsedObject = s;
-
-					Expect(OpenParenthesis);
-
-					s.MixinExpression = AssignExpression(Scope);
-
-					Expect(CloseParenthesis);
-					Expect(Semicolon);
-
-					s.EndLocation = t.EndLocation;
-					return s;
-				}
+					return TemplateMixin();
 			}
 			#endregion
 
@@ -4169,38 +4141,34 @@ namespace D_Parser.Parser
 			//							|<--			optional			 -->|
 			var r = new TemplateMixin();
 			LastParsedObject = r;
+			ITypeDeclaration preQualifier = null;
 
 			Expect(Mixin);
 			r.StartLocation = t.Location;
-
-			if (Expect(Identifier))
+			
+			if (laKind == Dot)
 			{
-				r.TemplateId = t.Value;
-
-				if (laKind==Not)
-				{
-					Step();
-					if(Expect(OpenParenthesis) && laKind!=CloseParenthesis)
-					{
-						var args = new List<IExpression>();
-				
-						bool init = true;
-						while (init || laKind == (Comma))
-						{
-							if (!init) Step();
-							init = false;
-
-							if (IsAssignExpression())
-								args.Add(AssignExpression());
-							else
-								args.Add(new TypeDeclarationExpression(Type()));
-
-							r.Arguments = args.ToArray();
-						}
-					}
-					Expect(CloseParenthesis);
-				}
+				Step();
 			}
+			else if(laKind!=Identifier)
+			{
+				if (laKind == Typeof)
+				{
+					preQualifier=TypeOf();
+				}
+				else if (laKind == __vector)
+				{
+					//TODO: Parse vectors(?)
+				}
+
+				Expect(Dot);
+			}
+
+			r.Qualifier= IdentifierList();
+			if (r.Qualifier != null)
+				r.Qualifier.InnerMost.InnerDeclaration = preQualifier;
+			else
+				r.Qualifier = preQualifier;
 
 			// MixinIdentifier
 			if (laKind == Identifier)

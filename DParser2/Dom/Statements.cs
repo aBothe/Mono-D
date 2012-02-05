@@ -992,21 +992,15 @@ namespace D_Parser.Dom.Statements
 
 	public class TemplateMixin : AbstractStatement,IExpressionContainingStatement
 	{
-		public string TemplateId;
-		public IExpression[] Arguments;
+		public ITypeDeclaration Qualifier;
 		public string MixinId;
 
 		public override string ToCode()
 		{
-			var r = "mixin "+TemplateId;
+			var r = "mixin";
 
-			if (Arguments != null && Arguments.Length > 0)
-			{
-				r+='(';
-				foreach(var arg in Arguments)
-					r+=arg.ToString()+',';
-				r=r.TrimEnd(',')+')';
-			}
+			if (Qualifier != null)
+				r += " " + Qualifier.ToString();
 
 			if(!string.IsNullOrEmpty(MixinId))
 				r+=' '+MixinId;
@@ -1016,7 +1010,20 @@ namespace D_Parser.Dom.Statements
 
 		public IExpression[] SubExpressions
 		{
-			get { return Arguments; }
+			get {
+				var l=new List<IExpression>();
+				var c = Qualifier;
+
+				while (c != null)
+				{
+					if (c is TemplateInstanceExpression)
+						l.Add(c as IExpression);
+
+					c = c.InnerDeclaration;
+				}
+
+				return l.ToArray();
+			}
 		}
 	}
 }
