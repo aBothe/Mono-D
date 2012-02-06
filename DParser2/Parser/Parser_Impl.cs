@@ -3775,6 +3775,7 @@ namespace D_Parser.Parser
 				StartLocation = t.Location,
 				Name = "this"
 			};
+			dm.Description = GetComments();
 			LastParsedObject = dm;
 
 			if (IsStruct && Lexer.CurrentPeekToken.Kind == (This) && laKind == (OpenParenthesis))
