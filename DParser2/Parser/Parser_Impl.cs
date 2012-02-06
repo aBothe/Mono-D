@@ -259,8 +259,14 @@ namespace D_Parser.Parser
 					TemplateMixin();
 
 				//MixinDeclaration
-				else if (Lexer.CurrentPeekToken.Kind==OpenParenthesis)
+				else if (Lexer.CurrentPeekToken.Kind == OpenParenthesis)
 					MixinDeclaration();
+
+				else
+				{
+					SynErr(Identifier);
+					Step();
+				}
 			}
 
 			//;
