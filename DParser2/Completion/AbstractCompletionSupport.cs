@@ -320,7 +320,7 @@ namespace D_Parser.Completion
 				else if (!isVariableInstance && !HasSameAncestor)
 					vis = ItemVisibility.PublicStaticMembers;
 
-				// myClass. (located in myClass)				<-- Show static members
+				// myClass. (located in myClass)				<-- Show all static members
 				else if (!isVariableInstance && HasSameAncestor)
 					vis = ItemVisibility.StaticMembers;
 				
@@ -709,6 +709,11 @@ namespace D_Parser.Completion
 			}
 		}
 
+		static bool IsTypeNode(INode n)
+		{
+			return n is DEnum || n is DClassLike;
+		}
+
 		public void BuildTypeCompletionData(TypeResult tr, ItemVisibility visMod)
 		{
 			var n = tr.ResolvedTypeDefinition;
@@ -737,13 +742,13 @@ namespace D_Parser.Completion
 						else
 						{
 							if (tvisMod.HasFlag(ItemVisibility.ProtectedMembers))
-								add = add || dn.ContainsAttribute(DTokens.Protected);
+								add |= dn.ContainsAttribute(DTokens.Protected);
 							if (tvisMod.HasFlag(ItemVisibility.PublicMembers))
-								add = add || dn.IsPublic;
+								add |= dn.IsPublic;
 							if (tvisMod.HasFlag(ItemVisibility.PublicStaticMembers))
-								add = add || (dn.IsPublic && dn.IsStatic);
+								add |= dn.IsPublic && (dn.IsStatic || IsTypeNode(i));
 							if (tvisMod.HasFlag(ItemVisibility.StaticMembers))
-								add = add || dn.IsStatic;
+								add |= dn.IsStatic || IsTypeNode(i);
 						}
 
 						if (add)
@@ -786,7 +791,7 @@ namespace D_Parser.Completion
 
 					// After having shown all items on the current node level,
 					// allow showing public (static) and/or protected items in the more basic levels then
-					if (tvisMod == ItemVisibility.All)
+					if (tvisMod.HasFlag(ItemVisibility.All))
 						tvisMod = ItemVisibility.ProtectedMembers | ItemVisibility.PublicMembers;
 				}
 			}
