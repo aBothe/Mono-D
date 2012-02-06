@@ -363,8 +363,8 @@ namespace D_Parser.Resolver
 
 			var ret = TokenContext.None;
 
-			if (char.IsDigit(Text[Offset]) || 
-				(Offset>0 && char.IsDigit(Text[Offset-1])))
+			if ((Offset >=0 && char.IsDigit(Text[Offset])) || 
+				(Offset >=1 && char.IsDigit(Text[Offset-1])))
 				ret |= TokenContext.NumberLiteral;
 
 			if (IsChar)
