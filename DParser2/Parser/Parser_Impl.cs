@@ -264,8 +264,8 @@ namespace D_Parser.Parser
 
 				else
 				{
-					SynErr(Identifier);
 					Step();
+					SynErr(Identifier);
 				}
 			}
 
