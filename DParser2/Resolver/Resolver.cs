@@ -618,11 +618,11 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 
 				if (expr != null)
 				{
-					expr = ExpressionHelper.SearchExpressionDeeply(expr, editor.CaretLocation);
-
-					// Do not accept numbers or similar stuff
+					// Do not accept number literals but (100.0) etc.
 					if (expr is IdentifierExpression && (expr as IdentifierExpression).Format.HasFlag(LiteralFormat.Scalar))
 						return null;
+
+					expr = ExpressionHelper.SearchExpressionDeeply(expr, editor.CaretLocation);
 
 					var ret = ResolveType(expr.ExpressionTypeRepresentation, ctxt);
 
