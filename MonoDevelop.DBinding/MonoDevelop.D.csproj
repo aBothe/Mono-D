@@ -64,6 +64,7 @@
     <Reference Include="Mono.Cairo, Version=2.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
       <HintPath>C:\Program Files (x86)\GtkSharp\2.12\lib\Mono.Cairo\Mono.Cairo.dll</HintPath>
     </Reference>
+    <Reference Include="Mono.Posix, Version=2.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL" />
     <Reference Include="Mono.TextEditor, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\Mono.TextEditor.dll</HintPath>
       <Private>False</Private>
@@ -89,7 +90,6 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Data" />
     <Reference Include="gtk-dotnet" />
-    <Reference Include="Mono.Posix" />
     <Reference Include="atk-sharp" />
     <Reference Include="glib-sharp" />
     <Reference Include="pango-sharp" />
