@@ -1,5 +1,5 @@
 ﻿<AddinProject appVersion="2.7">
-	<Project platforms="Win32 Mac Linux">
+	<Project platforms="Mac Linux">
 		<AddinFile>MonoDevelop.DBinding/bin/Debug/MonoDevelop.D.dll</AddinFile>
 		<BuildFile>MonoDevelop.DBinding.sln</BuildFile>
 		<BuildConfiguration>Debug</BuildConfiguration>

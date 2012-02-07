@@ -30,14 +30,31 @@ namespace MonoDevelop.D.Highlighting
 				this.properties = baseMode.Properties;
 			}
 
-			var st = new StringReader("<Match color = \"constant.digit\"><![CDATA[(?<!\\w)(0((x|X)[0-9a-fA-F_]+|(b|B)[0-1_]+)|([0-9]+[_0-9]*)[L|U|u|f|i]*)]]></Match>");
+			// D Number literals
+			matches.Add(workaroundMatchCtor("constant.digit", @"(?<!\w)(0((x|X)[0-9a-fA-F_]+|(b|B)[0-1_]+)|([0-9]+[_0-9]*)[L|U|u|f|i]*)"));
+			
+			// extern linkages attributes
+			matches.Add(workaroundMatchCtor("constant.digit", @"(?<=extern[\s]*\()[\s]*(C(\+\+)?|D|Windows|System|Pascal|Java)[\s]*(?=\))"));
+
+			// version checks
+			matches.Add(workaroundMatchCtor("constant.digit", @"(?<=version[\s]*\()[\s]*(DigitalMars|GNU|LDC|Windows|OSX|linux|FreeBSD|OpenBSD|BSD|Solaris|Posix|D_Version2)[\s]*(?=\))"));
+
+			// type declaration names
+			//matches.Add(workaroundMatchCtor("keyword.semantic.type", @"(?<=(class|struct|union|interface|template)[\s]+)[\w]+"));
+
+			this.matches = matches.ToArray();
+		}
+
+		Match workaroundMatchCtor(string color, string regex)
+		{
+			var st = new StringReader("<Match color = \""+color+"\"><![CDATA["+regex+"]]></Match>");
 
 			var x = new XmlTextReader(st);
 			x.Read();
-			matches.Add(Match.Read(x));
+			var m=Match.Read(x);
 			st.Close();
-			//this.AddSemanticRule(new DNumberSemanticRule());
-			this.matches = matches.ToArray();
+
+			return m;
 		}
 	}
 }

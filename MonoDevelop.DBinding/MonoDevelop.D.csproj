@@ -63,6 +63,7 @@
     </Reference>
     <Reference Include="Mono.Cairo, Version=2.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
       <HintPath>C:\Program Files (x86)\GtkSharp\2.12\lib\Mono.Cairo\Mono.Cairo.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="Mono.Posix, Version=2.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -117,7 +118,7 @@
     <Compile Include="Gui\DToolTipProvider.cs" />
     <Compile Include="Gui\DToolTipWindow.cs" />
     <Compile Include="Gui\EditorPathBarExtension.cs" />
-    <None Include="Highlighting\HighlightUsagesExtension.cs" />
+    <Compile Include="Highlighting\HighlightUsagesExtension.cs" />
     <Compile Include="Highlighting\DSyntaxMode.cs" />
     <Compile Include="Highlighting\TypeHighlightingExtension.cs" />
     <Compile Include="OptionPanels\ProjectOptions.cs" />
