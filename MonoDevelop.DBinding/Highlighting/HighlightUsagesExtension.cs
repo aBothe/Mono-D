@@ -16,7 +16,7 @@ using MonoDevelop.Core;
 
 /*
  * Can't use this extension on Windows -- Mono.Cairo isn't released in Version 4.0 over there but on all Linux systems
- * Only if MD will be linked to v4.0 this feature (it's also required to add a reference to Mono.Cairo)
+ * Only if MD will be linked to v4.0 this feature can be used (it's also required to add a reference to Mono.Cairo)
  */
 
 
