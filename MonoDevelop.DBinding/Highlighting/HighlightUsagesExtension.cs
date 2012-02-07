@@ -20,7 +20,7 @@ using MonoDevelop.Core;
  */
 
 
-namespace MonoDevelop.D.Gui
+namespace MonoDevelop.D.Highlighting
 {
 	class HighlightUsagesExtension:TextEditorExtension
 	{
