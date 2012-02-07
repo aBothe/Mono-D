@@ -100,7 +100,7 @@ namespace MonoDevelop.D.Refactoring
 
 			var matchedReferences = new List<IdentifierDeclaration>();
 
-			var identifiers=CodeScanner.ScanForTypeIdentifiers(scannedFileAST);
+			var identifiers=CodeSymbolsScanner.IdentifierScan.ScanForTypeIdentifiers(scannedFileAST);
 
 			var resolveContext=new ResolverContext{
 				ResolveAliases=false,

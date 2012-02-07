@@ -52,7 +52,7 @@ namespace MonoDevelop.D.Gui
 			};
 
 			// Let the engine build all contents
-			var ttContents= DCodeCompletionSupport.BuildToolTip(EditorContext);
+			var ttContents= AbstractTooltipProvider.BuildToolTip(EditorContext);
 
 			// Create tool tip item
 			if (ttContents != null)

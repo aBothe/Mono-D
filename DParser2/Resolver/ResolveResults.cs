@@ -15,28 +15,7 @@ namespace D_Parser.Resolver
 		/// </summary>
 		public ITypeDeclaration TypeDeclarationBase;
 
-		public static string GetResolveResultString(ResolveResult rr)
-		{
-			if (rr is MemberResult)
-				return DNode.GetNodePath((rr as MemberResult).ResolvedMember, true);
-			if (rr is TypeResult)
-				return DNode.GetNodePath((rr as TypeResult).ResolvedTypeDefinition, true);
-			if (rr is StaticTypeResult)
-				return (rr as StaticTypeResult).TypeDeclarationBase.ToString();
-			if (rr is ModuleResult)
-			{
-				var mrr = rr as ModuleResult;
-
-				var parts = mrr.ResolvedModule.ModuleName.Split('.');
-				var ret = "";
-				for (int i = 0; i < mrr.AlreadyTypedModuleNameParts; i++)
-					ret += parts[i] + '.';
-
-				return ret.TrimEnd('.');
-			}
-
-			return null;
-		}
+		public abstract string ResultPath {get;}
 	}
 
 	public class MemberResult : ResolveResult
@@ -53,6 +32,11 @@ namespace D_Parser.Resolver
 		{
 			return ResolvedMember.ToString();
 		}
+
+		public override string ResultPath
+		{
+			get { return DNode.GetNodePath(ResolvedMember, true); }
+		}
 	}
 
 	/// <summary>
@@ -66,6 +50,11 @@ namespace D_Parser.Resolver
 		{
 			return TypeDeclarationBase.ToString();
 		}
+
+		public override string ResultPath
+		{
+			get { return ToString(); }
+		}
 	}
 
 	/// <summary>
@@ -78,6 +67,16 @@ namespace D_Parser.Resolver
 		public override string ToString()
 		{
 			return Expression.ToString();
+		}
+
+		public override string ResultPath
+		{
+			get {
+				if (Expression == null)
+					return "";
+
+				return Expression.ExpressionTypeRepresentation.ToString();
+			}
 		}
 	}
 
@@ -95,6 +94,21 @@ namespace D_Parser.Resolver
 		public override string ToString()
 		{
 			return ResolvedModule.ToString();
+		}
+
+		public override string ResultPath
+		{
+			get {
+				if (ResolvedModule == null || ResolvedModule.ModuleName == null)
+					return "";
+
+				var parts = ResolvedModule.ModuleName.Split('.');
+				var ret = "";
+				for (int i = 0; i < AlreadyTypedModuleNameParts; i++)
+					ret += parts[i] + '.';
+
+				return ret.TrimEnd('.');
+			}
 		}
 	}
 
@@ -114,6 +128,11 @@ namespace D_Parser.Resolver
 		public override string ToString()
 		{
 			return ResolvedTypeDefinition.ToString();
+		}
+
+		public override string ResultPath
+		{
+			get { return DNode.GetNodePath(ResolvedTypeDefinition, true); }
 		}
 	}
 }

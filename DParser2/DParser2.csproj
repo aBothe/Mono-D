@@ -68,12 +68,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Completion\AbstractCompletionSupport.cs" />
-    <Compile Include="Completion\ASTStorage.cs" />
+    <Compile Include="Completion\AbstractTooltipProvider.cs" />
+    <Compile Include="Resolver\CodeSymbolsScanner.IdentifierScan.cs" />
+    <Compile Include="Resolver\StaticTypePropertyProvider.cs" />
+    <Compile Include="Misc\ASTStorage.cs" />
+    <Compile Include="Completion\ICompletionDataGenerator.cs" />
     <Compile Include="Resolver\CaretContextAnalyzer.cs" />
     <Compile Include="Resolver\ParameterContextResolution.cs" />
     <Compile Include="Resolver\ResolutionCache.cs" />
     <Compile Include="Resolver\StaticPropertyResolver.cs" />
-    <None Include="Dom\BinaryNodeStorage.cs" />
     <Compile Include="Completion\IEditorData.cs" />
     <Compile Include="Dom\AbstractNode.cs" />
     <Compile Include="Dom\CodeLocation.cs" />
@@ -83,7 +86,7 @@
     <Compile Include="Formatting\DFormatter.cs" />
     <Compile Include="Misc\DocumentHelper.cs" />
     <Compile Include="Parser\TokenTracker.cs" />
-    <Compile Include="Resolver\CodeScanner.cs" />
+    <Compile Include="Resolver\CodeSymbolsScanner.cs" />
     <Compile Include="Resolver\Resolver.cs" />
     <Compile Include="Dom\DAttribute.cs" />
     <Compile Include="Dom\DModule.cs" />

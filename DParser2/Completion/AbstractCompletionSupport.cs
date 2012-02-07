@@ -10,6 +10,7 @@ namespace D_Parser.Completion
 	public class AbstractCompletionSupport
 	{
 		public readonly ICompletionDataGenerator CompletionDataGenerator;
+		readonly List<string> alreadyAddedModuleNameParts = new List<string>();
 
 		public AbstractCompletionSupport(ICompletionDataGenerator CompletionDataGenerator)
 		{
@@ -22,13 +23,14 @@ namespace D_Parser.Completion
 			return char.IsLetterOrDigit(key) || key == '_';
 		}
 
-		public enum ItemVisibility
+		enum ItemVisibility
 		{
 			All=1,
 			StaticMembers=2,
 			PublicStaticMembers=4,
 			PublicMembers=8,
-			ProtectedMembers=16
+			ProtectedMembers=16,
+			ProtectedStaticMembers=32
 		}
 
 		public static bool CanItemBeShownGenerally(INode dn)
@@ -62,8 +64,40 @@ namespace D_Parser.Completion
 			}
 			return false;
 		}
+
+		static bool IsTypeNode(INode n)
+		{
+			return n is DEnum || n is DClassLike;
+		}
+
+		/// <summary>
+		/// Returns C:\fx\a\b when PhysicalFileName was "C:\fx\a\b\c\Module.d" , ModuleName= "a.b.c.Module" and WantedDirectory= "a.b"
+		/// 
+		/// Used when formatting package names in BuildCompletionData();
+		/// </summary>
+		public static string GetModulePath(string PhysicalFileName, string ModuleName, string WantedDirectory)
+		{
+			return GetModulePath(PhysicalFileName, ModuleName.Split('.').Length, WantedDirectory.Split('.').Length);
+		}
+
+		public static string GetModulePath(string PhysicalFileName, int ModuleNamePartAmount, int WantedDirectoryNamePartAmount)
+		{
+			var ret = "";
+
+			var physFileNameParts = PhysicalFileName.Split('\\');
+			for (int i = 0; i < physFileNameParts.Length - ModuleNamePartAmount + WantedDirectoryNamePartAmount; i++)
+				ret += physFileNameParts[i] + "\\";
+
+			return ret.TrimEnd('\\');
+		}
 		#endregion
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="Editor"></param>
+		/// <param name="EnteredText"></param>
+		/// <param name="lastResultPath"></param>
 		public void BuildCompletionData(IEditorData Editor,
 			string EnteredText,
 			out string lastResultPath)
@@ -84,7 +118,6 @@ namespace D_Parser.Completion
 
 			if (CaretContextAnalyzer.IsInCommentAreaOrString(Editor.ModuleCode, Editor.CaretOffset))
 				return;
-
 
 			IEnumerable<INode> listedItems = null;
 
@@ -107,22 +140,21 @@ namespace D_Parser.Completion
 
 				if (resolveResults == null) //TODO: Add after-space list creation when an unbound . (Dot) was entered which means to access the global scope
 					return;
+
 				/*
 				 * Note: When having entered a module name stub only (e.g. "std." or "core.") it's needed to show all packages that belong to that root namespace
 				 */
 
 				foreach (var rr in resolveResults)
 				{
-					lastResultPath = ResolveResult.GetResolveResultString(rr);
+					lastResultPath = rr.ResultPath;
 					BuildCompletionData(rr, curBlock);
 				}
 			}
 			#endregion
 
 			else if (
-				EnteredText == null ||
-				EnteredText == " " ||
-				EnteredText.Length < 1 ||
+				string.IsNullOrWhiteSpace(EnteredText) ||
 				IsIdentifierChar(EnteredText[0]))
 			{
 				// 1) Get current context the caret is at
@@ -147,7 +179,8 @@ namespace D_Parser.Completion
 				}
 				else
 				{
-					if (trackVars.LastParsedObject is INode &&
+					if (trackVars.LastParsedObject is INode && 
+						string.IsNullOrEmpty((trackVars.LastParsedObject as INode).Name) &&
 						trackVars.ExpectingIdentifier)
 						return;
 
@@ -172,7 +205,7 @@ namespace D_Parser.Completion
 					else if (EnteredText == " ")
 						return;
 					// In class bodies, do not show variables
-					else if (!(parsedBlock is BlockStatement) && !trackVars.IsParsingInitializer)
+					else if (!(parsedBlock is BlockStatement || trackVars.IsParsingInitializer))
 						visibleMembers = DResolver.MemberTypes.Imports | DResolver.MemberTypes.Types | DResolver.MemberTypes.Keywords;
 
 					// In a method, parse from the method's start until the actual caret position to get an updated insight
@@ -252,38 +285,18 @@ namespace D_Parser.Completion
 				}
 		}
 
-		readonly List<string> alreadyAddedModuleNameParts = new List<string>();
-
-		public void BuildCompletionData(
+		void BuildCompletionData(
 			ResolveResult rr,
 			IBlockNode currentlyScopedBlock,
 			bool isVariableInstance = false,
 			ResolveResult resultParent = null)
 		{
-			#region MemberResult
 			if (rr is MemberResult)
-			{
-				var mrr = rr as MemberResult;
-				bool dontAddInit = false;
-				if (mrr.MemberBaseTypes != null)
-					foreach (var i in mrr.MemberBaseTypes)
-					{
-						if (i is StaticTypeResult || i is ExpressionResult)
-							dontAddInit = true;
-
-						BuildCompletionData(i, currentlyScopedBlock,
-							(mrr.ResolvedMember is DVariable && (mrr.ResolvedMember as DVariable).IsAlias) ?
-								isVariableInstance : true, rr); // True if we obviously have a variable handled here. Otherwise depends on the samely-named parameter..
-					}
-
-				if (resultParent == null)
-					StaticPropertyAddition.AddGenericProperties(rr, CompletionDataGenerator, mrr.ResolvedMember, DontAddInitProperty: dontAddInit);
-			}
-			#endregion
+				BuildMemberCompletionData(rr as MemberResult,currentlyScopedBlock,isVariableInstance,resultParent);
 
 			// A module path has been typed
 			else if (!isVariableInstance && rr is ModuleResult)
-				BuildModuleCompletionData(rr as ModuleResult, 0,  alreadyAddedModuleNameParts);
+				BuildModuleCompletionData(rr as ModuleResult, 0, alreadyAddedModuleNameParts);
 
 			#region A type was referenced directly
 			else if (rr is TypeResult)
@@ -296,7 +309,7 @@ namespace D_Parser.Completion
 
 				if (tr.TypeDeclarationBase is DTokenDeclaration)
 				{
-					int token=(tr.TypeDeclarationBase as DTokenDeclaration).Token;
+					int token = (tr.TypeDeclarationBase as DTokenDeclaration).Token;
 					IsThis = token == DTokens.This;
 					IsSuper = token == DTokens.Super;
 				}
@@ -323,10 +336,10 @@ namespace D_Parser.Completion
 				// myClass. (located in myClass)				<-- Show all static members
 				else if (!isVariableInstance && HasSameAncestor)
 					vis = ItemVisibility.StaticMembers;
-				
+
 				BuildTypeCompletionData(tr, vis);
 				if (resultParent == null)
-					StaticPropertyAddition.AddGenericProperties(rr, CompletionDataGenerator, tr.ResolvedTypeDefinition);
+					StaticTypePropertyProvider.AddGenericProperties(rr, CompletionDataGenerator, tr.ResolvedTypeDefinition);
 			}
 			#endregion
 
@@ -335,7 +348,7 @@ namespace D_Parser.Completion
 			{
 				var srr = rr as StaticTypeResult;
 				if (resultParent == null)
-					StaticPropertyAddition.AddGenericProperties(rr, CompletionDataGenerator, null, true);
+					StaticTypePropertyProvider.AddGenericProperties(rr, CompletionDataGenerator, null, true);
 
 				var type = srr.TypeDeclarationBase;
 
@@ -350,12 +363,12 @@ namespace D_Parser.Completion
 					// Normal array
 					if (ad.KeyType is DTokenDeclaration && DTokens.BasicTypes_Integral[(ad.KeyType as DTokenDeclaration).Token])
 					{
-						StaticPropertyAddition.AddArrayProperties(rr, CompletionDataGenerator, ad);
+						StaticTypePropertyProvider.AddArrayProperties(rr, CompletionDataGenerator, ad);
 					}
 					// Associative array
 					else
 					{
-						StaticPropertyAddition.AddAssocArrayProperties(rr, CompletionDataGenerator, ad);
+						StaticTypePropertyProvider.AddAssocArrayProperties(rr, CompletionDataGenerator, ad);
 					}
 				}
 				// Direct pointer accessing - only generic props are available
@@ -377,10 +390,10 @@ namespace D_Parser.Completion
 
 						// Float implies integral props
 						if (DTokens.BasicTypes_Integral[srr.BaseTypeToken] || isFloat)
-							StaticPropertyAddition.AddIntegralTypeProperties(srr.BaseTypeToken, rr, CompletionDataGenerator, null, isFloat);
+							StaticTypePropertyProvider.AddIntegralTypeProperties(srr.BaseTypeToken, rr, CompletionDataGenerator, null, isFloat);
 
 						if (isFloat)
-							StaticPropertyAddition.AddFloatingTypeProperties(srr.BaseTypeToken, rr, CompletionDataGenerator, null);
+							StaticTypePropertyProvider.AddFloatingTypeProperties(srr.BaseTypeToken, rr, CompletionDataGenerator, null);
 					}
 				}
 			}
@@ -400,22 +413,22 @@ namespace D_Parser.Completion
 				if (idExpr != null)
 				{
 					// Char literals, Integrals types & Floats
-					if ((idExpr.Format&LiteralFormat.Scalar)==LiteralFormat.Scalar || idExpr.Format == LiteralFormat.CharLiteral)
+					if ((idExpr.Format & LiteralFormat.Scalar) == LiteralFormat.Scalar || idExpr.Format == LiteralFormat.CharLiteral)
 					{
-						StaticPropertyAddition.AddGenericProperties(rr, CompletionDataGenerator, null, true);
+						StaticTypePropertyProvider.AddGenericProperties(rr, CompletionDataGenerator, null, true);
 						bool isFloat = (idExpr.Format & LiteralFormat.FloatingPoint) == LiteralFormat.FloatingPoint;
 						// Floats also imply integral properties
-						StaticPropertyAddition.AddIntegralTypeProperties(DTokens.Int, rr, CompletionDataGenerator, null, isFloat);
+						StaticTypePropertyProvider.AddIntegralTypeProperties(DTokens.Int, rr, CompletionDataGenerator, null, isFloat);
 
 						// Float-exclusive props
 						if (isFloat)
-							StaticPropertyAddition.AddFloatingTypeProperties(DTokens.Float, rr, CompletionDataGenerator);
+							StaticTypePropertyProvider.AddFloatingTypeProperties(DTokens.Float, rr, CompletionDataGenerator);
 					}
 					// String literals
 					else if (idExpr.Format == LiteralFormat.StringLiteral || idExpr.Format == LiteralFormat.VerbatimStringLiteral)
 					{
-						StaticPropertyAddition.AddGenericProperties(rr, CompletionDataGenerator, DontAddInitProperty: true);
-						StaticPropertyAddition.AddArrayProperties(rr, CompletionDataGenerator, new ArrayDecl()
+						StaticTypePropertyProvider.AddGenericProperties(rr, CompletionDataGenerator, DontAddInitProperty: true);
+						StaticTypePropertyProvider.AddArrayProperties(rr, CompletionDataGenerator, new ArrayDecl()
 						{
 							ValueType =
 								new MemberFunctionAttributeDecl(DTokens.Immutable)
@@ -432,244 +445,30 @@ namespace D_Parser.Completion
 			#endregion
 		}
 
-		#region Static properties
-
-		public class StaticPropertyAddition
+		void BuildMemberCompletionData(
+			MemberResult mrr,
+			IBlockNode currentlyScopedBlock,
+			bool isVariableInstance = false,
+			ResolveResult resultParent = null)
 		{
-			public class StaticProperty
-			{
-				public readonly string Name;
-				public readonly string Description;
-				public readonly ITypeDeclaration OverrideType;
-
-				public StaticProperty(string name, string desc, ITypeDeclaration overrideType = null)
-				{ Name = name; Description = desc; OverrideType = overrideType; }
-			}
-
-			public static StaticProperty[] GenericProps = new[]{
-				new StaticProperty("sizeof","Size of a type or variable in bytes",new IdentifierDeclaration("size_t")),
-				new StaticProperty("alignof","Variable offset",new DTokenDeclaration(DTokens.Int)),
-				new StaticProperty("mangleof","String representing the ‘mangled’ representation of the type",new IdentifierDeclaration("string")),
-				new StaticProperty("stringof","String representing the source representation of the type",new IdentifierDeclaration("string")),
-			};
-
-			public static StaticProperty[] IntegralProps = new[] { 
-				new StaticProperty("max","Maximum value"),
-				new StaticProperty("min","Minimum value")
-			};
-
-			public static StaticProperty[] FloatingTypeProps = new[] { 
-				new StaticProperty("infinity","Infinity value"),
-				new StaticProperty("nan","Not-a-Number value"),
-				new StaticProperty("dig","Number of decimal digits of precision",new DTokenDeclaration(DTokens.Int)),
-				new StaticProperty("epsilon", "Smallest increment to the value 1"),
-				new StaticProperty("mant_dig","Number of bits in mantissa",new DTokenDeclaration(DTokens.Int)),
-				new StaticProperty("max_10_exp","Maximum int value such that 10^max_10_exp is representable",new DTokenDeclaration(DTokens.Int)),
-				new StaticProperty("max_exp","Maximum int value such that 2^max_exp-1 is representable",new DTokenDeclaration(DTokens.Int)),
-				new StaticProperty("min_10_exp","Minimum int value such that 10^max_10_exp is representable",new DTokenDeclaration(DTokens.Int)),
-				new StaticProperty("min_exp","Minimum int value such that 2^max_exp-1 is representable",new DTokenDeclaration(DTokens.Int)),
-				new StaticProperty("min_normal","Number of decimal digits of precision",new DTokenDeclaration(DTokens.Int)),
-				new StaticProperty("re","Real part"),
-				new StaticProperty("in","Imaginary part")
-			};
-
-			public static StaticProperty[] ClassTypeProps = new[]{
-				new StaticProperty("classinfo","Information about the dynamic type of the class", new IdentifierDeclaration("TypeInfo_Class") { InnerDeclaration = new IdentifierDeclaration("object") })
-			};
-
-			public static StaticProperty[] ArrayProps = new[] { 
-				new StaticProperty("init","Returns an array literal with each element of the literal being the .init property of the array element type. null on dynamic arrays."),
-				new StaticProperty("length","Array length",new IdentifierDeclaration("size_t")),
-				//new StaticProperty("ptr","Returns pointer to the array",new PointerDecl(){InnerDeclaration=new DTokenDeclaration(DTokens.Void)}),
-				new StaticProperty("dup","Create a dynamic array of the same size and copy the contents of the array into it."),
-				new StaticProperty("idup","D2.0 only! Creates immutable copy of the array"),
-				new StaticProperty("reverse","Reverses in place the order of the elements in the array. Returns the array."),
-				new StaticProperty("sort","Sorts in place the order of the elements in the array. Returns the array.")
-			};
-
-			// Associative Arrays' properties have to be inserted manually
-
-			static void CreateArtificialProperties(StaticProperty[] Properties, ICompletionDataGenerator cdg, ITypeDeclaration DefaultPropType = null)
-			{
-				foreach (var prop in Properties)
+			bool dontAddInit = false;
+			if (mrr.MemberBaseTypes != null)
+				foreach (var i in mrr.MemberBaseTypes)
 				{
-					var p = new DVariable()
-					{
-						Name = prop.Name,
-						Description = prop.Description,
-						Type = prop.OverrideType != null ? prop.OverrideType : DefaultPropType
-					};
+					if (i is StaticTypeResult || i is ExpressionResult)
+						dontAddInit = true;
 
-					cdg.Add(p);
-				}
-			}
-
-			/// <summary>
-			/// Adds init, sizeof, alignof, mangleof, stringof to the completion list
-			/// </summary>
-			public static void AddGenericProperties(ResolveResult rr, ICompletionDataGenerator cdg, INode relatedNode = null, bool DontAddInitProperty = false)
-			{
-				if (!DontAddInitProperty)
-				{
-					var prop_Init = new DVariable();
-
-					if (relatedNode != null)
-						prop_Init.AssignFrom(relatedNode);
-
-					// Override the initializer variable's name and description
-					prop_Init.Name = "init";
-					prop_Init.Description = "A type's or variable's static initializer expression";
-
-					cdg.Add(prop_Init);
+					BuildCompletionData(i, currentlyScopedBlock,
+						(mrr.ResolvedMember is DVariable && (mrr.ResolvedMember as DVariable).IsAlias) ?
+							isVariableInstance : true, mrr); // True if we obviously have a variable handled here. Otherwise depends on the samely-named parameter..
 				}
 
-				CreateArtificialProperties(GenericProps, cdg);
-			}
+			if (mrr.ResultBase == null)
+				StaticTypePropertyProvider.AddGenericProperties(mrr, CompletionDataGenerator, mrr.ResolvedMember, DontAddInitProperty: dontAddInit);
 
-			/// <summary>
-			/// Adds init, max, min to the completion list
-			/// </summary>
-			public static void AddIntegralTypeProperties(int TypeToken, ResolveResult rr, ICompletionDataGenerator cdg, INode relatedNode = null, bool DontAddInitProperty = false)
-			{
-				var intType = new DTokenDeclaration(TypeToken);
-
-				if (!DontAddInitProperty)
-				{
-					var prop_Init = new DVariable() { Type = intType, Initializer = new IdentifierExpression(0, LiteralFormat.Scalar) };
-
-					if (relatedNode != null)
-						prop_Init.AssignFrom(relatedNode);
-
-					// Override the initializer variable's name and description
-					prop_Init.Name = "init";
-					prop_Init.Description = "A type's or variable's static initializer expression";
-
-					cdg.Add(prop_Init);
-				}
-
-				CreateArtificialProperties(IntegralProps, cdg, intType);
-			}
-
-			public static void AddFloatingTypeProperties(int TypeToken, ResolveResult rr, ICompletionDataGenerator cdg, INode relatedNode = null, bool DontAddInitProperty = false)
-			{
-				var intType = new DTokenDeclaration(TypeToken);
-
-				if (!DontAddInitProperty)
-				{
-					var prop_Init = new DVariable() { Type = intType, Initializer = new PostfixExpression_Access() { PostfixForeExpression = new TokenExpression(TypeToken), TemplateOrIdentifier = new IdentifierDeclaration("nan") } };
-
-					if (relatedNode != null)
-						prop_Init.AssignFrom(relatedNode);
-
-					// Override the initializer variable's name and description
-					prop_Init.Name = "init";
-					prop_Init.Description = "A type's or variable's static initializer expression";
-
-					cdg.Add(prop_Init);
-				}
-
-				CreateArtificialProperties(FloatingTypeProps, cdg, intType);
-			}
-
-			public static void AddClassTypeProperties(ICompletionDataGenerator cdg, INode relatedNode = null)
-			{
-				CreateArtificialProperties(ClassTypeProps, cdg);
-			}
-
-			public static void AddArrayProperties(ResolveResult rr, ICompletionDataGenerator cdg, ArrayDecl ArrayDecl = null)
-			{
-				CreateArtificialProperties(ArrayProps, cdg, ArrayDecl);
-
-				cdg.Add(new DVariable
-				{
-					Name = "ptr",
-					Description = "Returns pointer to the array",
-					Type = new PointerDecl(ArrayDecl == null ? new DTokenDeclaration(DTokens.Void) : ArrayDecl.ValueType)
-				});
-			}
-
-			public static void AddAssocArrayProperties(ResolveResult rr, ICompletionDataGenerator cdg, ArrayDecl ad)
-			{
-				var ll = new List<INode>();
-
-				ll.Add(new DVariable()
-				{
-					Name = "sizeof",
-					Description = "Returns the size of the reference to the associative array; it is typically 8.",
-					Type = new IdentifierDeclaration("size_t"),
-					Initializer = new IdentifierExpression(8, LiteralFormat.Scalar)
-				});
-
-				/*ll.Add(new DVariable() { 
-					Name="length",
-					Description="Returns number of values in the associative array. Unlike for dynamic arrays, it is read-only.",
-					Type=new IdentifierDeclaration("size_t")
-				});*/
-
-				if (ad != null)
-				{
-					ll.Add(new DVariable()
-					{
-						Name = "keys",
-						Description = "Returns dynamic array, the elements of which are the keys in the associative array.",
-						Type = new ArrayDecl() { ValueType = ad.KeyType }
-					});
-
-					ll.Add(new DVariable()
-					{
-						Name = "values",
-						Description = "Returns dynamic array, the elements of which are the values in the associative array.",
-						Type = new ArrayDecl() { ValueType = ad.ValueType }
-					});
-
-					ll.Add(new DVariable()
-					{
-						Name = "rehash",
-						Description = "Reorganizes the associative array in place so that lookups are more efficient. rehash is effective when, for example, the program is done loading up a symbol table and now needs fast lookups in it. Returns a reference to the reorganized array.",
-						Type = ad
-					});
-
-					ll.Add(new DVariable()
-					{
-						Name = "byKey",
-						Description = "Returns a delegate suitable for use as an Aggregate to a ForeachStatement which will iterate over the keys of the associative array.",
-						Type = new DelegateDeclaration() { ReturnType = new ArrayDecl() { ValueType = ad.KeyType } }
-					});
-
-					ll.Add(new DVariable()
-					{
-						Name = "byValue",
-						Description = "Returns a delegate suitable for use as an Aggregate to a ForeachStatement which will iterate over the values of the associative array.",
-						Type = new DelegateDeclaration() { ReturnType = new ArrayDecl() { ValueType = ad.ValueType } }
-					});
-
-					ll.Add(new DMethod()
-					{
-						Name = "get",
-						Description = "Looks up key; if it exists returns corresponding value else evaluates and returns defaultValue.",
-						Type = ad.ValueType,
-						Parameters = new List<INode> {
-						new DVariable(){
-							Name="key",
-							Type=ad.KeyType
-						},
-						new DVariable(){
-							Name="defaultValue",
-							Type=ad.ValueType,
-							Attributes=new List<DAttribute>{ new DAttribute(DTokens.Lazy)}
-						}
-					}
-					});
-				}
-
-				foreach (var prop in ll)
-					cdg.Add(prop);
-			}
 		}
 
-		#endregion
-
-		public void BuildModuleCompletionData(ModuleResult tr, ItemVisibility visMod,
+		void BuildModuleCompletionData(ModuleResult tr, ItemVisibility visMod,
 			List<string> alreadyAddedModuleNames)
 		{
 			if (!tr.IsOnlyModuleNamePartTyped())
@@ -709,12 +508,7 @@ namespace D_Parser.Completion
 			}
 		}
 
-		static bool IsTypeNode(INode n)
-		{
-			return n is DEnum || n is DClassLike;
-		}
-
-		public void BuildTypeCompletionData(TypeResult tr, ItemVisibility visMod)
+		void BuildTypeCompletionData(TypeResult tr, ItemVisibility visMod)
 		{
 			var n = tr.ResolvedTypeDefinition;
 			if (n is DClassLike) // Add public static members of the class and including all base classes
@@ -743,6 +537,8 @@ namespace D_Parser.Completion
 						{
 							if (tvisMod.HasFlag(ItemVisibility.ProtectedMembers))
 								add |= dn.ContainsAttribute(DTokens.Protected);
+							if (tvisMod.HasFlag(ItemVisibility.ProtectedStaticMembers))
+								add |= dn.ContainsAttribute(DTokens.Protected) && (dn.IsStatic || IsTypeNode(i));
 							if (tvisMod.HasFlag(ItemVisibility.PublicMembers))
 								add |= dn.IsPublic;
 							if (tvisMod.HasFlag(ItemVisibility.PublicStaticMembers))
@@ -792,7 +588,12 @@ namespace D_Parser.Completion
 					// After having shown all items on the current node level,
 					// allow showing public (static) and/or protected items in the more basic levels then
 					if (tvisMod.HasFlag(ItemVisibility.All))
-						tvisMod = ItemVisibility.ProtectedMembers | ItemVisibility.PublicMembers;
+					{
+						if ((n as DClassLike).ContainsAttribute(DTokens.Static))
+							tvisMod = ItemVisibility.ProtectedStaticMembers | ItemVisibility.PublicStaticMembers;
+						else
+							tvisMod = ItemVisibility.ProtectedMembers | ItemVisibility.PublicMembers;
+					}
 				}
 			}
 			else if (n is DEnum)
@@ -804,120 +605,5 @@ namespace D_Parser.Completion
 						CompletionDataGenerator.Add(i);
 			}
 		}
-
-		/// <summary>
-		/// Returns C:\fx\a\b when PhysicalFileName was "C:\fx\a\b\c\Module.d" , ModuleName= "a.b.c.Module" and WantedDirectory= "a.b"
-		/// 
-		/// Used when formatting package names in BuildCompletionData();
-		/// </summary>
-		public static string GetModulePath(string PhysicalFileName, string ModuleName, string WantedDirectory)
-		{
-			return GetModulePath(PhysicalFileName, ModuleName.Split('.').Length, WantedDirectory.Split('.').Length);
-		}
-
-		public static string GetModulePath(string PhysicalFileName, int ModuleNamePartAmount, int WantedDirectoryNamePartAmount)
-		{
-			var ret = "";
-
-			var physFileNameParts = PhysicalFileName.Split('\\');
-			for (int i = 0; i < physFileNameParts.Length - ModuleNamePartAmount + WantedDirectoryNamePartAmount; i++)
-				ret += physFileNameParts[i] + "\\";
-
-			return ret.TrimEnd('\\');
-		}
-
-		public static bool IsInsightWindowTrigger(char key)
-		{
-			return key == '(' || key == ',';
-		}
-
-		#region Tooltip Creation
-
-		public static AbstractTooltipContent[] BuildToolTip(IEditorData Editor)
-		{
-			try
-			{
-				IStatement curStmt = null;
-				var rr = DResolver.ResolveType(Editor,
-					new ResolverContext
-					{
-						ScopedBlock = DResolver.SearchBlockAt(Editor.SyntaxTree, Editor.CaretLocation, out curStmt),
-						ScopedStatement=curStmt,
-						ParseCache = Editor.ParseCache,
-						ImportCache = Editor.ImportCache
-					}, true, true);
-
-				if (rr.Length < 1)
-					return null;
-
-				var l = new List<AbstractTooltipContent>(rr.Length);
-
-				foreach (var res in rr)
-				{
-					var modRes = res as ModuleResult;
-					var memRes = res as MemberResult;
-					var typRes = res as TypeResult;
-
-					// Only show one description for items sharing descriptions
-					string description = "";
-
-					if (modRes != null)
-						description = modRes.ResolvedModule.Description;
-					else if (memRes != null)
-						description = memRes.ResolvedMember.Description;
-					else if (typRes != null)
-						description = typRes.ResolvedTypeDefinition.Description;
-
-					l.Add(new AbstractTooltipContent{
-						ResolveResult=res,
-						Title=(res is ModuleResult ? (res as ModuleResult).ResolvedModule.FileName : res.ToString()),
-						Description=description
-					});
-				}
-
-				return l.ToArray();
-			}
-			catch { }
-			return null;
-		}
-
-		#endregion
-	}
-
-	public interface ICompletionDataGenerator
-	{
-		/// <summary>
-		/// Adds a token entry
-		/// </summary>
-		void Add(int Token);
-
-		/// <summary>
-		/// Adds a property attribute
-		/// </summary>
-		void AddPropertyAttribute(string AttributeText);
-
-		/// <summary>
-		/// Adds a node to the completion data
-		/// </summary>
-		/// <param name="Node"></param>
-		void Add(INode Node);
-
-		/// <summary>
-		/// Adds a module (name stub) to the completion data
-		/// </summary>
-		/// <param name="ModuleName"></param>
-		/// <param name="AssocModule"></param>
-		void Add(string ModuleName, IAbstractSyntaxTree Module = null, string PathOverride=null);
-	}
-
-	/// <summary>
-	/// Encapsules tooltip content.
-	/// If there are more than one tooltip contents, there are more than one resolve results
-	/// </summary>
-	public class AbstractTooltipContent
-	{
-		public ResolveResult ResolveResult;
-		public string Title;
-		public string Description;
 	}
 }
