@@ -34,13 +34,15 @@ namespace MonoDevelop.D.Highlighting
 			matches.Add(workaroundMatchCtor("constant.digit", @"(?<!\w)(0((x|X)[0-9a-fA-F_]+|(b|B)[0-1_]+)|([0-9]+[_0-9]*)[L|U|u|f|i]*)"));
 			
 			// extern linkages attributes
-			matches.Add(workaroundMatchCtor("constant.digit", @"(?<=extern[\s]*\()[\s]*(C(\+\+)?|D|Windows|System|Pascal|Java)[\s]*(?=\))"));
+			//matches.Add(workaroundMatchCtor("constant.digit", "(?<=extern[\\s]*\\()[\\s]*(C(\\+\\+)?|D|Windows|System|Pascal|Java)[\\s]*(?=\\))"));
 
 			// version checks
-			matches.Add(workaroundMatchCtor("constant.digit", @"(?<=version[\s]*\()[\s]*(DigitalMars|GNU|LDC|Windows|OSX|linux|FreeBSD|OpenBSD|BSD|Solaris|Posix|D_Version2)[\s]*(?=\))"));
+			//matches.Add(workaroundMatchCtor("constant.digit", @"(?<=version[\s]*\()[\s]*(DigitalMars|GNU|LDC|Windows|OSX|linux|FreeBSD|OpenBSD|BSD|Solaris|Posix|D_Version2)[\s]*(?=\))"));
 
 			// type declaration names
 			//matches.Add(workaroundMatchCtor("keyword.semantic.type", @"(?<=(class|struct|union|interface|template)[\s]+)[\w]+"));
+
+			
 
 			this.matches = matches.ToArray();
 		}

@@ -14,12 +14,6 @@ using MonoDevelop.Core;
 
 // Code taken and modified from MonoDevelop.CSharp.Highlighting.HighlightUsagesExtension.cs
 
-/*
- * Can't use this extension on Windows -- Mono.Cairo isn't released in Version 4.0 over there but on all Linux systems
- * Only if MD will be linked to v4.0 this feature can be used (it's also required to add a reference to Mono.Cairo)
- */
-
-
 namespace MonoDevelop.D.Highlighting
 {
 	class HighlightUsagesExtension:TextEditorExtension
@@ -88,7 +82,6 @@ namespace MonoDevelop.D.Highlighting
 		void HandleTextEditorDataCaretPositionChanged(object sender, DocumentLocationEventArgs e)
 		{
 			if (!MonoDevelop.Core.PropertyService.Get<bool>("EnableHighlightUsages"))
-			/*SourceEditor.DefaultSourceEditorOptions.Instance.EnableHighlightUsages*/
 				return;
 			if (!textEditorData.IsSomethingSelected && markers.Values.Any(m => m.Contains(textEditorData.Caret.Offset)))
 				return;
@@ -114,7 +107,7 @@ namespace MonoDevelop.D.Highlighting
 			textEditorData.Parent.TextViewMargin.AlphaBlendSearchResults = false;
 			foreach (var pair in markers)
 			{
-				textEditorData.Document.RemoveMarker(pair.Value, true);
+				textEditorData.Document.RemoveMarker(pair.Value, updateLine);
 			}
 			markers.Clear();
 		}
