@@ -2099,7 +2099,7 @@ namespace D_Parser.Parser
 				var initExpr = new NewExpression()
 				{
 					NewArguments = newArgs,
-					Type = BasicType(),
+					Type = Type(),
 					IsArrayArgument = laKind == OpenSquareBracket,
 					Location=startLoc
 				};
