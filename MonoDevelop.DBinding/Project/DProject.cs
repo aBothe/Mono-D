@@ -288,6 +288,9 @@ namespace MonoDevelop.D
 
 		protected override BuildResult DoBuild(IProgressMonitor monitor, ConfigurationSelector configuration)
 		{
+			// Handle pending events to ensure that files get saved right before the project is built
+			DispatchService.RunPendingEvents();
+
 			return ProjectBuilder.CompileProject(monitor,this,configuration);
 		}
 
