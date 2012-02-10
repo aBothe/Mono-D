@@ -16,7 +16,7 @@
 <![CDATA[
 module ${ModuleName};
 
-class ${SafeProjectName}
+class ${Name}
 {
 	this()
 	{

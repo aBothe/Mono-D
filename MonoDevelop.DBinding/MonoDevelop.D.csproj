@@ -43,12 +43,12 @@
     <ConsolePause>false</ConsolePause>
     <PlatformTarget>x86</PlatformTarget>
     <StartAction>Program</StartAction>
-    <StartProgram>..\..\tutorial.lib\MonoDevelop\main\build\bin\MonoDevelop.exe</StartProgram>
+    <StartProgram>..\tutorial.lib\MonoDevelop\main\build\bin\MonoDevelop.exe</StartProgram>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>C:\Program Files (x86)\MonoDevelop\AddIns\BackendBindings</OutputPath>
+    <OutputPath>bin\Release</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
@@ -254,6 +254,6 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <StartAction>Program</StartAction>
-    <StartProgram>..\..\tutorial.lib\MonoDevelop\main\build\bin\MonoDevelop.exe</StartProgram>
+    <StartProgram>..\tutorial.lib\MonoDevelop\main\build\bin\MonoDevelop.exe</StartProgram>
   </PropertyGroup>
 </Project>
