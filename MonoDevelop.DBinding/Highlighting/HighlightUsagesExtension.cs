@@ -37,12 +37,12 @@ namespace MonoDevelop.D.Highlighting
 
 		void HandleTextEditorDataSelectionChanged(object sender, EventArgs e)
 		{
-			RemoveMarkers(false);
+			RemoveMarkers();
 		}
 
 		void HandleTextEditorDataDocumentTextReplaced(object sender, ReplaceEventArgs e)
 		{
-			RemoveMarkers(false);
+			RemoveMarkers();
 		}
 
 		public override void Dispose()
@@ -85,7 +85,7 @@ namespace MonoDevelop.D.Highlighting
 				return;
 			if (!textEditorData.IsSomethingSelected && markers.Values.Any(m => m.Contains(textEditorData.Caret.Offset)))
 				return;
-			RemoveMarkers(textEditorData.IsSomethingSelected);
+			RemoveMarkers();
 			RemoveTimer();
 			if (!textEditorData.IsSomethingSelected)
 				popupTimer = GLib.Timeout.Add(1000, UpdateMarkers);
@@ -100,14 +100,14 @@ namespace MonoDevelop.D.Highlighting
 			get { return this.markers; }
 		}
 
-		void RemoveMarkers(bool updateLine)
+		void RemoveMarkers()
 		{
 			if (markers.Count == 0)
 				return;
 			textEditorData.Parent.TextViewMargin.AlphaBlendSearchResults = false;
 			foreach (var pair in markers)
 			{
-				textEditorData.Document.RemoveMarker(pair.Value, updateLine);
+				textEditorData.Document.RemoveMarker(pair.Value, true);
 			}
 			markers.Clear();
 		}
@@ -251,7 +251,7 @@ namespace MonoDevelop.D.Highlighting
 
 		void ShowReferences(List<IdentifierDeclaration> references)
 		{
-			RemoveMarkers(false);
+			RemoveMarkers();
 			HashSet<int> lineNumbers = new HashSet<int>();
 			if (references != null)
 			{
