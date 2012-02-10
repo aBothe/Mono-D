@@ -6,9 +6,8 @@
 	<TemplateConfiguration>
 		<_Name>Resource Script</_Name>
 		<Icon>md-resource-file-icon</Icon>
-		<_Category>Win32</_Category>
-		<LanguageName>D</LanguageName>
-		<_Description>Creates an empty resource script for Win32 Applications.</_Description>
+		<_Category>Misc</_Category>
+		<_Description>Creates an empty resource script (*.rc) for Win32 Applications.</_Description>
 	</TemplateConfiguration>
 
 	<TemplateFiles>

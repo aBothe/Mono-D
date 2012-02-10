@@ -4,17 +4,25 @@
 	Language="D">
 
 	<TemplateConfiguration>
-		<_Name>Empty File</_Name>
+		<_Name>Empty Class</_Name>
 		<Icon>d-file32</Icon>
 		<_Category>General</_Category>
 		<LanguageName>D</LanguageName>
-		<_Description>Creates an empty D source file.</_Description>
+		<_Description>Creates a new D class</_Description>
 	</TemplateConfiguration>
 
 	<TemplateFiles>
-		<DFile DefaultExtension=".d" DefaultName="EmptyDSourceFile" AddStandardHeader="True">
+		<DFile DefaultExtension=".d" DefaultName="EmptyDClass" AddStandardHeader="True">
 <![CDATA[
 module ${ModuleName};
+
+class ${SafeProjectName}
+{
+	this()
+	{
+		// Constructor code
+	}
+}
 ]]></DFile>
 	</TemplateFiles>
 </Template>

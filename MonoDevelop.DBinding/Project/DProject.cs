@@ -27,7 +27,7 @@ namespace MonoDevelop.D
 		public readonly List<string> BuiltObjects = new List<string>();
 
 		public override string ProjectType	{get { return "Native"; }}
-		public override string[] SupportedLanguages	{get{return new[]{"D"};}}
+		public override string[] SupportedLanguages	{get{return new[]{"D",""};}}
 		
 		/// <summary>
 		/// Stores parse information from project-wide includes

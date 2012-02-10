@@ -156,6 +156,7 @@
     <Compile Include="Building\CompilerPresets\PresetLoader.cs" />
     <Compile Include="OptionPanels\EditCompilerName.cs" />
     <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.EditCompilerName.cs" />
+    <Compile Include="templates\DFileDescriptionTemplate.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />
@@ -221,6 +222,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="templates\EmptyDClass.xft.xml" />
     <EmbeddedResource Include="templates\Win32Project.xpt.xml">
       <SubType>Designer</SubType>
     </EmbeddedResource>

@@ -6,7 +6,7 @@
 	copyright="" 
 	description="D Language Binding" 
 	category="Language bindings" 
-	version="0.2.8.5">
+	version="0.2.8.6">
 	
 	<!-- Resources -->
 	
@@ -72,7 +72,12 @@
 
 	<Extension path = "/MonoDevelop/Ide/FileTemplates">
 		<FileTemplate id = "DEmptyFile" resource = "EmptyDFile.xft.xml"/>
+		<FileTemplate id = "DNewClass" resource = "MonoDevelop.D.templates.EmptyDClass.xft.xml"/>
 		<FileTemplate id = "RCEmptyFile" resource = "MonoDevelop.D.templates.EmptyRCFile.xft.xml"/>
+	</Extension>
+
+	<Extension path="/MonoDevelop/Ide/FileTemplateTypes">
+		<FileTemplateType name = "DFile" class = "MonoDevelop.D.templates.DFileDescriptionTemplate"/>
 	</Extension>
 
 	<Extension path = "/MonoDevelop/Ide/ProjectTemplates">
