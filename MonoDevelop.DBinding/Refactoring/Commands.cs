@@ -79,13 +79,13 @@ namespace MonoDevelop.D.Refactoring
 
 		void GotoDeclaration()
 		{
-			IdeApp.OpenFiles(new[] { 
-						new FileOpenInformation(
-							Module.FileName, 
-							n.StartLocation.Line, 
-							n.StartLocation.Column, 
-							OpenDocumentOptions.BringToFront | OpenDocumentOptions.HighlightCaretLine)
-			});
+			IdeApp.Workbench.OpenDocument(
+				Module.FileName,
+				n.StartLocation.Line,
+				n.StartLocation.Column, 
+				OpenDocumentOptions.BringToFront | 
+				OpenDocumentOptions.HighlightCaretLine | 
+				OpenDocumentOptions.TryToReuseViewer);
 		}
 
 		public void FindReferences()
