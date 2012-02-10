@@ -2096,25 +2096,36 @@ namespace D_Parser.Parser
 			// NewArguments Type
 			else
 			{
+				var nt = BasicType();
+
+				while (IsBasicType2())
+				{
+					var bt=BasicType2();
+
+					bt.InnerDeclaration = nt;
+					nt = bt;
+				}
+
 				var initExpr = new NewExpression()
 				{
 					NewArguments = newArgs,
-					Type = Type(),
-					IsArrayArgument = laKind == OpenSquareBracket,
+					Type=nt,
+					IsArrayArgument = nt is ArrayDecl,
 					Location=startLoc
 				};
 				LastParsedObject = initExpr;
 
 				var args = new List<IExpression>();
-				while (laKind == OpenSquareBracket)
-				{
-					Step();
-					if(laKind!=CloseSquareBracket)
-						args.Add(AssignExpression(Scope));
-					Expect(CloseSquareBracket);
-				}
 
-				if (laKind == (OpenParenthesis))
+				if (nt is ArrayDecl)
+				{
+					var ad = nt as ArrayDecl;
+
+					args.Add(ad.KeyExpression ?? new TypeDeclarationExpression(ad.KeyType));
+
+					initExpr.Type = ad.ValueType;
+				}
+				else if (laKind == (OpenParenthesis))
 				{
 					Step();
 					if (laKind != CloseParenthesis)
