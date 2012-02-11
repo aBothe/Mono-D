@@ -79,19 +79,10 @@ namespace MonoDevelop.D.Refactoring
 
 		void GotoDeclaration()
 		{
-			var doc = IdeApp.Workbench.GetDocument(Module.FileName) ?? IdeApp.Workbench.OpenDocument(
+			IdeApp.Workbench.OpenDocument(
 				Module.FileName,
 				n.StartLocation.Line,
-				n.StartLocation.Column, 
-				OpenDocumentOptions.BringToFront | 
-				OpenDocumentOptions.HighlightCaretLine);
-
-			if (doc != null)
-			{
-				doc.Editor.ClearSelection();
-				doc.Editor.SetCaretTo(n.StartLocation.Line, n.StartLocation.Column, true, true);
-				doc.Editor.EnsureCaretIsNotVirtual();
-			}
+				n.StartLocation.Column, OpenDocumentOptions.Default);
 		}
 
 		public void FindReferences()
