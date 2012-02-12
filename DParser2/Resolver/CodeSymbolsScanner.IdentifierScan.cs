@@ -167,9 +167,6 @@ namespace D_Parser.Resolver
 
 			static void SearchIn(ITypeDeclaration type, List<object> l)
 			{
-				if (type is IdentifierDeclaration && !(type is DTokenDeclaration))
-					l.Add(type as IdentifierDeclaration);
-
 				while (type != null)
 				{
 					if (type is DelegateDeclaration)
@@ -192,9 +189,7 @@ namespace D_Parser.Resolver
 					{
 						var tie = type as TemplateInstanceExpression;
 
-						//l.Add(tie);
-
-						if (tie.TemplateIdentifier != null)
+						if (tie.TemplateIdentifier != null && !l.Contains(tie.TemplateIdentifier))
 							l.Add(tie.TemplateIdentifier);
 
 						var args = tie.Arguments;
@@ -204,13 +199,12 @@ namespace D_Parser.Resolver
 								SearchIn(arg, l);
 					}
 
-					/*if (type is IdentifierDeclaration && !(type is DTokenDeclaration))
-						l.Add(type as IdentifierDeclaration);
-					else
+					if (type is IdentifierDeclaration && !(type is DTokenDeclaration))
 					{
-						type = type.InnerDeclaration;
-						continue;
-					}*/
+						if(!l.Contains(type))
+							l.Add(type as IdentifierDeclaration);
+						break;
+					}
 
 					type = type.InnerDeclaration;
 				}
@@ -238,13 +232,15 @@ namespace D_Parser.Resolver
 						}
 						else if (e is IdentifierExpression && (e as IdentifierExpression).IsIdentifier)
 						{
-							l.Add(e.ExpressionTypeRepresentation);
+							var t = e.ExpressionTypeRepresentation;
+							if(!l.Contains(t))
+								l.Add(t);
 						}
 						else if (e is TemplateInstanceExpression)
 						{
 							var tie = e as TemplateInstanceExpression;
 
-							if (tie.TemplateIdentifier != null)
+							if (tie.TemplateIdentifier != null && !l.Contains(tie.TemplateIdentifier))
 								l.Add(tie.TemplateIdentifier);
 						}
 
