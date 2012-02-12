@@ -13,6 +13,11 @@ namespace D_Parser.Dom
 		ITypeDeclaration InnerDeclaration { get; set; }
 		ITypeDeclaration InnerMost { get; set; }
 
+		/// <summary>
+		/// Used e.g. if it's known that a type declaration expresses a variable's name
+		/// </summary>
+		bool ExpressesVariableAccess { get; set; }
+
 		string ToString();
 		string ToString(bool IncludesBase);
 	}
@@ -82,6 +87,13 @@ namespace D_Parser.Dom
 		}
 
 		public CodeLocation EndLocation
+		{
+			get;
+			set;
+		}
+
+
+		public bool ExpressesVariableAccess
 		{
 			get;
 			set;

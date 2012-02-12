@@ -566,7 +566,7 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 			int start = 0;
 			CodeLocation startLocation=CodeLocation.Empty;
 			bool IsExpression = false;
-
+			
 			if (ctxt.ScopedStatement is IExpressionContainingStatement)
 			{
 				var exprs=(ctxt.ScopedStatement as IExpressionContainingStatement).SubExpressions;
@@ -578,14 +578,15 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 							!=ex)
 							break;
 
-				if (targetExpr == null)
-					return null;
-
-				startLocation = targetExpr.Location;
-				start = DocumentHelper.LocationToOffset(editor.ModuleCode, startLocation);
-				IsExpression = true;
+				if (targetExpr != null)
+				{
+					startLocation = targetExpr.Location;
+					start = DocumentHelper.LocationToOffset(editor.ModuleCode, startLocation);
+					IsExpression = true;
+				}
 			}
-			else
+			
+			if(!IsExpression)
 			{
 				// First check if caret is inside a comment/string etc.
 				int lastNonNormalStart = 0;
@@ -627,7 +628,7 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 					var ret = ResolveType(expr.ExpressionTypeRepresentation, ctxt);
 
 					if (ret == null && expr != null && !(expr is TokenExpression))
-						ret = new[] { new ExpressionResult() { Expression = expr } };
+						ret = new[] { new ExpressionResult() { Expression = expr, TypeDeclarationBase=expr.ExpressionTypeRepresentation } };
 
 					return ret;
 				}
@@ -1081,17 +1082,23 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 								{
 									if (expr is PostfixExpression_Index)
 									{
-										var str = (memberType as StaticTypeResult);
-										/*
-										 * If the member's type is an array, and if our expression contains an index-expression (e.g. myArray[0]),
-										 * take the value type of the 
-										 */
-										// For array and pointer declarations, the StaticTypeResult object contains the array's value type / pointer base type.
-										if (str != null && (str.TypeDeclarationBase is ArrayDecl || str.TypeDeclarationBase is PointerDecl))
-											returnedResults.AddRange(TryRemoveAliasesFromResult(str.ResultBase));
+										if (memberType is StaticTypeResult)
+										{
+											var str = memberType as StaticTypeResult;
+											/*
+											 * If the member's type is an array, and if our expression contains an index-expression (e.g. myArray[0]),
+											 * take the value type of the 
+											 */
+											// For array and pointer declarations, the StaticTypeResult object contains the array's value type / pointer base type.
+											if (str != null && (str.TypeDeclarationBase is ArrayDecl || str.TypeDeclarationBase is PointerDecl))
+											{
+												returnedResults.AddRange(TryRemoveAliasesFromResult(str.ResultBase));
+												continue;
+											}
+										}
 									}
-									else
-										returnedResults.Add(memberType);
+									
+									returnedResults.Add(memberType);
 								}
 						}
 					}

@@ -952,7 +952,11 @@ namespace D_Parser.Dom.Expressions
 
 		public ITypeDeclaration ExpressionTypeRepresentation
 		{
-			get { return Type; }
+			get {
+				if (Type != null)
+					Type.ExpressesVariableAccess = true;
+				return Type; 
+			}
 		}
 
 
@@ -1201,7 +1205,11 @@ namespace D_Parser.Dom.Expressions
 
 		public virtual ITypeDeclaration ExpressionTypeRepresentation
 		{
-			get { return new DExpressionDecl(this) { InnerDeclaration = PostfixForeExpression.ExpressionTypeRepresentation }; }
+			get { 
+				return new DExpressionDecl(this) { 
+					ExpressesVariableAccess=true,
+					InnerDeclaration = PostfixForeExpression.ExpressionTypeRepresentation}; 
+			}
 		}
 
 
@@ -1343,7 +1351,14 @@ namespace D_Parser.Dom.Expressions
 
 		public sealed override ITypeDeclaration ExpressionTypeRepresentation
 		{
-			get { return PostfixForeExpression.ExpressionTypeRepresentation; }
+			get {
+				var t = PostfixForeExpression.ExpressionTypeRepresentation;
+
+				if (t != null)
+					t.ExpressesVariableAccess = true;
+
+				return t; 
+			}
 		}
 
 		public override IExpression[] SubExpressions
@@ -2034,7 +2049,7 @@ namespace D_Parser.Dom.Expressions
 
 		public ITypeDeclaration ExpressionTypeRepresentation
 		{
-			get { return new IdentifierDeclaration("TypeInfo") { Location=Location, EndLocation=EndLocation, InnerDeclaration=new IdentifierDeclaration("object")}; }
+			get { return new IdentifierDeclaration("TypeInfo") { ExpressesVariableAccess=true, Location=Location, EndLocation=EndLocation, InnerDeclaration=new IdentifierDeclaration("object")}; }
 		}
 
 		public bool IsConstant

@@ -109,7 +109,7 @@ namespace D_Parser.Resolver
 					continue;
 
 				// If between brackets, skip
-				if (bracketStack.Count > 0 && c != bracketStack.Peek())
+				if (bracketStack.Count > 0 && c!=')' && c!=']' && c!='}' && c != bracketStack.Peek())
 					continue;
 
 				// Bracket check

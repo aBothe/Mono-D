@@ -183,6 +183,7 @@
 		<Word>wstring</Word>
 		<Word>dstring</Word>
 		<Word>__ctfe</Word>
+		<Word>size_t</Word>
 	</Keywords>
 
 	<Keywords color = "constant.language.void">

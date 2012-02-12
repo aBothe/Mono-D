@@ -291,6 +291,8 @@ namespace D_Parser.Completion
 			bool isVariableInstance = false,
 			ResolveResult resultParent = null)
 		{
+			isVariableInstance |= rr.TypeDeclarationBase.ExpressesVariableAccess;
+
 			if (rr is MemberResult)
 				BuildMemberCompletionData(rr as MemberResult,currentlyScopedBlock,isVariableInstance,resultParent);
 

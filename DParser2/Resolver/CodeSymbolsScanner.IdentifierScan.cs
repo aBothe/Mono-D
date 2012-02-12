@@ -144,7 +144,8 @@ namespace D_Parser.Resolver
 
 							if (decls != null && decls.Length > 0)
 								foreach (var d in decls)
-									SearchIn(d, l);
+									if (!(d is DVariable)) // Initializers are searched already
+										SearchIn(d, l);
 						}
 
 						if (s is IExpressionContainingStatement)
