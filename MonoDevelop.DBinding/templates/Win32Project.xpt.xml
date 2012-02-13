@@ -26,8 +26,9 @@
 				
 			</Options>
 			<Files>
-				<File name = "main.d" AddStandardHeader="True">
-					<![CDATA[
+				<DFile name = "main.d">
+					<![CDATA[module ${ModuleName};
+
 // Example code taken from winsamp.d (Listed under D examples)
 
 import core.runtime;
@@ -187,7 +188,7 @@ LRESULT WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     return DefWindowProcA(hWnd, message, wParam, lParam);
 }
 ]]>
-				</File>
+				</DFile>
 
 				<File name="Resources/Win32Manifest.rc">
 					<![CDATA[

@@ -20,8 +20,10 @@
 				LinkerArgs = ""/>
 
 			<Files>
-				<File name = "main.d" AddStandardHeader="True">
-					<![CDATA[import std.stdio;
+				<DFile name = "main.d">
+					<![CDATA[module ${ModuleName};
+
+import std.stdio;
 
 void main(string[] args)
 {
@@ -32,7 +34,7 @@ void main(string[] args)
     stdin.readln();
 }
 ]]>
-				</File>
+				</DFile>
 			</Files>
 		</Project>
 	</Combine>

@@ -20,15 +20,15 @@
 				LinkerArgs = ""/>
 
 		<Files>
-			<File name = "myclass.d" AddStandardHeader="True">
-				<![CDATA[
+			<DFile name = "myclass.d">
+				<![CDATA[module ${ModuleName};
 
 class MyClass
 {
     //TODO: Enter class code here
 }
 ]]>
-			</File>
+			</DFile>
 		</Files>
 		</Project>
 	</Combine>

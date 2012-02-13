@@ -12,9 +12,8 @@
 	</TemplateConfiguration>
 
 	<TemplateFiles>
-		<DFile DefaultExtension=".d" DefaultName="EmptyDClass" AddStandardHeader="True">
-<![CDATA[
-module ${ModuleName};
+		<DFile DefaultExtension=".d" DefaultName="Class1.d">
+<![CDATA[module ${ModuleName};
 
 class ${Name}
 {
