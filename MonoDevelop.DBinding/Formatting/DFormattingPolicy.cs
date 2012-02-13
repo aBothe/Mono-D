@@ -16,8 +16,13 @@ namespace MonoDevelop.D.Formatting
 		
 		public DFormattingPolicy Clone ()
 		{
-			//TODO: Clone object with all its properties!
-			return new DFormattingPolicy ();	
+			var p = new DFormattingPolicy ();
+			
+			p.CommentOutStandardHeaders = CommentOutStandardHeaders;
+			
+			return p;
 		}
+		
+		public bool CommentOutStandardHeaders = true;
 	}
 }

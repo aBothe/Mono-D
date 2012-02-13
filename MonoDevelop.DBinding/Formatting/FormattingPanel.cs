@@ -18,12 +18,12 @@ namespace MonoDevelop.D.Formatting
 		
 		protected override void LoadFrom (DFormattingPolicy policy)
 		{
-			panel.policy = policy.Clone ();
+			panel.Policy = policy.Clone ();
 		}
 		
 		protected override DFormattingPolicy GetPolicy ()
 		{
-			return panel.policy;
+			return panel.Policy;
 		}
 	}
 }

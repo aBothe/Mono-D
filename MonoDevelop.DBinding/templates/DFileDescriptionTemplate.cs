@@ -4,6 +4,8 @@ using MonoDevelop.Core;
 using MonoDevelop.Ide.Templates;
 using MonoDevelop.Ide.StandardHeader;
 using MonoDevelop.Ide.Gui.Content;
+using MonoDevelop.D.Formatting;
+using MonoDevelop.Projects;
 
 namespace MonoDevelop.D.templates
 {
@@ -17,30 +19,33 @@ namespace MonoDevelop.D.templates
 
 			if (addStdHeader)
 			{
-				var textPolicy = project != null ? 
-					project.Policies.Get<TextStylePolicy> ("text/plain") : 
-					MonoDevelop.Projects.Policies.PolicyService.GetDefaultPolicy<TextStylePolicy> ("text/plain");
+				StandardHeaderPolicy headerPolicy = project != null ? project.Policies.Get<StandardHeaderPolicy>() : MonoDevelop.Projects.Policies.PolicyService.GetDefaultPolicy<StandardHeaderPolicy>();
+				TextStylePolicy textPolicy = project != null ? project.Policies.Get<TextStylePolicy>("text/plain") : MonoDevelop.Projects.Policies.PolicyService.GetDefaultPolicy<TextStylePolicy>("text/plain");
+				DFormattingPolicy dPolicy = project != null ?	project.Policies.Get<DFormattingPolicy>("text/x-d") : MonoDevelop.Projects.Policies.PolicyService.GetDefaultPolicy<DFormattingPolicy>("text/x-d");
 
-				var eol= TextStylePolicy.GetEolMarker(textPolicy.EolMarker);
-
-				var hdr=StandardHeaderService.GetHeader(project, tags["FileName"], true).Trim();
-
-				if (string.IsNullOrWhiteSpace(hdr))
+				if (string.IsNullOrWhiteSpace(headerPolicy.Text) || !headerPolicy.IncludeInNewFiles)
 					return cc;
 
-				var headerLines=hdr.Split('\n');
+				var eol = TextStylePolicy.GetEolMarker(textPolicy.EolMarker);
 
-				if (headerLines.Length == 1)
-					return "///" + headerLines[0].TrimStart('/') + eol + cc;
-				else
+				var hdr= StringParserService.Parse(headerPolicy.Text, tags);
+
+				if (dPolicy.CommentOutStandardHeaders)
 				{
-					var ret="/**"+eol;
-					for (int i = 0; i < headerLines.Length; i++)
+					var headerLines = hdr.Split('\n');
+
+					if (headerLines.Length == 1)
+						return "/// " + headerLines[0].Trim() + eol + cc;
+					else
 					{
-						ret += " * " + headerLines[i].TrimStart('/').Trim() + eol;
+						var ret = "/**" + eol;
+						for (int i = 0; i < headerLines.Length; i++)
+							ret += " * " + headerLines[i].Trim() + eol;
+						return ret + " */" + eol + cc;
 					}
-					return ret + " */" + eol + cc;
 				}
+				else
+					return hdr + eol + cc;
 			}
 
 			return cc;

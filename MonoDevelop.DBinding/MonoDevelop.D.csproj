@@ -55,22 +55,12 @@
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="gdk-sharp">
-    </Reference>
     <Reference Include="Mono.Addins">
       <HintPath>..\ext\Mono.Addins.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Mono.Cairo, Version=2.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <HintPath>C:\Program Files (x86)\GtkSharp\2.12\lib\Mono.Cairo\Mono.Cairo.dll</HintPath>
-      <SpecificVersion>False</SpecificVersion>
-    </Reference>
     <Reference Include="Mono.Posix, Version=2.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-    </Reference>
-    <Reference Include="Mono.TextEditor, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\Mono.TextEditor.dll</HintPath>
-      <Private>False</Private>
     </Reference>
     <Reference Include="MonoDevelop.Core">
       <HintPath>..\MonoDevelop.Core.dll</HintPath>
@@ -89,13 +79,21 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="gtk-sharp" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Data" />
-    <Reference Include="gtk-dotnet" />
-    <Reference Include="atk-sharp" />
-    <Reference Include="glib-sharp" />
-    <Reference Include="pango-sharp" />
+    <Reference Include="Mono.Cairo">
+      <HintPath>C:\Program Files %28x86%29\GtkSharp\2.12\lib\Mono.Cairo\Mono.Cairo.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.TextEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\Mono.TextEditor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="gdk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
+    <Reference Include="gtk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
+    <Reference Include="gtk-dotnet, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
+    <Reference Include="atk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
+    <Reference Include="glib-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
+    <Reference Include="pango-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
@@ -150,13 +148,13 @@
     <Compile Include="Gui\EditorPathbarProvider.cs" />
     <Compile Include="Refactoring\RenamingRefactoring.cs" />
     <Compile Include="Resolver\DResolverWrapper.cs" />
-    <Compile Include="Formatting\FormattingPanelWidget.cs" />
-    <Compile Include="gtk-gui\MonoDevelop.D.FormattingPanelWidget.cs" />
     <Compile Include="Building\DCompilerService.cs" />
     <Compile Include="Building\CompilerPresets\PresetLoader.cs" />
     <Compile Include="OptionPanels\EditCompilerName.cs" />
     <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.EditCompilerName.cs" />
     <Compile Include="templates\DFileDescriptionTemplate.cs" />
+    <Compile Include="Formatting\FormattingPanelWidget.cs" />
+    <Compile Include="gtk-gui\MonoDevelop.D.Formatting.FormattingPanelWidget.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />
