@@ -13,248 +13,8 @@ namespace D_Parser.Resolver
 	/// <summary>
 	/// Generic class for resolve module relations and/or declarations
 	/// </summary>
-	public class DResolver
+	public partial class DResolver
 	{
-		static DResolver()
-		{
-			__ctfe = new DVariable
-			{
-				Name = "__ctfe",
-				Type = new DTokenDeclaration(DTokens.Bool),
-				Initializer = new TokenExpression(DTokens.True),
-				Description = @"The __ctfe boolean pseudo-vari­able, 
-which eval­u­ates to true at com­pile time, but false at run time, 
-can be used to pro­vide an al­ter­na­tive ex­e­cu­tion path 
-to avoid op­er­a­tions which are for­bid­den at com­pile time.",
-			};
-
-			__ctfe.Attributes.Add(new DAttribute(DTokens.Static));
-			__ctfe.Attributes.Add(new DAttribute(DTokens.Const));
-		}
-
-		[Flags]
-		public enum MemberTypes
-		{
-			Imports = 1,
-			Variables = 1 << 1,
-			Methods = 1 << 2,
-			Types = 1 << 3,
-			Keywords = 1 << 4,
-
-			All = Imports | Variables | Methods | Types | Keywords
-		}
-
-		public static bool CanAddMemberOfType(MemberTypes VisibleMembers, INode n)
-		{
-			if(n is DMethod)
-				return (n as DMethod).Name!="" && VisibleMembers.HasFlag(MemberTypes.Methods);
-
-			if(n is DVariable)
-			{
-				var d=n as DVariable;
-
-				// Only add aliases if at least types,methods or variables shall be shown.
-				if(d.IsAlias)
-					return 
-						VisibleMembers.HasFlag(MemberTypes.Methods) || 
-						VisibleMembers.HasFlag(MemberTypes.Types) || 
-						VisibleMembers.HasFlag(MemberTypes.Variables);
-
-				return VisibleMembers.HasFlag(MemberTypes.Variables);
-			}
-
-			if (n is DClassLike)
-				return VisibleMembers.HasFlag(MemberTypes.Types);
-
-			if(n is DEnum)
-			{
-				var d=n as DEnum;
-
-				// Only show enums if a) they're named and types are allowed or b) variables are allowed
-				return (d.IsAnonymous ? false : VisibleMembers.HasFlag(MemberTypes.Types)) ||
-					VisibleMembers.HasFlag(MemberTypes.Variables);
-			}
-
-			return false;
-		}
-
-		/// <summary>
-		/// Returns a list of all items that can be accessed in the current scope.
-		/// </summary>
-		/// <param name="ScopedBlock"></param>
-		/// <param name="ImportCache"></param>
-		/// <returns></returns>
-		public static IEnumerable<INode> EnumAllAvailableMembers(
-			IBlockNode ScopedBlock
-			, IStatement ScopedStatement,
-			CodeLocation Caret,
-			IEnumerable<IAbstractSyntaxTree> CodeCache,
-			MemberTypes VisibleMembers)
-		{
-			/* 
-			 * Shown items:
-			 * 1) First walk through the current scope.
-			 * 2) Walk up the node hierarchy and add all their items (private as well as public members).
-			 * 3) Resolve base classes and add their non-private|static members.
-			 * 
-			 * 4) Then add public members of the imported modules 
-			 */
-			var ret = new List<INode>();
-			var ImportCache = ResolveImports(ScopedBlock.NodeRoot as DModule, CodeCache);
-
-			#region Current module/scope related members
-			
-			// 1)
-			if (ScopedStatement != null)
-			{
-				ret.AddRange(BlockStatement.GetItemHierarchy(ScopedStatement, Caret));
-			}
-
-			var curScope = ScopedBlock;
-
-			// 2)
-			while (curScope != null)
-			{
-				// Walk up inheritance hierarchy
-				if (curScope is DClassLike)
-				{
-					var curWatchedClass = curScope as DClassLike;
-					// MyClass > BaseA > BaseB > Object
-					while (curWatchedClass != null)
-					{
-						if (curWatchedClass.TemplateParameters != null)
-							ret.AddRange(curWatchedClass.TemplateParameterNodes as IEnumerable<INode>);
-
-						foreach (var m in curWatchedClass)
-						{
-							var dm2 = m as DNode;
-							var dm3 = m as DMethod; // Only show normal & delegate methods
-							if (!CanAddMemberOfType(VisibleMembers, m) || dm2 == null ||
-								(dm3 != null && !(dm3.SpecialType == DMethod.MethodType.Normal || dm3.SpecialType == DMethod.MethodType.Delegate))
-								)
-								continue;
-
-							// Add static and non-private members of all base classes; 
-							// Add everything if we're still handling the currently scoped class
-							if (curWatchedClass == curScope || dm2.IsStatic || !dm2.ContainsAttribute(DTokens.Private))
-								ret.Add(m);
-						}
-
-						// Stop adding if Object class level got reached
-						if (!string.IsNullOrEmpty(curWatchedClass.Name) && curWatchedClass.Name.ToLower() == "object")
-							break;
-
-						// 3)
-						var baseclassDefs = DResolver.ResolveBaseClass(curWatchedClass, new ResolverContext { 
-							ParseCache = CodeCache,
-							ScopedBlock=ScopedBlock,
-							ImportCache = ImportCache });
-
-						if (baseclassDefs == null || baseclassDefs.Length<0)
-							break;
-						if (curWatchedClass == baseclassDefs[0].ResolvedTypeDefinition)
-							break;
-						curWatchedClass = baseclassDefs[0].ResolvedTypeDefinition as DClassLike;
-					}
-				}
-				else if (curScope is DMethod)
-				{
-					var dm = curScope as DMethod;
-
-					// Add 'out' variable if typing in the out test block currently
-					if (dm.OutResultVariable != null && dm.Out != null && dm.GetSubBlockAt(Caret) == dm.Out)
-					{
-						ret.Add(BuildOutResultVariable(dm));
-					}
-
-					if (VisibleMembers.HasFlag(MemberTypes.Variables))
-						ret.AddRange(dm.Parameters);
-
-					if (dm.TemplateParameters != null)
-						ret.AddRange(dm.TemplateParameterNodes as IEnumerable<INode>);
-
-					// The method's declaration children are handled above already via BlockStatement.GetItemHierarchy().
-					// except AdditionalChildren:
-					foreach (var ch in dm.AdditionalChildren)
-						if (CanAddMemberOfType(VisibleMembers, ch))
-							ret.Add(ch);
-
-					// If the method is a nested method,
-					// this method won't be 'linked' to the parent statement tree directly - 
-					// so, we've to gather the parent method and add its locals to the return list
-					if (dm.Parent is DMethod)
-					{
-						var parDM = dm.Parent as DMethod;
-						var nestedBlock = parDM.GetSubBlockAt(Caret);
-
-						// Search for the deepest statement scope and add all declarations done in the entire hierarchy
-						ret.AddRange(BlockStatement.GetItemHierarchy(nestedBlock.SearchStatementDeeply(Caret), Caret));
-					}
-				}
-				else foreach (var n in curScope)
-					{
-						// Add anonymous enums' items
-						if (n is DEnum && string.IsNullOrEmpty(n.Name) && CanAddMemberOfType(VisibleMembers, n))
-						{
-							ret.AddRange((n as DEnum).Children);
-							continue;
-						}
-
-						var dm3 = n as DMethod; // Only show normal & delegate methods
-						if (
-							!CanAddMemberOfType(VisibleMembers, n) ||
-							(dm3 != null && !(dm3.SpecialType == DMethod.MethodType.Normal || dm3.SpecialType == DMethod.MethodType.Delegate)))
-							continue;
-
-						ret.Add(n);
-					}
-
-				curScope = curScope.Parent as IBlockNode;
-			}
-
-			// Add __ctfe variable
-			ret.Add(__ctfe);
-
-			#endregion
-
-			#region Global members
-			// Add all non-private and non-package-only nodes
-			foreach (var mod in ImportCache)
-			{
-				if (mod.FileName == (ScopedBlock.NodeRoot as IAbstractSyntaxTree).FileName)
-					continue;
-
-				foreach (var i in mod)
-				{
-					var dn = i as DNode;
-					if (dn != null)
-					{
-						// Add anonymous enums' items
-						if (dn is DEnum && 
-							string.IsNullOrEmpty(i.Name) && 
-							dn.IsPublic && 
-							!dn.ContainsAttribute(DTokens.Package) && 
-							CanAddMemberOfType(VisibleMembers, i))
-						{
-							ret.AddRange((i as DEnum).Children);
-							continue;
-						}
-
-						if (dn.IsPublic && !dn.ContainsAttribute(DTokens.Package) &&
-							CanAddMemberOfType(VisibleMembers, dn))
-							ret.Add(dn);
-					}
-					else 
-						ret.Add(i);
-				}
-			}
-			#endregion
-
-			if (ret.Count < 1)
-				return null;
-			return ret;
-		}
-
 		public static IBlockNode SearchBlockAt(IBlockNode Parent, CodeLocation Where, out IStatement ScopedStatement)
 		{
 			ScopedStatement = null;
@@ -386,7 +146,7 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 		}
 		#endregion
 
-		public static IAbstractSyntaxTree SearchModuleInCache(IEnumerable<IAbstractSyntaxTree> HayStack, string ModuleName)
+		static IAbstractSyntaxTree SearchModuleInCache(IEnumerable<IAbstractSyntaxTree> HayStack, string ModuleName)
 		{
 			foreach (var m in HayStack)
 			{
@@ -396,166 +156,7 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 			return null;
 		}
 
-		/// <returns>Either CurrentScope, a BlockStatement object that is associated with the parent method or a complete new DModule object</returns>
-		public static object FindCurrentCaretContext(string code,
-			IBlockNode CurrentScope,
-			int caretOffset, CodeLocation caretLocation,
-			out ParserTrackerVariables TrackerVariables)
-		{
-			bool ParseDecl = false;
-
-			int blockStart = 0;
-			var blockStartLocation = CurrentScope.BlockStartLocation;
-
-			if (CurrentScope is DMethod)
-			{
-				var block = (CurrentScope as DMethod).GetSubBlockAt(caretLocation);
-
-				if (block != null)
-					blockStart = DocumentHelper.LocationToOffset(code, blockStartLocation = block.StartLocation);
-				else
-					return FindCurrentCaretContext(code, CurrentScope.Parent as IBlockNode, caretOffset, caretLocation, out TrackerVariables);
-			}
-			else if (CurrentScope != null)
-			{
-				if (CurrentScope.BlockStartLocation.IsEmpty || caretLocation < CurrentScope.BlockStartLocation && caretLocation > CurrentScope.StartLocation)
-				{
-					ParseDecl = true;
-					blockStart = DocumentHelper.LocationToOffset(code, blockStartLocation= CurrentScope.StartLocation);
-				}
-				else
-					blockStart = DocumentHelper.LocationToOffset(code, CurrentScope.BlockStartLocation);
-			}
-
-			if (blockStart >= 0 && caretOffset - blockStart > 0)
-			{
-				var codeToParse = code.Substring(blockStart, caretOffset - blockStart);
-
-				var psr = DParser.Create(new StringReader(codeToParse));
-
-				/* Deadly important! For correct resolution behaviour, 
-				 * it is required to set the parser virtually to the blockStart position, 
-				 * so that everything using the returned object is always related to 
-				 * the original code file, not our code extraction!
-				 */
-				psr.Lexer.SetInitialLocation(blockStartLocation);
-
-				object ret = null;
-
-				if (CurrentScope == null || CurrentScope is IAbstractSyntaxTree)
-					ret = psr.Parse();
-				else if (CurrentScope is DMethod)
-				{
-					psr.Step();
-					ret = psr.BlockStatement();
-				}
-				else if (CurrentScope is DModule)
-					ret = psr.Root();
-				else
-				{
-					psr.Step();
-					if (ParseDecl)
-					{
-						var ret2 = psr.Declaration();
-
-						if (ret2 != null && ret2.Length > 0)
-							ret = ret2[0];
-					}
-					else
-					{
-						IBlockNode bn = null;
-						if (CurrentScope is DClassLike)
-						{
-							var t = new DClassLike((CurrentScope as DClassLike).ClassType);
-							t.AssignFrom(CurrentScope);
-							bn = t;
-						}
-						else if (CurrentScope is DEnum)
-						{
-							var t = new DEnum();
-							t.AssignFrom(CurrentScope);
-							bn = t;
-						}
-
-						bn.Clear();
-
-						psr.ClassBody(bn);
-						ret = bn;
-					}
-				}
-
-				TrackerVariables = psr.TrackerVariables;
-
-				return ret;
-			}
-
-			TrackerVariables = null;
-
-			return null;
-		}
-
-		/// <summary>
-		/// Parses the code between the start of the parent method's block and the given caret location.
-		/// </summary>
-		/// <returns>Returns the deepest Statement that exists in the statement hierarchy.</returns>
-		public static IStatement ParseBlockStatementUntilCaret(string code, DMethod MethodParent, int caretOffset, CodeLocation caretLocation)
-		{
-			//HACK: Clear anonymous decl array to ensure that no duplicates occur when calling DParser.ParseBlockStatement()
-			MethodParent.AdditionalChildren.Clear();
-
-			var oldBlock = MethodParent.GetSubBlockAt(caretLocation);
-			if (oldBlock == null)
-				return null;
-			var blockOpenerLocation = oldBlock.StartLocation;
-			var blockOpenerOffset = blockOpenerLocation.Line <= 0 ? blockOpenerLocation.Column :
-				DocumentHelper.LocationToOffset(code, blockOpenerLocation);
-
-			if (blockOpenerOffset >= 0 && caretOffset - blockOpenerOffset > 0)
-			{
-				var codeToParse = code.Substring(blockOpenerOffset, caretOffset - blockOpenerOffset);
-
-				/*
-				 * So, if we're inside of a method, we parse all its 'contents' (statements, expressions, declarations etc.)
-				 * to achieve a fully updated insight.
-				 */
-				var newStmt = DParser.ParseBlockStatement(codeToParse, blockOpenerLocation, MethodParent);
-
-				var ret = newStmt.SearchStatementDeeply(caretLocation);
-
-				return ret == null ? newStmt : ret;
-			}
-
-			return null;
-		}
-
 		#region ResolveType
-		static DVariable __ctfe;
-
-		/// <summary>
-		/// Returns a variable wrapper for the out test variable defined in the out(Identifier)-section
-		/// 
-		/// int foo()
-		/// out(result)
-		/// {
-		///		assert(result>0); // 'result' is of type int
-		/// }
-		/// { ... }
-		/// </summary>
-		/// <param name="dm"></param>
-		/// <returns></returns>
-		static DVariable BuildOutResultVariable(DMethod dm)
-		{
-			return new DVariable
-			{
-				Name = dm.OutResultVariable.Value as string,
-				NameLocation = dm.OutResultVariable.Location,
-				Type = dm.Type, // TODO: What to do on auto functions?
-				Parent = dm,
-				StartLocation = dm.OutResultVariable.Location,
-				EndLocation = dm.OutResultVariable.EndLocation,
-			};
-		}
-
 		public static ResolveResult[] ResolveType(IEditorData editor,
 			ResolverContext ctxt,
 			bool alsoParseBeyondCaret = false,
@@ -578,7 +179,7 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 							!=ex)
 							break;
 
-				if (targetExpr != null)
+				if (targetExpr != null && editor.CaretLocation >= targetExpr.Location && editor.CaretLocation <= targetExpr.EndLocation)
 				{
 					startLocation = targetExpr.Location;
 					start = DocumentHelper.LocationToOffset(editor.ModuleCode, startLocation);
@@ -625,7 +226,12 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 
 					expr = ExpressionHelper.SearchExpressionDeeply(expr, editor.CaretLocation);
 
-					var ret = ResolveType(expr.ExpressionTypeRepresentation, ctxt);
+					ResolveResult[] ret = null;
+
+					if (expr is IdentifierExpression && !(expr as IdentifierExpression).IsIdentifier)
+						ret = new[] { new ExpressionResult() { Expression = expr, TypeDeclarationBase = expr.ExpressionTypeRepresentation } };
+					else
+						ret = ResolveType(expr.ExpressionTypeRepresentation, ctxt);
 
 					if (ret == null && expr != null && !(expr is TokenExpression))
 						ret = new[] { new ExpressionResult() { Expression = expr, TypeDeclarationBase=expr.ExpressionTypeRepresentation } };
@@ -716,18 +322,11 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 				{
 					string searchIdentifier = (declaration as IdentifierDeclaration).Value as string;
 
-					// Compile time function evalation variable - a boolean value which is true at compile time, false at run time
-					if (searchIdentifier == "__ctfe")
-					{
-						returnedResults.Add(new MemberResult { ResolvedMember=__ctfe, TypeDeclarationBase=declaration });
-						return returnedResults.ToArray();
-					}
-
 					if (string.IsNullOrEmpty(searchIdentifier))
 						return null;
 
 					// Try to convert the identifier into a token
-					int searchToken = string.IsNullOrEmpty(searchIdentifier) ? 0 : DTokens.GetTokenID(searchIdentifier);
+					int searchToken = DTokens.GetTokenID(searchIdentifier);
 
 					// References current class scope
 					if (searchToken == DTokens.This)
@@ -781,118 +380,7 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 					// (As usual) Go on searching in the local&global scope(s)
 					else
 					{
-						var matches = new List<INode>();
-
-						// Search in current statement's declarations (if possible)
-						var decls = BlockStatement.GetItemHierarchy(ctxt.ScopedStatement, declaration.Location);
-
-						if(decls!=null)
-							foreach (var decl in decls)
-								if (decl != null &&	decl.Name == searchIdentifier)
-									matches.Add(decl);
-
-						// First search along the hierarchy in the current module
-						var curScope = ctxtOverride.ScopedBlock;
-						while (curScope != null)
-						{
-							/* 
-							 * If anonymous enum, skip that one, because in the following ScanForNodeIdentifier call, 
-							 * its children already become added to the match list
-							 */
-							if (curScope is DEnum && curScope.Name == "")
-								curScope = curScope.Parent as IBlockNode;
-
-							if (curScope is DMethod)
-							{
-								var dm = curScope as DMethod;
-
-								// If the method is a nested method,
-								// this method won't be 'linked' to the parent statement tree directly - 
-								// so, we've to gather the parent method and add its locals to the return list
-								if (dm.Parent is DMethod)
-								{
-									var parDM = dm.Parent as DMethod;
-									var nestedBlock = parDM.GetSubBlockAt(declaration.Location);
-									if (nestedBlock != null)
-									{
-										// Make out test variable resolvable
-										if (parDM.OutResultVariable != null && 
-											nestedBlock == parDM.Out && 
-											parDM.OutResultVariable.Value as string == searchIdentifier)
-										{
-											matches.Add(BuildOutResultVariable(parDM));
-										}
-
-										// Search for the deepest statement scope and test all declarations done in the entire scope hierarchy
-										decls = BlockStatement.GetItemHierarchy(nestedBlock.SearchStatementDeeply(declaration.Location), declaration.Location);
-
-										foreach (var decl in decls)
-											// ... Add them if match was found
-											if (decl != null && decl.Name == searchIdentifier)
-												matches.Add(decl);
-									}
-								}
-
-								// Make out test variable resolvable
-								if (dm.OutResultVariable != null && 
-									dm.GetSubBlockAt(declaration.Location)==dm.Out && 
-									dm.OutResultVariable.Value as string == searchIdentifier)
-								{
-									matches.Add(BuildOutResultVariable(dm));
-								}
-
-								// Do not check further method's children but its (template) parameters
-								foreach (var p in dm.Parameters)
-									if (p.Name == searchIdentifier)
-										matches.Add(p);
-
-								if (dm.TemplateParameters != null)
-									foreach (var tp in dm.TemplateParameterNodes)
-										if (tp.Name == searchIdentifier)
-											matches.Add(tp);
-							}
-							else
-							{
-								var m = ScanNodeForIdentifier(curScope, searchIdentifier, ctxtOverride);
-
-								if (m != null)
-									matches.AddRange(m);
-
-								var mod = curScope as IAbstractSyntaxTree;
-								if (mod != null)
-								{
-									var modNameParts = mod.ModuleName.Split('.');
-									if (!string.IsNullOrEmpty(mod.ModuleName) && modNameParts[0] == searchIdentifier)
-										matches.Add(curScope);
-								}
-							}
-							curScope = curScope.Parent as IBlockNode;
-						}
-
-						// Then go on searching in the global scope
-						var ThisModule =
-							currentScopeOverride is IAbstractSyntaxTree ?
-								currentScopeOverride as IAbstractSyntaxTree :
-								currentScopeOverride.NodeRoot as IAbstractSyntaxTree;
-						if (ctxt.ParseCache != null)
-							foreach (var mod in ctxt.ParseCache)
-							{
-								if (mod == ThisModule)
-									continue;
-
-								var modNameParts = mod.ModuleName.Split('.');
-
-								if (modNameParts[0] == searchIdentifier)
-									matches.Add(mod);
-							}
-
-						if (ctxtOverride.ImportCache != null)
-							foreach (var mod in ctxtOverride.ImportCache)
-							{
-								var m = ScanNodeForIdentifier(mod, searchIdentifier, null);
-								if (m != null)
-									matches.AddRange(m);
-							}
+						var matches = NameScan.SearchMatchesAlongNodeHierarchy(ctxtOverride, declaration.Location, searchIdentifier);
 
 						var results = HandleNodeMatches(matches, ctxtOverride, TypeDeclaration: declaration);
 						if (results != null)
@@ -989,7 +477,7 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 								else if (scanResult is TypeResult)
 								{
 									var tr=scanResult as TypeResult;
-									var nodeMatches=ScanNodeForIdentifier(tr.ResolvedTypeDefinition, searchIdentifier, ctxtOverride);
+									var nodeMatches=NameScan.ScanNodeForIdentifier(tr.ResolvedTypeDefinition, searchIdentifier, ctxtOverride);
 
 									var results = HandleNodeMatches(
 										nodeMatches,
@@ -1023,7 +511,7 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 									else
 									{
 										var results = HandleNodeMatches(
-										ScanNodeForIdentifier((scanResult as ModuleResult).ResolvedModule, searchIdentifier, ctxtOverride),
+										NameScan.ScanNodeForIdentifier((scanResult as ModuleResult).ResolvedModule, searchIdentifier, ctxtOverride),
 										ctxtOverride, currentScopeOverride, rbase, TypeDeclaration: declaration);
 										if (results != null)
 											returnedResults.AddRange(results);
@@ -1288,72 +776,6 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 			bcStack--;
 
 			return ret.Count > 0 ? ret.ToArray() : null;
-		}
-
-		/// <summary>
-		/// Scans through the node. Also checks if n is a DClassLike or an other kind of type node and checks their specific child and/or base class nodes.
-		/// </summary>
-		/// <param name="n"></param>
-		/// <param name="name"></param>
-		/// <param name="parseCache">Needed when trying to search base classes</param>
-		/// <returns></returns>
-		public static INode[] ScanNodeForIdentifier(IBlockNode curScope, string name, ResolverContext ctxt)
-		{
-			var matches = new List<INode>();
-
-			if (curScope.Count > 0)
-				foreach (var n in curScope)
-				{
-					// Scan anonymous enums
-					if (n is DEnum && n.Name == "")
-					{
-						foreach (var k in n as DEnum)
-							if (k.Name == name)
-								matches.Add(k);
-					}
-
-					if (n.Name == name)
-						matches.Add(n);
-				}
-
-			// If our current Level node is a class-like, also attempt to search in its baseclass!
-			if (curScope is DClassLike)
-			{
-				var baseClasses = ResolveBaseClass(curScope as DClassLike, ctxt);
-				if (baseClasses != null)
-					foreach (var i in baseClasses)
-					{
-						var baseClass = i as TypeResult;
-						if (baseClass == null)
-							continue;
-						// Search for items called name in the base class(es)
-						var r = ScanNodeForIdentifier(baseClass.ResolvedTypeDefinition, name, ctxt);
-
-						if (r != null)
-							matches.AddRange(r);
-					}
-			}
-
-			// Check parameters
-			if (curScope is DMethod)
-			{
-				var dm = curScope as DMethod;
-				foreach (var ch in dm.Parameters)
-				{
-					if (name == ch.Name)
-						matches.Add(ch);
-				}
-			}
-
-			// and template parameters
-			if (curScope is DNode && (curScope as DNode).TemplateParameters != null)
-				foreach (var ch in (curScope as DNode).TemplateParameters)
-				{
-					if (name == ch.Name)
-						matches.Add(new TemplateParameterNode(ch));
-				}
-
-			return matches.Count > 0 ? matches.ToArray() : null;
 		}
 
 		/// <summary>

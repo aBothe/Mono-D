@@ -153,12 +153,8 @@ namespace D_Parser.Resolver
 				{
 					var ad = type as ArrayDecl;
 
-					// Normal array
-					if (ad.KeyType is DTokenDeclaration && DTokens.BasicTypes_Integral[(ad.KeyType as DTokenDeclaration).Token])
-						isArray = true;
-					// Associative array
-					else
-						isAssocArray = true;
+					isAssocArray = ad.IsAssociative;
+					isArray = !ad.IsAssociative;
 				}
 				else if (!(type is PointerDecl))
 				{

@@ -46,13 +46,11 @@ namespace D_Parser.Resolver
 			};
 
 		public static StaticProperty[] ClassTypeProps = new[]{
-				new StaticProperty("classinfo","Information about the dynamic type of the class", new IdentifierDeclaration("TypeInfo_Class") { InnerDeclaration = new IdentifierDeclaration("object") })
+				new StaticProperty("classinfo","Information about the dynamic type of the class", new IdentifierDeclaration("TypeInfo_Class") { ExpressesVariableAccess=true, InnerDeclaration = new IdentifierDeclaration("object") })
 			};
 
 		public static StaticProperty[] ArrayProps = new[] { 
-				new StaticProperty("init","Returns an array literal with each element of the literal being the .init property of the array element type. null on dynamic arrays."),
 				new StaticProperty("length","Array length",new IdentifierDeclaration("size_t")),
-				//new StaticProperty("ptr","Returns pointer to the array",new PointerDecl(){InnerDeclaration=new DTokenDeclaration(DTokens.Void)}),
 				new StaticProperty("dup","Create a dynamic array of the same size and copy the contents of the array into it."),
 				new StaticProperty("idup","D2.0 only! Creates immutable copy of the array"),
 				new StaticProperty("reverse","Reverses in place the order of the elements in the array. Returns the array."),
@@ -164,19 +162,20 @@ namespace D_Parser.Resolver
 		{
 			var ll = new List<INode>();
 
-			ll.Add(new DVariable()
+			/*ll.Add(new DVariable()
 			{
 				Name = "sizeof",
 				Description = "Returns the size of the reference to the associative array; it is typically 8.",
 				Type = new IdentifierDeclaration("size_t"),
 				Initializer = new IdentifierExpression(8, LiteralFormat.Scalar)
-			});
+			});*/
 
-			/*ll.Add(new DVariable() { 
+			ll.Add(new DVariable() { 
 				Name="length",
 				Description="Returns number of values in the associative array. Unlike for dynamic arrays, it is read-only.",
-				Type=new IdentifierDeclaration("size_t")
-			});*/
+				Type = new IdentifierDeclaration("size_t"),
+				Initializer= ad!=null? ad.KeyExpression : null
+			});
 
 			if (ad != null)
 			{

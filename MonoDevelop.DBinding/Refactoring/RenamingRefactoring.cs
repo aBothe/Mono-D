@@ -41,7 +41,7 @@ namespace MonoDevelop.D.Refactoring
 			}
 
 			foreach (var c in newName)
-				if (!D.Completion.DCodeCompletionSupport.IsIdentifierChar(c))
+				if (!D_Parser.Completion.CtrlSpaceCompletionProvider.IsIdentifierChar(c))
 				{
 					MessageService.ShowError("Character '" + c + "' in " + newName + " not allowed as identifier character!");
 					return false;

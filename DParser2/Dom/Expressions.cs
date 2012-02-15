@@ -908,11 +908,6 @@ namespace D_Parser.Dom.Expressions
 		public IExpression[] NewArguments { get; set; }
 		public IExpression[] Arguments { get; set; }
 
-		/// <summary>
-		/// true if new myType[10]; instead of new myType(1,"asdf"); has been used
-		/// </summary>
-		public bool IsArrayArgument { get; set; }
-
 		public override string ToString()
 		{
 			var ret = "new";
@@ -928,12 +923,15 @@ namespace D_Parser.Dom.Expressions
 			if(Type!=null)
 				ret += " " + Type.ToString();
 
-			ret += IsArrayArgument ? '[' : '(';
-			if(Arguments!=null)
-				foreach (var e in Arguments)
-					ret += e.ToString() + ",";
+			if (!(Type is ArrayDecl))
+			{
+				ret += '(';
+				if (Arguments != null)
+					foreach (var e in Arguments)
+						ret += e.ToString() + ",";
 
-			ret = ret.TrimEnd(',') + (IsArrayArgument ? ']' : ')');
+				ret = ret.TrimEnd(',') + ')';
+			}
 
 			return ret;
 		}
@@ -955,6 +953,7 @@ namespace D_Parser.Dom.Expressions
 			get {
 				if (Type != null)
 					Type.ExpressesVariableAccess = true;
+
 				return Type; 
 			}
 		}
@@ -1770,7 +1769,10 @@ namespace D_Parser.Dom.Expressions
 							ret.ValueType = kv.Value.ExpressionTypeRepresentation;
 
 						if (kv.Key != null)
+						{
 							ret.KeyType = kv.Key.ExpressionTypeRepresentation;
+							ret.ClampsEmpty = false;
+						}
 
 						// Break if we resolved both key and value types
 						if (ret.ValueType!=null && ret.KeyType!=null)

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System;
+using D_Parser.Dom.Statements;
 
 namespace D_Parser.Dom
 {
@@ -9,9 +10,6 @@ namespace D_Parser.Dom
 		string FileName { get; set; }
 		string ModuleName { get; set; }
 		ReadOnlyCollection<ParserError> ParseErrors { get; set; }
-		/*Dictionary<ITypeDeclaration, bool> Imports { get; set; }
-		bool ContainsImport(ITypeDeclaration ImportIdentifier);
-		bool ContainsImport(string ImportIdentifier);*/
 	}
 
 	public class ParserError
@@ -34,7 +32,9 @@ namespace D_Parser.Dom
 	{
 		CodeLocation BlockStartLocation { get; set; }
 		INode[] Children { get; }
+		IStatement[] Statements { get; }
 
+		void Add(IStatement Statement);
 		void Add(INode Node);
 		void AddRange(IEnumerable<INode> Nodes);
 		int Count { get; }

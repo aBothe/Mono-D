@@ -157,7 +157,24 @@ namespace D_Parser.Dom
 		/// </summary>
         public ITypeDeclaration KeyType=new DTokenDeclaration(DTokens.Int);
 
+		public bool ClampsEmpty = true;
+
 		public IExpression KeyExpression;
+
+		public bool IsRanged
+		{
+			get {
+				return KeyExpression is PostfixExpression_Slice;
+			}
+		}
+		public bool IsAssociative
+		{
+			get
+			{
+				return KeyType!=null && (!(KeyType is DTokenDeclaration) ||
+					!DTokens.BasicTypes_Integral[(KeyType as DTokenDeclaration).Token]);
+			}
+		}
 
 		/// <summary>
 		/// Alias for InnerDeclaration; contains all declaration parts that are located in front of the square brackets.
@@ -168,14 +185,24 @@ namespace D_Parser.Dom
 			set { InnerDeclaration = value; }
 		}
 
-        public ArrayDecl() { }
-
 		public override string ToString(bool IncludesBase)
         {
-            return (IncludesBase&& ValueType != null ? ValueType.ToString() : "")+ "["+(
-				KeyExpression!=null? KeyExpression.ToString(): 
-					(KeyType != null ? KeyType.ToString() : ""))+
-				"]";
+			var ret = "";
+
+			if (IncludesBase && ValueType != null)
+				ret = ValueType.ToString();
+
+			ret += "[";
+			
+			if(!ClampsEmpty)
+			{
+				if (KeyExpression != null)
+					ret += KeyExpression.ToString();
+				else if (KeyType != null)
+					ret += KeyType.ToString();
+			}
+
+			return ret + "]";
         }
     }
 
@@ -262,6 +289,19 @@ namespace D_Parser.Dom
 			return (IncludesBase&& InnerDeclaration != null ? (InnerDeclaration.ToString()+" ") : "") + "typeof(" + (InstanceId != null ? InstanceId.ToString() : "") + ")";
 		}
     }
+
+	/// <summary>
+	/// __vector(...)
+	/// </summary>
+	public class VectorDeclaration : AbstractTypeDeclaration
+	{
+		public IExpression Id;
+
+		public override string ToString(bool IncludesBase)
+		{
+			return (IncludesBase && InnerDeclaration != null ? (InnerDeclaration.ToString() + " ") : "") + "__vector(" + (Id != null ? Id.ToString() : "") + ")";
+		}
+	}
 
 	/// <summary>
 	/// template myTemplate(T...)

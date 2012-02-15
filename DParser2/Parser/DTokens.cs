@@ -351,6 +351,9 @@ namespace D_Parser.Parser
         public static BitArray MemberFunctionAttribute = NewSet(Const, Immutable, Shared, InOut, Pure, Nothrow, PropertyAttribute);
         public static BitArray ParamModifiers = NewSet(In, Out, InOut, Ref, Lazy, Scope);
         public static BitArray ClassLike = NewSet(Class, Template, Interface, Struct, Union);
+
+		public static int[] BasicTypes_Array = new[] { Bool, Byte, Ubyte, Short, Ushort, Int, Uint, Long, Ulong, Char, Wchar, Dchar, Float, Double, Real, Ifloat, Idouble, Ireal, Cfloat, Cdouble, Creal, Void };
+
         public static BitArray BasicTypes = NewSet(Bool, Byte, Ubyte, Short, Ushort, Int, Uint, Long, Ulong, Char, Wchar, Dchar, Float, Double, Real, Ifloat, Idouble, Ireal, Cfloat, Cdouble, Creal, Void);
 
 		public static BitArray BasicTypes_Integral = NewSet(Bool, Byte,Ubyte,Short,Ushort,Int,Uint,Long,Ulong,Cent, Ucent, Char,Wchar, Dchar);

@@ -16,20 +16,19 @@ using MonoDevelop.D.Building;
 
 namespace MonoDevelop.D.Completion
 {
-	public class DCodeCompletionSupport : AbstractCompletionSupport
+	public class DCodeCompletionSupport
 	{
-		public DCodeCompletionSupport(ICompletionDataGenerator gen) : base(gen) { }
-
-		public static void BuildCompletionData(Document EditorDocument, IAbstractSyntaxTree SyntaxTree, CodeCompletionContext ctx, CompletionDataList l, string EnteredText)
+		public static void BuildCompletionData(Document EditorDocument, 
+			IAbstractSyntaxTree SyntaxTree, 
+			CodeCompletionContext ctx, 
+			CompletionDataList l, 
+			char triggerChar)
 		{
-			var caretOffset = ctx.TriggerOffset-EnteredText.Length;
-			var caretLocation = new CodeLocation(ctx.TriggerLineOffset-EnteredText.Length, ctx.TriggerLine);
+			var deltaOffset = (char.IsLetter(triggerChar) || triggerChar == '_' || triggerChar == '@') ? 1 : 0;
 
-			string lastCompletionResultPath = "";
-
+			var caretOffset = ctx.TriggerOffset-deltaOffset;
+			var caretLocation = new CodeLocation(ctx.TriggerLineOffset-deltaOffset, ctx.TriggerLine);
 			var codeCache = EnumAvailableModules(EditorDocument);
-
-			var ccs = new DCodeCompletionSupport(new CompletionDataGenerator { CompletionDataList = l });
 
 			var edData=new EditorData {
 					CaretLocation=caretLocation,
@@ -40,8 +39,10 @@ namespace MonoDevelop.D.Completion
 					ImportCache= DResolver.ResolveImports(SyntaxTree as DModule, codeCache)
 				};
 
-			ccs.BuildCompletionData(edData,	EnteredText, out lastCompletionResultPath);
-
+			AbstractCompletionProvider.BuildCompletionData(
+				new CompletionDataGenerator { CompletionDataList = l },
+				edData, 
+				triggerChar=='\0'?null:triggerChar.ToString());
 		}
 
 		#region Module enumeration helper
@@ -185,6 +186,11 @@ namespace MonoDevelop.D.Completion
 		public void AddPropertyAttribute(string AttributeText)
 		{
 			CompletionDataList.Add(new CompletionData("@"+AttributeText,new IconId("md-keyword"), DTokens.GetDescription("@"+AttributeText)));
+		}
+
+		public void AddTextItem(string Text, string Description)
+		{
+			CompletionDataList.Add(Text, IconId.Null, Description);
 		}
 	}
 

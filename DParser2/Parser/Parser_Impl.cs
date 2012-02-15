@@ -31,6 +31,7 @@ namespace D_Parser.Parser
 			{
 				module.Description = GetComments();
 				module.OptionalModuleStatement= ModuleDeclaration();
+				module.Add(module.OptionalModuleStatement);
 				module.Description += CheckForPostSemicolonComment();
 
 				if (module.OptionalModuleStatement.ModuleName!=null)
@@ -131,16 +132,25 @@ namespace D_Parser.Parser
 
 		void DeclDef(IBlockNode module)
 		{
-			if (laKind == Semicolon)
-				Step();
-
 			//AttributeSpecifier
-			else if (IsAttributeSpecifier())
+			while (IsAttributeSpecifier())
+			{
 				AttributeSpecifier();
 
+				if (t.Kind == Colon)
+					return;
+			}
+
+			if (laKind == Semicolon)
+			{
+				LastParsedObject = null;
+				Step();
+				return;
+			}
+
 			//ImportDeclaration
-			else if (laKind == Import)
-				ImportDeclaration();
+			if (laKind == Import)
+				ImportDeclaration(module);
 
 			//Constructor
 			else if (laKind == (This))
@@ -159,67 +169,190 @@ namespace D_Parser.Parser
 			{
 				Step();
 				var dbs = new DMethod(DMethod.MethodType.Unittest);
+				LastParsedObject = dbs;
 				dbs.StartLocation = t.Location;
 				FunctionBody(dbs);
 				dbs.EndLocation = t.EndLocation;
 				module.Add(dbs);
 			}
 
-			//ConditionalDeclaration
-			else if (laKind == (Version) || laKind == (Debug) || laKind == (If))
+			/*
+			 * VersionSpecification: 
+			 *		version = Identifier ; 
+			 *		version = IntegerLiteral ;
+			 * 
+			 * DebugSpecification: 
+			 *		debug = Identifier ; 
+			 *		debug = IntegerLiteral ;
+			 */
+			else if ((laKind == Version || laKind == Debug) && Peek(1).Kind == Assign)
 			{
 				Step();
-				var n = t.ToString();
 
-				if (t.Kind == (If))
+				var ass = new VersionDebugSpecification
 				{
-					if (DAttribute.ContainsAttribute(DeclarationAttributes, Static))
-					{
-						//HACK: Assume that there's only our 'static' attribute applied to the 'if'-statement
-						DeclarationAttributes.Clear();
-					}
-					else
-						SynErr(Static, "Conditional declarations must be static");
+					Token = t.Kind,
+					StartLocation = t.Location
+				};
+				LastParsedObject = ass;
 
-					if (Expect(OpenParenthesis))
+				Step();
+
+				if (laKind == Literal)
+				{
+					Step();
+					ass.SpecifiedValue = new IdentifierExpression(t.LiteralValue, t.LiteralFormat)
+						{
+							Location = t.Location,
+							EndLocation = t.EndLocation
+						};
+				}
+				else if (Expect(Identifier))
+					ass.SpecifiedValue = new IdentifierExpression(t.LiteralValue, t.LiteralFormat)
 					{
-						var condition = AssignExpression();
+						Location = t.Location,
+						EndLocation = t.EndLocation
+					};
+
+				Expect(Semicolon);
+
+				ass.EndLocation = t.EndLocation;
+
+				module.Add(ass);
+			}
+
+			else if (laKind == Version || laKind == Debug || laKind == If)
+			{
+				Step();
+
+				var c = new DeclarationCondition(t.Kind);
+				LastParsedObject = c;
+
+				/* 
+				 * http://www.d-programming-language.org/version.html#VersionSpecification
+				 * VersionCondition: 
+				 *		version ( IntegerLiteral ) 
+				 *		version ( Identifier ) 
+				 *		version ( unittest )
+				 */
+				if (c.IsVersionCondition && Expect(OpenParenthesis))
+				{
+					if (laKind == Unittest)
+					{
+						Step();
+						c.Condition = new TokenExpression(Unittest) { Location = t.Location, EndLocation = t.EndLocation };
+					}
+					else if (laKind == Literal)
+					{
+						Step();
+						c.Condition = new IdentifierExpression(t.LiteralValue, t.LiteralFormat)
+						{
+							Location = t.Location,
+							EndLocation = t.EndLocation
+						};
+					}
+					else if (Expect(Identifier))
+						c.Condition = new IdentifierExpression(t.Value, t.LiteralFormat)
+						{
+							Location = t.Location,
+							EndLocation = t.EndLocation
+						};
+
+					if (Expect(CloseParenthesis))
+						TrackerVariables.ExpectingIdentifier = false;
+				}
+
+				/*
+				 * DebugCondition:
+				 *		debug 
+				 *		debug ( IntegerLiteral )
+				 *		debug ( Identifier )
+				 */
+				else if (c.IsDebugCondition)
+				{
+					if (laKind == OpenParenthesis)
+					{
+						Step();
+
+						if (laKind == Literal)
+						{
+							Step();
+							c.Condition = new IdentifierExpression(t.LiteralValue, t.LiteralFormat)
+							{
+								Location = t.Location,
+								EndLocation = t.EndLocation
+							};
+						}
+						else if (Expect(Identifier))
+							c.Condition = new IdentifierExpression(t.Value, t.LiteralFormat)
+							{
+								Location = t.Location,
+								EndLocation = t.EndLocation
+							};
+
 						Expect(CloseParenthesis);
 					}
 				}
-				else if (laKind == (Assign))
+
+				/*
+				 * StaticIfCondition: 
+				 *		static if ( AssignExpression )
+				 */
+				else if (c.IsStaticIfCondition && Expect(OpenParenthesis))
 				{
-					Step();
-					Step();
-					Expect(Semicolon);
-				}
-				else if (t.Kind == (Version))
-				{
-					Expect(OpenParenthesis);
-					n += "(";
-					Step();
-					n += t.ToString();
+					if (DAttribute.ContainsAttribute(DeclarationAttributes, Static))
+						DeclarationAttributes.Clear();
+					else
+						SynErr(Static, "Conditional declaration checks must be static");
+
+					c.Condition = AssignExpression();
+
 					Expect(CloseParenthesis);
-					n += ")";
-				}
-				else if (t.Kind == (Debug) && laKind == (OpenParenthesis))
-				{
-					Expect(OpenParenthesis);
-					n += "(";
-					Step();
-					n += t.ToString();
-					Expect(CloseParenthesis);
-					n += ")";
 				}
 
-				if (laKind == (Colon))
+				if (laKind == Colon)
+				{
 					Step();
-			}
+					PushAttribute(c, true);
+					return;
+				}
+				else if (laKind == OpenCurlyBrace)
+				{
+					BlockAttributes.Push(c);
 
-			//TODO
-			else if (laKind == (Else))
-			{
-				Step();
+					ClassBody(module, true);
+
+					BlockAttributes.Pop();
+				}
+				else
+				{
+					DeclarationAttributes.Push(c);
+
+					DeclDef(module);
+				}
+
+				if (laKind == Else)
+				{
+					Step();
+
+					c = c.Clone() as DeclarationCondition;
+					c.Negate();
+
+					if (laKind == OpenCurlyBrace)
+					{
+						BlockAttributes.Push(c);
+
+						ClassBody(module, true);
+
+						BlockAttributes.Pop();
+					}
+					else
+					{
+						DeclarationAttributes.Push(c);
+
+						DeclDef(module);
+					}
+				}
 			}
 
 			//StaticAssert
@@ -232,7 +365,7 @@ namespace D_Parser.Parser
 					//HACK: Assume that there's only our 'static' attribute applied to the 'if'-statement
 					DeclarationAttributes.Clear();
 				}
-				else 
+				else
 					SynErr(Static, "Static assert statements must be explicitly marked as static");
 
 				if (Expect(OpenParenthesis))
@@ -245,22 +378,22 @@ namespace D_Parser.Parser
 					}
 					Expect(CloseParenthesis);
 				}
-					Expect(Semicolon);
+				Expect(Semicolon);
 			}
 
 			//TemplateMixinDeclaration
-			else if(laKind == Mixin)
+			else if (laKind == Mixin)
 			{
 				if (Peek(1).Kind == Template)
 					module.Add(TemplateDeclaration());
 
 				//TemplateMixin
 				else if (Lexer.CurrentPeekToken.Kind == Identifier)
-					TemplateMixin();
+					module.Add(TemplateMixin());
 
 				//MixinDeclaration
 				else if (Lexer.CurrentPeekToken.Kind == OpenParenthesis)
-					MixinDeclaration();
+					module.Add(MixinDeclaration());
 
 				else
 				{
@@ -269,24 +402,17 @@ namespace D_Parser.Parser
 				}
 			}
 
-			//;
-			else if (laKind == (Semicolon))
-				Step();
-
 			// {
 			else if (laKind == (OpenCurlyBrace))
 			{
-				// Due to having a new attribute scope, we'll have use a new attribute stack here
-				var AttrBackup = BlockAttributes;
-				BlockAttributes = new Stack<DAttribute>();
-
+				int popCount = DeclarationAttributes.Count;
 				while (DeclarationAttributes.Count > 0)
 					BlockAttributes.Push(DeclarationAttributes.Pop());
 
 				ClassBody(module, true);
 
-				// After the block ended, restore the previous block attributes
-				BlockAttributes = AttrBackup;
+				for (int i = popCount; i > 0; i--)
+					BlockAttributes.Pop();
 			}
 
 			// Class Allocators
@@ -355,7 +481,7 @@ namespace D_Parser.Parser
 			return td;
 		}
 
-		void ImportDeclaration()
+		void ImportDeclaration(IBlockNode Scope)
 		{
 			bool IsPublic = DAttribute.ContainsAttribute(BlockAttributes, Public);
 
@@ -384,14 +510,16 @@ namespace D_Parser.Parser
 			imp.IsPublic = IsPublic;
 			imp.IsStatic = IsStatic;
 
+			if(Scope!=null)
+				Scope.Add(imp);
 			imports.Add(imp);
 
 			// ImportBindings
-			if (laKind == (Colon))
+			if (laKind == Colon)
 			{
 				Step();
 				ImportBind(imp);
-				while (laKind == (Comma))
+				while (laKind == Comma)
 				{
 					Step();
 					ImportBind(imp);
@@ -399,7 +527,7 @@ namespace D_Parser.Parser
 			}
 			else
 			{
-				while (laKind == (Comma))
+				while (laKind == Comma)
 				{
 					imp.EndLocation = t.Location;
 					
@@ -411,6 +539,8 @@ namespace D_Parser.Parser
 					imp.IsPublic = IsPublic;
 					imp.IsStatic = IsStatic;
 
+					if (Scope != null)
+						Scope.Add(imp);
 					imports.Add(imp);
 
 					if (laKind == (Colon))
@@ -510,8 +640,8 @@ namespace D_Parser.Parser
 				{
 					Step();
 					// Always allow more than only one property attribute
-					if (t.Kind==PropertyAttribute || !DAttribute.ContainsAttribute(DeclarationAttributes.ToArray(), t.Kind))
-						PushAttribute(new DAttribute(t.Kind,t.Value), false);
+					if (t.Kind == PropertyAttribute || !DAttribute.ContainsAttribute(DeclarationAttributes.ToArray(), t.Kind))
+						PushAttribute(new DAttribute(t.Kind, t.Value), false);
 				}
 				ret = true;
 			}
@@ -768,7 +898,15 @@ namespace D_Parser.Parser
 			if (laKind == (Typeof))
 			{
 				td = TypeOf();
-				if (laKind != (Dot)) return td;
+				if (laKind != Dot)
+					return td;
+			}
+
+			else if (laKind == __vector)
+			{
+				td = Vector();
+				if (laKind != Dot)
+					return td;
 			}
 
 			if (laKind == (Dot))
@@ -827,7 +965,7 @@ namespace D_Parser.Parser
 					AllowWeakTypeParsing = weaktype;
 
 					if (keyType != null && laKind == CloseSquareBracket)
-						cd = new ArrayDecl() { KeyType = keyType, Location=startLoc };
+						cd = new ArrayDecl() { KeyType = keyType, ClampsEmpty=false, Location=startLoc };
 					else
 						la = la_backup;
 				}
@@ -841,13 +979,15 @@ namespace D_Parser.Parser
 					{
 						Step();
 						cd = new ArrayDecl() {
-							Location=startLoc
-							,KeyExpression= new PostfixExpression_Slice() { 
-								FromExpression=fromExpression, 
+							Location=startLoc,
+							ClampsEmpty=false,
+							KeyType=null,
+							KeyExpression= new PostfixExpression_Slice() { 
+								FromExpression=fromExpression,
 								ToExpression=AssignExpression()}};
 					}
 					else
-						cd = new ArrayDecl() { KeyExpression=fromExpression,Location=startLoc };
+						cd = new ArrayDecl() { KeyType=null, KeyExpression=fromExpression,ClampsEmpty=false,Location=startLoc };
 				}
 
 				if (AllowWeakTypeParsing && laKind != CloseSquareBracket)
@@ -1046,13 +1186,15 @@ namespace D_Parser.Parser
 		/// </summary>
 		ITypeDeclaration DeclaratorSuffixes(out ITemplateParameter[] TemplateParameters, out List<INode> _Parameters, List<DAttribute> _Attributes)
 		{
+			DAttribute attr = null;
 			ITypeDeclaration td = null;
 			TemplateParameters = null;
 			_Parameters = null;
 
 			while (MemberFunctionAttribute[laKind])
 			{
-				_Attributes.Add(new DAttribute(laKind, la.Value));
+				_Attributes.Add(attr=new DAttribute(laKind, la.Value));
+				LastParsedObject = attr;
 				Step();
 			}
 
@@ -1064,6 +1206,7 @@ namespace D_Parser.Parser
 				ad.InnerDeclaration = td;
 				if (laKind != (CloseSquareBracket))
 				{
+					ad.ClampsEmpty = false;
 					ITypeDeclaration keyType=null;
 					var la_backup = la;
 					if (!IsAssignExpression())
@@ -1098,14 +1241,16 @@ namespace D_Parser.Parser
 
 				while (StorageClass[laKind] || laKind==PropertyAttribute)
 				{
-					_Attributes.Add(new DAttribute(laKind, la.Value));
+					_Attributes.Add(attr=new DAttribute(laKind, la.Value));
+					LastParsedObject = attr;
 					Step();
 				}
 			}
 
 			while (MemberFunctionAttribute[laKind])
 			{
-				_Attributes.Add(new DAttribute(laKind,la.Value));
+				_Attributes.Add(attr=new DAttribute(laKind,la.Value));
+				LastParsedObject = attr;
 				Step();
 			}
 			return td;
@@ -1115,8 +1260,14 @@ namespace D_Parser.Parser
 		{
 			ITypeDeclaration td = null;
 
+			bool notInit = false;
 			do
 			{
+				if (notInit)
+					Step();
+				else
+					notInit = true;
+
 				ITypeDeclaration ttd = null;
 
 				if (IsTemplateInstance)
@@ -1130,7 +1281,7 @@ namespace D_Parser.Parser
 					ttd.InnerDeclaration = td;
 				td = ttd;
 			}
-			while (laKind == Dot && Step()!=null);
+			while (laKind == Dot);
 
 			ExpectingIdentifier = false;
 
@@ -1494,6 +1645,27 @@ namespace D_Parser.Parser
 			return md;
 		}
 
+		VectorDeclaration Vector()
+		{
+			var startLoc = t == null ? new CodeLocation() : t.Location;
+			Expect(__vector);
+			var md = new VectorDeclaration { Location = startLoc };
+
+			if (Expect(OpenParenthesis))
+			{
+				LastParsedObject = md;
+
+				if (!IsEOF)
+					md.Id = Expression();
+
+				if (Expect(CloseParenthesis))
+					TrackerVariables.ExpectingIdentifier = false;
+			}
+
+			md.EndLocation = t.EndLocation;
+			return md;
+		}
+
 		#endregion
 
 		#region Attributes
@@ -1516,26 +1688,28 @@ namespace D_Parser.Parser
 			return inv;
 		}
 
-		PragmaStatement _Pragma()
+		PragmaAttribute _Pragma()
 		{
 			Expect(Pragma);
-			var s = new PragmaStatement() { StartLocation=t.Location};
+			var s = new PragmaAttribute();
 			LastParsedObject = s;
-			Expect(OpenParenthesis);
-			Expect(Identifier);
-			s.PragmaIdentifier = t.Value;
-
-			var l = new List<IExpression>();
-			while (laKind == Comma)
+			if (Expect(OpenParenthesis))
 			{
-				Step();
-				l.Add(AssignExpression());
-			}
-			if(l.Count>0)
-				s.ArgumentList = l.ToArray();
-			Expect(CloseParenthesis);
-			s.EndLocation = t.EndLocation;
+				if (Expect(Identifier))
+					s.Identifier = t.Value;
 
+				var l = new List<IExpression>();
+				while (laKind == Comma)
+				{
+					Step();
+					l.Add(AssignExpression());
+				}
+				if (l.Count > 0)
+					s.Arguments = l.ToArray();
+
+				if (Expect(CloseParenthesis))
+					TrackerVariables.ExpectingIdentifier = false;
+			}
 			return s;
 		}
 
@@ -1555,12 +1729,27 @@ namespace D_Parser.Parser
 		private void AttributeSpecifier()
 		{
 			var attr = new DAttribute(laKind,la.Value);
+			LastParsedObject = attr;
 			if (laKind == Extern && Lexer.CurrentPeekToken.Kind == OpenParenthesis)
 			{
 				Step(); // Skip extern
 				Step(); // Skip (
+
+				TrackerVariables.ExpectingIdentifier = true;
+				var n = "";
 				while (!IsEOF && laKind != CloseParenthesis)
+				{
 					Step();
+					n += t.ToString();
+
+					TrackerVariables.ExpectingIdentifier = false;
+
+					if (t.Kind == Identifier && laKind == Identifier)
+						n += ' ';
+				}
+
+				attr.LiteralContent = n;
+
 				if (!Expect(CloseParenthesis))
 					return;
 			}
@@ -1568,12 +1757,14 @@ namespace D_Parser.Parser
 			{
 				Step();
 				Step();
-				Expect(Literal);
+				if (Expect(Literal))
+					attr.LiteralContent = new IdentifierExpression(t.LiteralValue, t.LiteralFormat);
+
 				if (!Expect(CloseParenthesis))
 					return;
 			}
 			else if (laKind == Pragma)
-				_Pragma();
+				 attr=_Pragma();
 			else
 				Step();
 
@@ -1581,10 +1772,11 @@ namespace D_Parser.Parser
 			{
 				PushAttribute(attr, true);
 				Step();
+				LastParsedObject = null;
 			}
 
 			else if (laKind != Semicolon)
-				PushAttribute(attr,false);
+				PushAttribute(attr, false);
 		}
 		#endregion
 
@@ -1632,26 +1824,47 @@ namespace D_Parser.Parser
 						if (laKind == Identifier)
 						{
 							// Skip initial identifier list
-							do
+							if (Lexer.CurrentPeekToken.Kind == Not)
 							{
-								if (Lexer.CurrentPeekToken.Kind == Dot) 
-									Peek();
-
-								if (Lexer.CurrentPeekToken.Kind == Identifier)
-									Peek();
-
-								if (Lexer.CurrentPeekToken.Kind == Not)
+								Peek();
+								if (Lexer.CurrentPeekToken.Kind != Is && Lexer.CurrentPeekToken.Kind != In)
 								{
-									Peek();
-									if (Lexer.CurrentPeekToken.Kind != Is && Lexer.CurrentPeekToken.Kind != In)
-									{
-										if (Lexer.CurrentPeekToken.Kind == (OpenParenthesis))
-											OverPeekBrackets(OpenParenthesis);
-										else Peek();
-									}
+									if (Lexer.CurrentPeekToken.Kind == (OpenParenthesis))
+										OverPeekBrackets(OpenParenthesis);
+									else
+										Peek();
 								}
 							}
-							while (Lexer.CurrentPeekToken.Kind == Dot);
+
+							while (Lexer.CurrentPeekToken.Kind == Dot)
+							{
+								Peek();
+
+								if (Lexer.CurrentPeekToken.Kind == Identifier)
+								{
+									Peek();
+
+									if (Lexer.CurrentPeekToken.Kind == Not)
+									{
+										Peek();
+										if (Lexer.CurrentPeekToken.Kind != Is && Lexer.CurrentPeekToken.Kind != In)
+										{
+											if (Lexer.CurrentPeekToken.Kind == (OpenParenthesis))
+												OverPeekBrackets(OpenParenthesis);
+											else 
+												Peek();
+										}
+									}
+								}
+								else
+								{
+									/*
+									 * If a non-identifier follows a dot, treat it as expression, not as declaration.
+									 */
+									Peek(1);
+									return true;
+								}
+							}
 						}
 						else if (laKind == (Typeof) || MemberFunctionAttribute[laKind])
 						{
@@ -1659,6 +1872,16 @@ namespace D_Parser.Parser
 								OverPeekBrackets(OpenParenthesis);
 						}
 					}
+				}
+				else if(Peek(1).Kind != Dot && Peek().Kind!=Identifier)
+				{
+					/*
+					 * PrimaryExpression allows
+					 * BasicType . Identifier 
+					 * --> if BasicType IS int or float etc., and NO dot follows, it must be a type
+					 */
+					Peek(1);
+					return false;
 				}
 
 				if (Lexer.CurrentPeekToken == null)
@@ -1728,7 +1951,7 @@ namespace D_Parser.Parser
 			Expect(Question);
 			var se = new ConditionalExpression() { OrOrExpression = trigger };
 			LastParsedObject = se;
-			se.TrueCaseExpression = AssignExpression(Scope);
+			se.TrueCaseExpression = Expression(Scope);
 			Expect(Colon);
 			se.FalseCaseExpression = ConditionalExpression(Scope);
 			return se;
@@ -2110,27 +2333,53 @@ namespace D_Parser.Parser
 				{
 					NewArguments = newArgs,
 					Type=nt,
-					IsArrayArgument = nt is ArrayDecl,
 					Location=startLoc
 				};
 				LastParsedObject = initExpr;
 
 				var args = new List<IExpression>();
 
-				if (nt is ArrayDecl)
-				{
-					var ad = nt as ArrayDecl;
+				var ad=nt as ArrayDecl;
 
-					args.Add(ad.KeyExpression ?? new TypeDeclarationExpression(ad.KeyType));
-
-					initExpr.Type = ad.ValueType;
-				}
-				else if (laKind == (OpenParenthesis))
+				if((ad == null || ad.ClampsEmpty) && laKind == OpenParenthesis)
 				{
 					Step();
 					if (laKind != CloseParenthesis)
 						args = ArgumentList(Scope);
 					Expect(CloseParenthesis);
+
+					if (ad != null)
+					{
+						if (args.Count == 0)
+						{
+							SemErr(CloseParenthesis, "Size for the rightmost array dimension needed");
+
+							initExpr.EndLocation = t.EndLocation;
+							return initExpr;
+						}
+
+						while (ad != null)
+						{
+							if (args.Count == 0)
+								break;
+
+							ad.ClampsEmpty = false;
+							ad.KeyType = null;
+							ad.KeyExpression = args[args.Count - 1];
+
+							args.RemoveAt(args.Count - 1);
+
+							ad = ad.InnerDeclaration as ArrayDecl;
+						}
+					}
+				}
+
+				ad = nt as ArrayDecl;
+
+				if (ad != null && ad.KeyExpression == null)
+				{
+					if (ad.KeyType != null)
+						SemErr(ad.KeyType is DTokenDeclaration ? (ad.KeyType as DTokenDeclaration).Token : CloseSquareBracket, "Size of array expected, not type " + ad.KeyType);
 				}
 
 				initExpr.Arguments = args.ToArray();
@@ -3383,26 +3632,31 @@ namespace D_Parser.Parser
 			#endregion
 
 			#region ScopeGuardStatement
-			else if (laKind == (DTokens.Scope) && Lexer.CurrentPeekToken.Kind==OpenParenthesis)
+			else if (laKind == DTokens.Scope)
 			{
 				Step();
-				var s = new ScopeGuardStatement() { StartLocation = t.Location, Parent = Parent };
-				LastParsedObject = s;
 
 				if (laKind == OpenParenthesis)
 				{
-					Expect(OpenParenthesis);
-					if(Expect(Identifier) && t.Value!=null) // exit, failure, success
-					{
+					var s = new ScopeGuardStatement() { StartLocation = t.Location, Parent = Parent };
+					LastParsedObject = s;
+
+					Step();
+
+					if (Expect(Identifier) && t.Value != null) // exit, failure, success
 						s.GuardedScope = t.Value.ToLower();
-					}
-					Expect(CloseParenthesis);
+
+					if (Expect(CloseParenthesis))
+						TrackerVariables.ExpectingIdentifier = false;
+
+					if(!IsEOF)
+						s.ScopedStatement = Statement(Scope: Scope, Parent: s);
+
+					s.EndLocation = t.EndLocation;
+					return s;
 				}
-
-				s.ScopedStatement = Statement(Scope: Scope, Parent: s);
-
-				s.EndLocation = t.EndLocation;
-				return s;
+				else
+					PushAttribute(new DAttribute(DTokens.Scope), false);
 			}
 			#endregion
 
@@ -3439,8 +3693,9 @@ namespace D_Parser.Parser
 			#region PragmaStatement
 			else if (laKind == (Pragma))
 			{
-				var s=_Pragma();
+				var s = new PragmaStatement { StartLocation= la.Location };
 
+				s.Pragma = _Pragma();
 				s.Parent = Parent;
 
 				s.ScopedStatement = Statement(Scope: Scope, Parent: s);
@@ -3571,16 +3826,20 @@ namespace D_Parser.Parser
 
 			// ImportDeclaration
 			else if (laKind == Import)
-				ImportDeclaration();
+				ImportDeclaration(Scope);
 
 			else if (!(ClassLike[laKind] || BasicTypes[laKind] || laKind == Enum || Modifiers[laKind] || laKind==PropertyAttribute || laKind == Alias || laKind == Typedef) && IsAssignExpression())
 			{
 				var s = new ExpressionStatement() { StartLocation = la.Location, Parent = Parent };
-				LastParsedObject = s;
+
+				if(!IsEOF)
+					LastParsedObject = s;
 				// a==b, a=9; is possible -> Expressions can be there, not only single AssignExpressions!
 				s.Expression = Expression(Scope);
+
 				if (Expect(Semicolon))
 					LastParsedObject = null;
+
 				s.EndLocation = t.EndLocation;
 				return s;
 			}
@@ -3815,18 +4074,14 @@ namespace D_Parser.Parser
 
 			// handle post argument attributes
 			while (IsAttributeSpecifier())
-			{
 				AttributeSpecifier();
-			}
 
 			if (laKind == (If))
 				Constraint();
 
 			// handle post argument attributes
 			while (IsAttributeSpecifier())
-			{
 				AttributeSpecifier();
-			}
 
 			FunctionBody(dm);
 			return dm;
@@ -4453,23 +4708,26 @@ namespace D_Parser.Parser
 			Expect(__traits);
 			var ce = new TraitsExpression() { Location=t.Location};
 			LastParsedObject = ce;
-			Expect(OpenParenthesis);
-			
-			if(Expect(Identifier))
-				ce.Keyword = t.Value;
-
-			var al = new List<TraitsArgument>();
-
-			while (laKind == Comma)
+			if(Expect(OpenParenthesis))
 			{
-				Step();
-				if (IsAssignExpression())
-					al.Add(new TraitsArgument(){AssignExpression= AssignExpression()});
-				else
-					al.Add(new TraitsArgument(){Type= Type()});
-			}
+				if(Expect(Identifier))
+					ce.Keyword = t.Value;
 
-			Expect(CloseParenthesis);
+				var al = new List<TraitsArgument>();
+
+				while (laKind == Comma)
+				{
+					Step();
+
+					if (IsAssignExpression())
+						al.Add(new TraitsArgument(){AssignExpression= AssignExpression()});
+					else
+						al.Add(new TraitsArgument(){Type= Type()});
+				}
+
+				if (Expect(CloseParenthesis))
+					TrackerVariables.ExpectingIdentifier = false;
+			}
 			ce.EndLocation = t.EndLocation;
 			return ce;
 		}

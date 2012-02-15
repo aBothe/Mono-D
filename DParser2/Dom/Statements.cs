@@ -125,50 +125,6 @@ namespace D_Parser.Dom.Statements
 			}
 		}
 
-		/// <summary>
-		/// Walks up the statement scope hierarchy and enlists all declarations that have been made BEFORE the caret position. 
-		/// (If CodeLocation.Empty given, this parameter will be ignored)
-		/// </summary>
-		public static INode[] GetItemHierarchy(IStatement Statement, CodeLocation Caret)
-		{
-			var l = new List<INode>();
-
-			// To a prevent double entry of the same declaration, skip a most scoped declaration first
-			if (Statement is DeclarationStatement)
-				Statement = Statement.Parent;
-
-			while (Statement != null)
-			{
-				if (Statement is IDeclarationContainingStatement)
-				{
-					var decls = (Statement as IDeclarationContainingStatement).Declarations;
-
-					if(decls!=null)
-						foreach (var decl in decls)
-						{
-							if (Caret != CodeLocation.Empty)
-							{
-								if (Caret < decl.StartLocation)
-									continue;
-
-								var dv = decl as DVariable;
-								if (dv != null &&
-									dv.Initializer != null &&
-									!(Caret < dv.Initializer.Location ||
-									Caret > dv.Initializer.EndLocation))
-									continue;
-							}
-
-							l.Add(decl);
-						}
-				}
-
-				Statement=Statement.Parent;
-			}
-
-			return l.ToArray();
-		}
-
 		public virtual IStatement SearchStatement(CodeLocation Where)
 		{
 			return SearchBlockStatement(this, Where);
@@ -806,30 +762,20 @@ namespace D_Parser.Dom.Statements
 
 	public class PragmaStatement : StatementContainingStatement,IExpressionContainingStatement
 	{
-		public string PragmaIdentifier;
-		public IExpression[] ArgumentList;
-
-		public override string ToCode()
-		{
-			var ret = "pragma(" + PragmaIdentifier;
-
-			if (ArgumentList != null && ArgumentList.Length > 0)
-				foreach (var arg in ArgumentList)
-					ret += ',' + arg.ToString();
-
-			ret+=')';
-
-			if (ScopedStatement != null)
-				ret += ' '+ScopedStatement.ToCode();
-			else
-				ret+=';'; // An empty pragma is possible
-
-			return ret;
-		}
+		public PragmaAttribute Pragma;
 
 		public IExpression[] SubExpressions
 		{
-			get { return ArgumentList; }
+			get { return Pragma==null ? null: Pragma.Arguments; }
+		}
+
+		public override string ToCode()
+		{
+			var r = Pragma==null? "" : Pragma.ToString();
+
+			r += ScopedStatement==null? "" : (" " + ScopedStatement.ToCode());
+
+			return r;
 		}
 	}
 
@@ -1025,6 +971,23 @@ namespace D_Parser.Dom.Statements
 
 				return l.ToArray();
 			}
+		}
+	}
+
+	public class VersionDebugSpecification : AbstractStatement, IExpressionContainingStatement
+	{
+		public int Token;
+
+		public IExpression SpecifiedValue;
+	
+		public override string  ToCode()
+		{
+ 			return DTokens.GetTokenString(Token)+ "="+(SpecifiedValue!=null?SpecifiedValue.ToString():"");
+		}
+
+		public IExpression[] SubExpressions
+		{
+			get { return new[]{ SpecifiedValue }; }
 		}
 	}
 }

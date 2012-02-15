@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using D_Parser.Parser;
+using D_Parser.Dom.Expressions;
+using System;
 
 namespace D_Parser.Dom
 {
@@ -24,7 +26,7 @@ namespace D_Parser.Dom
             this.LiteralContent = Content;
         }
 
-        public new string ToString()
+        public virtual string ToString()
         {
 			if (Token == DTokens.PropertyAttribute)
 				return "@" + (LiteralContent==null?"": LiteralContent.ToString());
@@ -126,4 +128,91 @@ namespace D_Parser.Dom
 			get { return Token == DTokens.PropertyAttribute; }
 		}
     }
+
+	public class DeclarationCondition : DAttribute, ICloneable
+	{
+		public bool IsStaticIfCondition
+		{
+			get { return Token == DTokens.If; }
+		}
+		public bool IsDebugCondition
+		{
+			get { return Token == DTokens.Debug; }
+		}
+		public bool IsVersionCondition
+		{
+			get { return Token == DTokens.Version; }
+		}
+
+		/// <summary>
+		/// Alias for LiteralContent
+		/// </summary>
+		public IExpression Condition
+		{
+			get { return LiteralContent as IExpression; }
+			set { LiteralContent = value; } 
+		}
+
+		public bool IsNegated { get; protected set; }
+
+		public void Negate()
+		{
+			if(IsNegated)
+				return;
+			IsNegated=true;
+
+			if(!(Condition is SurroundingParenthesesExpression) && IsStaticIfCondition)
+				Condition = new SurroundingParenthesesExpression { 
+					Expression=Condition, 
+					Location= Condition==null? CodeLocation.Empty : Condition.Location,
+					EndLocation= Condition==null? CodeLocation.Empty : Condition.EndLocation
+				};
+
+			Condition = new UnaryExpression_Not { 
+				UnaryExpression=Condition, 
+				Location= Condition.Location
+			};
+		}
+
+		public DeclarationCondition(int Token)
+			: base(Token)
+		{
+		}
+
+		public object Clone()
+		{
+			return new DeclarationCondition(Token)
+			{
+				Condition = Condition,
+				IsNegated=IsNegated
+			};
+		}
+	}
+
+	public class PragmaAttribute : DAttribute
+	{
+		/// <summary>
+		/// Alias for LiteralContent.
+		/// </summary>
+		public string Identifier
+		{
+			get { return LiteralContent as string; }
+			set { LiteralContent = value; }
+		}
+
+		public IExpression[] Arguments;
+
+		public PragmaAttribute() : base(DTokens.Pragma) { }
+
+		public override string ToString()
+		{
+			var r= "pragma(" + Identifier;
+
+			if(Arguments!=null && Arguments.Length>0)
+				foreach (var e in Arguments)
+					r += "," + e!=null ? e.ToString() : "";
+
+			return r + ")";
+		}
+	}
 }

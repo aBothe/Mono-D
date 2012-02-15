@@ -119,6 +119,7 @@ namespace D_Parser.Dom
 	{
 		CodeLocation _BlockStart;
 		protected List<INode> _Children = new List<INode>();
+		protected List<IStatement> _RootStatements = new List<IStatement>();
 
 		public CodeLocation BlockStartLocation
 		{
@@ -204,6 +205,18 @@ namespace D_Parser.Dom
 			}
 
 			base.AssignFrom(other);
+		}
+
+
+
+		public IStatement[] Statements
+		{
+			get { return _RootStatements.ToArray(); }
+		}
+
+		public void Add(IStatement Statement)
+		{
+			_RootStatements.Add(Statement);
 		}
 	}
 
@@ -476,6 +489,17 @@ namespace D_Parser.Dom
 		public void Clear()
 		{
 			additionalChildren.Clear();
+		}
+
+
+		public IStatement[] Statements
+		{
+			get { return new[] { In, Out, Body }; }
+		}
+
+		public void Add(IStatement Statement)
+		{
+			throw new NotImplementedException();
 		}
 	}
 

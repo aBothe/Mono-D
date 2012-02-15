@@ -48,32 +48,31 @@ namespace MonoDevelop.D
 
 		public override ICompletionDataList HandleCodeCompletion(CodeCompletionContext completionContext, char triggerChar, ref int triggerWordLength)
 		{
-			// Return if e.g. renaming code symbols etc.
-
 			if (!(triggerChar==' ' || 
 				char.IsLetter(triggerChar) || 
 				triggerChar == '@' ||
+				triggerChar == '(' ||
 				triggerChar == '_' || 
 				triggerChar == '.' || 
 				triggerChar == '\0'))
 				return null;
-			/*
-			else if (char.IsLetter(triggerChar) && !CaretContextAnalyzer.IsTypeIdentifier(Document.Editor.Text, Document.Editor.Caret.Offset))
-				return null; */
 							
-			triggerWordLength = (DCodeCompletionSupport.IsIdentifierChar(triggerChar) || triggerChar=='@') ? 1 : 0;
+			triggerWordLength = (char.IsLetter(triggerChar) || triggerChar=='_' || triggerChar=='@') ? 1 : 0;
 
 			// Require a parsed D source
 			var dom = base.Document.ParsedDocument as ParsedDModule;
 
 			if (dom == null)
-			{
 				return null;
-			}
 
 			var l = new CompletionDataList();
 
-			DCodeCompletionSupport.BuildCompletionData(Document,dom.DDom,completionContext,l,triggerChar=='\0'?"":triggerChar.ToString());
+			DCodeCompletionSupport.BuildCompletionData(
+				Document,
+				dom.DDom,
+				completionContext,
+				l,
+				triggerChar);
 
 			return l;
 		}

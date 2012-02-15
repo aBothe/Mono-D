@@ -14,6 +14,8 @@ namespace D_Parser.Completion
 		/// </summary>
 		void AddPropertyAttribute(string AttributeText);
 
+		void AddTextItem(string Text, string Description);
+
 		/// <summary>
 		/// Adds a node to the completion data
 		/// </summary>

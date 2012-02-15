@@ -68,6 +68,7 @@ namespace MonoDevelop.D
 					libs.Name = "D Files";				
 					break;
 				case FileFilterType.LibraryFiles:
+					libs.AddPattern("*.a");
 					libs.AddPattern ("*.lib");
 					libs.AddPattern ("*.so");
 					libs.AddPattern ("*.dylib");							
