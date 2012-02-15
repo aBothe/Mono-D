@@ -1,7 +1,6 @@
 ﻿// xcopy /Q "$(TargetDir)*" "$(SolutionDir)..\tutorial.lib\MonoDevelop\main\build\AddIns\BackendBindings" /Y
 This document contains a list of to-do features:
 
-* Provide context-dependent keyword completion
 * Implement static type property resolution
 * Alter block statement/body boundaries on new-line/delete line events 
 	so no wrong function scope's getting detected anymore

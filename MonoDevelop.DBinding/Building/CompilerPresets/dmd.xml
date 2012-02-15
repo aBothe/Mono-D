@@ -37,11 +37,11 @@
 		<IncludePathPattern>-I"{0}"</IncludePathPattern>
 		<DebugArgs>
 			<CompilerArg>-c "$src" -of"$obj" $includes -gc -debug</CompilerArg>
-			<LinkerArgs>-gc -debug -of"$target" $objs $libs -L/IMPLIB:$relativeTargetDir </LinkerArgs>
+			<LinkerArgs>-gc -debug -shared -of"$target" $objs $libs -L/IMPLIB:$relativeTargetDir </LinkerArgs>
 		</DebugArgs>
 		<ReleaseArgs>
 			<CompilerArg>-c "$src" -of"$obj" $includes -O -release</CompilerArg>
-			<LinkerArgs>-O -release -of"$target" $objs $libs -L/IMPLIB:$relativeTargetDir </LinkerArgs>
+			<LinkerArgs>-O -release -shared -of"$target" $objs $libs -L/IMPLIB:$relativeTargetDir </LinkerArgs>
 		</ReleaseArgs>
 	</TargetConfiguration>
 	
