@@ -17,27 +17,27 @@ namespace MonoDevelop.D.Completion
 	{
 		Document doc;
 		ArgumentsResolutionResult args;
-
 		int selIndex = 0;
-		public ResolveResult CurrentResult { get { return args.ResolvedTypesOrMethods[selIndex]; } }
+
+		public ResolveResult CurrentResult { get { return args.ResolvedTypesOrMethods [selIndex]; } }
+
 		DMethod scopeMethod = null;
 		
-		public static DParameterDataProvider Create(Document doc, IAbstractSyntaxTree SyntaxTree, CodeCompletionContext ctx)
+		public static DParameterDataProvider Create (Document doc, IAbstractSyntaxTree SyntaxTree, CodeCompletionContext ctx)
 		{		
 			var caretOffset = ctx.TriggerOffset;
-			var caretLocation = new CodeLocation(ctx.TriggerLineOffset, ctx.TriggerLine);
+			var caretLocation = new CodeLocation (ctx.TriggerLineOffset, ctx.TriggerLine);
 
 			IStatement stmt = null;
-			var curBlock = DResolver.SearchBlockAt(SyntaxTree, caretLocation, out stmt);
+			var curBlock = DResolver.SearchBlockAt (SyntaxTree, caretLocation, out stmt);
 
 			if (!(curBlock is D_Parser.Dom.DMethod))
 				return null;
 
-			try
-			{
-				var parseCache=DCodeCompletionSupport.EnumAvailableModules(doc);
-				var importCache=DResolver.ResolveImports(SyntaxTree as DModule,parseCache);
-				var argsResult = ParameterContextResolution.ResolveArgumentContext(
+			try {
+				var parseCache = DCodeCompletionSupport.EnumAvailableModules (doc);
+				var importCache = DResolver.ResolveImports (SyntaxTree as DModule, parseCache);
+				var argsResult = ParameterContextResolution.ResolveArgumentContext (
 					doc.Editor.Text, 
 					caretOffset, 
 					caretLocation, 
@@ -48,29 +48,28 @@ namespace MonoDevelop.D.Completion
 				if (argsResult == null || argsResult.ResolvedTypesOrMethods == null || argsResult.ResolvedTypesOrMethods.Length < 1)
 					return null;
 
-				return new DParameterDataProvider(doc, argsResult) { scopeMethod=curBlock as DMethod };
+				return new DParameterDataProvider (doc, argsResult) { scopeMethod=curBlock as DMethod };
+			} catch {
+				return null;
 			}
-			catch { return null; }
 		}
 		
-		private DParameterDataProvider(Document doc, ArgumentsResolutionResult argsResult)
+		private DParameterDataProvider (Document doc, ArgumentsResolutionResult argsResult)
 		{
 			this.doc = doc;
 			args = argsResult;
 			selIndex = args.CurrentlyCalledMethod;
 		}
 		
-		public static string GetNodeParamString(D_Parser.Dom.INode node)
+		public static string GetNodeParamString (D_Parser.Dom.INode node)
 		{	
 			string result = "";
 			string sep = "";
-			if (node is DMethod)
-			{
+			if (node is DMethod) {
 				
-				foreach(D_Parser.Dom.INode param in (node as DMethod).Parameters)
-				{
+				foreach (D_Parser.Dom.INode param in (node as DMethod).Parameters) {
 					if (param.Type != null)
-						result =  result + sep + param.Type.ToString();	
+						result = result + sep + param.Type.ToString ();	
 					sep = ", ";
 				}
 				if (result.Length != 0)
@@ -131,74 +130,71 @@ namespace MonoDevelop.D.Completion
 			//string result1 = (overload+1).ToString()+"/"+args.ResolvedTypesOrMethods.Length.ToString();
 			string s = "";
 
-			if (CurrentResult is MemberResult)
-			{
+			if (CurrentResult is MemberResult) {
 				MemberResult mr = (CurrentResult as MemberResult);
 				var dv = mr.ResolvedMember as DMethod;
 
-				if (dv == null)
-				{
+				if (dv == null) {
 					if (mr.ResolvedMember is DNode)
-						return (mr.ResolvedMember as DNode).ToString(false);
+						return (mr.ResolvedMember as DNode).ToString (false);
 					else
 						return null;
 				}
 
-				switch(dv.SpecialType)
-				{
-					case DMethod.MethodType.Constructor:
-						s = "(Constructor) ";
-						break;
-					case DMethod.MethodType.Destructor:
-						s = "(Destructor) ";
-						break;
-					case DMethod.MethodType.Allocator:
-						s = "(Allocator) ";
-						break;
+				switch (dv.SpecialType) {
+				case DMethod.MethodType.Constructor:
+					s = "(Constructor) ";
+					break;
+				case DMethod.MethodType.Destructor:
+					s = "(Destructor) ";
+					break;
+				case DMethod.MethodType.Allocator:
+					s = "(Allocator) ";
+					break;
 				}
 
-				if (dv.Attributes.Count>0)
+				if (dv.Attributes.Count > 0)
 					s = dv.AttributeString + ' ';
 
 				s += dv.Name;
 
 				// Template parameters
-				if (dv.TemplateParameters != null && dv.TemplateParameters.Length > 0)
-				{
+				if (dv.TemplateParameters != null && dv.TemplateParameters.Length > 0) {
 					s += "(";
 
-					if(args.IsTemplateInstanceArguments)
-						s += string.Join(",", parameterMarkup);
-					else foreach(var p in dv.TemplateParameters)
-						s += p.ToString() + ",";
+					if (args.IsTemplateInstanceArguments)
+						s += string.Join (",", parameterMarkup);
+					else
+						foreach (var p in dv.TemplateParameters)
+							s += p.ToString () + ",";
 
-					s = s.Trim(',') + ")";
+					s = s.Trim (',') + ")";
 				}
 
 				// Parameters
 				s += "(";
 
-				if(!args.IsTemplateInstanceArguments)
-					s += string.Join(",", parameterMarkup);
-				else foreach (var p in dv.Parameters)
-						s += p.ToString() + ",";
+				if (!args.IsTemplateInstanceArguments)
+					s += string.Join (",", parameterMarkup);
+				else
+					foreach (var p in dv.Parameters)
+						s += p.ToString () + ",";
 
-				s = s.Trim(',') + ")";
+				s = s.Trim (',') + ")";
 
 
 				// Optional: description
-				if(!string.IsNullOrWhiteSpace( mr.ResolvedMember.Description))
+				if (!string.IsNullOrWhiteSpace (mr.ResolvedMember.Description))
 					s += "\n\n " + mr.ResolvedMember.Description;
 				return s;
 			}
 			
-			if (CurrentResult is TypeResult && args.IsTemplateInstanceArguments)
-			{				
+			if (CurrentResult is TypeResult && args.IsTemplateInstanceArguments) {				
 				var tr = (CurrentResult as TypeResult);
 				
 				s = tr.ResolvedTypeDefinition.Name;
 				
-				s += "(" + string.Join(",", parameterMarkup) + ")";
+				s += "(" + string.Join (",", parameterMarkup) + ")";
 				s += "\r\n " + tr.ResolvedTypeDefinition.Description;
 
 				return s;
@@ -207,31 +203,28 @@ namespace MonoDevelop.D.Completion
 			return "";
 		}
 
-		public string GetParameterMarkup (int overload, int paramIndex)			
+		public string GetParameterMarkup (int overload, int paramIndex)
 		{
 			selIndex = overload;
 
-			if (CurrentResult is MemberResult)
-			{
+			if (CurrentResult is MemberResult) {
 				var dm = (CurrentResult as MemberResult).ResolvedMember as DMethod;
 
-				if (dm != null)
-				{
+				if (dm != null) {
 					if (args.IsTemplateInstanceArguments && dm.TemplateParameters != null)
-						return dm.TemplateParameters[paramIndex].ToString();
+						return dm.TemplateParameters [paramIndex].ToString ();
 					else
-						return (dm.Parameters[paramIndex] as DNode).ToString(false);
+						return (dm.Parameters [paramIndex] as DNode).ToString (false);
 				}
 			}
 
 			if (args.IsTemplateInstanceArguments && 
 				CurrentResult is TypeResult && 
-				(CurrentResult as TypeResult).ResolvedTypeDefinition is DClassLike)
-			{
-				var dc=(CurrentResult as TypeResult).ResolvedTypeDefinition as DClassLike;
+				(CurrentResult as TypeResult).ResolvedTypeDefinition is DClassLike) {
+				var dc = (CurrentResult as TypeResult).ResolvedTypeDefinition as DClassLike;
 
-				if(dc.TemplateParameters!=null && dc.TemplateParameters.Length>paramIndex)
-					return dc.TemplateParameters[paramIndex].ToString();
+				if (dc.TemplateParameters != null && dc.TemplateParameters.Length > paramIndex)
+					return dc.TemplateParameters [paramIndex].ToString ();
 			}
 				
 			return null;
@@ -242,16 +235,14 @@ namespace MonoDevelop.D.Completion
 			selIndex = overload;
 
 			if (CurrentResult is MemberResult)
-				if (((CurrentResult as MemberResult).ResolvedMember is DMethod))
-				{
-					var dm=(CurrentResult as MemberResult).ResolvedMember as DMethod;
-					if (args.IsTemplateInstanceArguments)
-						return dm.TemplateParameters!=null? dm.TemplateParameters.Length:0;
-					return dm.Parameters.Count;
-				}
-			if (CurrentResult is TypeResult && (CurrentResult as TypeResult).ResolvedTypeDefinition is DClassLike)
-			{
-				var dc=((CurrentResult as TypeResult).ResolvedTypeDefinition as DClassLike);
+			if (((CurrentResult as MemberResult).ResolvedMember is DMethod)) {
+				var dm = (CurrentResult as MemberResult).ResolvedMember as DMethod;
+				if (args.IsTemplateInstanceArguments)
+					return dm.TemplateParameters != null ? dm.TemplateParameters.Length : 0;
+				return dm.Parameters.Count;
+			}
+			if (CurrentResult is TypeResult && (CurrentResult as TypeResult).ResolvedTypeDefinition is DClassLike) {
+				var dc = ((CurrentResult as TypeResult).ResolvedTypeDefinition as DClassLike);
 
 				if (dc.TemplateParameters != null)
 					return dc.TemplateParameters.Length;
@@ -260,9 +251,8 @@ namespace MonoDevelop.D.Completion
 			return 0;
 		}
 
-		public int OverloadCount 
-		{
-				get { return args.ResolvedTypesOrMethods.Length; }
+		public int OverloadCount {
+			get { return args.ResolvedTypesOrMethods.Length; }
 		}
 		#endregion
 	}

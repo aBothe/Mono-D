@@ -19,10 +19,12 @@ namespace MonoDevelop.D.Formatting
 			var p = new DFormattingPolicy ();
 			
 			p.CommentOutStandardHeaders = CommentOutStandardHeaders;
+			p.InsertStarAtCommentNewLine = InsertStarAtCommentNewLine;
 			
 			return p;
 		}
 		
 		public bool CommentOutStandardHeaders = true;
+		public bool InsertStarAtCommentNewLine = true;
 	}
 }

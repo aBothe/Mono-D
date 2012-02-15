@@ -10,11 +10,13 @@ namespace MonoDevelop.D.Formatting
 				var p = new DFormattingPolicy ();
 				
 				p.CommentOutStandardHeaders = chk_CommentOutStdHeaders.Active;
+				p.InsertStarAtCommentNewLine = chk_InsertStarAtCommentNewLine.Active;
 				
 				return p;
 			}
 			set {
 				chk_CommentOutStdHeaders.Active = value.CommentOutStandardHeaders;
+				chk_InsertStarAtCommentNewLine.Active = value.InsertStarAtCommentNewLine;
 			}
 		}
 		

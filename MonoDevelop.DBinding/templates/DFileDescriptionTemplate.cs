@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using MonoDevelop.Core;
-using MonoDevelop.Ide.Templates;
-using MonoDevelop.Ide.StandardHeader;
-using MonoDevelop.Ide.Gui.Content;
 using MonoDevelop.D.Formatting;
-using MonoDevelop.Projects;
+using MonoDevelop.Ide.Gui.Content;
+using MonoDevelop.Ide.StandardHeader;
+using MonoDevelop.Ide.Templates;
 
 namespace MonoDevelop.D.templates
 {
