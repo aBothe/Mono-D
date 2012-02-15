@@ -499,7 +499,11 @@ namespace D_Parser.Dom
 
 		public void Add(IStatement Statement)
 		{
-			throw new NotImplementedException();
+			//TODO: Describe this method as taking static statements.
+			if (Parent is IBlockNode)
+				(Parent as IBlockNode).Add(Statement);
+			else if (NodeRoot is IBlockNode && NodeRoot!=this)
+				(NodeRoot as IBlockNode).Add(Statement);
 		}
 	}
 

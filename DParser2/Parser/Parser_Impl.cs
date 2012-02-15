@@ -481,7 +481,7 @@ namespace D_Parser.Parser
 			return td;
 		}
 
-		void ImportDeclaration(IBlockNode Scope)
+		void ImportDeclaration(IBlockNode Scope, IStatement Parent=null)
 		{
 			bool IsPublic = DAttribute.ContainsAttribute(BlockAttributes, Public);
 
@@ -506,6 +506,8 @@ namespace D_Parser.Parser
 
 			var imp = _Import();
 
+			imp.Parent = Parent;
+			imp.ParentNode = Scope;
 			imp.StartLocation = t.Location;
 			imp.IsPublic = IsPublic;
 			imp.IsStatic = IsStatic;
@@ -535,6 +537,8 @@ namespace D_Parser.Parser
 					startLoc = t.EndLocation;
 					imp = _Import();
 
+					imp.Parent = Parent;
+					imp.ParentNode = Scope;
 					imp.StartLocation = startLoc;
 					imp.IsPublic = IsPublic;
 					imp.IsStatic = IsStatic;
@@ -3826,7 +3830,7 @@ namespace D_Parser.Parser
 
 			// ImportDeclaration
 			else if (laKind == Import)
-				ImportDeclaration(Scope);
+				ImportDeclaration(Scope,Parent);
 
 			else if (!(ClassLike[laKind] || BasicTypes[laKind] || laKind == Enum || Modifiers[laKind] || laKind==PropertyAttribute || laKind == Alias || laKind == Typedef) && IsAssignExpression())
 			{
