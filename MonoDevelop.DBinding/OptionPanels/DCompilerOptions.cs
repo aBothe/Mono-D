@@ -403,7 +403,7 @@ namespace MonoDevelop.D.OptionPanels
 			};
 
 			if (dialog.Run () == (int)Gtk.ResponseType.Ok)
-				txtDefaultLib.Text = dialog.Library;
+				txtDefaultLib.Text = dialog.SelectedFileName;
 		}
 		
 		private void OnDefaultLibAdded (object sender, System.EventArgs e)

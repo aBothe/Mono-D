@@ -111,7 +111,7 @@ namespace MonoDevelop.D.OptionPanels
 			};
 
 			dialog.Run ();
-			libAddEntry.Text = dialog.Library;
+			libAddEntry.Text = dialog.SelectedFileName;
 		}
 		
 		private void OnIncludePathBrowseButtonClick (object sender, EventArgs e)

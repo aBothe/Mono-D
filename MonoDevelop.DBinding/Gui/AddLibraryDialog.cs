@@ -37,8 +37,6 @@ namespace MonoDevelop.D
 {
 	public partial class AddLibraryDialog : Gtk.Dialog
 	{
-		private string lib = string.Empty;
-		
 		public enum FileFilterType
 		{
 			DFiles,
@@ -83,9 +81,6 @@ namespace MonoDevelop.D
 		
 		private void OnOkButtonClick (object sender, EventArgs e)
 		{
-			lib = System.IO.Path.GetFileNameWithoutExtension (
-				file_chooser_widget.Filename);
-			
 			Destroy ();
 		}
 		
@@ -94,8 +89,13 @@ namespace MonoDevelop.D
 			Destroy ();
 		}
 		
-		public string Library {
-			get { return lib; }
+		public string SelectedFileName {
+			get {
+				return file_chooser_widget.Filename;
+			}
+			set {
+				file_chooser_widget.SetFilename (value);
+			}
 		}
 	}
 }
