@@ -38,7 +38,7 @@ namespace MonoDevelop.D.OptionPanels
 			cmbCompiler.Model = compilerStore;
 
 			foreach (var cmp in DCompilerService.Instance.Compilers)
-				compilerStore.AppendValues(cmp.Vendor);
+				compilerStore.AppendValues (cmp.Vendor);
 		}
 		
 		public void Load (DProject proj, DProjectConfiguration config)
@@ -102,9 +102,9 @@ namespace MonoDevelop.D.OptionPanels
 			libStore.Remove (ref iter);
 		}
 		
-		private void OnBrowseButtonClick (object sender, EventArgs e)
+		private void OnBrowseLibButtonClick (object sender, EventArgs e)
 		{
-			AddLibraryDialog dialog = new AddLibraryDialog()
+			AddLibraryDialog dialog = new AddLibraryDialog (AddLibraryDialog.FileFilterType.LibraryFiles)
 			{
 				TransientFor = Toplevel as Gtk.Window,
 				WindowPosition = Gtk.WindowPosition.Center
@@ -116,13 +116,13 @@ namespace MonoDevelop.D.OptionPanels
 		
 		private void OnIncludePathBrowseButtonClick (object sender, EventArgs e)
 		{
-			var dialog = new Gtk.FileChooserDialog("Select D Source Folder", null, Gtk.FileChooserAction.SelectFolder, "Cancel", Gtk.ResponseType.Cancel, "Ok", Gtk.ResponseType.Ok)
+			var dialog = new Gtk.FileChooserDialog ("Select D Source Folder", null, Gtk.FileChooserAction.SelectFolder, "Cancel", Gtk.ResponseType.Cancel, "Ok", Gtk.ResponseType.Ok)
 			{
 				TransientFor = Toplevel as Gtk.Window,
 				WindowPosition = Gtk.WindowPosition.Center
 			};
 			try {
-				if (dialog.Run() == (int)Gtk.ResponseType.Ok)
+				if (dialog.Run () == (int)Gtk.ResponseType.Ok)
 					includePathEntry.Text = dialog.Filename;
 			} finally {
 				dialog.Destroy ();
@@ -168,7 +168,7 @@ namespace MonoDevelop.D.OptionPanels
 			}
 
 			// Parse local includes
-			DCompilerConfiguration.UpdateParseCacheAsync(project.LocalIncludeCache);
+			DCompilerConfiguration.UpdateParseCacheAsync (project.LocalIncludeCache);
 			
 			return true;
 		}

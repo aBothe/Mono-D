@@ -28,8 +28,6 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-
-
 using System;
 using System.IO;
 
@@ -41,39 +39,36 @@ namespace MonoDevelop.D
 	{
 		private string lib = string.Empty;
 		
-		public enum FileFilterType{DFiles, LibraryFiles}
-			
-		public AddLibraryDialog(FileFilterType filterType)
+		public enum FileFilterType
 		{
-			this.Build();
+			DFiles,
+			LibraryFiles
+		}
+			
+		public AddLibraryDialog (FileFilterType filterType)
+		{
+			this.Build ();
 			Init (filterType);
 		}
 		
-		public AddLibraryDialog()
-		{
-			this.Build();
-			Init(FileFilterType.DFiles);
-		}
-		
-		private void Init(FileFilterType filterType)
+		private void Init (FileFilterType filterType)
 		{
 			Gtk.FileFilter libs = new Gtk.FileFilter ();
 			Gtk.FileFilter all = new Gtk.FileFilter ();
 
-			switch (filterType)
-			{
-				case FileFilterType.DFiles:
-					libs.AddPattern ("*.d");
-					libs.AddPattern ("*.di");			
-					libs.Name = "D Files";				
-					break;
-				case FileFilterType.LibraryFiles:
-					libs.AddPattern("*.a");
-					libs.AddPattern ("*.lib");
-					libs.AddPattern ("*.so");
-					libs.AddPattern ("*.dylib");							
-					libs.Name = "Libraries";
-					break;
+			switch (filterType) {
+			case FileFilterType.DFiles:
+				libs.AddPattern ("*.d");
+				libs.AddPattern ("*.di");			
+				libs.Name = "D Files";				
+				break;
+			case FileFilterType.LibraryFiles:
+				libs.AddPattern ("*.a");
+				libs.AddPattern ("*.lib");
+				libs.AddPattern ("*.so");
+				libs.AddPattern ("*.dylib");							
+				libs.Name = "Libraries";
+				break;
 			}
 
 			all.AddPattern ("*.*");

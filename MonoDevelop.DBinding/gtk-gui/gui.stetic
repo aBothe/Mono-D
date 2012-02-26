@@ -11,7 +11,7 @@
     <widget-library name="../../ext/MonoDevelop.SourceEditor2.dll" />
     <widget-library name="../bin/Debug/MonoDevelop.D.dll" internal="true" />
   </import>
-  <widget class="Gtk.Bin" id="MonoDevelop.D.OptionPanels.ProjectOptions" design-size="641 425">
+  <widget class="Gtk.Bin" id="MonoDevelop.D.OptionPanels.ProjectOptions" design-size="524 415">
     <property name="MemberName" />
     <child>
       <widget class="Gtk.Notebook" id="notebook1">
@@ -467,7 +467,6 @@ Example:
                     <property name="Type">TextOnly</property>
                     <property name="Label" translatable="yes">Browse...</property>
                     <property name="UseUnderline">True</property>
-                    <signal name="Clicked" handler="OnBrowseButtonClick" />
                   </widget>
                   <packing>
                     <property name="Position">0</property>

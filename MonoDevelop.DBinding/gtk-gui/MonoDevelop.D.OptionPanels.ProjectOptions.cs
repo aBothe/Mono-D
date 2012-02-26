@@ -472,7 +472,6 @@ namespace MonoDevelop.D.OptionPanels
 			}
 			this.Show ();
 			this.cbUseDefaultCompiler.Clicked += new global::System.EventHandler (this.cbUseDefaultCompiler_Clicked);
-			this.browseButton.Clicked += new global::System.EventHandler (this.OnBrowseButtonClick);
 			this.removeLibButton.Clicked += new global::System.EventHandler (this.OnRemoveLibButtonClicked);
 			this.removeLibButton.Clicked += new global::System.EventHandler (this.OnLibRemoved);
 			this.libTreeView.CursorChanged += new global::System.EventHandler (this.OnLibTreeViewCursorChanged);
