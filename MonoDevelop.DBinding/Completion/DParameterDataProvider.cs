@@ -10,6 +10,8 @@ using D_Parser.Dom.Statements;
 using D_Parser.Parser;
 using System.IO;
 using D_Parser.Dom.Expressions;
+using D_Parser.Completion;
+using D_Parser.Resolver.TypeResolution;
 
 namespace MonoDevelop.D.Completion
 {
@@ -36,14 +38,13 @@ namespace MonoDevelop.D.Completion
 
 			try {
 				var parseCache = DCodeCompletionSupport.EnumAvailableModules (doc);
-				var importCache = DResolver.ResolveImports (SyntaxTree as DModule, parseCache);
-				var argsResult = ParameterContextResolution.ResolveArgumentContext (
+
+				var argsResult = ParameterInsightResolution.ResolveArgumentContext (
 					doc.Editor.Text, 
 					caretOffset, 
 					caretLocation, 
 					curBlock as D_Parser.Dom.DMethod, 
-					parseCache,
-					importCache);
+					parseCache);
 				
 				if (argsResult == null || argsResult.ResolvedTypesOrMethods == null || argsResult.ResolvedTypesOrMethods.Length < 1)
 					return null;
@@ -132,11 +133,11 @@ namespace MonoDevelop.D.Completion
 
 			if (CurrentResult is MemberResult) {
 				MemberResult mr = (CurrentResult as MemberResult);
-				var dv = mr.ResolvedMember as DMethod;
+				var dv = mr.Node as DMethod;
 
 				if (dv == null) {
-					if (mr.ResolvedMember is DNode)
-						return (mr.ResolvedMember as DNode).ToString (false);
+					if (mr.Node is DNode)
+						return ((DNode)mr.Node).ToString (false);
 					else
 						return null;
 				}
@@ -184,18 +185,18 @@ namespace MonoDevelop.D.Completion
 
 
 				// Optional: description
-				if (!string.IsNullOrWhiteSpace (mr.ResolvedMember.Description))
-					s += "\n\n " + mr.ResolvedMember.Description;
+				if (!string.IsNullOrWhiteSpace (mr.Node.Description))
+					s += "\n\n " + mr.Node.Description;
 				return s;
 			}
 			
 			if (CurrentResult is TypeResult && args.IsTemplateInstanceArguments) {				
 				var tr = (CurrentResult as TypeResult);
 				
-				s = tr.ResolvedTypeDefinition.Name;
+				s = tr.Node.Name;
 				
 				s += "(" + string.Join (",", parameterMarkup) + ")";
-				s += "\r\n " + tr.ResolvedTypeDefinition.Description;
+				s += "\r\n " + tr.Node.Description;
 
 				return s;
 			}
@@ -208,7 +209,7 @@ namespace MonoDevelop.D.Completion
 			selIndex = overload;
 
 			if (CurrentResult is MemberResult) {
-				var dm = (CurrentResult as MemberResult).ResolvedMember as DMethod;
+				var dm = (CurrentResult as MemberResult).Node as DMethod;
 
 				if (dm != null) {
 					if (args.IsTemplateInstanceArguments && dm.TemplateParameters != null)
@@ -219,9 +220,10 @@ namespace MonoDevelop.D.Completion
 			}
 
 			if (args.IsTemplateInstanceArguments && 
-				CurrentResult is TypeResult && 
-				(CurrentResult as TypeResult).ResolvedTypeDefinition is DClassLike) {
-				var dc = (CurrentResult as TypeResult).ResolvedTypeDefinition as DClassLike;
+				CurrentResult is TypeResult &&
+				(CurrentResult as TypeResult).Node is DClassLike)
+			{
+				var dc = (CurrentResult as TypeResult).Node as DClassLike;
 
 				if (dc.TemplateParameters != null && dc.TemplateParameters.Length > paramIndex)
 					return dc.TemplateParameters [paramIndex].ToString ();
@@ -235,14 +237,15 @@ namespace MonoDevelop.D.Completion
 			selIndex = overload;
 
 			if (CurrentResult is MemberResult)
-			if (((CurrentResult as MemberResult).ResolvedMember is DMethod)) {
-				var dm = (CurrentResult as MemberResult).ResolvedMember as DMethod;
+			if (((CurrentResult as MemberResult).Node is DMethod)) {
+				var dm = (CurrentResult as MemberResult).Node as DMethod;
 				if (args.IsTemplateInstanceArguments)
 					return dm.TemplateParameters != null ? dm.TemplateParameters.Length : 0;
 				return dm.Parameters.Count;
 			}
-			if (CurrentResult is TypeResult && (CurrentResult as TypeResult).ResolvedTypeDefinition is DClassLike) {
-				var dc = ((CurrentResult as TypeResult).ResolvedTypeDefinition as DClassLike);
+			if (CurrentResult is TypeResult && (CurrentResult as TypeResult).Node is DClassLike)
+			{
+				var dc = ((CurrentResult as TypeResult).Node as DClassLike);
 
 				if (dc.TemplateParameters != null)
 					return dc.TemplateParameters.Length;

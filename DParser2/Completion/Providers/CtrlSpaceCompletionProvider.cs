@@ -4,6 +4,7 @@ using D_Parser.Dom.Expressions;
 using D_Parser.Dom.Statements;
 using D_Parser.Parser;
 using D_Parser.Resolver;
+using D_Parser.Resolver.ASTScanner;
 
 namespace D_Parser.Completion
 {
@@ -15,21 +16,14 @@ namespace D_Parser.Completion
 
 		public CtrlSpaceCompletionProvider(ICompletionDataGenerator cdg) : base(cdg) { }
 
-		public static bool CompletesEnteredText(string EnteredText)
-		{
-			return string.IsNullOrWhiteSpace(EnteredText) ||
-				IsIdentifierChar(EnteredText[0]) ||
-				EnteredText[0] == '(';
-		}
-
 		protected override void BuildCompletionDataInternal(IEditorData Editor, string EnteredText)
 		{
 			IEnumerable<INode> listedItems = null;
-			var visibleMembers = MemberTypes.All;
+			var visibleMembers = MemberFilter.All;
 
 			IStatement curStmt = null;
 			if(curBlock==null)
-				curBlock = DResolver.SearchBlockAt(Editor.SyntaxTree, Editor.CaretLocation, out curStmt);
+				curBlock = D_Parser.Resolver.TypeResolution.DResolver.SearchBlockAt(Editor.SyntaxTree, Editor.CaretLocation, out curStmt);
 
 			if (curBlock == null)
 				return;
@@ -47,18 +41,22 @@ namespace D_Parser.Completion
 			if (trackVars == null)
 			{
 				// --> Happens if no actual declaration syntax given --> Show types/imports/keywords anyway
-				visibleMembers = MemberTypes.Imports | MemberTypes.Types | MemberTypes.Keywords;
+				visibleMembers = MemberFilter.Imports | MemberFilter.Types | MemberFilter.Keywords;
 
 				listedItems = ItemEnumeration.EnumAllAvailableMembers(curBlock, null, Editor.CaretLocation, Editor.ParseCache, visibleMembers);
 			}
 			else
 			{
-				if (trackVars.LastParsedObject is INode &&
-					string.IsNullOrEmpty((trackVars.LastParsedObject as INode).Name) &&
-					trackVars.ExpectingIdentifier)
+				var n = trackVars.LastParsedObject as INode;
+				var dv=n as DVariable;
+				if (dv != null && dv.IsAlias && dv.Type == null && trackVars.ExpectingIdentifier)
+				{ 
+					// Show completion because no aliased type has been entered yet
+				}
+				else if (n != null && string.IsNullOrEmpty(n.Name) && trackVars.ExpectingIdentifier)
 					return;
 
-				if (trackVars.LastParsedObject is TokenExpression &&
+				else if (trackVars.LastParsedObject is TokenExpression &&
 					DTokens.BasicTypes[(trackVars.LastParsedObject as TokenExpression).Token] &&
 					!string.IsNullOrEmpty(EnteredText) &&
 					IsIdentifierChar(EnteredText[0]))
@@ -73,17 +71,18 @@ namespace D_Parser.Completion
 				}
 
 				if (trackVars.LastParsedObject is ImportStatement)
-					visibleMembers = MemberTypes.Imports;
-				else if (trackVars.LastParsedObject is NewExpression && trackVars.IsParsingInitializer)
-					visibleMembers = MemberTypes.Imports | MemberTypes.Types;
+					visibleMembers = MemberFilter.Imports;
+				else if ((trackVars.LastParsedObject is NewExpression && trackVars.IsParsingInitializer) ||
+					trackVars.LastParsedObject is TemplateInstanceExpression && ((TemplateInstanceExpression)trackVars.LastParsedObject).Arguments==null)
+					visibleMembers = MemberFilter.Imports | MemberFilter.Types;
 				else if (EnteredText == " ")
 					return;
 				// In class bodies, do not show variables
 				else if (!(parsedBlock is BlockStatement || trackVars.IsParsingInitializer))
-					visibleMembers = MemberTypes.Imports | MemberTypes.Types | MemberTypes.Keywords;
+					visibleMembers = MemberFilter.Imports | MemberFilter.Types | MemberFilter.Keywords;
 
 				// In a method, parse from the method's start until the actual caret position to get an updated insight
-				if (visibleMembers.HasFlag(MemberTypes.Variables) &&
+				if (visibleMembers.HasFlag(MemberFilter.Variables) &&
 					curBlock is DMethod &&
 					parsedBlock is BlockStatement)
 				{
@@ -96,7 +95,7 @@ namespace D_Parser.Completion
 				else
 					curStmt = null;
 
-				if (visibleMembers != MemberTypes.Imports) // Do not pass the curStmt because we already inserted all updated locals a few lines before!
+				if (visibleMembers != MemberFilter.Imports) // Do not pass the curStmt because we already inserted all updated locals a few lines before!
 					listedItems = ItemEnumeration.EnumAllAvailableMembers(curBlock, curStmt, Editor.CaretLocation, Editor.ParseCache, visibleMembers);
 			}
 
@@ -104,43 +103,63 @@ namespace D_Parser.Completion
 			if (listedItems != null)
 				foreach (var i in listedItems)
 				{
+					if (i is IAbstractSyntaxTree) // Modules and stuff will be added later on
+						continue;
+
 					if (CanItemBeShownGenerally(i))
 						CompletionDataGenerator.Add(i);
 				}
 
 			//TODO: Split the keywords into such that are allowed within block statements and non-block statements
 			// Insert typable keywords
-			if (visibleMembers.HasFlag(MemberTypes.Keywords))
+			if (visibleMembers.HasFlag(MemberFilter.Keywords))
 				foreach (var kv in DTokens.Keywords)
 					CompletionDataGenerator.Add(kv.Key);
 
-			else if (visibleMembers.HasFlag(MemberTypes.Types))
+			else if (visibleMembers.HasFlag(MemberFilter.Types))
 				foreach (var kv in DTokens.BasicTypes_Array)
 					CompletionDataGenerator.Add(kv);
 
 			#region Add module name stubs of importable modules
-			if (visibleMembers.HasFlag(MemberTypes.Imports))
+			if (visibleMembers.HasFlag(MemberFilter.Imports))
 			{
 				var nameStubs = new Dictionary<string, string>();
 				var availModules = new List<IAbstractSyntaxTree>();
-				foreach (var mod in Editor.ParseCache)
-				{
-					if (string.IsNullOrEmpty(mod.ModuleName))
-						continue;
 
-					var parts = mod.ModuleName.Split('.');
-
-					if (!nameStubs.ContainsKey(parts[0]) && !availModules.Contains(mod))
+				foreach(var sstmt in Editor.SyntaxTree.StaticStatements)
+					if (sstmt is ImportStatement)
 					{
-						if (parts[0] == mod.ModuleName)
-							availModules.Add(mod);
-						else
-							nameStubs.Add(parts[0], GetModulePath(mod.FileName, parts.Length, 1));
+						var impStmt = (ImportStatement)sstmt;
+
+						foreach(var imp in impStmt.Imports)
+							if (string.IsNullOrEmpty(imp.ModuleAlias))
+							{
+								var id=imp.ModuleIdentifier.ToString();
+								
+								IAbstractSyntaxTree mod = null;
+								foreach(var m in Editor.ParseCache.LookupModuleName(id))
+								{
+									mod = m;
+									break;
+								}
+
+								if (mod == null || string.IsNullOrEmpty(mod.ModuleName))
+									continue;
+
+								var stub = imp.ModuleIdentifier.InnerMost.ToString();
+
+								if (!nameStubs.ContainsKey(stub) && !availModules.Contains(mod))
+								{
+									if (stub == mod.ModuleName)
+										availModules.Add(mod);
+									else
+										nameStubs.Add(stub, GetModulePath(mod.FileName, id.Split('.').Length, 1));
+								}
+							}
 					}
-				}
 
 				foreach (var kv in nameStubs)
-					CompletionDataGenerator.Add(kv.Key, PathOverride: kv.Value);
+					CompletionDataGenerator.Add(kv.Key, null, kv.Value);
 
 				foreach (var mod in availModules)
 					CompletionDataGenerator.Add(mod.ModuleName, mod);
@@ -199,7 +218,7 @@ namespace D_Parser.Completion
 				else if (CurrentScope is DMethod)
 				{
 					psr.Step();
-					ret = psr.BlockStatement();
+					ret = psr.BlockStatement(CurrentScope);
 				}
 				else if (CurrentScope is DModule)
 					ret = psr.Root();
@@ -208,14 +227,14 @@ namespace D_Parser.Completion
 					psr.Step();
 					if (ParseDecl)
 					{
-						var ret2 = psr.Declaration();
+						var ret2 = psr.Declaration(CurrentScope);
 
 						if (ret2 != null && ret2.Length > 0)
 							ret = ret2[0];
 					}
 					else
 					{
-						IBlockNode bn = null;
+						DBlockNode bn = null;
 						if (CurrentScope is DClassLike)
 						{
 							var t = new DClassLike((CurrentScope as DClassLike).ClassType);

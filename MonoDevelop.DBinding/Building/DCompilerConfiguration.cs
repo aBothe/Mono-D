@@ -6,6 +6,7 @@ using System;
 using System.Xml;
 using MonoDevelop.Core;
 using System.Threading;
+using D_Parser.Misc;
 
 namespace MonoDevelop.D.Building
 {
@@ -19,7 +20,7 @@ namespace MonoDevelop.D.Building
 			return CompilerPresets.PresetLoader.TryLoadPresets (cfg);				
 		}
 
-		public readonly ASTStorage GlobalParseCache = new ASTStorage ();
+		public readonly ParseCache ParseCache = new ParseCache ();
 		public string BinPath = "";
 		public string Vendor;
 		public readonly List<LinkTargetConfiguration> LinkTargetConfigurations = new List<LinkTargetConfiguration> ();
@@ -61,21 +62,20 @@ namespace MonoDevelop.D.Building
 		/// </summary>
 		public void UpdateParseCacheAsync ()
 		{
-			UpdateParseCacheAsync (GlobalParseCache);
+			UpdateParseCacheAsync (ParseCache);
 		}
 
-		public static void UpdateParseCacheAsync (ASTStorage Cache)
+		public static void UpdateParseCacheAsync (ParseCache Cache)
 		{
-			// Return immediately if nothing there to parse
-			if (Cache.ParsedGlobalDictionaries.Count < 1)
+			if (Cache == null || Cache.ParsedDirectories == null || Cache.ParsedDirectories.Count < 1)
 				return;
 
 			var th = new Thread (() =>
 			{
 				try {
-					LoggingService.LogInfo ("Update parse cache ({0} directories) - this may take a while!", Cache.ParsedGlobalDictionaries.Count);
+					LoggingService.LogInfo ("Update parse cache ({0} directories)", Cache.ParsedDirectories.Count);
 
-					var perfResults = Cache.UpdateCache ();
+					var perfResults = Cache.Parse ();
 
 					foreach (var perfData in perfResults) {
 						LoggingService.LogInfo (
@@ -85,11 +85,15 @@ namespace MonoDevelop.D.Building
 							Math.Round (perfData.TotalDuration, 3),
 							Math.Round (perfData.FileDuration * 1000));
 					}
+
+					if (Cache.LastParseException != null)
+						LoggingService.LogError("Error while updating parse cache", Cache.LastParseException);
 				} catch (Exception ex) {
-					LoggingService.LogError ("Error while updating parse caches", ex);
+					LoggingService.LogError ("Error while updating parse cache", ex);
 				}
 			});
 
+			th.Name = "Update parse cache thread";
 			th.IsBackground = true;
 			th.Start ();
 		}
@@ -102,9 +106,8 @@ namespace MonoDevelop.D.Building
 			Vendor = o.Vendor;
 			BinPath = o.BinPath;
 
-			GlobalParseCache.ParsedGlobalDictionaries.Clear();
-			foreach (var pd in o.GlobalParseCache)
-				GlobalParseCache.Add (pd.BaseDirectory, pd.ParseFunctionBodies);
+			ParseCache.ParsedDirectories.Clear();
+			ParseCache.ParsedDirectories.AddRange(o.ParseCache.ParsedDirectories);
 
 			DefaultLibraries.Clear();
 			DefaultLibraries.AddRange(o.DefaultLibraries);
@@ -153,7 +156,7 @@ namespace MonoDevelop.D.Building
 					var paths = new List<string> ();
 					while (s.Read())
 						if (s.LocalName == "Path")
-							GlobalParseCache.Add (s.ReadString ());
+							ParseCache.ParsedDirectories.Add (s.ReadString ());
 
 					s.Close ();
 					break;
@@ -183,7 +186,7 @@ namespace MonoDevelop.D.Building
 			x.WriteEndElement ();
 
 			x.WriteStartElement ("Includes");
-			foreach (var inc in GlobalParseCache.DirectoryPaths) {
+			foreach (var inc in ParseCache.ParsedDirectories) {
 				x.WriteStartElement ("Path");
 				x.WriteCData (inc);
 				x.WriteEndElement ();

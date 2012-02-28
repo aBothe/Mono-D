@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using D_Parser.Dom.Statements;
 using D_Parser.Resolver;
+using D_Parser.Resolver.TypeResolution;
 
 namespace D_Parser.Completion
 {
@@ -22,14 +23,13 @@ namespace D_Parser.Completion
 			try
 			{
 				IStatement curStmt = null;
-				var rr = DResolver.ResolveType(Editor,
+				var rr = DResolver.ResolveType(Editor,new ResolverContextStack(Editor.ParseCache,
 					new ResolverContext
 					{
 						ScopedBlock = DResolver.SearchBlockAt(Editor.SyntaxTree, Editor.CaretLocation, out curStmt),
-						ScopedStatement = curStmt,
-						ParseCache = Editor.ParseCache,
-						ImportCache = Editor.ImportCache
-					}, true, true);
+						ScopedStatement = curStmt
+					}), 
+					true, true);
 
 				if (rr.Length < 1)
 					return null;
@@ -54,16 +54,16 @@ namespace D_Parser.Completion
 			string description = "";
 
 			if (modRes != null)
-				description = modRes.ResolvedModule.Description;
+				description = modRes.Module.Description;
 			else if (memRes != null)
-				description = memRes.ResolvedMember.Description;
+				description = memRes.Node.Description;
 			else if (typRes != null)
-				description = typRes.ResolvedTypeDefinition.Description;
+				description = typRes.Node.Description;
 
 			return new AbstractTooltipContent
 			{
 				ResolveResult = res,
-				Title = (res is ModuleResult ? (res as ModuleResult).ResolvedModule.FileName : res.ToString()),
+				Title = (res is ModuleResult ? (res as ModuleResult).Module.FileName : res.ToString()),
 				Description = description
 			};
 		}

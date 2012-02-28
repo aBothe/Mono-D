@@ -56,7 +56,6 @@ namespace MonoDevelop.D
 			
 			if (Changed != null)
 				Changed(this, new EventArgs());
-			
 		}
 
 		/// <summary>

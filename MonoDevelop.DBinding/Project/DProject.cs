@@ -13,6 +13,8 @@ using MonoDevelop.D.Building;
 using MonoDevelop.D.Completion;
 using MonoDevelop.Ide;
 using MonoDevelop.Projects;
+using D_Parser.Misc;
+using MonoDevelop.D.Parser;
 
 namespace MonoDevelop.D
 {
@@ -32,14 +34,14 @@ namespace MonoDevelop.D
 		/// <summary>
 		/// Stores parse information from project-wide includes
 		/// </summary>
-		public ASTStorage LocalIncludeCache { get; private set; }
+		public readonly ParseCache LocalIncludeCache = new ParseCache();
 
 		/// <summary>
 		/// Stores parse information from files inside the project's base directory
 		/// </summary>
-		public ASTCollection LocalFileCache { get; private set; }
+		public readonly ParseCache LocalFileCache = new ParseCache();
 
-		public IEnumerable<IAbstractSyntaxTree> ParseCache
+		public ParseCacheList ParseCache
 		{
 			get {
 				return DCodeCompletionSupport.EnumAvailableModules(this);
@@ -111,9 +113,9 @@ namespace MonoDevelop.D
 				var ddom = DParser.ParseFile(pf.FilePath.ToAbsolute(BaseDirectory));
 
 				// Update relative module name
-				ddom.ModuleName = MonoDevelop.D.Parser.ParsedDModule.BuildModuleName(pf);
+				ddom.ModuleName = ParsedDModule.BuildModuleName(pf);
 
-				LocalFileCache[pf.FilePath] = ddom;
+				LocalFileCache.AddOrUpdate(ddom);
 			}
 			catch (Exception ex)
 			{
@@ -131,8 +133,7 @@ namespace MonoDevelop.D
 		/// </summary>
 		public void UpdateParseCache()
 		{
-			LocalFileCache.BaseDirectory = BaseDirectory;
-			LocalFileCache.UpdateFromBaseDirectory();
+			LocalFileCache.Parse(new[] { BaseDirectory.ToString() });
 		}
 
 		protected override void OnFileRemovedFromProject(ProjectFileEventArgs e)
@@ -151,12 +152,7 @@ namespace MonoDevelop.D
 		#endregion
 
 		#region Init
-		void Init()
-		{
-			LocalFileCache = new ASTCollection();
-
-			LocalIncludeCache = new ASTStorage();
-		}
+		void Init() {}
 
 		public DProject() { Init(); }
 
@@ -449,8 +445,6 @@ namespace MonoDevelop.D
 
 		protected override void OnEndLoad()
 		{
-			LocalFileCache.BaseDirectory=BaseDirectory;
-
 			UpdateLocalIncludeCache();
 			UpdateParseCache();
 
@@ -466,13 +460,13 @@ namespace MonoDevelop.D
 			handler.Deserialize(this, data);
 
 			foreach (var p in tempIncludes)
-				LocalIncludeCache.Add(ProjectBuilder.EnsureCorrectPathSeparators(p));
+				LocalIncludeCache.ParsedDirectories.Add(ProjectBuilder.EnsureCorrectPathSeparators(p));
 		}
 
 		public DataCollection Serialize(ITypeSerializer handler)
 		{
 			tempIncludes.Clear();
-			foreach (var p in LocalIncludeCache.DirectoryPaths)
+			foreach (var p in LocalIncludeCache.ParsedDirectories)
 				tempIncludes.Add(p);
 
 			var ret = handler.Serialize(this);

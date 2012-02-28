@@ -9,6 +9,7 @@ using MonoDevelop.D.Parser;
 using System.Threading;
 using D_Parser.Resolver;
 using MonoDevelop.D.Completion;
+using D_Parser.Resolver.ASTScanner;
 
 namespace MonoDevelop.D.Highlighting
 {
@@ -59,17 +60,11 @@ namespace MonoDevelop.D.Highlighting
 			try
 			{
 				var ParseCache = DCodeCompletionSupport.EnumAvailableModules(Document);
-				var ImportCache = DResolver.ResolveImports(SyntaxTree as DModule, ParseCache);
 
-				res = CodeSymbolsScanner.ScanSymbols(new ResolverContext
+				res = CodeSymbolsScanner.ScanSymbols(new ResolverContextStack(ParseCache, new ResolverContext
 				{
 					ScopedBlock = SyntaxTree,
-					ImportCache = ImportCache,
-					ParseCache = ParseCache,
-					// For performance reasons, do not scan down aliases
-					ResolveAliases = false
-					// Note: for correct results, base classes and variable types have to get resolved
-				});
+				}));
 
 				RemoveMarkers(false);
 
@@ -87,7 +82,7 @@ namespace MonoDevelop.D.Highlighting
 						curLine=Document.Editor.GetLine(ln);
 					}
 
-					var m = new HighlightMarker(txtDoc, curLine, "keyword.semantic.type", id.Location.Column, id.Value as string);
+					var m = new HighlightMarker(txtDoc, curLine, "keyword.semantic.type", id.Location.Column, id.Id);
 					txtDoc.AddMarker(curLine, m);
 					markers.Add(m);
 				}

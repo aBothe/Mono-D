@@ -8,12 +8,13 @@ using D_Parser.Dom.Expressions;
 using D_Parser.Dom.Statements;
 using D_Parser.Parser;
 using System.IO;
+using D_Parser.Resolver.TypeResolution;
 
 namespace MonoDevelop.D.Refactoring
 {
 	public class DDocumentationLauncher
 	{
-		public const string DigitalMarsUrl = "http://www.d-programming-language.org";
+		public const string DigitalMarsUrl = "http://www.dlang.org";
 
 		public static void LaunchRelativeDUrl(string relativeUrl)
 		{
@@ -29,13 +30,13 @@ namespace MonoDevelop.D.Refactoring
 		{
 			var caret=Ide.IdeApp.Workbench.ActiveDocument.Editor.Caret.Location;
 
-			ResolverContext ctxt = null;
+			ResolverContextStack ctxt = null;
 			var rr=DResolverWrapper.ResolveHoveredCode(out ctxt,Ide.IdeApp.Workbench.ActiveDocument);
 
 			return GetReferenceUrl(rr != null ? rr[0] : null, ctxt, new CodeLocation(caret.Column, caret.Line));
 		}
 
-		public static string GetReferenceUrl(ResolveResult result,ResolverContext ctxt, CodeLocation caret)
+		public static string GetReferenceUrl(ResolveResult result,ResolverContextStack ctxt, CodeLocation caret)
 		{
 			if (result != null)
 			{
@@ -54,7 +55,14 @@ namespace MonoDevelop.D.Refactoring
 					}
 				}
 				else if (result is StaticTypeResult)
-					return GetRefUrlFor( (result as StaticTypeResult).TypeDeclarationBase);
+				{
+					var srr = (StaticTypeResult)result;
+
+					if (srr.DeclarationOrExpressionBase is ITypeDeclaration)
+						return GetRefUrlFor((ITypeDeclaration)srr.DeclarationOrExpressionBase);
+					else if (srr.DeclarationOrExpressionBase is IExpression)
+						return GetRefUrlFor((IExpression)srr.DeclarationOrExpressionBase);
+				}
 			}
 
 			if (ctxt.ScopedStatement != null)

@@ -68,7 +68,7 @@ namespace MonoDevelop.D.OptionPanels
 				libStore.AppendValues (lib);
 
 			includePathStore.Clear ();
-			foreach (var p in project.LocalIncludeCache.DirectoryPaths)
+			foreach (var p in project.LocalIncludeCache.ParsedDirectories)
 				includePathStore.AppendValues (p);
 		}
 		
@@ -160,10 +160,10 @@ namespace MonoDevelop.D.OptionPanels
 			
 			// Store includes
 			includePathStore.GetIterFirst (out iter);
-			project.LocalIncludeCache.ParsedGlobalDictionaries.Clear ();
+			project.LocalIncludeCache.ParsedDirectories.Clear ();
 			while (includePathStore.IterIsValid (iter)) {
 				line = (string)includePathStore.GetValue (iter, 0);
-				project.LocalIncludeCache.Add (line);
+				project.LocalIncludeCache.ParsedDirectories.Add (line);
 				includePathStore.IterNext (ref iter);
 			}
 

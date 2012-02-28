@@ -11,6 +11,9 @@ using D_Parser.Dom.Expressions;
 using D_Parser.Dom.Statements;
 using System.Collections;
 using MonoDevelop.D.Building;
+using D_Parser.Misc;
+using D_Parser.Resolver.TypeResolution;
+using D_Parser.Resolver.ASTScanner;
 
 namespace MonoDevelop.D.Refactoring
 {
@@ -25,7 +28,7 @@ namespace MonoDevelop.D.Refactoring
 
             var parseCache = project != null ? 
 				project.ParseCache :
-				DCompilerService.Instance.GetDefaultCompiler().GlobalParseCache.ParseCache;
+				ParseCacheList.Create(DCompilerService.Instance.GetDefaultCompiler().ParseCache);
 
             var modules = project==null? 
 				project.LocalFileCache as IEnumerable<IAbstractSyntaxTree> : 
@@ -39,10 +42,7 @@ namespace MonoDevelop.D.Refactoring
                 if (mod == null)
                     continue;
 
-				var references= ScanNodeReferencesInModule(mod,
-					parseCache,
-					DResolver.ResolveImports(mod as DModule, parseCache),
-					member);
+				var references= ScanNodeReferencesInModule(mod,	parseCache,member);
 
 				if (member!=null && member.NodeRoot!=null &&
 					(member.NodeRoot as IAbstractSyntaxTree).FileName==mod.FileName)
@@ -89,8 +89,7 @@ namespace MonoDevelop.D.Refactoring
 		/// <returns>Array of expressions/type declarations referencing the given node</returns>
 		public static List<IdentifierDeclaration> ScanNodeReferencesInModule(
 			IAbstractSyntaxTree scannedFileAST,
-			IEnumerable<IAbstractSyntaxTree> parseCache,
-			IEnumerable<IAbstractSyntaxTree> scannedFileImports,
+			ParseCacheList parseCache,
 			params INode[] declarationsToCompareWith)
 		{
 			var namesToCompareWith = new List<string>();
@@ -102,13 +101,7 @@ namespace MonoDevelop.D.Refactoring
 
 			var identifiers=CodeSymbolsScanner.IdentifierScan.ScanForTypeIdentifiers(scannedFileAST);
 
-			var resolveContext=new ResolverContext{
-				ResolveAliases=false,
-				ResolveBaseTypes=true,
-
-				ParseCache=parseCache,
-				ImportCache=scannedFileImports
-			};
+			ResolverContextStack ctxt=null;
 
 			foreach (var o in identifiers)
 			{
@@ -124,7 +117,7 @@ namespace MonoDevelop.D.Refactoring
 
 					curTypeDecl = curTypeDecl.InnerDeclaration;
 
-					if (!namesToCompareWith.Contains(id.Value as string))
+					if (!namesToCompareWith.Contains(id.Id))
 						id = null;
 				}
 
@@ -132,13 +125,24 @@ namespace MonoDevelop.D.Refactoring
 					continue;
 
 				// Get the context of the used identifier
-				resolveContext.ScopedBlock = DResolver.SearchBlockAt(
-					scannedFileAST, (o as ITypeDeclaration).Location, 
-					out resolveContext.ScopedStatement
+				if (ctxt == null)
+				{
+					IStatement stmt = null;
+					ctxt = new ResolverContextStack(parseCache, new ResolverContext
+					{
+						ScopedBlock = DResolver.SearchBlockAt(scannedFileAST, (o as ITypeDeclaration).Location,
+						out stmt),
+						ScopedStatement=stmt
+					});
+				}
+				else
+					ctxt.ScopedBlock = DResolver.SearchBlockAt(
+					scannedFileAST, (o as ITypeDeclaration).Location,
+					out ctxt.CurrentContext.ScopedStatement
 				);
 
 				// Resolve the symbol to which the identifier is related to
-				var resolveResults = DResolver.ResolveType(o as ITypeDeclaration, resolveContext);
+				var resolveResults = TypeDeclarationResolver.Resolve(o as ITypeDeclaration, ctxt);
 
 				if (resolveResults == null)
 					continue;
@@ -147,7 +151,7 @@ namespace MonoDevelop.D.Refactoring
                 {
 					var tsym=targetSymbol;
 
-					while (tsym!=null && tsym.TypeDeclarationBase != id)
+					while (tsym!=null && tsym.DeclarationOrExpressionBase != id)
 						tsym = tsym.ResultBase;
 
 					// Get the associated declaration node

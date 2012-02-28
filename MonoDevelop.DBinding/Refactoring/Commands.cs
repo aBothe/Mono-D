@@ -15,6 +15,7 @@ using MonoDevelop.Ide.FindInFiles;
 using System.Threading;
 using MonoDevelop.D.Completion;
 using MonoDevelop.D.Building;
+using D_Parser.Resolver.TypeResolution;
 
 namespace MonoDevelop.D.Refactoring
 {
@@ -32,7 +33,7 @@ namespace MonoDevelop.D.Refactoring
 	public class ContextMenuRefactoringCommandHandler : CommandHandler
 	{
 		ISearchProgressMonitor monitor;
-		ResolverContext ctxt;
+		ResolverContextStack ctxt;
 		ResolveResult res;
 		INode n;
 

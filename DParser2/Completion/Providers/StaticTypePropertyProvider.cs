@@ -126,7 +126,13 @@ namespace D_Parser.Resolver
 
 			if (!DontAddInitProperty)
 			{
-				var prop_Init = new DVariable() { Type = intType, Initializer = new PostfixExpression_Access() { PostfixForeExpression = new TokenExpression(TypeToken), TemplateOrIdentifier = new IdentifierDeclaration("nan") } };
+				var prop_Init = new DVariable() { 
+					Type = intType, 
+					Initializer = new PostfixExpression_Access() { 
+						PostfixForeExpression = new TokenExpression(TypeToken), 
+						Identifier = "nan"
+					}
+				};
 
 				if (relatedNode != null)
 					prop_Init.AssignFrom(relatedNode);

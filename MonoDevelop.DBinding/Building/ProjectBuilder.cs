@@ -80,8 +80,8 @@ namespace MonoDevelop.D.Building
 			}
 
 			sourceFileIncludePaths.Clear();
-			sourceFileIncludePaths.AddRange(Compiler.GlobalParseCache.DirectoryPaths);
-			sourceFileIncludePaths.AddRange(Project.LocalIncludeCache.DirectoryPaths);
+			sourceFileIncludePaths.AddRange(Compiler.ParseCache.ParsedDirectories);
+			sourceFileIncludePaths.AddRange(Project.LocalIncludeCache.ParsedDirectories);
 
 			var modificationsDone = false;
 

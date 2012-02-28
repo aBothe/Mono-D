@@ -1,29 +1,37 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using D_Parser.Dom;
+using D_Parser.Dom.Expressions;
 using D_Parser.Dom.Statements;
 using D_Parser.Parser;
-using D_Parser.Dom.Expressions;
+using D_Parser.Resolver.TypeResolution;
 
-namespace D_Parser.Resolver
+namespace D_Parser.Resolver.ASTScanner
 {
-	public abstract class RootsEnum
+	public abstract class AbstractAstScanner
 	{
+		#region Properties
 		public static DVariable __ctfe;
-		ResolverContext ctxt;
-		public ResolverContext Context { 
+		Dictionary<string, List<string>> scannedModules = new Dictionary<string, List<string>>();
+
+		static ImportStatement.Import _objectImport = new ImportStatement.Import
+		{
+			ModuleIdentifier = new IdentifierDeclaration("object")
+		};
+
+		ResolverContextStack ctxt;
+		public ResolverContextStack Context { 
 			get{ return ctxt;}
 			set{ ctxt=value;}
 		}
+		#endregion
 
-		public RootsEnum(ResolverContext context)
+		#region Constructor
+		public AbstractAstScanner(ResolverContextStack context)
 		{
 			ctxt=context;
 		}
 
-		static RootsEnum()
+		static AbstractAstScanner()
 		{
 			__ctfe = new DVariable
 			{
@@ -39,6 +47,7 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 			__ctfe.Attributes.Add(new DAttribute(DTokens.Static));
 			__ctfe.Attributes.Add(new DAttribute(DTokens.Const));
 		}
+		#endregion
 
 		protected abstract void HandleItem(INode n);
 
@@ -48,13 +57,11 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 				HandleItem(n);
 		}
 
-		public void IterateThroughScopeLayers(CodeLocation Caret, MemberTypes VisibleMembers= MemberTypes.All)
+		public void IterateThroughScopeLayers(CodeLocation Caret, MemberFilter VisibleMembers= MemberFilter.All)
 		{
-			#region Current module/scope related members
-
 			// 1)
 			if (ctxt.ScopedStatement != null)
-				IterateThroughItemHierarchy(ctxt.ScopedStatement, Caret);
+				IterateThroughItemHierarchy(ctxt.ScopedStatement, Caret,VisibleMembers);
 
 			var curScope = ctxt.ScopedBlock;
 
@@ -95,10 +102,10 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 
 						if (baseclassDefs == null || baseclassDefs.Length < 0)
 							break;
-						if (curWatchedClass == baseclassDefs[0].ResolvedTypeDefinition)
+						if (curWatchedClass == baseclassDefs[0].Node)
 							break;
 
-						curWatchedClass = baseclassDefs[0].ResolvedTypeDefinition as DClassLike;
+						curWatchedClass = baseclassDefs[0].Node as DClassLike;
 					}
 				}
 				else if (curScope is DMethod)
@@ -109,7 +116,7 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 					if (dm.OutResultVariable != null && dm.Out != null && dm.GetSubBlockAt(Caret) == dm.Out)
 						HandleItem(new DVariable // Create pseudo-variable
 							{
-								Name = dm.OutResultVariable.Value as string,
+								Name = dm.OutResultVariable.Id as string,
 								NameLocation = dm.OutResultVariable.Location,
 								Type = dm.Type, // TODO: What to do on auto functions?
 								Parent = dm,
@@ -117,7 +124,7 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 								EndLocation = dm.OutResultVariable.EndLocation,
 							});
 
-					if (VisibleMembers.HasFlag(MemberTypes.Variables))
+					if (VisibleMembers.HasFlag(MemberFilter.Variables))
 						HandleItems(dm.Parameters);
 
 					if (dm.TemplateParameters != null)
@@ -138,7 +145,7 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 
 						// Search for the deepest statement scope and add all declarations done in the entire hierarchy
 						if(nestedBlock!=null)
-							IterateThroughItemHierarchy(nestedBlock.SearchStatementDeeply(Caret), Caret);
+							IterateThroughItemHierarchy(nestedBlock.SearchStatementDeeply(Caret), Caret,VisibleMembers);
 					}
 				}
 				else foreach (var n in curScope)
@@ -159,53 +166,22 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 						HandleItem(n);
 					}
 
+				// Handle imports
+				if (curScope is DBlockNode)
+					HandleDBlockNode((DBlockNode)curScope,VisibleMembers);
+
 				curScope = curScope.Parent as IBlockNode;
 			}
 
 			// Add __ctfe variable
 			if(CanAddMemberOfType(VisibleMembers, __ctfe))
 				HandleItem(__ctfe);
-
-			#endregion
-
-			#region Global members
-			// Add all non-private and non-package-only nodes
-			foreach (var mod in ctxt.ImportCache)
-			{
-				if (mod.FileName == (ctxt.ScopedBlock.NodeRoot as IAbstractSyntaxTree).FileName)
-					continue;
-
-				foreach (var i in mod)
-				{
-					var dn = i as DNode;
-					if (dn != null)
-					{
-						// Add anonymous enums' items
-						if (dn is DEnum &&
-							string.IsNullOrEmpty(i.Name) &&
-							dn.IsPublic &&
-							!dn.ContainsAttribute(DTokens.Package) &&
-							CanAddMemberOfType(VisibleMembers, i))
-						{
-							HandleItems((i as DEnum).Children);
-							continue;
-						}
-
-						if (dn.IsPublic && !dn.ContainsAttribute(DTokens.Package) &&
-							CanAddMemberOfType(VisibleMembers, dn))
-							HandleItem(dn);
-					}
-					else
-						HandleItem(i);
-				}
-			}
-			#endregion
 		}
 
-		static bool CanAddMemberOfType(MemberTypes VisibleMembers, INode n)
+		static bool CanAddMemberOfType(MemberFilter VisibleMembers, INode n)
 		{
 			if (n is DMethod)
-				return (n as DMethod).Name != "" && VisibleMembers.HasFlag(MemberTypes.Methods);
+				return !string.IsNullOrEmpty(n.Name) && VisibleMembers.HasFlag(MemberFilter.Methods);
 
 			if (n is DVariable)
 			{
@@ -214,23 +190,23 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 				// Only add aliases if at least types,methods or variables shall be shown.
 				if (d.IsAlias)
 					return
-						VisibleMembers.HasFlag(MemberTypes.Methods) ||
-						VisibleMembers.HasFlag(MemberTypes.Types) ||
-						VisibleMembers.HasFlag(MemberTypes.Variables);
+						VisibleMembers.HasFlag(MemberFilter.Methods) ||
+						VisibleMembers.HasFlag(MemberFilter.Types) ||
+						VisibleMembers.HasFlag(MemberFilter.Variables);
 
-				return VisibleMembers.HasFlag(MemberTypes.Variables);
+				return VisibleMembers.HasFlag(MemberFilter.Variables);
 			}
 
 			if (n is DClassLike)
-				return VisibleMembers.HasFlag(MemberTypes.Types);
+				return VisibleMembers.HasFlag(MemberFilter.Types);
 
 			if (n is DEnum)
 			{
 				var d = n as DEnum;
 
 				// Only show enums if a) they're named and types are allowed or b) variables are allowed
-				return (d.IsAnonymous ? false : VisibleMembers.HasFlag(MemberTypes.Types)) ||
-					VisibleMembers.HasFlag(MemberTypes.Variables);
+				return (d.IsAnonymous ? false : VisibleMembers.HasFlag(MemberFilter.Types)) ||
+					VisibleMembers.HasFlag(MemberFilter.Variables);
 			}
 
 			return false;
@@ -240,7 +216,7 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 		/// Walks up the statement scope hierarchy and enlists all declarations that have been made BEFORE the caret position. 
 		/// (If CodeLocation.Empty given, this parameter will be ignored)
 		/// </summary>
-		public void IterateThroughItemHierarchy(IStatement Statement, CodeLocation Caret)
+		void IterateThroughItemHierarchy(IStatement Statement, CodeLocation Caret, MemberFilter VisibleMembers)
 		{
 			// To a prevent double entry of the same declaration, skip a most scoped declaration first
 			if (Statement is DeclarationStatement)
@@ -250,7 +226,7 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 			{
 				if (Statement is IDeclarationContainingStatement)
 				{
-					var decls = (Statement as IDeclarationContainingStatement).Declarations;
+					var decls = ((IDeclarationContainingStatement)Statement).Declarations;
 
 					if (decls != null)
 						foreach (var decl in decls)
@@ -275,7 +251,32 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 				if (Statement is StatementContainingStatement)
 					foreach (var s in (Statement as StatementContainingStatement).SubStatements)
 					{
-						if (s is MixinStatement)
+						if (s is ImportStatement)
+						{
+							/*
+							 * void foo()
+							 * {
+							 * 
+							 *	writeln(); -- error, writeln undefined
+							 *	
+							 *  import std.stdio;
+							 *  
+							 *  writeln(); -- ok
+							 * 
+							 * }
+							 */
+							if (Caret < s.StartLocation && Caret != CodeLocation.Empty)
+								continue;
+
+							// Selective imports were handled in the upper section already!
+
+							var impStmt = (ImportStatement)s;
+
+							foreach (var imp in impStmt.Imports)
+								if (string.IsNullOrEmpty(imp.ModuleAlias))
+									HandleNonAliasedImport(imp,VisibleMembers);
+						}
+						else if (s is MixinStatement)
 						{
 							// TODO: Parse MixinStatements à la mixin("int x" ~ "="~ to!string(5) ~";");
 						}
@@ -297,5 +298,128 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 				Statement = Statement.Parent;
 			}
 		}
+
+		#region Imports
+
+		/* 
+		 * public imports only affect the directly superior module:
+		 *
+		 * module A:
+		 * import B;
+		 * 
+		 * foo(); // Will fail, because foo wasn't found
+		 * 
+		 * ---------------------------
+		 * module B:
+		 * import C;
+		 * 
+		 * ---------------------------
+		 * module C:
+		 * public import D;
+		 * 
+		 * ---------------------------
+		 * module D:
+		 * void foo() {}
+		 * 
+		 * ---------------------------
+		 * Whereas
+		 * module B:
+		 * public import C;
+		 * 
+		 * -- will compile because we have a closed import hierarchy in which all imports are public.
+		 * 
+		 */
+
+		/// <summary>
+		/// Handle the node's static statements (but not the node itself)
+		/// </summary>
+		void HandleDBlockNode(DBlockNode dbn, MemberFilter VisibleMembers, bool takePublicImportsOnly=false)
+		{
+			if (dbn != null && dbn.StaticStatements != null)
+			{
+				foreach (var stmt in dbn.StaticStatements)
+				{
+					var dstmt = stmt as IDeclarationContainingStatement;
+
+					if (takePublicImportsOnly &&
+						dstmt is ImportStatement &&
+						!DAttribute.ContainsAttribute(dstmt.Attributes, DTokens.Public))
+						continue;
+
+					/*
+					 * Mainly used for selective imports/import module aliases
+					 */
+					if (dstmt != null && dstmt.Declarations != null)
+						foreach (var d in dstmt.Declarations)
+							HandleItem(d); //TODO: Handle visibility?
+
+					if (dstmt is ImportStatement)
+					{
+						var impStmt = (ImportStatement)dstmt;
+
+						foreach (var imp in impStmt.Imports)
+							if (string.IsNullOrEmpty(imp.ModuleAlias))
+								HandleNonAliasedImport(imp, VisibleMembers);
+					}
+				}
+			}
+
+			// Every module imports 'object' implicitly
+			if (!takePublicImportsOnly)
+				HandleNonAliasedImport(_objectImport, VisibleMembers);
+		}
+
+		void HandleNonAliasedImport(ImportStatement.Import imp, MemberFilter VisibleMembers)
+		{
+			if (imp == null || imp.ModuleIdentifier == null)
+				return;
+
+			var thisModuleName = (ctxt.ScopedBlock.NodeRoot as IAbstractSyntaxTree).ModuleName;
+			var moduleName = imp.ModuleIdentifier.ToString();
+
+			List<string> seenModules = null;
+
+			if(!scannedModules.TryGetValue(thisModuleName,out seenModules))
+				seenModules = scannedModules[thisModuleName] = new List<string>();
+			else if (seenModules.Contains(moduleName))
+				return;
+			seenModules.Add(moduleName);
+
+			foreach (var module in ctxt.ParseCache.LookupModuleName(moduleName))
+			{
+				if (module == null || module.FileName == (ctxt.ScopedBlock.NodeRoot as IAbstractSyntaxTree).FileName)
+					continue;
+
+				HandleItem(module);
+
+				foreach (var i in module)
+				{
+					var dn = i as DNode;
+					if (dn != null)
+					{
+						// Add anonymous enums' items
+						if (dn is DEnum &&
+							string.IsNullOrEmpty(i.Name) &&
+							dn.IsPublic &&
+							!dn.ContainsAttribute(DTokens.Package) &&
+							CanAddMemberOfType(VisibleMembers, i))
+						{
+							HandleItems((i as DEnum).Children);
+							continue;
+						}
+
+						if (dn.IsPublic && !dn.ContainsAttribute(DTokens.Package) &&
+							CanAddMemberOfType(VisibleMembers, dn))
+							HandleItem(dn);
+					}
+					else
+						HandleItem(i);
+				}
+
+				HandleDBlockNode(module as DBlockNode, VisibleMembers, true);
+			}
+		}
+
+		#endregion
 	}
 }

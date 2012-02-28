@@ -11,13 +11,15 @@ using D_Parser.Completion;
 using MonoDevelop.D.Building;
 using D_Parser.Dom;
 using D_Parser.Dom.Statements;
+using D_Parser.Resolver.TypeResolution;
+using D_Parser.Misc;
 
 namespace MonoDevelop.D.Resolver
 {
 	public class DResolverWrapper
 	{
 		public static ResolveResult[] ResolveHoveredCode(
-			out ResolverContext ResolverContext, 
+			out ResolverContextStack ResolverContext, 
 			MonoDevelop.Ide.Gui.Document doc=null)
 		{
 			ResolverContext = null;
@@ -46,27 +48,27 @@ namespace MonoDevelop.D.Resolver
 				return null;
 
 			// Encapsule editor data for resolving
-			var parseCache = Project != null ? Project.ParseCache : DCompilerService.Instance.GetDefaultCompiler().GlobalParseCache.ParseCache;
+			var parseCache = Project != null ? 
+				Project.ParseCache : 
+				ParseCacheList.Create( DCompilerService.Instance.GetDefaultCompiler().ParseCache );
+
 			var edData = new EditorData
 			{
 				CaretLocation = new CodeLocation(column, line),
 				CaretOffset = editor.CursorPosition,
 				ModuleCode = editor.Text,
 				SyntaxTree = SyntaxTree as DModule,
-				ParseCache = parseCache,
-				ImportCache = DResolver.ResolveImports(SyntaxTree as DModule, parseCache)
+				ParseCache = parseCache
 			};
 
 			// Resolve the hovered piece of code
 			IStatement stmt = null;
 			var results= DResolver.ResolveType(edData,
-				ResolverContext = new ResolverContext
+				ResolverContext = new ResolverContextStack(parseCache, new ResolverContext
 				{
-					ParseCache = edData.ParseCache,
-					ImportCache = edData.ImportCache,
 					ScopedBlock = DResolver.SearchBlockAt(SyntaxTree, edData.CaretLocation, out stmt),
 					ScopedStatement = stmt
-				},
+				}),
 				true, true);
 
 			return results;

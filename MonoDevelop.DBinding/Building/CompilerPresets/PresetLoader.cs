@@ -53,7 +53,7 @@ namespace MonoDevelop.D.Building.CompilerPresets
 						x.Read();
 
 						compiler.DefaultLibraries.Clear();
-						compiler.GlobalParseCache.Clear();
+						compiler.ParseCache.Clear();
 
 						compiler.ReadFrom(x);
 

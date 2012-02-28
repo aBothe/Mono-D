@@ -35,7 +35,7 @@ namespace D_Parser.Dom
 			set { _Type = value; }
 		}
 
-		public virtual string Name
+		public string Name
 		{
 			get { return _Name; }
 			set { _Name = value; }
@@ -45,23 +45,6 @@ namespace D_Parser.Dom
 		{
 			get;
 			set;
-		}
-
-		public override bool Equals(object other)
-		{
-			var n = other as INode;
-			return Equals(n);
-		}
-
-		public bool Equals(INode n)
-		{
-			return 
-				n!=null &&
-				Parent == n.Parent &&
-				StartLocation == n.StartLocation &&
-				EndLocation == n.EndLocation &&
-				Type == n.Type &&
-				Name == n.Name;
 		}
 
 		public bool IsAnonymous { get { return string.IsNullOrEmpty(Name); } }

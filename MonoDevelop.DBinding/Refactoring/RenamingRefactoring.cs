@@ -9,6 +9,7 @@ using MonoDevelop.Core;
 using Mono.TextEditor;
 using Mono.TextEditor.PopupWindow;
 using MonoDevelop.Ide;
+using D_Parser.Misc;
 
 namespace MonoDevelop.D.Refactoring
 {
@@ -55,7 +56,7 @@ namespace MonoDevelop.D.Refactoring
 			// Setup locals
 			var parseCache = project != null ? 
 				project.ParseCache :
-				DCompilerService.Instance.GetDefaultCompiler().GlobalParseCache.ParseCache;
+				ParseCacheList.Create(DCompilerService.Instance.GetDefaultCompiler().ParseCache);
 
             var modules = project!=null? 
 				project.LocalFileCache as IEnumerable<IAbstractSyntaxTree> : 
@@ -76,9 +77,7 @@ namespace MonoDevelop.D.Refactoring
 				if (mod == null)
 					continue;
 
-				var references = DReferenceFinder.ScanNodeReferencesInModule(mod,
-					parseCache,
-					DResolver.ResolveImports(mod as DModule, parseCache),n);
+				var references = DReferenceFinder.ScanNodeReferencesInModule(mod, parseCache,n);
 
 				if ((n.NodeRoot as IAbstractSyntaxTree).FileName == mod.FileName)
 					references.Insert(0, new IdentifierDeclaration(n.Name) { Location = n.NameLocation });

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using D_Parser.Dom;
+using D_Parser.Misc;
 
 namespace D_Parser.Completion
 {
@@ -15,8 +16,7 @@ namespace D_Parser.Completion
 		public virtual int CaretOffset { get; set; }
 		public virtual DModule SyntaxTree { get; set; }
 
-		public virtual IEnumerable<IAbstractSyntaxTree> ParseCache { get; set; }
-		public virtual IEnumerable<IAbstractSyntaxTree> ImportCache { get; set; }
+		public virtual ParseCacheList ParseCache { get; set; }
 
 		public void ApplyFrom(IEditorData data)
 		{
@@ -25,7 +25,6 @@ namespace D_Parser.Completion
 			CaretOffset = data.CaretOffset;
 			SyntaxTree = data.SyntaxTree;
 			ParseCache = data.ParseCache;
-			ImportCache = data.ImportCache;
 		}
 	}
 
@@ -36,7 +35,6 @@ namespace D_Parser.Completion
 		int CaretOffset { get; }
 		DModule SyntaxTree { get; }
 
-		IEnumerable<IAbstractSyntaxTree> ParseCache { get; }
-		IEnumerable<IAbstractSyntaxTree> ImportCache { get; }
+		ParseCacheList ParseCache { get; }
 	}
 }

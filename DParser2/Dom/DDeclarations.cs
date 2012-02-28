@@ -105,22 +105,22 @@ namespace D_Parser.Dom
     /// </summary>
     public class IdentifierDeclaration : AbstractTypeDeclaration
     {
-		public virtual object Value { get; set; }
+		public string Id;
 
         public IdentifierDeclaration() { }
-        public IdentifierDeclaration(object Value)
-        { this.Value = Value; }
+        public IdentifierDeclaration(string Value)
+        { this.Id = Value; }
 
 		public override string ToString(bool IncludesBase)
 		{
-			return (IncludesBase&& InnerDeclaration != null ? (InnerDeclaration.ToString() + ".") : "") +Convert.ToString(Value);
+			return (IncludesBase&& InnerDeclaration != null ? (InnerDeclaration.ToString() + ".") : "") +Convert.ToString(Id);
 		}
 	}
 
 	/// <summary>
 	/// int, void, float
 	/// </summary>
-    public class DTokenDeclaration : IdentifierDeclaration
+    public class DTokenDeclaration : AbstractTypeDeclaration
     {
         public int Token;
 
@@ -139,12 +139,11 @@ namespace D_Parser.Dom
             InnerDeclaration = td;
         }
 
-        public override object Value
-        {
-            get { return Token >= 3 ? DTokens.GetTokenString(Token) : ""; }
-			set { }
-        }
-    }
+		public override string ToString(bool IncludesBase)
+		{
+			return (IncludesBase && InnerDeclaration!=null?(InnerDeclaration.ToString() + '.'):"") + DTokens.GetTokenString(Token);
+		}
+	}
 
     /// <summary>
     /// Extends an identifier by an array literal.
@@ -208,6 +207,11 @@ namespace D_Parser.Dom
 
     public class DelegateDeclaration : AbstractTypeDeclaration
     {
+		/// <summary>
+		/// Alias for InnerDeclaration.
+		/// Contains 'int' in
+		/// int delegate() foo;
+		/// </summary>
         public ITypeDeclaration ReturnType
         {
             get { return InnerDeclaration; }
@@ -219,6 +223,7 @@ namespace D_Parser.Dom
         public bool IsFunction = false;
 
         public List<INode> Parameters = new List<INode>();
+		public DAttribute[] Modifiers;
 
 		public override string ToString(bool IncludesBase)
         {

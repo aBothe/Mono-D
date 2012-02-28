@@ -1,12 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Collections;
-using D_Parser.Parser;
-using System.IO;
 
-namespace D_Parser.Resolver
+namespace D_Parser.Parser
 {
 	public enum TokenContext
 	{
@@ -66,7 +61,6 @@ namespace D_Parser.Resolver
 			{
 				IdentListStart = i;
 				var c = Text[i];
-				var str = Text.Substring(i);
 				char p = ' ';
 				if (i > 0) p = Text[i - 1];
 

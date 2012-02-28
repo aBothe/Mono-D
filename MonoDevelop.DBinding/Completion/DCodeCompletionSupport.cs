@@ -13,6 +13,7 @@ using MonoDevelop.Core;
 using MonoDevelop.Ide.CodeCompletion;
 using MonoDevelop.Ide.Gui;
 using MonoDevelop.D.Building;
+using D_Parser.Misc;
 
 namespace MonoDevelop.D.Completion
 {
@@ -35,8 +36,7 @@ namespace MonoDevelop.D.Completion
 					CaretOffset=caretOffset,
 					ModuleCode=EditorDocument.Editor.Text,
 					SyntaxTree=SyntaxTree as DModule,
-					ParseCache=codeCache,
-					ImportCache= DResolver.ResolveImports(SyntaxTree as DModule, codeCache)
+					ParseCache=codeCache
 				};
 
 			AbstractCompletionProvider.BuildCompletionData(
@@ -46,33 +46,17 @@ namespace MonoDevelop.D.Completion
 		}
 
 		#region Module enumeration helper
-		public static IEnumerable<IAbstractSyntaxTree> EnumAvailableModules(Document Editor)
+		public static ParseCacheList EnumAvailableModules(Document Editor)
 		{
 			return EnumAvailableModules(Editor.HasProject ? Editor.Project as DProject : null);
 		}
 
-		public static IEnumerable<IAbstractSyntaxTree> EnumAvailableModules(DProject Project=null)
+		public static ParseCacheList EnumAvailableModules(DProject Project=null)
 		{
-			var ret = new List<IAbstractSyntaxTree>();
-
 			if (Project != null)
-			{
-				// Add the project's parsed modules to the reachable-packages list
-				ret.AddRange(Project.LocalFileCache);
-				
-				// Add all parsed project include modules that belong to the project's configuration
-				foreach (var astColl in Project.LocalIncludeCache)
-					ret.AddRange(astColl);
-
-				// Add all parsed global modules that belong to the project's compiler configuration
-				foreach (var astColl in Project.Compiler.GlobalParseCache)
-					ret.AddRange(astColl);
-			}
+				return ParseCacheList.Create(Project.LocalFileCache, Project.LocalIncludeCache, Project.Compiler.ParseCache);
 			else
-				foreach (var astColl in DCompilerService.Instance.GetDefaultCompiler().GlobalParseCache)
-					ret.AddRange(astColl);
-
-			return ret;
+				return ParseCacheList.Create(DCompilerService.Instance.GetDefaultCompiler().ParseCache);
 		}
 		#endregion
 

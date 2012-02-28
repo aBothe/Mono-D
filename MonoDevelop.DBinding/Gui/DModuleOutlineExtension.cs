@@ -1,20 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using MonoDevelop.DesignerSupport;
-using MonoDevelop.Ide.Gui.Content;
-using MonoDevelop.Ide.Gui;
 using D_Parser.Dom;
-using MonoDevelop.D.Parser;
-using Gtk;
-using MonoDevelop.Ide;
-using MonoDevelop.Components;
-using MonoDevelop.D.Completion;
-using MonoDevelop.Core;
 using D_Parser.Dom.Statements;
-using D_Parser.Resolver;
+using D_Parser.Resolver.TypeResolution;
+using Gtk;
+using MonoDevelop.Components;
+using MonoDevelop.Core;
+using MonoDevelop.D.Completion;
+using MonoDevelop.D.Parser;
 using MonoDevelop.D.Refactoring;
+using MonoDevelop.DesignerSupport;
+using MonoDevelop.Ide;
+using MonoDevelop.Ide.Gui;
+using MonoDevelop.Ide.Gui.Content;
 
 namespace MonoDevelop.D.Gui
 {

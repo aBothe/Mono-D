@@ -1,5 +1,7 @@
 ﻿using D_Parser.Dom;
+using System.Collections.Generic;
 using D_Parser.Dom.Expressions;
+using D_Parser.Misc;
 
 namespace D_Parser.Resolver
 {
@@ -11,31 +13,50 @@ namespace D_Parser.Resolver
 		public ResolveResult ResultBase;
 
 		/// <summary>
-		/// The type declaration that has been used as the base for our type resolution.
+		/// The type declaration / expression that has been used as the base for this type resolution.
 		/// </summary>
-		public ITypeDeclaration TypeDeclarationBase;
+		public object DeclarationOrExpressionBase;
 
 		public abstract string ResultPath {get;}
 	}
 
-	public class MemberResult : ResolveResult
+	public abstract class TemplateInstanceResult : ResolveResult
 	{
-		public INode ResolvedMember;
+		public INode Node;
 
+		/// <summary>
+		/// T!int t;
+		/// 
+		/// t. -- will be resolved to:
+		///		1) TypeResult T; TemplateParameter[0]= StaticType int
+		///		2) MemberResult t; MemberDefinition= 1)
+		/// </summary>
+		public Dictionary<ITemplateParameter, ResolveResult[]> TemplateParameters;
+	}
+
+	public class MemberResult : TemplateInstanceResult
+	{
 		/// <summary>
 		/// Usually there should be only one resolved member type.
 		/// If the origin of ResolvedMember seems to be unclear (if there are multiple same-named types), there will be two or more items
 		/// </summary>
 		public ResolveResult[] MemberBaseTypes;
 
+		public bool IsAlias
+		{
+			get {
+				return Node is DVariable && ((DVariable)Node).IsAlias;
+			}
+		}
+
 		public override string ToString()
 		{
-			return ResolvedMember.ToString();
+			return Node.ToString();
 		}
 
 		public override string ResultPath
 		{
-			get { return DNode.GetNodePath(ResolvedMember, true); }
+			get { return DNode.GetNodePath(Node, true); }
 		}
 	}
 
@@ -48,7 +69,7 @@ namespace D_Parser.Resolver
 
 		public override string ToString()
 		{
-			return TypeDeclarationBase.ToString();
+			return DeclarationOrExpressionBase.ToString();
 		}
 
 		public override string ResultPath
@@ -58,81 +79,133 @@ namespace D_Parser.Resolver
 	}
 
 	/// <summary>
-	/// Keeps raw expressions like (1+2)
-	/// </summary>
-	public class ExpressionResult : ResolveResult
-	{
-		public IExpression Expression;
-
-		public override string ToString()
-		{
-			return Expression.ToString();
-		}
-
-		public override string ResultPath
-		{
-			get {
-				if (Expression == null)
-					return "";
-
-				return Expression.ExpressionTypeRepresentation.ToString();
-			}
-		}
-	}
-
-	public class ModuleResult : ResolveResult
-	{
-		public IAbstractSyntaxTree ResolvedModule;
-		public bool IsOnlyModuleNamePartTyped()
-		{
-			var modNameParts = ResolvedModule.ModuleName.Split('.');
-			return AlreadyTypedModuleNameParts != modNameParts.Length;
-		}
-
-		public int AlreadyTypedModuleNameParts = 0;
-
-		public override string ToString()
-		{
-			return ResolvedModule.ToString();
-		}
-
-		public override string ResultPath
-		{
-			get {
-				if (ResolvedModule == null || ResolvedModule.ModuleName == null)
-					return "";
-
-				var parts = ResolvedModule.ModuleName.Split('.');
-				var ret = "";
-				for (int i = 0; i < AlreadyTypedModuleNameParts; i++)
-					ret += parts[i] + '.';
-
-				return ret.TrimEnd('.');
-			}
-		}
-	}
-
-	/// <summary>
 	/// Keeps class-like definitions
 	/// </summary>
-	public class TypeResult : ResolveResult
+	public class TypeResult : TemplateInstanceResult
 	{
-		public IBlockNode ResolvedTypeDefinition;
-
 		/// <summary>
-		/// Only will have two or more items if there are multiple definitions of its base class - theoretically, this should be marked as a precompile error then.
+		/// Only will have two or more items if there are multiple definitions of its base class - 
+		/// theoretically, this should be marked as a precompile error then.
 		/// </summary>
 		public TypeResult[] BaseClass;
 		public TypeResult[] ImplementedInterfaces;
 
 		public override string ToString()
 		{
-			return ResolvedTypeDefinition.ToString();
+			return Node.ToString();
 		}
 
 		public override string ResultPath
 		{
-			get { return DNode.GetNodePath(ResolvedTypeDefinition, true); }
+			get { return DNode.GetNodePath(Node, true); }
 		}
 	}
+
+	/// <summary>
+	/// Will be returned on both
+	/// 1) int delegate() dg;
+	/// 2) delegate() { ... }
+	/// whereas on case 1), IsDelegateDeclaration will be true
+	/// </summary>
+	public class DelegateResult : ResolveResult
+	{
+		public bool IsDelegateDeclaration
+		{
+			get
+			{
+				return DeclarationOrExpressionBase is DelegateDeclaration;
+			}
+		}
+
+		/// <summary>
+		/// delegate() { return 12; } has a return type of static type 'int'
+		/// int delegate() dg; will also have the return type 'int', like it's given already
+		/// </summary>
+		public ResolveResult[] ReturnType;
+
+		public override string ResultPath
+		{
+			get { return DeclarationOrExpressionBase==null ? "" : DeclarationOrExpressionBase.ToString(); }
+		}
+
+		public override string ToString()
+		{
+			return ResultPath;
+		}
+	}
+
+	public class ArrayResult : ResolveResult
+	{
+		public ArrayDecl ArrayDeclaration
+		{
+			get { return DeclarationOrExpressionBase as ArrayDecl; }
+			set { DeclarationOrExpressionBase = value; }
+		}
+
+		public ResolveResult[] KeyType;
+
+		public override string ResultPath
+		{
+			get { return ArrayDeclaration != null ? ArrayDeclaration.ToString() : ""; }
+		}
+
+		public override string ToString()
+		{
+			return DeclarationOrExpressionBase.ToString();
+		}
+	}
+
+
+
+
+
+	/// <summary>
+	/// Will be returned if not an entire module name but an existing module package was mentioned in the code
+	/// </summary>
+	public class ModulePackageResult : ResolveResult
+	{
+		public ModulePackage Package { get; private set; }
+
+		public ModulePackageResult(ModulePackage pack)
+		{
+			Package = pack;
+		}
+
+		public override string ToString()
+		{
+			return Package.ToString();
+		}
+
+		public override string ResultPath
+		{
+			get { return Package.ToString(); }
+		}
+	}
+
+	/// <summary>
+	/// Will be returned if a module name was typed
+	/// </summary>
+	public class ModuleResult : ResolveResult
+	{
+		public IAbstractSyntaxTree Module { get; private set; }
+
+		public ModuleResult(IAbstractSyntaxTree mod)
+		{
+			Module = mod;
+		}
+
+		public override string ToString()
+		{
+			return Module == null ? "" : Module.ModuleName;
+		}
+
+		public override string ResultPath
+		{
+			get
+			{
+				return Module == null ? "" : Module.ModuleName;
+			}
+		}
+	}
+
 }

@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
-using D_Parser.Dom;
+﻿using D_Parser.Dom;
 using D_Parser.Dom.Expressions;
 using D_Parser.Dom.Statements;
 using D_Parser.Parser;
-using D_Parser.Resolver;
+using D_Parser.Resolver.TypeResolution;
+using D_Parser.Completion.Providers;
 
 namespace D_Parser.Completion
 {
@@ -20,10 +20,6 @@ namespace D_Parser.Completion
 		{
 			if (PropertyAttributeCompletionProvider.CompletesEnteredText(EnteredText))
 				return new PropertyAttributeCompletionProvider(dataGen);
-
-			if (MemberCompletionProvider.CompletesEnteredText(EnteredText))
-				return new MemberCompletionProvider(dataGen);
-
 
 			ParserTrackerVariables trackVars=null;
 			IStatement curStmt = null;
@@ -42,7 +38,10 @@ namespace D_Parser.Completion
 			if (trackVars != null)
 			{
 				if (trackVars.LastParsedObject is PostfixExpression_Access)
-					return new MemberCompletionProvider(dataGen);
+					return new MemberCompletionProvider(dataGen) { 
+						AccessExpression=trackVars.LastParsedObject as PostfixExpression_Access,
+						ScopedBlock = curBlock,	ScopedStatement = curStmt
+					};
 
 				if(trackVars.ExpectingIdentifier)
 				{
@@ -54,7 +53,7 @@ namespace D_Parser.Completion
 					else if (trackVars.LastParsedObject is ScopeGuardStatement)
 						return new ScopeAttributeCompletionProvider(dataGen)
 						{
-							ScopeStmt = trackVars.LastParsedObject as ScopeGuardStatement
+							//ScopeStmt = trackVars.LastParsedObject as ScopeGuardStatement
 						};
 					else if (trackVars.LastParsedObject is PragmaStatement)
 						return new AttributeCompletionProvider(dataGen)
@@ -62,10 +61,14 @@ namespace D_Parser.Completion
 							Attribute = (trackVars.LastParsedObject as PragmaStatement).Pragma
 						};
 					else if (trackVars.LastParsedObject is TraitsExpression)
-						return new TraitsExpressionCompletionProvider(dataGen) 
-						{ 
-							TraitsExpr=trackVars.LastParsedObject as TraitsExpression 
+						return new TraitsExpressionCompletionProvider(dataGen)
+						{
+							//TraitsExpr=trackVars.LastParsedObject as TraitsExpression 
 						};
+					else if (trackVars.LastParsedObject is ImportStatement.Import)
+						return new ImportStatementCompletionProvider(dataGen, (ImportStatement.Import)trackVars.LastParsedObject);
+					else if (trackVars.LastParsedObject is ImportStatement.ImportBindings)
+						return new ImportStatementCompletionProvider(dataGen, (ImportStatement.ImportBindings)trackVars.LastParsedObject);
 				}
 				
 				if (EnteredText == "(")

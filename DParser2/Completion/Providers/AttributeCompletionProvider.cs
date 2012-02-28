@@ -107,7 +107,7 @@ namespace D_Parser.Completion
 
 	internal class ScopeAttributeCompletionProvider : AbstractCompletionProvider
 	{
-		public ScopeGuardStatement ScopeStmt;
+		//public ScopeGuardStatement ScopeStmt;
 
 		public ScopeAttributeCompletionProvider(ICompletionDataGenerator gen) : base(gen) { }
 
@@ -123,7 +123,7 @@ namespace D_Parser.Completion
 
 	internal class TraitsExpressionCompletionProvider : AbstractCompletionProvider
 	{
-		public TraitsExpression TraitsExpr;
+		//public TraitsExpression TraitsExpr;
 
 		public TraitsExpressionCompletionProvider(ICompletionDataGenerator gen) : base(gen) { }
 

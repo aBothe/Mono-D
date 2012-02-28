@@ -47,8 +47,7 @@ namespace MonoDevelop.D.Gui
 				CaretLocation = new CodeLocation(offset - line.Offset, editor.OffsetToLineNumber(offset)),
 				ModuleCode = editor.Text,
 				ParseCache = codeCache,
-				SyntaxTree=ast as DModule,
-				ImportCache = DResolver.ResolveImports(ast as DModule, codeCache)
+				SyntaxTree=ast as DModule
 			};
 
 			// Let the engine build all contents

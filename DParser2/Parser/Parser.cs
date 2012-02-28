@@ -29,7 +29,7 @@ namespace D_Parser.Parser
 				p.ModuleDeclaration();
 
 			while (p.LA(Import))
-				p.ImportDeclaration(p.doc);
+				p.ImportDeclaration();
 
 			return p.t.EndLocation;
 		}
@@ -144,17 +144,6 @@ namespace D_Parser.Parser
 		/// </summary>
 		public bool ExpectingIdentifier {set{TrackerVariables.ExpectingIdentifier=value;}}
 
-		List<ImportStatement> imports = new List<ImportStatement>();
-
-		bool ContainsImport(string ModuleId)
-		{
-			foreach (var i in imports)
-				if (string.IsNullOrEmpty(i.ModuleAlias) && i.ExclusivelyImportedSymbols.Count < 1 && i.ModuleIdentifier!=null && i.ModuleIdentifier.ToString() == ModuleId)
-					return true;
-
-			return false;
-		}
-
 		public readonly ParserTrackerVariables TrackerVariables = new ParserTrackerVariables();
 
         /// <summary>
@@ -197,6 +186,28 @@ namespace D_Parser.Parser
             }
         }
 
+		void ApplyAttributes(IStatement n)
+		{
+			var attributes = new List<DAttribute>();
+
+			foreach (var attr in BlockAttributes.ToArray())
+				attributes.Add(attr);
+
+			while (DeclarationAttributes.Count > 0)
+			{
+				var attr = DeclarationAttributes.Pop();
+
+				// If accessor already in attribute array, remove it
+				if (DTokens.VisModifiers[attr.Token])
+					DAttribute.CleanupAccessorAttributes(attributes);
+
+				if (attr.IsProperty || !DAttribute.ContainsAttribute(attributes, attr.Token))
+					attributes.Add(attr);
+			}
+
+			n.Attributes = attributes.Count == 0 ? null : attributes.ToArray();
+		}
+
         public DModule Document
         {
             get { return doc; }
@@ -208,8 +219,6 @@ namespace D_Parser.Parser
             this.Lexer = lexer;
 			Lexer.LexerErrors = ParseErrors;
         }
-
-        StringBuilder qualidentBuilder = new StringBuilder();
 
 		DToken t
 		{
@@ -393,10 +402,10 @@ namespace D_Parser.Parser
         {
 			ParseErrors.Add(new ParserError(true, msg, n, t == null ? la.Location : t.EndLocation));
         }
-        void SemErr(int n)
+        /*void SemErr(int n)
         {
 			ParseErrors.Add(new ParserError(true, DTokens.GetTokenString(n) + " expected" + (t != null ? (", " + DTokens.GetTokenString(t.Kind) + " found") : ""), n, t == null ? la.Location : t.EndLocation));
-        }
+        }*/
         #endregion
     }
 

@@ -26,7 +26,7 @@ namespace D_Parser.Dom
             this.LiteralContent = Content;
         }
 
-        public virtual string ToString()
+        public override string ToString()
         {
 			if (Token == DTokens.PropertyAttribute)
 				return "@" + (LiteralContent==null?"": LiteralContent.ToString());
@@ -91,9 +91,10 @@ namespace D_Parser.Dom
         public static bool ContainsAttribute(DAttribute[] HayStack,params int[] NeedleToken)
         {
             var l = new List<int>(NeedleToken);
-            foreach (var attr in HayStack)
-                if (l.Contains(attr.Token))
-                    return true;
+			if(HayStack!=null)
+				foreach (var attr in HayStack)
+					if (l.Contains(attr.Token))
+						return true;
             return false;
         }
         public static bool ContainsAttribute(List<DAttribute> HayStack,params int[] NeedleToken)

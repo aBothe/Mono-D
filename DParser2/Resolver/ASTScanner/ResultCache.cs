@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using System.IO;
 using D_Parser.Dom;
 
-namespace D_Parser.Resolver
+namespace D_Parser.Resolver.TypeResolution
 {
-	public class ResolutionCache
+	public class ResultCache
 	{
 		#region Properties
 		/// <summary>
@@ -93,7 +93,7 @@ namespace D_Parser.Resolver
 
 		protected bool HandleTypeEntry(INode n)
 		{
-			if ((n is DEnum || n is DClassLike) && n.Name!=null && n.Name!="")
+			if ((n is DEnum || n is DClassLike) && !string.IsNullOrEmpty(n.Name))
 			{
 				List<IBlockNode> entries = null;
 
@@ -117,7 +117,7 @@ namespace D_Parser.Resolver
 
 		protected void HandleGlobalMemberEntry(INode n)
 		{
-			if (n.Name != null && n.Name != "")
+			if (!string.IsNullOrEmpty(n.Name))
 			{
 				List<INode> entries = null;
 

@@ -26,7 +26,7 @@ namespace MonoDevelop.D.Parser
 						{
 							var dprj = prj as DProject;
 
-							return dprj.LocalFileCache[FileName];
+							return dprj.LocalFileCache.GetModuleByFileName(FileName, prj.BaseDirectory);
 						}
 				
 				return _ddom;
@@ -40,7 +40,7 @@ namespace MonoDevelop.D.Parser
 						{
 							var dprj = prj as DProject;
 
-							dprj.LocalFileCache[FileName] = value;
+							dprj.LocalFileCache.AddOrUpdate(value);
 						}
 				
 				_ddom=value;

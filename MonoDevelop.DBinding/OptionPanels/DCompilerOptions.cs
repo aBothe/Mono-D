@@ -259,7 +259,7 @@ namespace MonoDevelop.D.OptionPanels
 				defaultLibStore.AppendValues (lib);
 
 			includePathStore.Clear ();
-			foreach (var p in config.GlobalParseCache.DirectoryPaths)
+			foreach (var p in config.ParseCache.ParsedDirectories)
 				includePathStore.AppendValues (p);
 
 			btnMakeDefault.Active = 
@@ -343,25 +343,23 @@ namespace MonoDevelop.D.OptionPanels
 			}
 
 			// If current dir count != the new dir count
-			bool cacheUpdateRequired = paths.Count != configuration.GlobalParseCache.ParsedGlobalDictionaries.Count;
+			bool cacheUpdateRequired = paths.Count != configuration.ParseCache.ParsedDirectories.Count;
 
 			// If there's a new directory in it
 			if (!cacheUpdateRequired)
 				foreach (var path in paths)
-					if (!configuration.GlobalParseCache.ContainsDictionary (path)) {
+					if (!configuration.ParseCache.ParsedDirectories.Contains (path)) {
 						cacheUpdateRequired = true;
 						break;
 					}
 
 			if (cacheUpdateRequired) {
-				configuration.GlobalParseCache.ParsedGlobalDictionaries.Clear ();
-
-				foreach (var path in paths)
-					configuration.GlobalParseCache.Add (path);
+				configuration.ParseCache.Clear ();
+				configuration.ParseCache.ParsedDirectories.AddRange(paths);
 
 				try {
 					// Update parse cache immediately
-					DCompilerConfiguration.UpdateParseCacheAsync (configuration.GlobalParseCache);
+					DCompilerConfiguration.UpdateParseCacheAsync (configuration.ParseCache);
 				} catch (Exception ex) {
 					LoggingService.LogError ("Include path analysis error", ex);
 				}

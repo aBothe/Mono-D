@@ -11,6 +11,8 @@ using D_Parser.Resolver;
 using MonoDevelop.D.Building;
 using MonoDevelop.D.Resolver;
 using MonoDevelop.Core;
+using D_Parser.Resolver.TypeResolution;
+using D_Parser.Misc;
 
 // Code taken and modified from MonoDevelop.CSharp.Highlighting.HighlightUsagesExtension.cs
 
@@ -210,7 +212,7 @@ namespace MonoDevelop.D.Highlighting
 				if (dom == null)
 					return false;
 
-				ResolverContext ctxt;
+				ResolverContextStack ctxt;
 				var rr = DResolverWrapper.ResolveHoveredCode(out ctxt, Document);
 
 				if (rr == null || rr.Length < 1)
@@ -218,17 +220,14 @@ namespace MonoDevelop.D.Highlighting
 
 				var parseCache = Document.HasProject ?
 						(Document.Project as DProject).ParseCache :
-						DCompilerService.Instance.GetDefaultCompiler().GlobalParseCache.ParseCache;
+						ParseCacheList.Create( DCompilerService.Instance.GetDefaultCompiler().ParseCache);
 
 				var referencedNode = DResolver.GetResultMember(rr[0]);
 
 				if (referencedNode == null)
 					return false;
 
-				var references = Refactoring.DReferenceFinder.ScanNodeReferencesInModule(dom,
-							parseCache,
-							DResolver.ResolveImports(dom as DModule, parseCache),
-							referencedNode);
+				var references = Refactoring.DReferenceFinder.ScanNodeReferencesInModule(dom,parseCache,referencedNode);
 
 				if (referencedNode.NodeRoot is IAbstractSyntaxTree &&
 					(referencedNode.NodeRoot as IAbstractSyntaxTree).FileName == dom.FileName)

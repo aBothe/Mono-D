@@ -9,6 +9,7 @@ using D_Parser.Resolver;
 using MonoDevelop.Ide.CodeCompletion;
 using MonoDevelop.SourceEditor;
 using MonoDevelop.Projects.Policies;
+using D_Parser.Parser;
 
 namespace MonoDevelop.D.Formatting
 {

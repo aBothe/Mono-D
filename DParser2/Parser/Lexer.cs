@@ -624,7 +624,7 @@ namespace D_Parser.Parser
 									return new DToken(DTokens.Literal, x, y, 10)
 									{
 										literalFormat = LiteralFormat.StringLiteral,
-										literalValue = "D Lexer - by Alexander Bothe"
+										literalValue = "D Parser v"+System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString(3)+" by Alexander Bothe"
 									};
 								else if (s == "__VERSION__")
 								{

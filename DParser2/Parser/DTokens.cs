@@ -347,7 +347,7 @@ namespace D_Parser.Parser
     {With,	"with"}
         };
 
-        public static BitArray FunctionAttribute = NewSet(Pure, Nothrow, PropertyAttribute/*, DisabledAttribute, SafeAttribute, SystemAttribute, TrustedAttribute*/);
+        public static BitArray FunctionAttribute = NewSet(Pure, Nothrow, PropertyAttribute);
         public static BitArray MemberFunctionAttribute = NewSet(Const, Immutable, Shared, InOut, Pure, Nothrow, PropertyAttribute);
         public static BitArray ParamModifiers = NewSet(In, Out, InOut, Ref, Lazy, Scope);
         public static BitArray ClassLike = NewSet(Class, Template, Interface, Struct, Union);
@@ -595,7 +595,6 @@ namespace D_Parser.Parser
         {
 			if (token.StartsWith("@"))
 			{
-				var n=Environment.NewLine;
 				if (token == "@disable")
 					return @"Disables a declaration
 A ref­er­ence to a de­c­la­ra­tion marked with the @dis­able at­tribute causes a com­pile time error. 

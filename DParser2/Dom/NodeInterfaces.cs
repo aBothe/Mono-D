@@ -32,9 +32,7 @@ namespace D_Parser.Dom
 	{
 		CodeLocation BlockStartLocation { get; set; }
 		INode[] Children { get; }
-		IStatement[] Statements { get; }
 
-		void Add(IStatement Statement);
 		void Add(INode Node);
 		void AddRange(IEnumerable<INode> Nodes);
 		int Count { get; }
@@ -44,7 +42,7 @@ namespace D_Parser.Dom
 		INode this[string Name] { get; set; }
 	}
 
-	public interface INode:IEquatable<INode>
+	public interface INode
 	{
 		string Name { get; set; }
 		CodeLocation NameLocation { get; set; }

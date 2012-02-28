@@ -1,0 +1,16 @@
+﻿
+DParser2 - A language analysis library for the D Programming language 
+
+made by Alexander Bothe <a_bothe@gmx.net>
+
+Idiot proof license:
+
+ - You may use this program
+ - You may view and modify its source code
+ - You may distribute this program
+ - You may create your own software that uses parts of this program or that uses this program as-is
+ - If you publish an other program that uses parts of this program 
+   or if you integrate this program entirely into an other program, 
+   you have to mention who originally created the software.
+
+ - You agree to this license by using this software or viewing its source code

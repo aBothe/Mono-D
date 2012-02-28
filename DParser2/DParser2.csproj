@@ -69,21 +69,31 @@
   <ItemGroup>
     <Compile Include="Completion\AbstractCompletionProvider.cs" />
     <Compile Include="Completion\AbstractTooltipProvider.cs" />
-    <Compile Include="Completion\AttributeCompletionProvider.cs" />
-    <Compile Include="Completion\CtrlSpaceCompletionProvider.cs" />
-    <Compile Include="Completion\MemberCompletionProvider.cs" />
-    <Compile Include="Completion\PropertyAttributeCompletionProvider.cs" />
-    <Compile Include="Resolver\CodeSymbolsScanner.IdentifierScan.cs" />
-    <Compile Include="Resolver\ItemEnumeration.cs" />
-    <Compile Include="Resolver\NameScan.cs" />
-    <Compile Include="Resolver\Resolver.RootsEnum.cs" />
-    <Compile Include="Resolver\StaticTypePropertyProvider.cs" />
-    <Compile Include="Misc\ASTStorage.cs" />
+    <Compile Include="Completion\Providers\AttributeCompletionProvider.cs" />
+    <Compile Include="Completion\Providers\CtrlSpaceCompletionProvider.cs" />
+    <Compile Include="Completion\Providers\ImportStatementCompletionProvider.cs" />
+    <Compile Include="Completion\Providers\MemberCompletionProvider.cs" />
+    <Compile Include="Completion\Providers\PropertyAttributeCompletionProvider.cs" />
+    <Compile Include="Dom\TemplateParameters.cs" />
+    <Compile Include="Misc\ParseCache.cs" />
+    <Compile Include="Misc\ParseCacheList.cs" />
+    <Compile Include="Misc\ParseLog.cs" />
+    <Compile Include="Resolver\ASTScanner\CodeSymbolsScanner.IdentifierScan.cs" />
+    <Compile Include="Resolver\ASTScanner\ItemEnumeration.cs" />
+    <Compile Include="Resolver\ASTScanner\NameScan.cs" />
+    <Compile Include="Resolver\TypeResolution\ExpressionTypeResolution.cs" />
+    <Compile Include="Resolver\ASTScanner\AbstractAstScanner.cs" />
+    <Compile Include="Resolver\TypeResolution\ExpressionTypeResolution.PostfixExpressions.cs" />
+    <Compile Include="Resolver\TypeResolution\ExpressionTypeResolution.TemplateInstance.cs" />
+    <Compile Include="Resolver\TypeResolution\ExpressionTypeResolution.TraitsResolver.cs" />
+    <Compile Include="Resolver\TypeResolution\TypeDeclarationResolver.cs" />
+    <Compile Include="Completion\Providers\StaticTypePropertyProvider.cs" />
     <Compile Include="Completion\ICompletionDataGenerator.cs" />
-    <Compile Include="Resolver\CaretContextAnalyzer.cs" />
-    <Compile Include="Resolver\ParameterContextResolution.cs" />
-    <Compile Include="Resolver\ResolutionCache.cs" />
-    <Compile Include="Resolver\StaticPropertyResolver.cs" />
+    <Compile Include="Parser\CaretContextAnalyzer.cs" />
+    <Compile Include="Completion\ParameterInsightResolution.cs" />
+    <Compile Include="Resolver\ASTScanner\ResultCache.cs" />
+    <Compile Include="Resolver\ResolverContextStack.cs" />
+    <Compile Include="Resolver\TypeResolution\StaticPropertiesResolver.cs" />
     <Compile Include="Completion\IEditorData.cs" />
     <Compile Include="Dom\AbstractNode.cs" />
     <Compile Include="Dom\CodeLocation.cs" />
@@ -93,8 +103,8 @@
     <Compile Include="Formatting\DFormatter.cs" />
     <Compile Include="Misc\DocumentHelper.cs" />
     <Compile Include="Parser\TokenTracker.cs" />
-    <Compile Include="Resolver\CodeSymbolsScanner.cs" />
-    <Compile Include="Resolver\Resolver.cs" />
+    <Compile Include="Resolver\ASTScanner\CodeSymbolsScanner.cs" />
+    <Compile Include="Resolver\TypeResolution\Resolver.cs" />
     <Compile Include="Dom\DAttribute.cs" />
     <Compile Include="Dom\DModule.cs" />
     <Compile Include="Parser\Lexer.cs" />
@@ -109,7 +119,9 @@
     <Compile Include="Resolver\ResolverContext.cs" />
     <Compile Include="Resolver\ResolveResults.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="license.txt" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.

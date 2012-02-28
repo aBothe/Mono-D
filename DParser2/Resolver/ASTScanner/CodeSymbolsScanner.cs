@@ -4,8 +4,9 @@ using D_Parser.Dom.Expressions;
 using D_Parser.Dom.Statements;
 using D_Parser.Parser;
 using System;
+using D_Parser.Resolver.TypeResolution;
 
-namespace D_Parser.Resolver
+namespace D_Parser.Resolver.ASTScanner
 {
 	/// <summary>
 	/// Class for scanning symbols inside a parsed code file.
@@ -43,36 +44,31 @@ namespace D_Parser.Resolver
 		/// <param name="lastResCtxt"></param>
 		/// <param name="SyntaxTree"></param>
 		/// <returns></returns>
-		public static CodeScanResult ScanSymbols(ResolverContext lastResCtxt)
+		public static CodeScanResult ScanSymbols(ResolverContextStack lastResCtxt)
 		{
 			var csr = new CodeScanResult();
 
-			var resCache = new ResolutionCache();
+			var resCache = new ResultCache();
 
 			if (lastResCtxt.ScopedBlock != null)
 				resCache.Add(lastResCtxt.ScopedBlock.NodeRoot as IAbstractSyntaxTree);
-
+			/*
 			foreach (var importedAST in lastResCtxt.ImportCache)
 				resCache.Add(importedAST);
-
+			*/
 			var typeObjects = IdentifierScan.ScanForTypeIdentifiers(lastResCtxt.ScopedBlock.NodeRoot);
 
 			foreach (var o in typeObjects)
-			{
-				if (o is ITypeDeclaration)
-					FindAndEnlistType(csr, o as ITypeDeclaration, lastResCtxt, resCache);
-				else if (o is IExpression)
-					FindAndEnlistType(csr, (o as IExpression).ExpressionTypeRepresentation, lastResCtxt, resCache);
-			}
+				FindAndEnlistType(csr, o, lastResCtxt, resCache);
 
 			return csr;
 		}
 
 		static IEnumerable<IBlockNode> FindAndEnlistType(
 			CodeScanResult csr,
-			ITypeDeclaration typeId,
-			ResolverContext lastResCtxt,
-			ResolutionCache resCache)
+			object typeId,
+			ResolverContextStack lastResCtxt,
+			ResultCache resCache)
 		{
 			if (typeId == null)
 				return null;
@@ -81,74 +77,95 @@ namespace D_Parser.Resolver
 			 * Note: For performance reasons, there is no resolution of type aliases or other contextual symbols!
 			 * TODO: Check relationships between the selected block and the found types.
 			 */
-
-			if (typeId.InnerDeclaration !=null)
+			if (typeId is IdentifierDeclaration)
 			{
-				var res = FindAndEnlistType(csr,typeId.InnerDeclaration, lastResCtxt, resCache);
+				var id = typeId as IdentifierDeclaration;
 
-				if (res != null)
+				if (id.InnerDeclaration != null)
 				{
-					var cmpName=typeId.ToString(false);
+					var res = FindAndEnlistType(csr, id.InnerDeclaration, lastResCtxt, resCache);
 
-					foreach (var t in res)
+					if (res != null)
 					{
-						foreach (var m in t)
-							if (m.Name == cmpName && (m is DEnum || m is DClassLike))
-							{
-								csr.ResolvedIdentifiers.Add(typeId as IdentifierDeclaration, m);
-								return new[]{m as IBlockNode};
-							}
+						var cmpName = id.ToString(false);
 
-						if (t is DClassLike)
+						foreach (var t in res)
 						{
-							var dc = t as DClassLike;
-
-							var baseClasses=DResolver.ResolveBaseClass(dc, lastResCtxt);
-
-							if (baseClasses != null)
-							{
-								var l1 = new List<TypeResult>(baseClasses);
-								var l2 = new List<TypeResult>();
-
-								while (l1.Count > 0)
+							foreach (var m in t)
+								if (m.Name == cmpName && (m is DEnum || m is DClassLike))
 								{
-									foreach (var tr in l1)
+									csr.ResolvedIdentifiers.Add(typeId as IdentifierDeclaration, m);
+									return new[] { m as IBlockNode };
+								}
+
+							if (t is DClassLike)
+							{
+								var dc = t as DClassLike;
+
+								var baseClasses = DResolver.ResolveBaseClass(dc, lastResCtxt);
+
+								if (baseClasses != null)
+								{
+									var l1 = new List<TypeResult>(baseClasses);
+									var l2 = new List<TypeResult>();
+
+									while (l1.Count > 0)
 									{
-										foreach (var m in tr.ResolvedTypeDefinition)
-											if (m.Name == cmpName && (m is DEnum || m is DClassLike))
-											{
-												csr.ResolvedIdentifiers.Add(typeId as IdentifierDeclaration, m);
-												return new[] { m as IBlockNode };
-											}
+										foreach (var tr in l1)
+										{
+											foreach (var m in tr.Node as IBlockNode)
+												if (m.Name == cmpName && (m is DEnum || m is DClassLike))
+												{
+													csr.ResolvedIdentifiers.Add(typeId as IdentifierDeclaration, m);
+													return new[] { m as IBlockNode };
+												}
 
-										if(tr.BaseClass!=null)
-											l2.AddRange(tr.BaseClass);
+											if (tr.BaseClass != null)
+												l2.AddRange(tr.BaseClass);
+										}
+
+										l1.Clear();
+										l1.AddRange(l2);
+										l2.Clear();
 									}
-
-									l1.Clear();
-									l1.AddRange(l2);
-									l2.Clear();
 								}
 							}
 						}
 					}
 				}
+
+				List<IBlockNode> types = null;
+				if (resCache.Types.TryGetValue(id.ToString(false), out types))
+				{
+					csr.ResolvedIdentifiers.Add(typeId as IdentifierDeclaration, types[0]);
+
+					return types;
+				}
+
+				IAbstractSyntaxTree module = null;
+				if (resCache.Modules.TryGetValue(id.ToString(true), out module))
+				{
+					csr.ResolvedIdentifiers.Add(typeId as IdentifierDeclaration, module);
+
+					return new[] { module };
+				}
 			}
 
-			List<IBlockNode> types = null;
-			if (resCache.Types.TryGetValue(typeId.ToString(false), out types))
+			else if (typeId is IdentifierExpression)
 			{
-				csr.ResolvedIdentifiers.Add(typeId as IdentifierDeclaration, types[0]);
-
-				return types;
+				/*
+				 * Can a single IdentifierExpression represent a type?
+				 * 
+				 * MyType.  -- is a PostfixExpression_Access
+				 * MyType t; -- declaration
+				 * 
+				 */
+				//var id = typeId as IdentifierExpression;
 			}
 
-			IAbstractSyntaxTree module = null;
-			if(resCache.Modules.TryGetValue(typeId.ToString(true),out module))
+			else if (typeId is PostfixExpression_Access)
 			{
-				csr.ResolvedIdentifiers.Add(typeId as IdentifierDeclaration, module);
 
-				return new[] { module };
 			}
 
 			return null;

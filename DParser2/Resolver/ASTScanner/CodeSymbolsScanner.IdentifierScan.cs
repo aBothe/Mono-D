@@ -6,12 +6,19 @@ using D_Parser.Dom.Expressions;
 using D_Parser.Dom;
 using D_Parser.Dom.Statements;
 
-namespace D_Parser.Resolver
+namespace D_Parser.Resolver.ASTScanner
 {
 	public partial class CodeSymbolsScanner
 	{
 		public class IdentifierScan
 		{
+			/// <summary>
+			/// The returned list will contain all
+			/// 1) IdentifierDeclaration
+			/// 2) PostfixExpression_Access
+			/// 3) IdentifierExpression
+			/// occurring in the given Node
+			/// </summary>
 			public static List<object> ScanForTypeIdentifiers(INode Node)
 			{
 				var l = new List<object>();
@@ -36,10 +43,6 @@ namespace D_Parser.Resolver
 
 					if (dm.OptionalModuleStatement != null)
 						SearchIn(dm.OptionalModuleStatement, l);
-
-					if (dm.Imports != null && dm.Imports.Length > 0)
-						foreach (var imp in dm.Imports)
-							SearchIn(imp, l);
 				}
 
 				while (l1.Count > 0)
@@ -48,6 +51,10 @@ namespace D_Parser.Resolver
 					{
 						if (n.Type != null)
 							SearchIn(n.Type, l);
+
+						if (n is DBlockNode)
+							foreach (var stmt in ((DBlockNode)n).StaticStatements)
+								SearchIn(stmt, l);
 
 						if (n is DNode)
 						{
@@ -124,9 +131,13 @@ namespace D_Parser.Resolver
 					{
 						if (s is ImportStatement)
 						{
-							var impStmt = s as ImportStatement;
+							var impStmt = (ImportStatement)s;
 
-							SearchIn(impStmt.ModuleIdentifier, l);
+							foreach (var imp in impStmt.Imports)
+								SearchIn(imp.ModuleIdentifier, l);
+
+							if (impStmt.ImportBinding != null)
+								SearchIn(impStmt.ImportBinding.Module.ModuleIdentifier, l);
 						}
 
 						if (s is StatementContainingStatement)
@@ -181,10 +192,6 @@ namespace D_Parser.Resolver
 						if (ad.KeyType != null)
 							SearchIn(ad.KeyType, l);
 					}
-					else if (type is DExpressionDecl)
-					{
-						SearchIn((type as DExpressionDecl).Expression, l);
-					}
 					else if (type is TemplateInstanceExpression)
 					{
 						var tie = type as TemplateInstanceExpression;
@@ -225,21 +232,19 @@ namespace D_Parser.Resolver
 						if (e is UnaryExpression_Type)
 							SearchIn((e as UnaryExpression_Type).Type, l);
 
-						if (e is NewExpression || e is PostfixExpression_Access)
+						if (e is NewExpression)
 						{
-							SearchIn(e.ExpressionTypeRepresentation, l);
+							SearchIn((e as NewExpression).Type, l);
 							continue;
 						}
+						else if (e is PostfixExpression_Access)
+							l.Add(e);
 						else if (e is IdentifierExpression && (e as IdentifierExpression).IsIdentifier)
-						{
-							var t = e.ExpressionTypeRepresentation;
-							if(!l.Contains(t))
-								l.Add(t);
-						}
+							l.Add(e);
 						else if (e is TemplateInstanceExpression)
 						{
 							var tie = e as TemplateInstanceExpression;
-
+							
 							if (tie.TemplateIdentifier != null && !l.Contains(tie.TemplateIdentifier))
 								l.Add(tie.TemplateIdentifier);
 						}
