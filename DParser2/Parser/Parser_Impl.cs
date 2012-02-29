@@ -547,17 +547,26 @@ namespace D_Parser.Parser
 			var importBindings = new ImportStatement.ImportBindings { Module=imp };
 			LastParsedObject = importBindings;
 
-			if (Expect(Identifier))
+			bool init = true;
+			while (laKind == Comma || init)
 			{
-				if (laKind == Assign)
-				{
-					var symbolAlias = t.Value;
-					Step();
-					if (Expect(Identifier))
-						importBindings.SelectedSymbols.Add(new KeyValuePair<string,string>(symbolAlias,t.Value));					
-				}
+				if (init)
+					init = false;
 				else
-					importBindings.SelectedSymbols.Add(new KeyValuePair<string,string>(t.Value,null));
+					Step();
+
+				if (Expect(Identifier))
+				{
+					if (laKind == Assign)
+					{
+						var symbolAlias = t.Value;
+						Step();
+						if (Expect(Identifier))
+							importBindings.SelectedSymbols.Add(new KeyValuePair<string, string>(symbolAlias, t.Value));
+					}
+					else
+						importBindings.SelectedSymbols.Add(new KeyValuePair<string, string>(t.Value, null));
+				}
 			}
 
 			if (!IsEOF)
