@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using MonoDevelop.Projects;
-using System.IO;
-using MonoDevelop.Core.ProgressMonitoring;
-using MonoDevelop.Core;
 using System.CodeDom.Compiler;
+using System.Collections.Generic;
+using System.IO;
 using System.Text.RegularExpressions;
+using MonoDevelop.Core;
+using MonoDevelop.Core.ProgressMonitoring;
+using MonoDevelop.Projects;
 
 namespace MonoDevelop.D.Building
 {
@@ -145,17 +143,7 @@ namespace MonoDevelop.D.Building
 		{
 			if (File.Exists(f.LastGenOutput))
 				File.Delete(f.LastGenOutput);
-			/*
-			string obj = null;
-			
-			if (!string.IsNullOrWhiteSpace(f.LastGenOutput))
-			{
-				// Ensure the correct intermediate file extension, e.g. if the same project shall be built on different platforms
-				obj = EnsureCorrectPathSeparators(Path.ChangeExtension(f.LastGenOutput, DCompiler.ObjectExtension));
 
-				
-			}
-			else*/
 			var obj = HandleObjectFileNaming(f, DCompilerService.ObjectExtension);
 
 			// Create argument string for source file compilation.
@@ -205,17 +193,7 @@ namespace MonoDevelop.D.Building
 
 		void CompileResourceScript(ProjectFile f)
 		{
-			string res = null;
-
-			if (!string.IsNullOrWhiteSpace(f.LastGenOutput))
-			{
-				res = f.LastGenOutput;
-
-				if (File.Exists(f.LastGenOutput))
-					File.Delete(res);
-			}
-			else
-				res = HandleObjectFileNaming(f, ".res");
+			var res = HandleObjectFileNaming(f, ".res");
 
 			// Build argument string
 			var resCmpArgs = FillInMacros(Win32ResourceCompiler.Instance.Arguments,
