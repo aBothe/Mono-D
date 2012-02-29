@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using D_Parser.Dom;
 using D_Parser.Dom.Expressions;
+using D_Parser.Parser;
 
 namespace D_Parser.Resolver.TypeResolution
 {
@@ -152,6 +153,20 @@ namespace D_Parser.Resolver.TypeResolution
 						foreach (var i in classDef)
 							if (i.Name == "opCall" && i is DMethod &&	(!requireStaticItems || (i as DNode).IsStatic))
 								methodContainingResultsToCheck.Add(TypeDeclarationResolver.HandleNodeMatch(i, ctxt, b, call));
+
+						/*
+						 * Every struct can contain a default ctor:
+						 * 
+						 * struct S { int a; bool b; }
+						 * 
+						 * auto s = S(1,true); -- ok
+						 * auto s2= new S(2,false); -- error, no constructor found!
+						 */
+						if (classDef.ClassType == DTokens.Struct && methodContainingResultsToCheck.Count == 0)
+						{
+							//TODO: Enable returning further results
+							return new[] { b };
+						}
 					}
 				}
 
