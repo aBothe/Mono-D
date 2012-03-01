@@ -129,7 +129,7 @@
 			id = "DCompilerOptions"
 			_label = "Compiler toolchains"
 			class = "MonoDevelop.D.OptionPanels.DCompilerOptionsBinding"/>
-	</Extension>			
+	</Extension>
 
 	<Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Other/DGlobalOptions">
 		<Section
@@ -142,7 +142,7 @@
 		<Condition id = "ItemType" value = "MonoDevelop.D.DProject">
 			<Section
 				id = "DProjectOptions"
-			    _label = "D Project Options"
+			    _label = "Compiling"
 			    insertafter = "Compile"
 			    class = "MonoDevelop.D.OptionPanels.ProjectOptionsBinding"/>
 		</Condition>
