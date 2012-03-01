@@ -77,9 +77,9 @@ namespace D_Parser.Completion
 				bool HasSameAncestor = HaveSameAncestors(currentlyScopedBlock, tr.Node);
 				bool IsThis = false, IsSuper = false;
 
-				if (tr.DeclarationOrExpressionBase is DTokenDeclaration)
+				if (tr.DeclarationOrExpressionBase is TokenExpression)
 				{
-					int token = (tr.DeclarationOrExpressionBase as DTokenDeclaration).Token;
+					int token = ((TokenExpression)tr.DeclarationOrExpressionBase).Token;
 					IsThis = token == DTokens.This;
 					IsSuper = token == DTokens.Super;
 				}
