@@ -12,9 +12,10 @@ namespace MonoDevelop.D.OptionPanels
 	{
 		private DProject project;
 		private DProjectConfiguration configuration;
-		private Gtk.ListStore compilerStore = new Gtk.ListStore (typeof(string));
-		private Gtk.ListStore libStore = new Gtk.ListStore (typeof(string));
-		private Gtk.ListStore includePathStore = new Gtk.ListStore (typeof(string));
+		private Gtk.ListStore model_Compilers = new Gtk.ListStore (typeof(string));
+		private Gtk.ListStore model_Libraries = new Gtk.ListStore (typeof(string));
+		private Gtk.ListStore model_IncludePaths = new Gtk.ListStore (typeof(string));
+		Gtk.ListStore model_compileTarget = new Gtk.ListStore (typeof(string), typeof(DCompileTarget));
 		
 		public ProjectOptions ()
 		{
@@ -22,23 +23,30 @@ namespace MonoDevelop.D.OptionPanels
 			
 			Gtk.CellRendererText textRenderer = new Gtk.CellRendererText ();
 			
-			libTreeView.Model = libStore;
+			libTreeView.Model = model_Libraries;
 			libTreeView.HeadersVisible = false;
 			libTreeView.AppendColumn ("Library", textRenderer, "text", 0);
 			
-			includePathTreeView.Model = includePathStore;
+			includePathTreeView.Model = model_IncludePaths;
 			includePathTreeView.HeadersVisible = false;
 			includePathTreeView.AppendColumn ("Path", textRenderer, "text", 0);
 
-			cmbCompiler.Clear ();			
+			cmbCompiler.Clear ();
 			Gtk.CellRendererText cellRenderer = new Gtk.CellRendererText ();			
 			cmbCompiler.PackStart (cellRenderer, false);
 			cmbCompiler.AddAttribute (cellRenderer, "text", 0);
 
-			cmbCompiler.Model = compilerStore;
+			cmbCompiler.Model = model_Compilers;
 
 			foreach (var cmp in DCompilerService.Instance.Compilers)
-				compilerStore.AppendValues (cmp.Vendor);
+				model_Compilers.AppendValues (cmp.Vendor);
+			
+			combo_ProjectType.Model = model_compileTarget;
+			
+			model_compileTarget.AppendValues ("Consoleless executable", DCompileTarget.ConsolelessExecutable);
+			model_compileTarget.AppendValues ("Executable", DCompileTarget.Executable);
+			model_compileTarget.AppendValues ("Shared library", DCompileTarget.SharedLibrary);
+			model_compileTarget.AppendValues ("Static library", DCompileTarget.StaticLibrary);
 		}
 		
 		public void Load (DProject proj, DProjectConfiguration config)
@@ -56,26 +64,35 @@ namespace MonoDevelop.D.OptionPanels
 						break;
 					} 
 				} while (cmbCompiler.Model.IterNext (ref iter));
-				
+			
 			extraCompilerTextView.Buffer.Text = config.ExtraCompilerArguments;
 			extraLinkerTextView.Buffer.Text = config.ExtraLinkerArguments;
 			
 			text_BinDirectory.Text = config.OutputDirectory;
+			text_TargetFile.Text = config.Output;
 			text_ObjectsDirectory.Text = config.ObjectDirectory;
 			
-			libStore.Clear ();
+			if (model_compileTarget.GetIterFirst (out iter))
+				do {
+					if (proj.CompileTarget == (DCompileTarget)model_compileTarget.GetValue (iter, 1)) {
+						combo_ProjectType.SetActiveIter (iter);
+						break;
+					} 
+				} while (model_compileTarget.IterNext (ref iter));
+			
+			model_Libraries.Clear ();
 			foreach (string lib in proj.ExtraLibraries)
-				libStore.AppendValues (lib);
+				model_Libraries.AppendValues (lib);
 
-			includePathStore.Clear ();
+			model_IncludePaths.Clear ();
 			foreach (var p in project.LocalIncludeCache.ParsedDirectories)
-				includePathStore.AppendValues (p);
+				model_IncludePaths.AppendValues (p);
 		}
 		
 		private void OnIncludePathAdded (object sender, EventArgs e)
 		{
 			if (includePathEntry.Text.Length > 0) {				
-				includePathStore.AppendValues (includePathEntry.Text);
+				model_IncludePaths.AppendValues (includePathEntry.Text);
 				includePathEntry.Text = string.Empty;
 			}
 		}
@@ -84,13 +101,13 @@ namespace MonoDevelop.D.OptionPanels
 		{
 			Gtk.TreeIter iter;
 			includePathTreeView.Selection.GetSelected (out iter);
-			includePathStore.Remove (ref iter);
+			model_IncludePaths.Remove (ref iter);
 		}
 		
 		private void OnLibAdded (object sender, EventArgs e)
 		{
 			if (libAddEntry.Text.Length > 0) {				
-				libStore.AppendValues (libAddEntry.Text);
+				model_Libraries.AppendValues (libAddEntry.Text);
 				libAddEntry.Text = string.Empty;
 			}
 		}
@@ -99,7 +116,7 @@ namespace MonoDevelop.D.OptionPanels
 		{
 			Gtk.TreeIter iter;
 			libTreeView.Selection.GetSelected (out iter);
-			libStore.Remove (ref iter);
+			model_Libraries.Remove (ref iter);
 		}
 		
 		private void OnBrowseLibButtonClick (object sender, EventArgs e)
@@ -147,24 +164,28 @@ namespace MonoDevelop.D.OptionPanels
 			configuration.ExtraLinkerArguments = extraLinkerTextView.Buffer.Text;
 			
 			configuration.OutputDirectory = text_BinDirectory.Text;
+			configuration.Output = text_TargetFile.Text;
 			configuration.ObjectDirectory = text_ObjectsDirectory.Text;
 			
+			if (combo_ProjectType.GetActiveIter (out iter))
+				project.CompileTarget = (DCompileTarget)model_compileTarget.GetValue (iter, 1);
+			
 			// Store libs
-			libStore.GetIterFirst (out iter);
+			model_Libraries.GetIterFirst (out iter);
 			project.ExtraLibraries.Clear ();
-			while (libStore.IterIsValid (iter)) {
-				line = (string)libStore.GetValue (iter, 0);
+			while (model_Libraries.IterIsValid (iter)) {
+				line = (string)model_Libraries.GetValue (iter, 0);
 				project.ExtraLibraries.Add (line);
-				libStore.IterNext (ref iter);
+				model_Libraries.IterNext (ref iter);
 			}
 			
 			// Store includes
-			includePathStore.GetIterFirst (out iter);
+			model_IncludePaths.GetIterFirst (out iter);
 			project.LocalIncludeCache.ParsedDirectories.Clear ();
-			while (includePathStore.IterIsValid (iter)) {
-				line = (string)includePathStore.GetValue (iter, 0);
+			while (model_IncludePaths.IterIsValid (iter)) {
+				line = (string)model_IncludePaths.GetValue (iter, 0);
 				project.LocalIncludeCache.ParsedDirectories.Add (line);
-				includePathStore.IterNext (ref iter);
+				model_IncludePaths.IterNext (ref iter);
 			}
 
 			// Parse local includes
