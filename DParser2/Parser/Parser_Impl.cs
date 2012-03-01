@@ -3059,10 +3059,9 @@ namespace D_Parser.Parser
 				// IfCondition
 				IfCondition(dbs);
 
-				Expect(CloseParenthesis);
 				// ThenStatement
-
-				dbs.ThenStatement = Statement(Scope: Scope, Parent: dbs);
+				if(Expect(CloseParenthesis))
+					dbs.ThenStatement = Statement(Scope: Scope, Parent: dbs);
 
 				// ElseStatement
 				if (laKind == (Else))
