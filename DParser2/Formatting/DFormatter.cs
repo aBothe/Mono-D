@@ -163,8 +163,7 @@ namespace D_Parser.Formatting
 				}
 
 				// ),],}
-				else if (t.Kind == DTokens.Do ||
-					t.Kind == DTokens.CloseParenthesis ||
+				else if (t.Kind == DTokens.CloseParenthesis ||
 					t.Kind == DTokens.CloseSquareBracket ||
 					t.Kind == DTokens.CloseCurlyBrace)
 				{
@@ -204,14 +203,13 @@ namespace D_Parser.Formatting
 						else
 							PopBlock();
 
-						if (t.Kind == DTokens.Do ||
-							t.Kind == DTokens.CloseParenthesis &&
+						if (t.Kind == DTokens.CloseParenthesis &&
 							block != null &&
 							block.BlockStartToken == DTokens.OpenParenthesis)
 						{
 							if (la.Kind == DTokens.OpenCurlyBrace && la.line > t.line)
 								PopBlock();
-							else if (block==null || block.LastPreBlockIdentifier!=null && IsPreStatementToken(block.LastPreBlockIdentifier.Kind))
+							else if (block!=null && block.LastPreBlockIdentifier!=null && IsPreStatementToken(block.LastPreBlockIdentifier.Kind))
 								block = block.previousBlock;
 						}
 					}
