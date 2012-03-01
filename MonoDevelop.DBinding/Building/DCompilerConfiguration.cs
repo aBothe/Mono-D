@@ -101,13 +101,21 @@ namespace MonoDevelop.D.Building
 		public List<string> DefaultLibraries = new List<string> ();
 
 		#region Loading & Saving
-		public void CopyFrom (DCompilerConfiguration o)
+        /// <summary>
+        /// Note: the ParseCache's Root package will NOT be copied but simply assigned to the local root package!
+        /// Changes made to the local root package will affect o's Root package!!
+        /// </summary>
+        /// <param name="o"></param>
+		public void AssignFrom (DCompilerConfiguration o)
 		{
 			Vendor = o.Vendor;
 			BinPath = o.BinPath;
 
 			ParseCache.ParsedDirectories.Clear();
-			ParseCache.ParsedDirectories.AddRange(o.ParseCache.ParsedDirectories);
+            if(o.ParseCache.ParsedDirectories!=null)
+			    ParseCache.ParsedDirectories.AddRange(o.ParseCache.ParsedDirectories);
+
+            ParseCache.Root = o.ParseCache.Root;
 
 			DefaultLibraries.Clear();
 			DefaultLibraries.AddRange(o.DefaultLibraries);

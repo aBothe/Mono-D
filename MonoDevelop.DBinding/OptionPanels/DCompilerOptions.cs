@@ -63,7 +63,7 @@ namespace MonoDevelop.D.OptionPanels
 
 			foreach (var cmp in DCompilerService.Instance.Compilers) {
 				var virtCopy = new DCompilerConfiguration ();
-				virtCopy.CopyFrom (cmp);
+				virtCopy.AssignFrom (cmp);
 				compilerStore.AppendValues (cmp.Vendor, virtCopy);
 			}
 
@@ -354,7 +354,7 @@ namespace MonoDevelop.D.OptionPanels
 					}
 
 			if (cacheUpdateRequired) {
-				configuration.ParseCache.Clear ();
+				configuration.ParseCache.ParsedDirectories.Clear ();
 				configuration.ParseCache.ParsedDirectories.AddRange(paths);
 
 				try {
