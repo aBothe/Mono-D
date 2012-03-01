@@ -99,13 +99,14 @@ namespace MonoDevelop.D.Building.CompilerPresets
 			for (int i = 0; i < cfg.DefaultLibraries.Count; i++)
 				cfg.DefaultLibraries[i] = Path.ChangeExtension(cfg.DefaultLibraries[i], DCompilerService.StaticLibraryExtension);
 
-			foreach (var lt in cfg.LinkTargetConfigurations)
+			foreach (var kv in cfg.LinkTargetConfigurations)
 			{
+                var lt = kv.Value;
 				lt.Compiler = Path.ChangeExtension(lt.Compiler, DCompilerService.ExecutableExtension);
 				lt.Linker = Path.ChangeExtension(lt.Linker,DCompilerService.ExecutableExtension);
 
 				//HACK: On windows systems, add subsystem flag to the linker to hide console window
-				if (lt.TargetType == DCompileTarget.ConsolelessExecutable && OS.IsWindows)
+				if (kv.Key == DCompileTarget.ConsolelessExecutable && OS.IsWindows)
 				{
 					const string subsystemExt = " -L/su:windows -L/exet:nt";
 					lt.DebugArguments.LinkerArguments += subsystemExt;
