@@ -425,6 +425,9 @@ namespace MonoDevelop.D.Building
 		}
 
 		#region Compiler Error Parsing
+        static Regex dmdCompileRegex = new Regex(@"\s*(?<file>.*)\((?<line>\d*)\):\s*(?<type>Error|Warning|Note):(\s*)(?<message>.*)",
+            RegexOptions.Compiled | RegexOptions.ExplicitCapture);
+
 		private static Regex withColRegex = new Regex(
 			@"^\s*(?<file>.*):(?<line>\d*):(?<column>\d*):\s*(?<level>.*)\s*:\s(?<message>.*)",
 			RegexOptions.Compiled | RegexOptions.ExplicitCapture);
@@ -457,7 +460,22 @@ namespace MonoDevelop.D.Building
 			string warning = GettextCatalog.GetString("warning");
 			string note = GettextCatalog.GetString("note");
 
-			var match = withColRegex.Match(errorString);
+            var match = dmdCompileRegex.Match(errorString);
+            int line = 0;
+
+            if (match.Success)
+            {
+                error.FileName=match.Groups["file"].Value;
+                int.TryParse(match.Groups["line"].Value,out line);
+                error.Line = line;
+                error.IsWarning= match.Groups["type"].Value=="Warning" || match.Groups["type"].Value=="Note";
+                error.ErrorText=match.Groups["message"].Value;
+
+                return error;
+            }
+
+
+			match = withColRegex.Match(errorString);
 
 			if (match.Success)
 			{
