@@ -28,6 +28,9 @@ namespace MonoDevelop.D
 		public readonly Dictionary<ProjectFile, DateTime> LastModificationTimes = new Dictionary<ProjectFile, DateTime>();
 		public readonly List<string> BuiltObjects = new List<string>();
 
+        [ItemProperty("PreferOneStepBuild")]
+        public bool PreferOneStepBuild = true;
+
 		public override string ProjectType	{get { return "Native"; }}
 		public override string[] SupportedLanguages	{get{return new[]{"D",""};}}
 		

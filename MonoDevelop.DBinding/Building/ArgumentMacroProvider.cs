@@ -5,7 +5,7 @@ namespace MonoDevelop.D.Building
 {
 	public interface IArgumentMacroProvider
 	{
-		string Replace(string Input);
+        void ManipulateMacros(Dictionary<string,string> macros);
 	}
 
 	/// <summary>
@@ -30,17 +30,13 @@ namespace MonoDevelop.D.Building
 		
 		string importPaths;
 
-		public string Replace(string Input)
-		{
-			if (Input == "src")
-				return SourceFile;
-			if (Input == "obj")
-				return ObjectFile;
-			if(Input=="includes")
-				return importPaths;
-			return Input;
-		}
-	}
+        public void ManipulateMacros(Dictionary<string, string> macros)
+        {
+            macros["src"]=SourceFile;
+            macros["obj"] = ObjectFile;
+            macros["includes"] = importPaths;
+        }
+    }
 
 	/// <summary>
 	/// Provides macro substitution when linking D object files to one target file.
@@ -63,18 +59,6 @@ namespace MonoDevelop.D.Building
 
 		string objects;
 		
-		public IEnumerable<string> LibraryPaths
-		{
-			set{
-				libPaths="";
-				if(value!=null)
-					foreach(var p in value)
-						libPaths+='"'+p+'"'+' ';
-			}
-		}
-		
-		string libPaths;
-		
 		public IEnumerable<string> Libraries
 		{
 			set{
@@ -87,22 +71,73 @@ namespace MonoDevelop.D.Building
 		
 		string libs;
 
-		public string Replace(string Input)
-		{
-			if (Input == "objs")
-				return objects;
-			if (Input == "target")
-				return TargetFile;
-			if (Input == "relativeTargetDirectory" || Input=="relativeTargetDir")
-				return RelativeTargetDirectory;
-			if (Input == "target_noExt")
-				return Path.ChangeExtension(TargetFile, null);
-			if(Input=="libraryPaths")
-				return libPaths;
-			if(Input=="libs")
-				return libs;
+        public void ManipulateMacros(Dictionary<string, string> macros)
+        {
+            macros["objs"] = objects;
+            macros["libs"]=libs;
+            macros["target"] = TargetFile;
+            macros["relativeTargetDirectory"] = 
+                macros["relativeTargetDir"] = RelativeTargetDirectory;
+            macros["target_noExt"] = Path.ChangeExtension(TargetFile, null);
+        }
+    }
 
-			return null;
-		}
-	}
+    public class OneStepBuildArgumentMacroProvider:IArgumentMacroProvider{
+        public string ObjectsStringPattern = "\"{0}\"";
+        public string IncludesStringPattern = "-I\"{0}\"";
+
+        public string TargetFile;
+        public string RelativeTargetDirectory;
+        public string ObjectsDirectory;
+
+
+        string sources;
+        string libs;
+        string includes;
+
+        public IEnumerable<string> SourceFiles
+        {
+            set
+            {
+                sources = "";
+                if (value != null)
+                    foreach (var o in value)
+                        sources += string.Format(ObjectsStringPattern, o) + ' ';
+            }
+        }
+        
+        public IEnumerable<string> Libraries
+        {
+            set
+            {
+                libs = "";
+                if (value != null)
+                    foreach (var p in value)
+                        libs += '"' + p + '"' + ' ';
+            }
+        }
+
+        public IEnumerable<string> Includes
+        {
+            set
+            {
+                includes = "";
+                if (value != null)
+                    foreach (var p in value)
+                        includes += string.Format(IncludesStringPattern,p)+" ";
+            }
+        }
+
+        public void ManipulateMacros(Dictionary<string, string> macros)
+        {
+            macros["sources"] = sources;
+            macros["libs"] = libs;
+            macros["includes"] = includes;
+            macros["objectsDirectory"] = ObjectsDirectory;
+            macros["target"] = TargetFile;
+            macros["exe"] = Path.ChangeExtension(TargetFile, DCompilerService.ExecutableExtension);
+            macros["lib"] = Path.ChangeExtension(TargetFile, DCompilerService.StaticLibraryExtension);
+            macros["dll"] = Path.ChangeExtension(TargetFile, DCompilerService.SharedLibraryExtension);
+        }
+    }
 }

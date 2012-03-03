@@ -227,19 +227,12 @@ namespace MonoDevelop.D.Building
 			public string RcFile;
 			public string ResFile;
 			
-			public string Replace (string Input)
-			{
-				switch(Input)
-				{
-				case "rc":
-					return RcFile;
-					
-				case "res":
-					return ResFile;
-				}
-				return null;
-			}
-		}
+            public void ManipulateMacros(Dictionary<string, string> macros)
+            {
+                macros["rc"] = RcFile;
+                macros["res"] = ResFile;
+            }
+        }
 	}
 	
 	public class OS

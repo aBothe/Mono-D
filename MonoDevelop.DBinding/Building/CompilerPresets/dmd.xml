@@ -8,10 +8,12 @@
 		<DebugArgs>
 			<CompilerArg>-c "$src" -of"$obj" $includes -gc -debug</CompilerArg>
 			<LinkerArgs>-gc -debug -of"$target" $objs $libs</LinkerArgs>
+      <OneStepBuildArgs>-gc -debug $sources $libs $includes -od$objectsDirectory -of"$exe"</OneStepBuildArgs>
 		</DebugArgs>
 		<ReleaseArgs>
 			<CompilerArg>-c "$src" -of"$obj" $includes -O -release</CompilerArg>
 			<LinkerArgs>-O -release -of"$target" $objs $libs</LinkerArgs>
+      <OneStepBuildArgs>-O -release $sources $libs $includes -od$objectsDirectory -of"$exe"</OneStepBuildArgs>
 		</ReleaseArgs>
 	</TargetConfiguration>
 	
@@ -23,10 +25,12 @@
 		<DebugArgs>
 			<CompilerArg>-c "$src" -of"$obj" $includes -gc -debug</CompilerArg>
 			<LinkerArgs>-gc -debug -of"$target" $objs $libs</LinkerArgs>
+      <OneStepBuildArgs>-gc -debug $sources $libs $includes -od$objectsDirectory -of"$exe"</OneStepBuildArgs>
 		</DebugArgs>
 		<ReleaseArgs>
 			<CompilerArg>-c "$src" -of"$obj" $includes -O -release</CompilerArg>
 			<LinkerArgs>-O -release -of"$target" $objs $libs</LinkerArgs>
+      <OneStepBuildArgs>-O -release $sources $libs $includes -od$objectsDirectory -of"$exe"</OneStepBuildArgs>
 		</ReleaseArgs>
 	</TargetConfiguration>
 	
@@ -38,10 +42,12 @@
 		<DebugArgs>
 			<CompilerArg>-c "$src" -of"$obj" $includes -gc -debug</CompilerArg>
 			<LinkerArgs>-gc -debug -of"$target" $objs $libs -L/IMPLIB:$relativeTargetDir </LinkerArgs>
+      <OneStepBuildArgs>-gc -debug $sources $libs $includes -od$objectsDirectory -of"$dll"</OneStepBuildArgs>
 		</DebugArgs>
 		<ReleaseArgs>
 			<CompilerArg>-c "$src" -of"$obj" $includes -O -release</CompilerArg>
 			<LinkerArgs>-O -release -of"$target" $objs $libs -L/IMPLIB:$relativeTargetDir </LinkerArgs>
+      <OneStepBuildArgs>-O -release $sources $libs $includes -od$objectsDirectory -of"$dll"</OneStepBuildArgs>
 		</ReleaseArgs>
 	</TargetConfiguration>
 	
@@ -53,10 +59,12 @@
 		<DebugArgs>
 			<CompilerArg>-c "$src" -of"$obj" $includes -gc -debug</CompilerArg>
 			<LinkerArgs>-lib -of"$target" $objs</LinkerArgs>
+      <OneStepBuildArgs>-gc -debug $sources $libs $includes -lib -of"$lib"</OneStepBuildArgs>
 		</DebugArgs>
 		<ReleaseArgs>
 			<CompilerArg>-c "$src" -of"$obj" $includes -O -release</CompilerArg>
 			<LinkerArgs>-lib -of"$target" $objs</LinkerArgs>
+      <OneStepBuildArgs>-O -release $sources $libs $includes -lib -of"$lib"</OneStepBuildArgs>
 		</ReleaseArgs>
 	</TargetConfiguration>
 </Compiler>

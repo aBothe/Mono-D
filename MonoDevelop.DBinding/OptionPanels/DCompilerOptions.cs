@@ -232,23 +232,23 @@ namespace MonoDevelop.D.OptionPanels
 			}
 			//for now, using Executable target compiler command for all targets source compiling
 			LinkTargetConfiguration targetConfig;
-			targetConfig = config.GetTargetConfiguration (DCompileTarget.Executable);
+			targetConfig = config.GetOrCreateTargetConfiguration (DCompileTarget.Executable);
 			
 			txtBinPath.Text = config.BinPath;
 			
 			txtCompiler.Text = targetConfig.Compiler;
 			
 			//linker targets 			
-			targetConfig = config.GetTargetConfiguration (DCompileTarget.Executable); 						
+			targetConfig = config.GetOrCreateTargetConfiguration (DCompileTarget.Executable); 						
 			txtConsoleAppLinker.Text = targetConfig.Linker;			
 			
-			targetConfig = config.GetTargetConfiguration (DCompileTarget.ConsolelessExecutable); 						
+			targetConfig = config.GetOrCreateTargetConfiguration (DCompileTarget.ConsolelessExecutable); 						
 			txtGUIAppLinker.Text = targetConfig.Linker;			
 			
-			targetConfig = config.GetTargetConfiguration (DCompileTarget.SharedLibrary); 						
+			targetConfig = config.GetOrCreateTargetConfiguration (DCompileTarget.SharedLibrary); 						
 			txtSharedLibLinker.Text = targetConfig.Linker;
 			
-			targetConfig = config.GetTargetConfiguration (DCompileTarget.StaticLibrary); 						
+			targetConfig = config.GetOrCreateTargetConfiguration (DCompileTarget.StaticLibrary); 						
 			txtStaticLibLinker.Text = targetConfig.Linker;
 			
 			releaseArgumentsDialog.Load (config, false);		
@@ -303,20 +303,20 @@ namespace MonoDevelop.D.OptionPanels
 			
 			//for now, using Executable target compiler command for all targets source compiling
 			LinkTargetConfiguration targetConfig;
-			targetConfig = configuration.GetTargetConfiguration (DCompileTarget.Executable); 			
+			targetConfig = configuration.GetOrCreateTargetConfiguration (DCompileTarget.Executable); 			
 			targetConfig.Compiler = txtCompiler.Text;
 			
 			//linker targets 			
-			targetConfig = configuration.GetTargetConfiguration (DCompileTarget.Executable); 						
+			targetConfig = configuration.GetOrCreateTargetConfiguration (DCompileTarget.Executable); 						
 			targetConfig.Linker = txtConsoleAppLinker.Text;			
 			
-			targetConfig = configuration.GetTargetConfiguration (DCompileTarget.ConsolelessExecutable); 						
+			targetConfig = configuration.GetOrCreateTargetConfiguration (DCompileTarget.ConsolelessExecutable); 						
 			targetConfig.Linker = txtGUIAppLinker.Text;			
 			
-			targetConfig = configuration.GetTargetConfiguration (DCompileTarget.SharedLibrary); 						
+			targetConfig = configuration.GetOrCreateTargetConfiguration (DCompileTarget.SharedLibrary); 						
 			targetConfig.Linker = txtSharedLibLinker.Text;
 			
-			targetConfig = configuration.GetTargetConfiguration (DCompileTarget.StaticLibrary); 						
+			targetConfig = configuration.GetOrCreateTargetConfiguration (DCompileTarget.StaticLibrary); 						
 			targetConfig.Linker = txtStaticLibLinker.Text;
 			
 			releaseArgumentsDialog.Store ();			
@@ -353,9 +353,14 @@ namespace MonoDevelop.D.OptionPanels
 						break;
 					}
 
+            if (!cacheUpdateRequired && paths.Count != 0)
+                cacheUpdateRequired = 
+                    configuration.ParseCache.Root.Modules.Count == 0 && 
+                    configuration.ParseCache.Root.Packages.Count == 0;
+
 			if (cacheUpdateRequired) {
 				configuration.ParseCache.ParsedDirectories.Clear ();
-				configuration.ParseCache.ParsedDirectories.AddRange(paths);
+				configuration.ParseCache.ParsedDirectories.AddRange (paths);
 
 				try {
 					// Update parse cache immediately

@@ -8,10 +8,12 @@
 		<DebugArgs>
 			<CompilerArg>-c "$src" -o "$obj" $includes -g</CompilerArg>
 			<LinkerArgs>-o "$target" -g $objs $libs</LinkerArgs>
+      <OneStepBuildArgs>-g -debug $sources $libs $includes -od$objectsDirectory -of"$exe"</OneStepBuildArgs>
 		</DebugArgs>
 		<ReleaseArgs>
 			<CompilerArg>-c "$src" -o "$obj" $includes -O3</CompilerArg>
 			<LinkerArgs>-o "$target" -O3 $objs $libs</LinkerArgs>
+      <OneStepBuildArgs>-O3 -release $sources $libs $includes -od$objectsDirectory -of"$exe"</OneStepBuildArgs>
 		</ReleaseArgs>
 	</TargetConfiguration>
 	

@@ -1,26 +1,50 @@
 using System;
 using MonoDevelop.D.Building;
+using System.Collections.Generic;
+using Gtk;
 
 namespace MonoDevelop.D.OptionPanels
 {
 	public partial class BuildArgumentOptions : Gtk.Dialog
 	{		
-		private bool isDebug;
-		private string guiCompiler;
-		private string consoleCompiler;
-		private string sharedlibCompiler;
-		private string staticlibCompiler;
-		private string guiLinker;
-		private string consoleLinker;
-		private string sharedlibLinker;
-		private string staticlibLinker;
+		public bool IsDebug{ get; private set; }
+
+		Gtk.ListStore model_compileTarget = new Gtk.ListStore (typeof(string), typeof(DCompileTarget));
+		Dictionary<DCompileTarget,BuildConfiguration> argsStore = new Dictionary<DCompileTarget, BuildConfiguration> (4);
+		BuildConfiguration _currArgCfg;
 		
 		public BuildArgumentOptions ()
 		{
 			this.Build ();
+			
+			combo_SelectedBuildTarget.Model = model_compileTarget;
+			model_compileTarget.AppendValues ("Consoleless executable", DCompileTarget.ConsolelessExecutable);
+			model_compileTarget.AppendValues ("Executable", DCompileTarget.Executable);
+			model_compileTarget.AppendValues ("Shared library", DCompileTarget.SharedLibrary);
+			model_compileTarget.AppendValues ("Static library", DCompileTarget.StaticLibrary);
 		}
 		
-		public bool IsDebug{ get { return isDebug; } }
+		public DCompileTarget SelectedCompileTarget {
+			get {
+				TreeIter i;
+				
+				if (combo_SelectedBuildTarget.GetActiveIter (out i))
+					return (DCompileTarget)combo_SelectedBuildTarget.Model.GetValue (i, 1);
+				return DCompileTarget.ConsolelessExecutable;
+			}
+			set {
+				TreeIter i;
+				
+				if (combo_SelectedBuildTarget.Model.GetIterFirst (out i))
+					do {
+						if ((DCompileTarget)combo_SelectedBuildTarget.Model.GetValue (i, 1) == value) {
+							combo_SelectedBuildTarget.SetActiveIter (i);
+                            Load(argsStore[value]);
+							break;
+						}
+					} while(combo_SelectedBuildTarget.Model.IterNext(ref i));
+			}
+		}
 
 		public DCompilerConfiguration Configuration{ get; set; }
 		
@@ -28,78 +52,62 @@ namespace MonoDevelop.D.OptionPanels
 		{
 			base.OnShown ();
 			
-			this.Title = (isDebug ? "Debug" : "Release") + " build arguments";			
-
-			//compiler targets
-			txtGUICompiler.Text = guiCompiler;
-			txtConsoleCompiler.Text = consoleCompiler;
-			txtSharedLibCompiler.Text = sharedlibCompiler;
-			txtStaticLibCompiler.Text = staticlibCompiler;
+			this.Title = (IsDebug ? "Debug" : "Release") + " build arguments";					
+		}
+		
+		void Load (BuildConfiguration bc)
+		{
+			if ((_currArgCfg = bc) == null) {
+				text_CompilerArguments.Text = text_LinkerArguments.Text = text_OneStepBuildArguments.Text = "";
+				return;
+			}
 			
-			
-			//linker targets 
-			txtGUILinker.Text = guiLinker;
-			txtConsoleLinker.Text = consoleLinker;
-			txtSharedLibLinker.Text = sharedlibLinker;
-			txtStaticLibLinker.Text = staticlibLinker;				
+			text_CompilerArguments.Text = bc.CompilerArguments;
+			text_LinkerArguments.Text = bc.LinkerArguments;
+			text_OneStepBuildArguments.Text = bc.OneStepBuildArguments;
+		}
+		
+		void SaveToDict ()
+		{
+			if (_currArgCfg != null) {
+				_currArgCfg.CompilerArguments = text_CompilerArguments.Text;
+				_currArgCfg.LinkerArguments = text_LinkerArguments.Text;
+				_currArgCfg.OneStepBuildArguments = text_OneStepBuildArguments.Text;
+			}
 		}
 		
 		public void Load (DCompilerConfiguration config, bool isDebug)
 		{
 			Configuration = config;
-			this.isDebug = isDebug;
+			IsDebug = isDebug;
 
-			if (config == null)
-			{
-				consoleCompiler=
-				consoleLinker=
-				guiLinker =
-				guiCompiler =
-				sharedlibCompiler =
-				sharedlibLinker =
-				staticlibCompiler =
-				staticlibLinker = null;
-
+			if (config == null) {
+				Load (null);
 				return;
 			}
 			
-			LinkTargetConfiguration targetConfig;			
-			BuildConfiguration arguments;
-
 			//compiler targets
-			targetConfig = config.GetTargetConfiguration (DCompileTarget.ConsolelessExecutable);				
-			arguments = targetConfig.GetArguments (isDebug);					
-			guiCompiler = arguments.CompilerArguments;
-
-			targetConfig = config.GetTargetConfiguration (DCompileTarget.Executable);				
-			arguments = targetConfig.GetArguments (isDebug);					
-			consoleCompiler = arguments.CompilerArguments;
-
-			targetConfig = config.GetTargetConfiguration (DCompileTarget.SharedLibrary);				
-			arguments = targetConfig.GetArguments (isDebug);					
-			sharedlibCompiler = arguments.CompilerArguments;
+			argsStore [DCompileTarget.ConsolelessExecutable] = config
+					.GetOrCreateTargetConfiguration (DCompileTarget.ConsolelessExecutable)
+					.GetArguments (isDebug)
+					.Clone ();
 			
-			targetConfig = config.GetTargetConfiguration (DCompileTarget.StaticLibrary);				
-			arguments = targetConfig.GetArguments (isDebug);					
-			staticlibCompiler = arguments.CompilerArguments;
+			argsStore [DCompileTarget.Executable] = config
+					.GetOrCreateTargetConfiguration (DCompileTarget.Executable)
+					.GetArguments (isDebug)
+					.Clone ();
 			
+			argsStore [DCompileTarget.StaticLibrary] = config
+					.GetOrCreateTargetConfiguration (DCompileTarget.SharedLibrary)
+					.GetArguments (isDebug)
+					.Clone ();
 			
-			//linker targets 		
-			targetConfig = config.GetTargetConfiguration (DCompileTarget.ConsolelessExecutable);				
-			arguments = targetConfig.GetArguments (isDebug);					
-			guiLinker = arguments.LinkerArguments;
+			argsStore [DCompileTarget.SharedLibrary] = config
+					.GetOrCreateTargetConfiguration (DCompileTarget.StaticLibrary)
+					.GetArguments (isDebug)
+					.Clone ();
 			
-			targetConfig = config.GetTargetConfiguration (DCompileTarget.Executable);				
-			arguments = targetConfig.GetArguments (isDebug);					
-			consoleLinker = arguments.LinkerArguments;			
-			
-			targetConfig = config.GetTargetConfiguration (DCompileTarget.SharedLibrary);				
-			arguments = targetConfig.GetArguments (isDebug);					
-			sharedlibLinker = arguments.LinkerArguments;
-
-			targetConfig = config.GetTargetConfiguration (DCompileTarget.StaticLibrary);				
-			arguments = targetConfig.GetArguments (isDebug);					
-			staticlibLinker = arguments.LinkerArguments;			
+			SelectedCompileTarget = DCompileTarget.ConsolelessExecutable;
 		}
 		
 		public void Store ()
@@ -107,68 +115,37 @@ namespace MonoDevelop.D.OptionPanels
 			if (Configuration == null)			
 				return;
 			
-			LinkTargetConfiguration targetConfig;			
-			BuildConfiguration arguments;
-
-			//compiler targets
-			targetConfig = Configuration.GetTargetConfiguration (DCompileTarget.ConsolelessExecutable);				
-			arguments = targetConfig.GetArguments (isDebug);					
-			arguments.CompilerArguments = guiCompiler;
-
-			targetConfig = Configuration.GetTargetConfiguration (DCompileTarget.Executable);				
-			arguments = targetConfig.GetArguments (isDebug);					
-			arguments.CompilerArguments = consoleCompiler;
-
-			targetConfig = Configuration.GetTargetConfiguration (DCompileTarget.SharedLibrary);				
-			arguments = targetConfig.GetArguments (isDebug);					
-			arguments.CompilerArguments = sharedlibCompiler;
+			SaveToDict ();
 			
-			targetConfig = Configuration.GetTargetConfiguration (DCompileTarget.StaticLibrary);				
-			arguments = targetConfig.GetArguments (isDebug);					
-			arguments.CompilerArguments = staticlibCompiler;
-			
-			
-			//linker targets 
-			targetConfig = Configuration.GetTargetConfiguration (DCompileTarget.ConsolelessExecutable);				
-			arguments = targetConfig.GetArguments (isDebug);					
-			arguments.LinkerArguments = guiLinker;
-
-			targetConfig = Configuration.GetTargetConfiguration (DCompileTarget.Executable);				
-			arguments = targetConfig.GetArguments (isDebug);					
-			arguments.LinkerArguments = consoleLinker;			
-			
-			targetConfig = Configuration.GetTargetConfiguration (DCompileTarget.SharedLibrary);				
-			arguments = targetConfig.GetArguments (isDebug);					
-			arguments.LinkerArguments = sharedlibLinker;
-
-			targetConfig = Configuration.GetTargetConfiguration (DCompileTarget.StaticLibrary);				
-			arguments = targetConfig.GetArguments (isDebug);					
-			arguments.LinkerArguments = staticlibLinker;
-			
+			foreach (var kv in argsStore) {
+				var ltc = Configuration.GetOrCreateTargetConfiguration (kv.Key);
+				
+				if (IsDebug)
+					ltc.DebugArguments = kv.Value;
+				else
+					ltc.ReleaseArguments = kv.Value;
+			}
 		}
 
 		protected void buttonOk_Clicked (object sender, System.EventArgs e)
 		{
-			//compiler targets
-			guiCompiler = txtGUICompiler.Text;
-			consoleCompiler = txtConsoleCompiler.Text;
-			sharedlibCompiler = txtSharedLibCompiler.Text;
-			staticlibCompiler = txtStaticLibCompiler.Text;			
-			
-			//linker targets 
-			guiLinker = txtGUILinker.Text;
-			consoleLinker = txtConsoleLinker.Text;
-			sharedlibLinker = txtSharedLibLinker.Text;
-			staticlibLinker = txtStaticLibLinker.Text;
-			
-			Store ();
-
-			Hide();
+			Hide ();
 		}
 
 		protected void OnButtonCancelClicked (object sender, System.EventArgs e)
 		{
-			Hide();
+			Hide ();
+		}
+
+		protected void OnComboSelectedBuildTargetChanged (object sender, System.EventArgs e)
+		{
+			SaveToDict ();
+			Load (argsStore [SelectedCompileTarget]);
+		}
+		
+		protected void OnClose (object sender, System.EventArgs e)
+		{
+			
 		}
 	}
 }

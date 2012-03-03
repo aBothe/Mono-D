@@ -103,6 +103,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>ConfigPresets.resx</DependentUpon>
     </Compile>
+    <Compile Include="Building\ErrorExtracting.cs" />
     <Compile Include="Building\ProjectBuilder.cs" />
     <Compile Include="Formatting\DFormattingPolicy.cs" />
     <Compile Include="Formatting\DTextEditorIndentation.cs" />

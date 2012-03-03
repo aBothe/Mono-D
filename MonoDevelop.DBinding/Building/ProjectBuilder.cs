@@ -11,540 +11,474 @@ namespace MonoDevelop.D.Building
 {
 	public class ProjectBuilder
 	{
-		#region Properties
-		public DCompilerConfiguration Compiler
-		{
+        #region Properties
+		public DCompilerConfiguration Compiler {
 			get { return Project.Compiler; }
 		}
 
 		public DCompileTarget BuildTargetType;
 
-		LinkTargetConfiguration Commands { get { return Compiler.GetTargetConfiguration(BuildTargetType); } }
-		BuildConfiguration Arguments { get { return Commands.GetArguments(BuildConfig.DebugMode); } }
+		LinkTargetConfiguration Commands { get { return Compiler.GetOrCreateTargetConfiguration (BuildTargetType); } }
+
+		BuildConfiguration Arguments { get { return Commands.GetArguments (BuildConfig.DebugMode); } }
 
 		DProject Project;
 		DProjectConfiguration BuildConfig;
 		string AbsoluteObjectDirectory;
-
 		IProgressMonitor monitor;
-		List<string> BuiltObjects = new List<string>();
-		CompilerResults compilerResults;
-		BuildResult targetBuildResult;
-		List<string> sourceFileIncludePaths = new List<string>();
-		#endregion
+		List<string> BuiltObjects = new List<string> ();
+		List<string> sourceFileIncludePaths = new List<string> ();
 
-		protected ProjectBuilder() { }
+		public bool CanDoOneStepBuild {
+			get {
+				return Project.PreferOneStepBuild && Arguments.SupportsOneStepBuild;
+			}
+		}
+        #endregion
 
-		public static BuildResult CompileProject(IProgressMonitor ProgressMonitor, DProject Project, ConfigurationSelector BuildConfigurationSelector)
+		protected ProjectBuilder (IProgressMonitor monitor)
 		{
-			return new ProjectBuilder().Build(ProgressMonitor, Project, BuildConfigurationSelector);
+			this.monitor = monitor;
+		}
+
+		public static BuildResult CompileProject (IProgressMonitor ProgressMonitor, DProject Project, ConfigurationSelector BuildConfigurationSelector)
+		{
+			return new ProjectBuilder (ProgressMonitor).Build (Project, BuildConfigurationSelector);
 		}
 
 		/// <summary>
 		/// Compiles a D project.
 		/// </summary>
-		public BuildResult Build(IProgressMonitor ProgressMonitor,DProject Project, ConfigurationSelector BuildConfigurationSelector)
+		public BuildResult Build (DProject Project, ConfigurationSelector BuildConfigurationSelector)
 		{
-			monitor = ProgressMonitor;
 			this.Project = Project;
-			BuildConfig = Project.GetConfiguration(BuildConfigurationSelector) as DProjectConfiguration;
+			BuildConfig = Project.GetConfiguration (BuildConfigurationSelector) as DProjectConfiguration;
 			BuildTargetType = Project.CompileTarget;
+            
+			BuiltObjects.Clear ();
 
-			BuiltObjects.Clear();
+			if (Compiler == null) {
+				var targetBuildResult = new BuildResult ();
 
-			if (Path.IsPathRooted(BuildConfig.ObjectDirectory))
-				AbsoluteObjectDirectory = BuildConfig.ObjectDirectory;
-			else
-				AbsoluteObjectDirectory = Path.Combine(Project.BaseDirectory, EnsureCorrectPathSeparators(BuildConfig.ObjectDirectory));
-			
-			if (!Directory.Exists(AbsoluteObjectDirectory))
-				Directory.CreateDirectory(AbsoluteObjectDirectory);
-
-			compilerResults = new CompilerResults(new TempFileCollection());
-
-			targetBuildResult = new BuildResult();
-
-			monitor.BeginTask("Build Project", Project.Files.Count + 1);
-
-			if (Compiler == null)
-			{
-				monitor.EndTask();
-
-				string msg="Project compiler \""+Project.UsedCompilerVendor+"\" not found";
-				targetBuildResult.AddError(msg);
+				targetBuildResult.AddError ("Project compiler \"" + Project.UsedCompilerVendor + "\" not found");
 				targetBuildResult.FailedBuildCount++;
 
 				return targetBuildResult;
 			}
 
-			sourceFileIncludePaths.Clear();
-			sourceFileIncludePaths.AddRange(Compiler.ParseCache.ParsedDirectories);
-			sourceFileIncludePaths.AddRange(Project.LocalIncludeCache.ParsedDirectories);
+			if (Path.IsPathRooted (BuildConfig.ObjectDirectory))
+				AbsoluteObjectDirectory = BuildConfig.ObjectDirectory;
+			else
+				AbsoluteObjectDirectory = Path.Combine (Project.BaseDirectory, EnsureCorrectPathSeparators (BuildConfig.ObjectDirectory));
 
+			if (!Directory.Exists (AbsoluteObjectDirectory))
+				Directory.CreateDirectory (AbsoluteObjectDirectory);
+
+			sourceFileIncludePaths.Clear ();
+			sourceFileIncludePaths.AddRange (Compiler.ParseCache.ParsedDirectories);
+			sourceFileIncludePaths.AddRange (Project.LocalIncludeCache.ParsedDirectories);
+
+			if (CanDoOneStepBuild)
+				return DoOneStepBuild ();
+			else
+				return DoStepByStepBuild ();
+		}
+
+		BuildResult DoOneStepBuild ()
+		{
+			var br = new BuildResult ();
+            
+			// Enum files & build resource files
+			foreach (var pf in Project.Files) {
+				if (pf.BuildAction != BuildAction.Compile)
+					continue;
+
+				if (pf.FilePath.Extension.EndsWith (".rc", StringComparison.OrdinalIgnoreCase)) {
+					if (!CompileResourceScript (br, pf))
+						return br;
+				} else
+					BuiltObjects.Add (GetRelObjFilename (pf.FilePath));
+			}
+
+			// Build argument string
+			var target = Project.GetOutputFileName (BuildConfig.Selector);
+
+			var libs = new List<string> (Compiler.DefaultLibraries);
+			libs.AddRange (Project.ExtraLibraries);
+
+			var argumentString = FillInMacros (
+                Arguments.OneStepBuildArguments.Trim() + " "+
+                BuildConfig.ExtraCompilerArguments.Trim() + " " +
+                BuildConfig.ExtraLinkerArguments.Trim(),
+            new OneStepBuildArgumentMacroProvider
+            {
+                ObjectsStringPattern = Commands.ObjectFileLinkPattern,
+                IncludesStringPattern = Commands.IncludePathPattern,
+
+                SourceFiles = BuiltObjects,
+                Includes = sourceFileIncludePaths,
+                Libraries = libs,
+
+                RelativeTargetDirectory = BuildConfig.OutputDirectory,
+                ObjectsDirectory = BuildConfig.ObjectDirectory,
+                TargetFile = target,
+            });
+
+			// Execute the compiler
+			var stdOut = "";
+			var stdError = "";
+
+			var linkerExecutable = Commands.Compiler;
+			if (!Path.IsPathRooted (linkerExecutable)) {
+				linkerExecutable = Path.Combine (Compiler.BinPath, Commands.Linker);
+
+				if (!File.Exists (linkerExecutable))
+					linkerExecutable = Commands.Linker;
+			}
+
+			int exitCode = ExecuteCommand (linkerExecutable, argumentString, Project.BaseDirectory, monitor,
+                out stdError,
+                out stdOut);
+
+            HandleCompilerOutput(br,stdError);
+			HandleCompilerOutput (br,stdOut);
+			HandleOptLinkOutput (br,stdOut);
+			HandleReturnCode (br,linkerExecutable, exitCode);
+
+			return br;
+		}
+
+		BuildResult DoStepByStepBuild ()
+		{
+			monitor.BeginTask ("Build Project", Project.Files.Count + 1);
+
+			var br = new BuildResult ();
 			var modificationsDone = false;
 
-			foreach (var f in Project.Files)
-			{
+			foreach (var f in Project.Files) {
 				if (monitor.IsCancelRequested)
-					return targetBuildResult;
+					return br;
 
 				// If not compilable, skip it
-				if (f.BuildAction != BuildAction.Compile || !File.Exists(f.FilePath))
+				if (f.BuildAction != BuildAction.Compile || !File.Exists (f.FilePath))
 					continue;
 
 				// a.Check if source file was modified and if object file still exists
 				if (Project.EnableIncrementalLinking &&
-					!string.IsNullOrEmpty(f.LastGenOutput) &&
-					f.LastGenOutput.StartsWith(AbsoluteObjectDirectory) &&
-					Project.LastModificationTimes.ContainsKey(f) &&
-					Project.LastModificationTimes[f] == File.GetLastWriteTime(f.FilePath) &&
-					File.Exists(f.LastGenOutput))
-				{
+                    !string.IsNullOrEmpty (f.LastGenOutput) &&
+                    f.LastGenOutput.StartsWith (AbsoluteObjectDirectory) &&
+                    Project.LastModificationTimes.ContainsKey (f) &&
+                    Project.LastModificationTimes [f] == File.GetLastWriteTime (f.FilePath) &&
+                    File.Exists (f.LastGenOutput)) {
 					// File wasn't edited since last build
 					// but add the built object to the objs array
-					BuiltObjects.Add(f.LastGenOutput);
-					monitor.Step(1);
+					BuiltObjects.Add (f.LastGenOutput);
+					monitor.Step (1);
 					continue;
 				}
 
 				modificationsDone = true;
 
-				if (f.Name.EndsWith(".rc", StringComparison.OrdinalIgnoreCase))
-					CompileResourceScript(f);
+				if (f.Name.EndsWith (".rc", StringComparison.OrdinalIgnoreCase))
+					CompileResourceScript (br, f);
 				else
-					CompileSource(f);
+					CompileSource (br, f);
+
+				monitor.Step (1);
 			}
 
-			if (targetBuildResult.FailedBuildCount==0)
-			{
-				LinkToTarget(!Project.EnableIncrementalLinking || modificationsDone);
-			}
+			if (br.FailedBuildCount == 0) 
+				LinkToTarget (br,!Project.EnableIncrementalLinking || modificationsDone);
 
-			monitor.EndTask();
-			
-			foreach(CompilerError compilerError in compilerResults.Errors)
-				if (compilerError.IsWarning)
-					targetBuildResult.AddWarning(compilerError.FileName,
-					                           compilerError.Line,
-					                           compilerError.Column,
-					                           compilerError.ErrorNumber,
-					                           compilerError.ErrorText);
-				else
-					targetBuildResult.AddError(compilerError.FileName,
-					                           compilerError.Line,
-					                           compilerError.Column,
-					                           compilerError.ErrorNumber,
-					                           compilerError.ErrorText);
+			monitor.EndTask ();
 
-			return targetBuildResult;
+			return br;
 		}
 
-		void CompileSource(ProjectFile f)
+		bool CompileSource (BuildResult targetBuildResult, ProjectFile f)
 		{
-			if (File.Exists(f.LastGenOutput))
-				File.Delete(f.LastGenOutput);
+			if (File.Exists (f.LastGenOutput))
+				File.Delete (f.LastGenOutput);
 
-			var obj = HandleObjectFileNaming(f, DCompilerService.ObjectExtension);
+			var obj = HandleObjectFileNaming (f, DCompilerService.ObjectExtension);
 
 			// Create argument string for source file compilation.
-			var dmdArgs = FillInMacros(Arguments.CompilerArguments + " " + BuildConfig.ExtraCompilerArguments, new DCompilerMacroProvider
-			{
-				IncludePathConcatPattern = Commands.IncludePathPattern,
-				SourceFile = f.ProjectVirtualPath,
-				ObjectFile = obj,
-				Includes = sourceFileIncludePaths,
-			});
+			var dmdArgs = FillInMacros (Arguments.CompilerArguments + " " + BuildConfig.ExtraCompilerArguments, new DCompilerMacroProvider
+            {
+                IncludePathConcatPattern = Commands.IncludePathPattern,
+                SourceFile = f.ProjectVirtualPath,
+                ObjectFile = obj,
+                Includes = sourceFileIncludePaths,
+            });
 
 			// b.Execute compiler
-			string dmdOutput;
+			string stdError;
 			string stdOutput;
-			
-			var compilerExecutable=Commands.Compiler;
-			if(!Path.IsPathRooted(compilerExecutable))
-			{
-				compilerExecutable=Path.Combine(Compiler.BinPath,Commands.Compiler);
-				
-				if(!File.Exists(compilerExecutable))
-					compilerExecutable=Commands.Compiler;
+
+			var compilerExecutable = Commands.Compiler;
+			if (!Path.IsPathRooted (compilerExecutable)) {
+				compilerExecutable = Path.Combine (Compiler.BinPath, Commands.Compiler);
+
+				if (!File.Exists (compilerExecutable))
+					compilerExecutable = Commands.Compiler;
 			}
-			
-			int exitCode = ExecuteCommand(compilerExecutable, dmdArgs, Project.BaseDirectory, monitor, out dmdOutput, out stdOutput);
 
-			HandleCompilerOutput(dmdOutput);
-			HandleCompilerOutput(stdOutput);
-			HandleReturnCode(compilerExecutable,exitCode);
+			int exitCode = ExecuteCommand (compilerExecutable, dmdArgs, Project.BaseDirectory, monitor, out stdError, out stdOutput);
 
-			monitor.Step(1);
+			HandleCompilerOutput (targetBuildResult,stdError);
+			HandleCompilerOutput (targetBuildResult,stdOutput);
+			HandleReturnCode (targetBuildResult,compilerExecutable, exitCode);
 
-			if (exitCode != 0)
-			{
+			if (exitCode != 0) {
 				targetBuildResult.FailedBuildCount++;
-			}
-			else
-			{
+				return false;
+			} else {
 				f.LastGenOutput = obj;
 
 				targetBuildResult.BuildCount++;
-				Project.LastModificationTimes[f] = File.GetLastWriteTime(f.FilePath);
+				Project.LastModificationTimes [f] = File.GetLastWriteTime (f.FilePath);
 
-				BuiltObjects.Add(GetRelObjFilename(obj));
+				BuiltObjects.Add (GetRelObjFilename (obj));
+				return true;
 			}
 		}
 
-		void CompileResourceScript(ProjectFile f)
+		bool CompileResourceScript (BuildResult targetBuildResult, ProjectFile f)
 		{
-			var res = HandleObjectFileNaming(f, ".res");
+			var res = HandleObjectFileNaming (f, ".res");
 
 			// Build argument string
-			var resCmpArgs = FillInMacros(Win32ResourceCompiler.Instance.Arguments,
-				new Win32ResourceCompiler.ArgProvider
-				{
-					RcFile = f.FilePath,
-					ResFile = res
-				});
+			var resCmpArgs = FillInMacros (Win32ResourceCompiler.Instance.Arguments,
+                new Win32ResourceCompiler.ArgProvider
+                {
+                    RcFile = f.FilePath,
+                    ResFile = res
+                });
 
 			// Execute compiler
 			string output;
 			string stdOutput;
-			
-			int _exitCode = ExecuteCommand(Win32ResourceCompiler.Instance.Executable,
-				resCmpArgs,
-				Project.BaseDirectory,
-				monitor,
-				out output,
-				out stdOutput);
+
+			int _exitCode = ExecuteCommand (Win32ResourceCompiler.Instance.Executable,
+                resCmpArgs,
+                Project.BaseDirectory,
+                monitor,
+                out output,
+                out stdOutput);
 
 			// Error analysis
-			if (!string.IsNullOrEmpty(output))
-				compilerResults.Errors.Add(new CompilerError { FileName = f.FilePath, ErrorText = output });
-			if (!string.IsNullOrEmpty(stdOutput))
-				compilerResults.Errors.Add(new CompilerError { FileName = f.FilePath, ErrorText = stdOutput });
-			HandleReturnCode(Win32ResourceCompiler.Instance.Executable,_exitCode);
+			if (!string.IsNullOrEmpty (output))
+				targetBuildResult.AddError (output,f.FilePath);
+			if (!string.IsNullOrEmpty (stdOutput))
+                targetBuildResult.AddError(stdOutput, f.FilePath);
 
-			monitor.Step(1);
+			HandleReturnCode (targetBuildResult,Win32ResourceCompiler.Instance.Executable, _exitCode);
 
-			if (_exitCode != 0)
-			{
+			if (_exitCode != 0) 
+            {
 				targetBuildResult.FailedBuildCount++;
-			}
-			else
-			{
+				return false;
+			} 
+            else 
+            {
 				f.LastGenOutput = res;
 
 				targetBuildResult.BuildCount++;
-				Project.LastModificationTimes[f] = File.GetLastWriteTime(f.FilePath);
+				Project.LastModificationTimes [f] = File.GetLastWriteTime (f.FilePath);
 
-				BuiltObjects.Add(GetRelObjFilename(res));
+				BuiltObjects.Add (GetRelObjFilename (res));
+				return true;
 			}
 		}
 
-		void LinkToTarget(bool modificationsDone)
+		void LinkToTarget (BuildResult br,bool modificationsDone)
 		{
 			/// The target file to which all objects will be linked to
-			var LinkTargetFile = Project.GetOutputFileName(BuildConfig.Selector);
+			var LinkTargetFile = Project.GetOutputFileName (BuildConfig.Selector);
 
 			if (!modificationsDone &&
-				File.Exists(LinkTargetFile))
-			{
-				monitor.ReportSuccess("Build successful! - No new linkage needed");
-				monitor.Step(1);
+                File.Exists (LinkTargetFile)) {
+				monitor.ReportSuccess ("Build successful! - No new linkage needed");
+				monitor.Step (1);
 				return;
 			}
 
 			// b.Build linker argument string
 			// Build argument preparation
-			var libs = new List<string>(Compiler.DefaultLibraries);
-			libs.AddRange(Project.ExtraLibraries);
+			var libs = new List<string> (Compiler.DefaultLibraries);
+			libs.AddRange (Project.ExtraLibraries);
 
-			var linkArgs = FillInMacros(Arguments.LinkerArguments + " " + BuildConfig.ExtraLinkerArguments,
-				new DLinkerMacroProvider
-				{
-					ObjectsStringPattern = Commands.ObjectFileLinkPattern,
-					Objects = BuiltObjects.ToArray(),
-					TargetFile = LinkTargetFile,
-					RelativeTargetDirectory = BuildConfig.OutputDirectory.ToRelative(Project.BaseDirectory),
-					Libraries = libs
-				});
+			var linkArgs = FillInMacros (Arguments.LinkerArguments + " " + BuildConfig.ExtraLinkerArguments,
+                new DLinkerMacroProvider
+                {
+                    ObjectsStringPattern = Commands.ObjectFileLinkPattern,
+                    Objects = BuiltObjects.ToArray (),
+                    TargetFile = LinkTargetFile,
+                    RelativeTargetDirectory = BuildConfig.OutputDirectory.ToRelative (Project.BaseDirectory),
+                    Libraries = libs
+                });
+
+
+
 			var linkerOutput = "";
 			var linkerErrorOutput = "";
-			
-			var linkerExecutable=Commands.Compiler;
-			if(!Path.IsPathRooted(linkerExecutable)){
-				linkerExecutable=Path.Combine(Compiler.BinPath,Commands.Linker);
-				
-				if(!File.Exists(linkerExecutable))
-					linkerExecutable=Commands.Linker;
+
+			var linkerExecutable = Commands.Linker;
+			if (!Path.IsPathRooted (linkerExecutable)) {
+				linkerExecutable = Path.Combine (Compiler.BinPath, Commands.Linker);
+
+				if (!File.Exists (linkerExecutable))
+					linkerExecutable = Commands.Linker;
 			}
-			
-			int exitCode = ExecuteCommand(linkerExecutable, linkArgs, Project.BaseDirectory, monitor, 
-				out linkerErrorOutput,
-				out linkerOutput);
 
-			HandleOptLinkOutput(linkerOutput);
+			int exitCode = ExecuteCommand (linkerExecutable, linkArgs, Project.BaseDirectory, monitor,
+                out linkerErrorOutput,
+                out linkerOutput);
 
-			HandleReturnCode(linkerExecutable,exitCode);
+			HandleOptLinkOutput (br,linkerOutput);
+			HandleReturnCode (br,linkerExecutable, exitCode);
 		}
 
-		public static string EnsureCorrectPathSeparators(string file)
+        #region File naming
+		public static string EnsureCorrectPathSeparators (string file)
 		{
 			if (OS.IsWindows)
-				return file.Replace('/', '\\');
+				return file.Replace ('/', '\\');
 			else
-				return file.Replace('\\','/');
+				return file.Replace ('\\', '/');
 		}
 
-		private void HandleOptLinkOutput(string linkerOutput)
+		string GetRelObjFilename (string obj)
 		{
-			var matches=optlinkRegex.Matches(linkerOutput);
-
-			foreach (Match match in matches)
-			{
-				var error = new CompilerError();
-
-				// Get associated D source file
-				if (match.Groups["obj"].Success)
-				{
-					var obj = Project.GetAbsoluteChildPath(new FilePath(match.Groups["obj"].Value));
-
-					foreach(var pf in Project.Files)
-						if (pf.LastGenOutput == obj)
-						{
-							error.FileName = pf.FilePath;
-							break;
-						}
-				}
-
-				error.ErrorText="Linker error "+match.Groups["code"].Value+" - "+match.Groups["message"].Value;
-
-				compilerResults.Errors.Add(error);
-			}
+			return obj.StartsWith (Project.BaseDirectory) ?
+                obj.Substring (Project.BaseDirectory.ToString ().Length + 1) :
+                obj;
 		}
 
-		string GetRelObjFilename(string obj)
+		string HandleObjectFileNaming (ProjectFile f, string extension)
 		{
-			return obj.StartsWith(Project.BaseDirectory) ?
-				obj.Substring(Project.BaseDirectory.ToString().Length + 1) :
-				obj;
-		}
+			var obj = Path.Combine (AbsoluteObjectDirectory, f.FilePath.FileNameWithoutExtension) + extension;
 
-		string HandleObjectFileNaming(ProjectFile f, string extension)
-		{
-			var obj= Path.Combine(AbsoluteObjectDirectory, f.FilePath.FileNameWithoutExtension) + extension;
-
-			if (!BuiltObjects.Contains(GetRelObjFilename(obj)))
-			{
-				if (File.Exists(obj))
-					File.Delete(obj);
+			if (!BuiltObjects.Contains (GetRelObjFilename (obj))) {
+				if (File.Exists (obj))
+					File.Delete (obj);
 				return obj;
 			}
 
 			// Take the package name + module name otherwise
-			obj = Path.Combine(AbsoluteObjectDirectory, 
-				f.ProjectVirtualPath.ParentDirectory.ToString().Replace(Path.DirectorySeparatorChar, '.') + "." +
-				f.FilePath.FileNameWithoutExtension) + extension;
+			obj = Path.Combine (AbsoluteObjectDirectory,
+                f.ProjectVirtualPath.ParentDirectory.ToString ().Replace (Path.DirectorySeparatorChar, '.') + "." +
+                f.FilePath.FileNameWithoutExtension) + extension;
 
-			if (!BuiltObjects.Contains(GetRelObjFilename(obj)))
-			{
-				if (File.Exists(obj))
-					File.Delete(obj);
+			if (!BuiltObjects.Contains (GetRelObjFilename (obj))) {
+				if (File.Exists (obj))
+					File.Delete (obj);
 				return obj;
 			}
 
 			int i = 2;
-			while (BuiltObjects.Contains(GetRelObjFilename(obj)) && File.Exists(obj))
-			{
+			while (BuiltObjects.Contains(GetRelObjFilename(obj)) && File.Exists(obj)) {
 				// Simply add a number between the obj name and its extension
-				obj =	Path.Combine(AbsoluteObjectDirectory,
-						f.ProjectVirtualPath.ParentDirectory.ToString().Replace(Path.DirectorySeparatorChar, '.') + "." +
-						f.FilePath.FileNameWithoutExtension) + i + extension;
+				obj = Path.Combine (AbsoluteObjectDirectory,
+                        f.ProjectVirtualPath.ParentDirectory.ToString ().Replace (Path.DirectorySeparatorChar, '.') + "." +
+                        f.FilePath.FileNameWithoutExtension) + i + extension;
 				i++;
 			}
 
 			return obj;
 		}
+        #endregion
 
-		#region Build argument creation
+        #region Build argument creation
 
 		/// <summary>
 		/// Scans through RawArgumentString for macro uses (e.g. -of"$varname") and replace found variable matches with values provided by MacroProvider
 		/// </summary>
-		public static string FillInMacros(string RawArgumentString, IArgumentMacroProvider MacroProvider)
+		public static string FillInMacros (string RawArgumentString, IArgumentMacroProvider MacroProvider)
 		{
 			var returnArgString = RawArgumentString;
 
+			var macros = new Dictionary<string, string> ();
+
+			MacroProvider.ManipulateMacros (macros);
+
 			string tempId = "";
 			char c = '\0';
-			for (int i = RawArgumentString.Length - 1; i >= 0; i--)
-			{
-				c = RawArgumentString[i];
+			for (int i = RawArgumentString.Length - 1; i >= 0; i--) {
+				c = RawArgumentString [i];
 
-				if (char.IsLetterOrDigit(c) || c == '_')
+				if (char.IsLetterOrDigit (c) || c == '_')
 					tempId = c + tempId;
-				else if (c == '$' && tempId.Length > 0)
-				{
-					var replacement = MacroProvider.Replace(tempId);
+				else if (c == '$' && tempId.Length > 0) {
+					string surrogate = "";
 
-					//ISSUE: Replace undefined variables with nothing?
-					if (replacement == tempId || replacement == null)
-						replacement = "";
+					//ISSUE: Replace unknown macros with ""?
+					macros.TryGetValue (tempId, out surrogate);
 
-					returnArgString = returnArgString.Substring(0, i) + replacement + returnArgString.Substring(i + tempId.Length + 1); // "+1" because of the initially skipped '$'
+					returnArgString = returnArgString.Substring (0, i) + surrogate + returnArgString.Substring (i + tempId.Length + 1); // "+1" because of the initially skipped '$'
 
 					tempId = "";
-				}
-				else
+				} else
 					tempId = "";
 			}
 
 			return returnArgString;
 		}
 
-		#endregion
+        #endregion
+
+        #region Compiler Error Parsing
+		/// <summary>
+		/// Default OptLink regex for recognizing errors and their origins
+		/// </summary>
+		static Regex optlinkRegex = new Regex (
+            @"\n(?<obj>[a-zA-Z0-9/\\.]+)\((?<module>[a-zA-Z0-9]+)\) (?<offset>[a-zA-Z0-9 ]+)?(\r)?\n Error (?<code>\d*): (?<message>[a-zA-Z0-9_ :]+)",
+            RegexOptions.Compiled | RegexOptions.ExplicitCapture);
+
+		private void HandleOptLinkOutput (BuildResult br,string linkerOutput)
+		{
+			var matches = optlinkRegex.Matches (linkerOutput);
+
+			foreach (Match match in matches) {
+				var error = new BuildError ();
+
+				// Get associated D source file
+				if (match.Groups ["obj"].Success) {
+					var obj = Project.GetAbsoluteChildPath (new FilePath (match.Groups ["obj"].Value)).ChangeExtension(".d");
+
+					foreach (var pf in Project.Files)
+						if (pf.FilePath==obj) {
+							error.FileName = pf.FilePath;
+							break;
+						}
+				}
+
+				error.ErrorText = "Linker error " + match.Groups ["code"].Value + " - " + match.Groups ["message"].Value;
+
+				br.Append (error);
+			}
+		}
 
 		/// <summary>
 		/// Scans errorString line-wise for filename-line-message patterns (e.g. "myModule(1): Something's wrong here") and add these error locations to the CompilerResults cr.
 		/// </summary>
-		protected void HandleCompilerOutput(string errorString)
+		protected void HandleCompilerOutput (BuildResult br,string errorString)
 		{
-			var reader = new StringReader(errorString);
+			var reader = new StringReader (errorString);
 			string next;
 
-			while ((next = reader.ReadLine()) != null)
-			{
-				var error = FindError(next, reader);
-				if (error != null)
-				{
-					if(!Path.IsPathRooted(error.FileName))
-						error.FileName = Project.GetAbsoluteChildPath(error.FileName);
+			while ((next = reader.ReadLine()) != null) {
+				var error = ErrorExtracting.FindError (next, reader);
+				if (error != null) {
+					if (!Path.IsPathRooted (error.FileName))
+						error.FileName = Project.GetAbsoluteChildPath (error.FileName);
 
-					compilerResults.Errors.Add(error);
+					br.Append(error);
 				}
 			}
 
-			reader.Close();
+			reader.Close ();
 		}
-
-		#region Compiler Error Parsing
-        static Regex dmdCompileRegex = new Regex(@"\s*(?<file>.*)\((?<line>\d*)\):\s*(?<type>Error|Warning|Note):(\s*)(?<message>.*)",
-            RegexOptions.Compiled | RegexOptions.ExplicitCapture);
-
-		private static Regex withColRegex = new Regex(
-			@"^\s*(?<file>.*):(?<line>\d*):(?<column>\d*):\s*(?<level>.*)\s*:\s(?<message>.*)",
-			RegexOptions.Compiled | RegexOptions.ExplicitCapture);
-		private static Regex noColRegex = new Regex(
-			@"^\s*(?<file>.*):(?<line>\d*):\s*(?<level>.*)\s*:\s(?<message>.*)",
-			RegexOptions.Compiled | RegexOptions.ExplicitCapture);
-		private static Regex linkerRegex = new Regex(
-			@"^\s*(?<file>[^:]*):(?<line>\d*):\s*(?<message>.*)",
-			RegexOptions.Compiled | RegexOptions.ExplicitCapture);
-
-		//additional regex parsers
-		private static Regex noColRegex_2 = new Regex(
-			@"^\s*((?<file>.*)(\()(?<line>\d*)(\)):\s*(?<message>.*))|(Error:)",
-			RegexOptions.Compiled | RegexOptions.ExplicitCapture);
-
-		private static Regex gcclinkerRegex = new Regex(
-			@"^\s*(?<file>.*):(?<line>\d*):((?<column>\d*):)?\s*(?<level>.*)\s*:\s(?<message>.*)",
-			RegexOptions.Compiled | RegexOptions.ExplicitCapture);
-
-		/// <summary>
-		/// Default OptLink regex for recognizing errors and their origins
-		/// </summary>
-		private static Regex optlinkRegex = new Regex(
-			@"\n(?<obj>[a-zA-Z0-9/\\.]+)\((?<module>[a-zA-Z0-9]+)\) (?<offset>[a-zA-Z0-9 ]+)?(\r)?\n Error (?<code>\d*): (?<message>[a-zA-Z0-9_ :]+)",
-			RegexOptions.Compiled | RegexOptions.ExplicitCapture);
-
-		public static CompilerError FindError(string errorString, TextReader reader)
-		{
-			var error = new CompilerError();
-			string warning = GettextCatalog.GetString("warning");
-			string note = GettextCatalog.GetString("note");
-
-            var match = dmdCompileRegex.Match(errorString);
-            int line = 0;
-
-            if (match.Success)
-            {
-                error.FileName=match.Groups["file"].Value;
-                int.TryParse(match.Groups["line"].Value,out line);
-                error.Line = line;
-                error.IsWarning= match.Groups["type"].Value=="Warning" || match.Groups["type"].Value=="Note";
-                error.ErrorText=match.Groups["message"].Value;
-
-                return error;
-            }
-
-
-			match = withColRegex.Match(errorString);
-
-			if (match.Success)
-			{
-				error.FileName = match.Groups["file"].Value;
-				error.Line = int.Parse(match.Groups["line"].Value);
-				error.Column = int.Parse(match.Groups["column"].Value);
-				error.IsWarning = (match.Groups["level"].Value.Equals(warning, StringComparison.Ordinal) ||
-								   match.Groups["level"].Value.Equals(note, StringComparison.Ordinal));
-				error.ErrorText = match.Groups["message"].Value;
-
-				return error;
-			}
-
-			match = noColRegex.Match(errorString);
-
-			if (match.Success)
-			{
-				error.FileName = match.Groups["file"].Value;
-				error.Line = int.Parse(match.Groups["line"].Value);
-				error.IsWarning = (match.Groups["level"].Value.Equals(warning, StringComparison.Ordinal) ||
-								   match.Groups["level"].Value.Equals(note, StringComparison.Ordinal));
-				error.ErrorText = match.Groups["message"].Value;
-
-				// Skip messages that begin with ( and end with ), since they're generic.
-				//Attempt to capture multi-line versions too.
-				if (error.ErrorText.StartsWith("("))
-				{
-					string error_continued = error.ErrorText;
-					do
-					{
-						if (error_continued.EndsWith(")"))
-							return null;
-					} while ((error_continued = reader.ReadLine()) != null);
-				}
-
-				return error;
-			}
-
-			match = noColRegex_2.Match(errorString);
-			if (match.Success)
-			{
-				error.FileName = match.Groups["file"].Value;
-				error.Line = int.Parse(match.Groups["line"].Value);
-
-				error.IsWarning = (match.Groups["level"].Value.Equals(warning, StringComparison.Ordinal) ||
-								   match.Groups["level"].Value.Equals(note, StringComparison.Ordinal));
-				error.ErrorText = match.Groups["message"].Value;
-
-				return error;
-			}
-
-			match = gcclinkerRegex.Match(errorString);
-			if (match.Success)
-			{
-				error.FileName = match.Groups["file"].Value;
-				error.Line = int.Parse(match.Groups["line"].Value);
-
-				error.IsWarning = (match.Groups["level"].Value.Equals(warning, StringComparison.Ordinal) ||
-								   match.Groups["level"].Value.Equals(note, StringComparison.Ordinal));
-				error.ErrorText = match.Groups["message"].Value;
-
-
-				return error;
-			}
-
-
-			return null;
-		}
-		#endregion
 
 		/// <summary>
 		/// Checks a compilation return code, 
@@ -557,80 +491,69 @@ namespace MonoDevelop.D.Building
 		/// <param name="cr">
 		/// A <see cref="CompilerResults"/>: The return code from a compilation run
 		/// </param>
-		void HandleReturnCode(string executable,int returnCode)
+		void HandleReturnCode (BuildResult br,string executable, int returnCode)
 		{
-			compilerResults.NativeCompilerReturnValue = returnCode;
-
-			if (returnCode != 0)
-			{
+			if (returnCode != 0) {
 				if (monitor != null)
-					monitor.Log.WriteLine("Exit code " + returnCode.ToString());
-			}
+					monitor.Log.WriteLine ("Exit code " + returnCode.ToString ());
 
-			if (0 != returnCode && 0 == compilerResults.Errors.Count)
-			{
-				compilerResults.Errors.Add(new CompilerError(string.Empty, 0, 0, string.Empty,
-												  GettextCatalog.GetString("Build failed - check build output for details")));
+				br.AddError(string.Empty, 0, 0, string.Empty,
+                    GettextCatalog.GetString ("Build failed - check build output for details"));
 			}
 		}
+        #endregion
 
-		
+
 
 		/// <summary>
 		/// Executes a file and reports events related to the execution to the 'monitor' passed in the parameters.
 		/// </summary>
-		static int ExecuteCommand(
-			string command, 
-			string args, 
-			string baseDirectory, 
+		static int ExecuteCommand (
+            string command,
+            string args,
+            string baseDirectory,
 
-			IProgressMonitor monitor, 
-			out string errorOutput,
-			out string programOutput)
+            IProgressMonitor monitor,
+            out string errorOutput,
+            out string programOutput)
 		{
 			errorOutput = string.Empty;
 			int exitCode = -1;
 
-			var swError = new StringWriter();
-			var swOutput = new StringWriter();
+			var swError = new StringWriter ();
+			var swOutput = new StringWriter ();
 
-			var chainedError = new LogTextWriter();
-			chainedError.ChainWriter(monitor.Log);
-			chainedError.ChainWriter(swError);
+			var chainedError = new LogTextWriter ();
+			chainedError.ChainWriter (monitor.Log);
+			chainedError.ChainWriter (swError);
 
-			var chainedOutput = new LogTextWriter();
-			chainedOutput.ChainWriter(monitor.Log);
-			chainedOutput.ChainWriter(swOutput);
+			var chainedOutput = new LogTextWriter ();
+			chainedOutput.ChainWriter (monitor.Log);
+			chainedOutput.ChainWriter (swOutput);
 
-			monitor.Log.WriteLine("{0} {1}", command, args);
+			monitor.Log.WriteLine ("{0} {1}", command, args);
 
-			var operationMonitor = new AggregatedOperationMonitor(monitor);
+			var operationMonitor = new AggregatedOperationMonitor (monitor);
+			var p = Runtime.ProcessService.StartProcess (command, args, baseDirectory, chainedOutput, chainedError, null);
+			operationMonitor.AddOperation (p); //handles cancellation
 
-			try
-			{
-				var p = Runtime.ProcessService.StartProcess(command, args, baseDirectory, chainedOutput, chainedError, null);
-				operationMonitor.AddOperation(p); //handles cancellation
-				
 
-				p.WaitForOutput();
-				errorOutput = swError.ToString();
-				programOutput = swOutput.ToString();
-				exitCode = p.ExitCode;
-				p.Dispose();
+			p.WaitForOutput ();
+			errorOutput = swError.ToString ();
+			programOutput = swOutput.ToString ();
+			exitCode = p.ExitCode;
+			p.Dispose ();
 
-				if (monitor.IsCancelRequested)
-				{
-					monitor.Log.WriteLine(GettextCatalog.GetString("Build cancelled"));
-					monitor.ReportError(GettextCatalog.GetString("Build cancelled"), null);
-					if (exitCode == 0)
-						exitCode = -1;
-				}
+			if (monitor.IsCancelRequested) {
+				monitor.Log.WriteLine (GettextCatalog.GetString ("Build cancelled"));
+				monitor.ReportError (GettextCatalog.GetString ("Build cancelled"), null);
+				if (exitCode == 0)
+					exitCode = -1;
 			}
-			finally
 			{
-				chainedError.Close();
-				swError.Close();
-				operationMonitor.Dispose();
+				chainedError.Close ();
+				swError.Close ();
+				operationMonitor.Dispose ();
 			}
 
 			return exitCode;
