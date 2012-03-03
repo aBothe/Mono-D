@@ -596,10 +596,16 @@ namespace D_Parser.Resolver.TypeResolution
 		public static ResolveResult[] GetForeachIteratorType(DVariable i, ResolverContextStack ctxt)
 		{
 			var curStmt = ctxt.ScopedStatement;
-			
-			// Walk up statement hierarchy -- note that foreach loops can be nested
-			while (curStmt != null)
-			{
+
+            bool init = true;
+            // Walk up statement hierarchy -- note that foreach loops can be nested
+            while (curStmt != null)
+            {
+                if (init)
+                    init = false;
+                else
+                    curStmt = curStmt.Parent;
+
 				if (curStmt is ForeachStatement)
 				{
 					var fe = (ForeachStatement)curStmt;
