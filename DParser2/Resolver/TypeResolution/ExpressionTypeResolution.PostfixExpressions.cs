@@ -37,6 +37,9 @@ namespace D_Parser.Resolver.TypeResolution
 				else
 					arrayBaseType = new[] { b };
 
+                if (arrayBaseType == null)
+                    return null;
+
 				if (ex is PostfixExpression_Index)
 				{
 					foreach (var rr in arrayBaseType)
@@ -45,19 +48,19 @@ namespace D_Parser.Resolver.TypeResolution
 						{
 							var ar = rr as ArrayResult;
 							/*
-							 * myType_Array[0] -- returns TypeResult myType
-							 * return the value type of a given array result
-							 */
+							    * myType_Array[0] -- returns TypeResult myType
+							    * return the value type of a given array result
+							    */
 							//TODO: Handle opIndex overloads
 
 							if (ar != null && ar.ResultBase != null)
 								r.Add(ar.ResultBase);
 						}
 						/*
-						 * int* a = new int[10];
-						 * 
-						 * a[0] = 12;
-						 */
+						    * int* a = new int[10];
+						    * 
+						    * a[0] = 12;
+						    */
 						else if (rr is StaticTypeResult && rr.DeclarationOrExpressionBase is PointerDecl)
 							r.Add(rr.ResultBase);
 					}
