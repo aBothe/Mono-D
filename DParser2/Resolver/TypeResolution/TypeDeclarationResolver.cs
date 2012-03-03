@@ -741,8 +741,6 @@ namespace D_Parser.Resolver.TypeResolution
 
 					return r.Count == 0?null: r.ToArray();
 				}
-
-				curStmt = curStmt.Parent;
 			}
 
 			return null;
