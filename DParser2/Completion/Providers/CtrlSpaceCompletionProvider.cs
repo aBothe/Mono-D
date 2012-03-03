@@ -5,6 +5,7 @@ using D_Parser.Dom.Statements;
 using D_Parser.Parser;
 using D_Parser.Resolver;
 using D_Parser.Resolver.ASTScanner;
+using System.IO;
 
 namespace D_Parser.Completion
 {
@@ -202,7 +203,8 @@ namespace D_Parser.Completion
 			{
 				var codeToParse = code.Substring(blockStart, caretOffset - blockStart);
 
-				var psr = DParser.Create(new System.IO.StringReader(codeToParse));
+                var sr = new StringReader(codeToParse);
+				var psr = DParser.Create(sr);
 
 				/* Deadly important! For correct resolution behaviour, 
 				 * it is required to set the parser virtually to the blockStart position, 
@@ -256,6 +258,7 @@ namespace D_Parser.Completion
 				}
 
 				TrackerVariables = psr.TrackerVariables;
+                sr.Close();
 
 				return ret;
 			}
