@@ -2332,11 +2332,11 @@ namespace D_Parser.Parser
 					leftExpr = e;
 
 					if (laKind == New)
-						e.NewExpression = NewExpression(Scope);
+						e.AccessExpression = NewExpression(Scope);
 					else if (IsTemplateInstance)
-						e.TemplateInstance = TemplateInstance();
+						e.AccessExpression = TemplateInstance();
 					else if (Expect(Identifier))
-							e.Identifier = t.Value;
+                        e.AccessExpression = new IdentifierExpression(t.Value) { Location=t.Location, EndLocation=t.EndLocation };
 
 					e.EndLocation = t.EndLocation;
 				}
@@ -2835,12 +2835,12 @@ namespace D_Parser.Parser
 					return new TypeDeclarationExpression(bt);
 
 				if (Expect(Dot) && Expect(Identifier))
-					return new PostfixExpression_Access()
-					{
-						PostfixForeExpression = new TypeDeclarationExpression(bt),
-						Identifier = t.Value,
-						EndLocation = t.EndLocation
-					};
+                    return new PostfixExpression_Access()
+                    {
+                        PostfixForeExpression = new TypeDeclarationExpression(bt),
+                        AccessExpression = new IdentifierExpression(t.Value) { Location=t.Location, EndLocation=t.EndLocation },
+                        EndLocation = t.EndLocation
+                    };
 
 				return null;
 			}

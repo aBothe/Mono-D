@@ -659,20 +659,20 @@ namespace D_Parser.Dom.Expressions
 	/// </summary>
 	public class PostfixExpression_Access : PostfixExpression
 	{
-		public IExpression NewExpression;
-		public TemplateInstanceExpression TemplateInstance;
-		public string Identifier;
+        /// <summary>
+        /// Can be either
+        /// 1) An Identifier
+        /// 2) A Template Instance
+        /// 3) A NewExpression
+        /// </summary>
+        public IExpression AccessExpression;
 
 		public override string ToString()
 		{
 			var r = PostfixForeExpression.ToString() + '.';
 
-			if (NewExpression != null)
-				r += NewExpression.ToString();
-			else if(TemplateInstance!=null)
-				r += TemplateInstance.ToString();
-			else
-				r += Identifier;
+            if (AccessExpression != null)
+                r += AccessExpression.ToString();
 
 			return r;
 		}
@@ -687,7 +687,7 @@ namespace D_Parser.Dom.Expressions
 		{
 			get
 			{
-				return new[]{NewExpression, PostfixForeExpression};
+				return new[]{PostfixForeExpression, AccessExpression};
 			}
 		}
 	}

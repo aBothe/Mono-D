@@ -130,7 +130,7 @@ namespace D_Parser.Resolver
 					Type = intType, 
 					Initializer = new PostfixExpression_Access() { 
 						PostfixForeExpression = new TokenExpression(TypeToken), 
-						Identifier = "nan"
+						AccessExpression = new IdentifierExpression("nan")
 					}
 				};
 

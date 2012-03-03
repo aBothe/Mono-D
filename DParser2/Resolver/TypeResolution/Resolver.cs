@@ -292,6 +292,10 @@ namespace D_Parser.Resolver.TypeResolution
 		public static ResolveResult[] ResolveMembersFromResult(IEnumerable<ResolveResult> initialResults, out bool resolvedMember)
 		{
 			resolvedMember = false;
+
+            if (initialResults == null)
+                return null;
+
 			var ret = new List<ResolveResult>(initialResults);
 			var l2 = new List<ResolveResult>();
 

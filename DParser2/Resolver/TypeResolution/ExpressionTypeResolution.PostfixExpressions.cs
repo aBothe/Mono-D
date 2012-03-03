@@ -239,21 +239,22 @@ namespace D_Parser.Resolver.TypeResolution
 		{
 			var baseExpression = resultBases ?? Resolve(acc.PostfixForeExpression, ctxt);
 
-			if (acc.TemplateInstance != null)
-				return Resolve(acc.TemplateInstance, ctxt, baseExpression);
-			else if (acc.NewExpression != null)
+			if (acc.AccessExpression is TemplateInstanceExpression)
+				return Resolve((TemplateInstanceExpression)acc.AccessExpression, ctxt, baseExpression);
+			else if (acc.AccessExpression is NewExpression)
 			{
 				/*
 				 * This can be both a normal new-Expression as well as an anonymous class declaration!
 				 */
 				//TODO!
 			}
-			else if (acc.Identifier != null)
+			else if (acc.AccessExpression is IdentifierExpression)
 			{
+                var id = ((IdentifierExpression)acc.AccessExpression).Value as string;
 				/*
 				 * First off, try to resolve the identifier as it was a type declaration's identifer list part
 				 */
-				var results = TypeDeclarationResolver.ResolveFurtherTypeIdentifier(acc.Identifier,baseExpression,ctxt,acc);
+				var results = TypeDeclarationResolver.ResolveFurtherTypeIdentifier(id,baseExpression,ctxt,acc);
 
 				if (results != null)
 					return results;
@@ -268,7 +269,7 @@ namespace D_Parser.Resolver.TypeResolution
 					 * 1) Static properties
 					 * 2) ??
 					 */
-					var staticTypeProperty = StaticPropertyResolver.TryResolveStaticProperties(b, acc.Identifier, ctxt);
+					var staticTypeProperty = StaticPropertyResolver.TryResolveStaticProperties(b, id, ctxt);
 
 					if (staticTypeProperty != null)
 						return new[] { staticTypeProperty };

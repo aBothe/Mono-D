@@ -162,7 +162,7 @@ namespace D_Parser.Completion
 			{
 				var ar = rr as ArrayResult;
 
-				if (ar.ArrayDeclaration.IsAssociative)
+				if (ar.ArrayDeclaration!=null && ar.ArrayDeclaration.IsAssociative)
 					StaticTypePropertyProvider.AddAssocArrayProperties(rr, CompletionDataGenerator, ar.ArrayDeclaration);
 				else
 					StaticTypePropertyProvider.AddArrayProperties(rr, CompletionDataGenerator, ar.ArrayDeclaration);

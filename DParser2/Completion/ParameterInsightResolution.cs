@@ -154,8 +154,8 @@ namespace D_Parser.Completion
 				if (baseTypes == null)
 					return res;
 
-				if (acc.NewExpression is NewExpression)
-					Handle(acc.NewExpression as NewExpression, res, caretLocation, ctxt, baseTypes);
+				if (acc.AccessExpression is NewExpression)
+					Handle(acc.AccessExpression as NewExpression, res, caretLocation, ctxt, baseTypes);
 			}
 			// 3)
 			else if (e is TemplateInstanceExpression)
@@ -321,10 +321,10 @@ namespace D_Parser.Completion
 					{
 						var acc = curExpression as PostfixExpression_Access;
 
-						if (acc.TemplateInstance != null)
-							curMethodOrTemplateInstance = acc.TemplateInstance;
-						else if (acc.NewExpression != null)
-							curMethodOrTemplateInstance = acc.NewExpression;
+						if (acc.AccessExpression is TemplateInstanceExpression)
+							curMethodOrTemplateInstance = (TemplateInstanceExpression)acc.AccessExpression;
+						else if (acc.AccessExpression is NewExpression)
+							curMethodOrTemplateInstance = (NewExpression)acc.AccessExpression;
 					}
 
 					else if (curExpression is NewExpression)
