@@ -268,9 +268,9 @@ namespace MonoDevelop.D.Building
 
 			// Error analysis
 			if (!string.IsNullOrEmpty (output))
-				targetBuildResult.AddError (output,f.FilePath);
+				targetBuildResult.AddError (f.FilePath,0,0,"",output);
 			if (!string.IsNullOrEmpty (stdOutput))
-                targetBuildResult.AddError(stdOutput, f.FilePath);
+                targetBuildResult.AddError(f.FilePath,0,0,"",stdOutput);
 
 			HandleReturnCode (targetBuildResult,Win32ResourceCompiler.Instance.Executable, _exitCode);
 
