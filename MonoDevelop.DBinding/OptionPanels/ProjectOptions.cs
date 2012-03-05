@@ -2,6 +2,7 @@ using System;
 using MonoDevelop.D.Building;
 using MonoDevelop.Ide.Gui.Dialogs;
 using MonoDevelop.Ide;
+using MonoDevelop.Core;
 
 namespace MonoDevelop.D.OptionPanels
 {
@@ -13,7 +14,6 @@ namespace MonoDevelop.D.OptionPanels
 		private DProject project;
 		private DProjectConfiguration configuration;
 		private Gtk.ListStore model_Compilers = new Gtk.ListStore (typeof(string));
-		private Gtk.ListStore model_IncludePaths = new Gtk.ListStore (typeof(string));
 		Gtk.ListStore model_compileTarget = new Gtk.ListStore (typeof(string), typeof(DCompileTarget));
 		
 		public ProjectOptions ()
@@ -21,10 +21,6 @@ namespace MonoDevelop.D.OptionPanels
 			this.Build ();
 			
 			Gtk.CellRendererText textRenderer = new Gtk.CellRendererText ();
-			
-			includePathTreeView.Model = model_IncludePaths;
-			includePathTreeView.HeadersVisible = false;
-			includePathTreeView.AppendColumn ("Path", textRenderer, "text", 0);
 
 			cmbCompiler.Clear ();
 			Gtk.CellRendererText cellRenderer = new Gtk.CellRendererText ();			
@@ -78,48 +74,13 @@ namespace MonoDevelop.D.OptionPanels
 				} while (model_compileTarget.IterNext (ref iter));
 			
 			text_Libraries.Buffer.Text = string.Join ("\n", config.ExtraLibraries);
-			
-			model_IncludePaths.Clear ();
-			foreach (var p in project.LocalIncludeCache.ParsedDirectories)
-				model_IncludePaths.AppendValues (p);
-		}
-		
-		private void OnIncludePathAdded (object sender, EventArgs e)
-		{
-			if (includePathEntry.Text.Length > 0) {				
-				model_IncludePaths.AppendValues (includePathEntry.Text);
-				includePathEntry.Text = string.Empty;
-			}
-		}
-		
-		private void OnIncludePathRemoved (object sender, EventArgs e)
-		{
-			Gtk.TreeIter iter;
-			includePathTreeView.Selection.GetSelected (out iter);
-			model_IncludePaths.Remove (ref iter);
-		}
-		
-		private void OnIncludePathBrowseButtonClick (object sender, EventArgs e)
-		{
-			var dialog = new Gtk.FileChooserDialog ("Select D Source Folder", null, Gtk.FileChooserAction.SelectFolder, "Cancel", Gtk.ResponseType.Cancel, "Ok", Gtk.ResponseType.Ok)
-			{
-				TransientFor = Toplevel as Gtk.Window,
-				WindowPosition = Gtk.WindowPosition.Center
-			};
-			try {
-				if (dialog.Run () == (int)Gtk.ResponseType.Ok)
-					includePathEntry.Text = dialog.Filename;
-			} finally {
-				dialog.Destroy ();
-			}
+			text_Includes.Buffer.Text = string.Join ("\n", proj.LocalIncludeCache.ParsedDirectories);			
 		}
 		
 		public bool Store ()
 		{
 			if (configuration == null)
 				return false;
-			
-			string line;
 			
 			// Store used compiler vendor
 			project.UseDefaultCompilerVendor = cbUseDefaultCompiler.Active;
@@ -145,18 +106,48 @@ namespace MonoDevelop.D.OptionPanels
 			configuration.ExtraLibraries.AddRange (text_Libraries.Buffer.Text.Split (new[]{'\n'}, StringSplitOptions.RemoveEmptyEntries));
 			
 			// Store includes
-			model_IncludePaths.GetIterFirst (out iter);
-			project.LocalIncludeCache.ParsedDirectories.Clear ();
-			while (model_IncludePaths.IterIsValid (iter)) {
-				line = (string)model_IncludePaths.GetValue (iter, 0);
-				project.LocalIncludeCache.ParsedDirectories.Add (line);
-				model_IncludePaths.IterNext (ref iter);
-			}
+			#region Store new include paths
+			var paths = text_Includes.Buffer.Text.Split (new[]{'\n'}, StringSplitOptions.RemoveEmptyEntries);
 
-			// Parse local includes
-			DCompilerConfiguration.UpdateParseCacheAsync (project.LocalIncludeCache);
+			if (project.LocalIncludeCache.UpdateRequired (paths)) {
+				project.LocalIncludeCache.ParsedDirectories.Clear ();
+				project.LocalIncludeCache.ParsedDirectories.AddRange (paths);
+
+				try {
+					// Update parse cache immediately
+					DCompilerConfiguration.UpdateParseCacheAsync (project.LocalIncludeCache);
+				} catch (Exception ex) {
+					LoggingService.LogError ("Include path analysis error", ex);
+				}
+			}
+			#endregion
 			
 			return true;
+		}
+		
+		protected void OnButtonAddIncludeClicked (object sender, System.EventArgs e)
+		{
+			var dialog = new Gtk.FileChooserDialog (
+				"Select D Source Folder",
+				Ide.IdeApp.Workbench.RootWindow,
+				Gtk.FileChooserAction.SelectFolder,
+				"Cancel",
+				Gtk.ResponseType.Cancel,
+				"Ok",
+				Gtk.ResponseType.Ok) 
+			{ 
+				TransientFor=Toplevel as Gtk.Window,
+				WindowPosition = Gtk.WindowPosition.Center
+			};
+
+			try {
+                if (dialog.Run() == (int)Gtk.ResponseType.Ok)
+                {
+                    text_Includes.Buffer.Text += (text_Includes.Buffer.CharCount==0?"":"\n") + string.Join("\n", dialog.Filenames);
+                }
+			} finally {
+				dialog.Destroy ();
+			}
 		}
 			
 		protected virtual void OnUseDefaultCompilerChanged ()
@@ -167,29 +158,6 @@ namespace MonoDevelop.D.OptionPanels
 		protected void cbUseDefaultCompiler_Clicked (object sender, System.EventArgs e)
 		{
 			OnUseDefaultCompilerChanged ();
-		}
-
-		protected virtual void OnIncludePathEntryChanged (object sender, System.EventArgs e)
-		{
-			if (string.IsNullOrEmpty (includePathEntry.Text))
-				includePathAddButton.Sensitive = false;
-			else
-				includePathAddButton.Sensitive = true;
-		}
-
-		protected virtual void OnIncludePathTreeViewCursorChanged (object sender, System.EventArgs e)
-		{
-			includePathRemoveButton.Sensitive = true;
-		}
-
-		protected virtual void OnIncludePathRemoveButtonClicked (object sender, System.EventArgs e)
-		{
-			includePathRemoveButton.Sensitive = false;
-		}
-
-		protected virtual void OnIncludePathEntryActivated (object sender, System.EventArgs e)
-		{
-			OnIncludePathAdded (this, new EventArgs ());
 		}
 	}
 	

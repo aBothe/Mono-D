@@ -15,127 +15,144 @@ namespace D_Parser.Misc
 		#region Properties
 		public bool IsParsing { get; private set; }
 
-		public RootPackage Root=new RootPackage();
-
-		public List<string> ParsedDirectories = new List<string>();
+		public RootPackage Root = new RootPackage ();
+		public List<string> ParsedDirectories = new List<string> ();
 
 		public Exception LastParseException { get; private set; }
 		#endregion
 
 		#region Parsing management
-		public ParsePerformanceData[] Parse()
+		public ParsePerformanceData[] Parse ()
 		{
-			return Parse(ParsedDirectories);
+			return Parse (ParsedDirectories);
 		}
 
 		/// <summary>
 		/// Parses all directories and updates the cache contents
 		/// </summary>
-		public ParsePerformanceData[] Parse(IEnumerable<string> directoriesToParse)
+		public ParsePerformanceData[] Parse (IEnumerable<string> directoriesToParse)
 		{
-			var performanceLogs = new List<ParsePerformanceData>();
+			var performanceLogs = new List<ParsePerformanceData> ();
 
-			if (directoriesToParse == null)
-			{
-				ParsedDirectories.Clear();
+			if (directoriesToParse == null) {
+				ParsedDirectories.Clear ();
 				return null;
 			}
 
 			IsParsing = true;
 
-			var parsedDirs = new List<string>();
-			var newRoot=new RootPackage();
-			foreach (var dir in directoriesToParse)
-			{
-				parsedDirs.Add(dir);
+			var parsedDirs = new List<string> ();
+			var newRoot = new RootPackage ();
+			foreach (var dir in directoriesToParse) {
+				parsedDirs.Add (dir);
 
 				var ppd = new ParsePerformanceData { BaseDirectory = dir };
-				performanceLogs.Add(ppd);
+				performanceLogs.Add (ppd);
 
-				Parse(dir, newRoot, ppd, true);
+				Parse (dir, newRoot, ppd, true);
 			}
 
 			IsParsing = false;
 			ParsedDirectories = parsedDirs;
 			Root = newRoot;
 
-			return performanceLogs.ToArray();
+			return performanceLogs.ToArray ();
 		}
+		
+		public bool UpdateRequired (string[] paths)
+		{
+			if (paths == null)
+				return false;
+			
+			// If current dir count != the new dir count
+			bool cacheUpdateRequired = paths.Length != ParsedDirectories.Count;
 
-		void Parse(string dir, ModulePackage Parent, ParsePerformanceData ppd, bool root=false)
+			// If there's a new directory in it
+			if (!cacheUpdateRequired)
+				foreach (var path in paths)
+					if (!ParsedDirectories.Contains (path)) {
+						cacheUpdateRequired = true;
+						break;
+					}
+
+			if (!cacheUpdateRequired && paths.Length != 0)
+				cacheUpdateRequired = 
+                    Root.Modules.Count == 0 && 
+                    Root.Packages.Count == 0;
+			
+			return cacheUpdateRequired;
+		}
+		
+		void Parse (string dir, ModulePackage Parent, ParsePerformanceData ppd, bool root=false)
 		{
 			// wild card character ? seems to behave differently across platforms
 			// msdn: -> Exactly zero or one character.
 			// monodocs: -> Exactly one character.
-			string[] dFiles = Directory.GetFiles(dir, "*.d", SearchOption.TopDirectoryOnly);
-			string[] diFiles = Directory.GetFiles(dir, "*.di", SearchOption.TopDirectoryOnly);
+			string[] dFiles = Directory.GetFiles (dir, "*.d", SearchOption.TopDirectoryOnly);
+			string[] diFiles = Directory.GetFiles (dir, "*.di", SearchOption.TopDirectoryOnly);
 			string[] files = new string[dFiles.Length + diFiles.Length];
-			Array.Copy(dFiles, 0, files, 0, dFiles.Length);
-			Array.Copy(diFiles, 0, files, dFiles.Length, diFiles.Length);
+			Array.Copy (dFiles, 0, files, 0, dFiles.Length);
+			Array.Copy (diFiles, 0, files, dFiles.Length, diFiles.Length);
 
 			ModulePackage package = null;
-			var packageName = Path.GetFileName(dir);
+			var packageName = Path.GetFileName (dir);
 
 			if (root)
 				package = Parent;
-			else if (!Parent.Packages.TryGetValue(packageName, out package))
-				package = Parent.Packages[packageName] = new ModulePackage
+			else if (!Parent.Packages.TryGetValue (packageName, out package))
+				package = Parent.Packages [packageName] = new ModulePackage
 				{
 					Name = packageName,
 					Parent = Parent
 				};
 
-			bool isPhobosRoot = dir.EndsWith(Path.DirectorySeparatorChar+"phobos");
+			bool isPhobosRoot = dir.EndsWith (Path.DirectorySeparatorChar + "phobos");
 
-			var sw = new Stopwatch();
+			var sw = new Stopwatch ();
 
-			foreach (var file in files)
-			{
+			foreach (var file in files) {
 				// Skip index.d (D2) || phobos.d (D2|D1)
-				if (isPhobosRoot && (file.EndsWith("index.d") || file.EndsWith("phobos.d")))
+				if (isPhobosRoot && (file.EndsWith ("index.d") || file.EndsWith ("phobos.d")))
 					continue;
 
-				sw.Start();
+				sw.Start ();
 
-				try
-				{
+				try {
 					// If no debugger attached, save time + memory by skipping function bodies
-					var ast = DParser.ParseFile(file, !Debugger.IsAttached);
+					var ast = DParser.ParseFile (file, !Debugger.IsAttached);
 
-					if(!root)
-						ast.ModuleName =  package.Path + "." +Path.GetFileNameWithoutExtension(file);
+					if (!root)
+						ast.ModuleName = package.Path + "." + Path.GetFileNameWithoutExtension (file);
 
 					ast.FileName = file;
 
-					package.Modules[ExtractModuleName(ast.ModuleName)] = ast;
-				}
-				catch (Exception ex)
-				{
+					package.Modules [ExtractModuleName (ast.ModuleName)] = ast;
+				} catch (Exception ex) {
 					LastParseException = ex;
 				}
 
 				ppd.AmountFiles++;
-				sw.Stop();
+				sw.Stop ();
 			}
 
 			ppd.TotalDuration += sw.Elapsed.TotalSeconds;
 
 			// Parse further subdirectories
 			foreach (var subDir in Directory.EnumerateDirectories(dir))
-				Parse(subDir, package, ppd);
+				Parse (subDir, package, ppd);
 
 			// Removed empty packages
 			if (package.Modules.Count == 0 && package.Packages.Count == 0 && !root)
-				Parent.Packages.Remove(packageName);
+				Parent.Packages.Remove (packageName);
 		}
 
-		public void Clear(bool parseDirectories=false)
+		public void Clear (bool parseDirectories=false)
 		{
 			Root = null;
 			if (parseDirectories)
 				ParsedDirectories = null;
 
-			Root = new RootPackage();
+			Root = new RootPackage ();
 		}
 		#endregion
 
@@ -144,39 +161,36 @@ namespace D_Parser.Misc
 		/// Use this method to add a syntax tree to the parse cache.
 		/// Equally-named trees will be overwritten. 
 		/// </summary>
-		public void AddOrUpdate(IAbstractSyntaxTree ast)
+		public void AddOrUpdate (IAbstractSyntaxTree ast)
 		{
 			if (ast == null)
 				return;
 
-			var packName = ExtractPackageName(ast.ModuleName);
+			var packName = ExtractPackageName (ast.ModuleName);
 
-			if (string.IsNullOrEmpty(packName))
-			{
-				Root.Modules[ast.ModuleName] = ast;
+			if (string.IsNullOrEmpty (packName)) {
+				Root.Modules [ast.ModuleName] = ast;
 				return;
 			}
 
-			var pack = GetOrCreatePackage(packName,true);
+			var pack = GetOrCreatePackage (packName, true);
 
-			pack.Modules[ExtractModuleName(ast.ModuleName)] = ast;
+			pack.Modules [ExtractModuleName (ast.ModuleName)] = ast;
 		}
 
-		public ModulePackage GetOrCreatePackage(string package, bool create=false)
+		public ModulePackage GetOrCreatePackage (string package, bool create=false)
 		{
-			if (string.IsNullOrEmpty(package))
+			if (string.IsNullOrEmpty (package))
 				return Root;
 
 			var currentPackage = (ModulePackage)Root;
 
-			foreach (var p in SplitModuleName(package))
-			{
+			foreach (var p in SplitModuleName(package)) {
 				ModulePackage returnValue = null;
 
-				if (!currentPackage.Packages.TryGetValue(p, out returnValue))
-				{
+				if (!currentPackage.Packages.TryGetValue (p, out returnValue)) {
 					if (create)
-						returnValue = currentPackage.Packages[p] =
+						returnValue = currentPackage.Packages [p] =
 							new ModulePackage
 							{
 								Name = p,
@@ -195,25 +209,24 @@ namespace D_Parser.Misc
 		/// <summary>
 		/// Returns null if no module was found.
 		/// </summary>
-		public IAbstractSyntaxTree GetModule(string moduleName)
+		public IAbstractSyntaxTree GetModule (string moduleName)
 		{
-			var packName = ExtractPackageName(moduleName);
+			var packName = ExtractPackageName (moduleName);
 
-			var pack = GetOrCreatePackage(packName, false);
+			var pack = GetOrCreatePackage (packName, false);
 
-			if (pack != null)
-			{
+			if (pack != null) {
 				IAbstractSyntaxTree ret = null;
-				if(pack.Modules.TryGetValue(ExtractModuleName(moduleName),out ret))
+				if (pack.Modules.TryGetValue (ExtractModuleName (moduleName), out ret))
 					return ret;
 			}
 
 			return null;
 		}
 
-		public IAbstractSyntaxTree GetModuleByFileName(string file, string baseDirectory)
+		public IAbstractSyntaxTree GetModuleByFileName (string file, string baseDirectory)
 		{
-			return GetModule(DModule.GetModuleName(baseDirectory,file));
+			return GetModule (DModule.GetModuleName (baseDirectory, file));
 		}
 		#endregion
 
@@ -221,38 +234,39 @@ namespace D_Parser.Misc
 		/// <summary>
 		/// a.b.c.d => a.b.c
 		/// </summary>
-		public static string ExtractPackageName(string ModuleName)
+		public static string ExtractPackageName (string ModuleName)
 		{
-			if (string.IsNullOrEmpty(ModuleName))
+			if (string.IsNullOrEmpty (ModuleName))
 				return "";
 
-			var i = ModuleName.LastIndexOf('.');
+			var i = ModuleName.LastIndexOf ('.');
 
-			return i == -1 ? "" : ModuleName.Substring(0,i);
+			return i == -1 ? "" : ModuleName.Substring (0, i);
 		}
 
 		/// <summary>
 		/// a.b.c.d => d
 		/// </summary>
-		public static string ExtractModuleName(string ModuleName)
+		public static string ExtractModuleName (string ModuleName)
 		{
-			if (string.IsNullOrEmpty(ModuleName))
+			if (string.IsNullOrEmpty (ModuleName))
 				return "";
 
-			var i = ModuleName.LastIndexOf('.');
+			var i = ModuleName.LastIndexOf ('.');
 
-			return i == -1 ? ModuleName : ModuleName.Substring(i + 1);
+			return i == -1 ? ModuleName : ModuleName.Substring (i + 1);
 		}
 
-		public static string[] SplitModuleName(string ModuleName)
+		public static string[] SplitModuleName (string ModuleName)
 		{
-			return ModuleName.Split('.');
+			return ModuleName.Split ('.');
 		}
 		#endregion
 	}
 
-	public class RootPackage : ModulePackage {
-		public override string ToString()
+	public class RootPackage : ModulePackage
+	{
+		public override string ToString ()
 		{
 			return "<Root>";
 		}
@@ -261,19 +275,18 @@ namespace D_Parser.Misc
 	public class ModulePackage
 	{
 		public ModulePackage Parent { get; internal set; }
+
 		public string Name = "";
+		public Dictionary<string, ModulePackage> Packages = new Dictionary<string, ModulePackage> ();
+		public Dictionary<string, IAbstractSyntaxTree> Modules = new Dictionary<string, IAbstractSyntaxTree> ();
 
-		public Dictionary<string, ModulePackage> Packages = new Dictionary<string, ModulePackage>();
-		public Dictionary<string, IAbstractSyntaxTree> Modules = new Dictionary<string, IAbstractSyntaxTree>();
-
-		public string Path
-		{
-			get{
-				return ((Parent == null || Parent is RootPackage) ? "" : (Parent.Path+".")) + Name;
+		public string Path {
+			get {
+				return ((Parent == null || Parent is RootPackage) ? "" : (Parent.Path + ".")) + Name;
 			}
 		}
 
-		public override string ToString()
+		public override string ToString ()
 		{
 			return Path;
 		}
@@ -288,10 +301,9 @@ namespace D_Parser.Misc
 		/// Duration (in seconds)
 		/// </summary>
 		public double TotalDuration = 0.0;
-		public double FileDuration
-		{
-			get
-			{
+
+		public double FileDuration {
+			get {
 				if (AmountFiles > 0)
 					return TotalDuration / AmountFiles;
 				return 0;

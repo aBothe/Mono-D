@@ -281,9 +281,6 @@ namespace MonoDevelop.D.OptionPanels
 			if (configuration == null)
 				return false;
 			
-			Gtk.TreeIter iter;
-			string line;
-			
 			configuration.BinPath = txtBinPath.Text;
 			
 			//for now, using Executable target compiler command for all targets source compiling
@@ -313,23 +310,7 @@ namespace MonoDevelop.D.OptionPanels
 			#region Store new include paths
 			var paths = text_Includes.Buffer.Text.Split (new[]{'\n'}, StringSplitOptions.RemoveEmptyEntries);
 
-			// If current dir count != the new dir count
-			bool cacheUpdateRequired = paths.Length != configuration.ParseCache.ParsedDirectories.Count;
-
-			// If there's a new directory in it
-			if (!cacheUpdateRequired)
-				foreach (var path in paths)
-					if (!configuration.ParseCache.ParsedDirectories.Contains (path)) {
-						cacheUpdateRequired = true;
-						break;
-					}
-
-			if (!cacheUpdateRequired && paths.Length != 0)
-				cacheUpdateRequired = 
-                    configuration.ParseCache.Root.Modules.Count == 0 && 
-                    configuration.ParseCache.Root.Packages.Count == 0;
-
-			if (cacheUpdateRequired) {
+			if (configuration.ParseCache.UpdateRequired (paths)) {
 				configuration.ParseCache.ParsedDirectories.Clear ();
 				configuration.ParseCache.ParsedDirectories.AddRange (paths);
 
@@ -385,7 +366,7 @@ namespace MonoDevelop.D.OptionPanels
 
 			try {
 				if (dialog.Run () == (int)Gtk.ResponseType.Ok)
-					text_Includes.Buffer.Text += "\n" + string.Join ("\n", dialog.Filenames);
+                    text_Includes.Buffer.Text += (text_Includes.Buffer.CharCount == 0 ? "" : "\n") + string.Join("\n", dialog.Filenames);
 			} finally {
 				dialog.Destroy ();
 			}
