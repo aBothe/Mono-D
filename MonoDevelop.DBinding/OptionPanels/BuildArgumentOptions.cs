@@ -39,7 +39,7 @@ namespace MonoDevelop.D.OptionPanels
 					do {
 						if ((DCompileTarget)combo_SelectedBuildTarget.Model.GetValue (i, 1) == value) {
 							combo_SelectedBuildTarget.SetActiveIter (i);
-                            Load(argsStore[value]);
+							Load (argsStore [value]);
 							break;
 						}
 					} while(combo_SelectedBuildTarget.Model.IterNext(ref i));

@@ -313,7 +313,7 @@ namespace MonoDevelop.D.Building
 		/// An argument string that is used for compiling & linking all project files together at once
 		/// </summary>
 		public string OneStepBuildArguments;
-
+		
 		public bool SupportsOneStepBuild {
 			get { return !string.IsNullOrEmpty (OneStepBuildArguments); }
 		}

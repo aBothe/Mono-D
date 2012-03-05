@@ -13,7 +13,6 @@ namespace MonoDevelop.D.OptionPanels
 		private DProject project;
 		private DProjectConfiguration configuration;
 		private Gtk.ListStore model_Compilers = new Gtk.ListStore (typeof(string));
-		private Gtk.ListStore model_Libraries = new Gtk.ListStore (typeof(string));
 		private Gtk.ListStore model_IncludePaths = new Gtk.ListStore (typeof(string));
 		Gtk.ListStore model_compileTarget = new Gtk.ListStore (typeof(string), typeof(DCompileTarget));
 		
@@ -22,10 +21,6 @@ namespace MonoDevelop.D.OptionPanels
 			this.Build ();
 			
 			Gtk.CellRendererText textRenderer = new Gtk.CellRendererText ();
-			
-			libTreeView.Model = model_Libraries;
-			libTreeView.HeadersVisible = false;
-			libTreeView.AppendColumn ("Library", textRenderer, "text", 0);
 			
 			includePathTreeView.Model = model_IncludePaths;
 			includePathTreeView.HeadersVisible = false;
@@ -82,10 +77,8 @@ namespace MonoDevelop.D.OptionPanels
 					} 
 				} while (model_compileTarget.IterNext (ref iter));
 			
-			model_Libraries.Clear ();
-			foreach (string lib in proj.ExtraLibraries)
-				model_Libraries.AppendValues (lib);
-
+			text_Libraries.Buffer.Text = string.Join ("\n", config.ExtraLibraries);
+			
 			model_IncludePaths.Clear ();
 			foreach (var p in project.LocalIncludeCache.ParsedDirectories)
 				model_IncludePaths.AppendValues (p);
@@ -104,33 +97,6 @@ namespace MonoDevelop.D.OptionPanels
 			Gtk.TreeIter iter;
 			includePathTreeView.Selection.GetSelected (out iter);
 			model_IncludePaths.Remove (ref iter);
-		}
-		
-		private void OnLibAdded (object sender, EventArgs e)
-		{
-			if (libAddEntry.Text.Length > 0) {				
-				model_Libraries.AppendValues (libAddEntry.Text);
-				libAddEntry.Text = string.Empty;
-			}
-		}
-		
-		private void OnLibRemoved (object sender, EventArgs e)
-		{
-			Gtk.TreeIter iter;
-			libTreeView.Selection.GetSelected (out iter);
-			model_Libraries.Remove (ref iter);
-		}
-		
-		private void OnBrowseLibButtonClick (object sender, EventArgs e)
-		{
-			AddLibraryDialog dialog = new AddLibraryDialog (AddLibraryDialog.FileFilterType.LibraryFiles)
-			{
-				TransientFor = Toplevel as Gtk.Window,
-				WindowPosition = Gtk.WindowPosition.Center
-			};
-
-			dialog.Run ();
-			libAddEntry.Text = dialog.SelectedFileName;
 		}
 		
 		private void OnIncludePathBrowseButtonClick (object sender, EventArgs e)
@@ -175,13 +141,8 @@ namespace MonoDevelop.D.OptionPanels
 				project.CompileTarget = (DCompileTarget)model_compileTarget.GetValue (iter, 1);
 			
 			// Store libs
-			model_Libraries.GetIterFirst (out iter);
-			project.ExtraLibraries.Clear ();
-			while (model_Libraries.IterIsValid (iter)) {
-				line = (string)model_Libraries.GetValue (iter, 0);
-				project.ExtraLibraries.Add (line);
-				model_Libraries.IterNext (ref iter);
-			}
+			configuration.ExtraLibraries.Clear ();
+			configuration.ExtraLibraries.AddRange (text_Libraries.Buffer.Text.Split (new[]{'\n'}, StringSplitOptions.RemoveEmptyEntries));
 			
 			// Store includes
 			model_IncludePaths.GetIterFirst (out iter);
@@ -207,24 +168,6 @@ namespace MonoDevelop.D.OptionPanels
 		{
 			OnUseDefaultCompilerChanged ();
 		}
-		
-		protected virtual void OnLibAddEntryChanged (object sender, EventArgs e)
-		{
-			if (string.IsNullOrEmpty (libAddEntry.Text))
-				addLibButton.Sensitive = false;
-			else
-				addLibButton.Sensitive = true;
-		}
-
-		protected virtual void OnLibTreeViewCursorChanged (object sender, System.EventArgs e)
-		{
-			removeLibButton.Sensitive = true;
-		}
-
-		protected virtual void OnRemoveLibButtonClicked (object sender, System.EventArgs e)
-		{
-			removeLibButton.Sensitive = false;
-		}
 
 		protected virtual void OnIncludePathEntryChanged (object sender, System.EventArgs e)
 		{
@@ -242,11 +185,6 @@ namespace MonoDevelop.D.OptionPanels
 		protected virtual void OnIncludePathRemoveButtonClicked (object sender, System.EventArgs e)
 		{
 			includePathRemoveButton.Sensitive = false;
-		}
-		
-		protected virtual void OnLibAddEntryActivated (object sender, System.EventArgs e)
-		{
-			OnLibAdded (this, new EventArgs ());
 		}
 
 		protected virtual void OnIncludePathEntryActivated (object sender, System.EventArgs e)

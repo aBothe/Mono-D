@@ -129,8 +129,6 @@ namespace MonoDevelop.D.OptionPanels
 			w1.Add (this.table1);
 			global::Gtk.Box.BoxChild w10 = ((global::Gtk.Box.BoxChild)(w1 [this.table1]));
 			w10.Position = 0;
-			w10.Expand = false;
-			w10.Fill = false;
 			// Internal child MonoDevelop.D.OptionPanels.BuildArgumentOptions.ActionArea
 			global::Gtk.HButtonBox w11 = this.ActionArea;
 			w11.Name = "dialog1_ActionArea";
@@ -165,8 +163,8 @@ namespace MonoDevelop.D.OptionPanels
 			if ((this.Child != null)) {
 				this.Child.ShowAll ();
 			}
-			this.DefaultWidth = 522;
-			this.DefaultHeight = 206;
+			this.DefaultWidth = 571;
+			this.DefaultHeight = 201;
 			this.Hide ();
 			this.Close += new global::System.EventHandler (this.OnClose);
 			this.combo_SelectedBuildTarget.Changed += new global::System.EventHandler (this.OnComboSelectedBuildTargetChanged);

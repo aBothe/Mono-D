@@ -104,12 +104,12 @@ namespace MonoDevelop.D.Building
 			var target = Project.GetOutputFileName (BuildConfig.Selector);
 
 			var libs = new List<string> (Compiler.DefaultLibraries);
-			libs.AddRange (Project.ExtraLibraries);
+			libs.AddRange (BuildConfig.ExtraLibraries);
 
 			var argumentString = FillInMacros (
-                Arguments.OneStepBuildArguments.Trim() + " "+
-                BuildConfig.ExtraCompilerArguments.Trim() + " " +
-                BuildConfig.ExtraLinkerArguments.Trim(),
+                Arguments.OneStepBuildArguments.Trim () + " " +
+                BuildConfig.ExtraCompilerArguments.Trim () + " " +
+                BuildConfig.ExtraLinkerArguments.Trim (),
             new OneStepBuildArgumentMacroProvider
             {
                 ObjectsStringPattern = Commands.ObjectFileLinkPattern,
@@ -140,10 +140,10 @@ namespace MonoDevelop.D.Building
                 out stdError,
                 out stdOut);
 
-            HandleCompilerOutput(br,stdError);
-			HandleCompilerOutput (br,stdOut);
-			HandleOptLinkOutput (br,stdOut);
-			HandleReturnCode (br,linkerExecutable, exitCode);
+			HandleCompilerOutput (br, stdError);
+			HandleCompilerOutput (br, stdOut);
+			HandleOptLinkOutput (br, stdOut);
+			HandleReturnCode (br, linkerExecutable, exitCode);
 
 			return br;
 		}
@@ -188,7 +188,7 @@ namespace MonoDevelop.D.Building
 			}
 
 			if (br.FailedBuildCount == 0) 
-				LinkToTarget (br,!Project.EnableIncrementalLinking || modificationsDone);
+				LinkToTarget (br, !Project.EnableIncrementalLinking || modificationsDone);
 
 			monitor.EndTask ();
 
@@ -225,9 +225,9 @@ namespace MonoDevelop.D.Building
 
 			int exitCode = ExecuteCommand (compilerExecutable, dmdArgs, Project.BaseDirectory, monitor, out stdError, out stdOutput);
 
-			HandleCompilerOutput (targetBuildResult,stdError);
-			HandleCompilerOutput (targetBuildResult,stdOutput);
-			HandleReturnCode (targetBuildResult,compilerExecutable, exitCode);
+			HandleCompilerOutput (targetBuildResult, stdError);
+			HandleCompilerOutput (targetBuildResult, stdOutput);
+			HandleReturnCode (targetBuildResult, compilerExecutable, exitCode);
 
 			if (exitCode != 0) {
 				targetBuildResult.FailedBuildCount++;
@@ -268,19 +268,16 @@ namespace MonoDevelop.D.Building
 
 			// Error analysis
 			if (!string.IsNullOrEmpty (output))
-				targetBuildResult.AddError (f.FilePath,0,0,"",output);
+				targetBuildResult.AddError (f.FilePath, 0, 0, "", output);
 			if (!string.IsNullOrEmpty (stdOutput))
-                targetBuildResult.AddError(f.FilePath,0,0,"",stdOutput);
+				targetBuildResult.AddError (f.FilePath, 0, 0, "", stdOutput);
 
-			HandleReturnCode (targetBuildResult,Win32ResourceCompiler.Instance.Executable, _exitCode);
+			HandleReturnCode (targetBuildResult, Win32ResourceCompiler.Instance.Executable, _exitCode);
 
-			if (_exitCode != 0) 
-            {
+			if (_exitCode != 0) {
 				targetBuildResult.FailedBuildCount++;
 				return false;
-			} 
-            else 
-            {
+			} else {
 				f.LastGenOutput = res;
 
 				targetBuildResult.BuildCount++;
@@ -291,7 +288,7 @@ namespace MonoDevelop.D.Building
 			}
 		}
 
-		void LinkToTarget (BuildResult br,bool modificationsDone)
+		void LinkToTarget (BuildResult br, bool modificationsDone)
 		{
 			/// The target file to which all objects will be linked to
 			var LinkTargetFile = Project.GetOutputFileName (BuildConfig.Selector);
@@ -306,7 +303,7 @@ namespace MonoDevelop.D.Building
 			// b.Build linker argument string
 			// Build argument preparation
 			var libs = new List<string> (Compiler.DefaultLibraries);
-			libs.AddRange (Project.ExtraLibraries);
+			libs.AddRange (BuildConfig.ExtraLibraries);
 
 			var linkArgs = FillInMacros (Arguments.LinkerArguments + " " + BuildConfig.ExtraLinkerArguments,
                 new DLinkerMacroProvider
@@ -335,8 +332,8 @@ namespace MonoDevelop.D.Building
                 out linkerErrorOutput,
                 out linkerOutput);
 
-			HandleOptLinkOutput (br,linkerOutput);
-			HandleReturnCode (br,linkerExecutable, exitCode);
+			HandleOptLinkOutput (br, linkerOutput);
+			HandleReturnCode (br, linkerExecutable, exitCode);
 		}
 
         #region File naming
@@ -435,7 +432,7 @@ namespace MonoDevelop.D.Building
             @"\n(?<obj>[a-zA-Z0-9/\\.]+)\((?<module>[a-zA-Z0-9]+)\) (?<offset>[a-zA-Z0-9 ]+)?(\r)?\n Error (?<code>\d*): (?<message>[a-zA-Z0-9_ :]+)",
             RegexOptions.Compiled | RegexOptions.ExplicitCapture);
 
-		private void HandleOptLinkOutput (BuildResult br,string linkerOutput)
+		private void HandleOptLinkOutput (BuildResult br, string linkerOutput)
 		{
 			var matches = optlinkRegex.Matches (linkerOutput);
 
@@ -444,10 +441,10 @@ namespace MonoDevelop.D.Building
 
 				// Get associated D source file
 				if (match.Groups ["obj"].Success) {
-					var obj = Project.GetAbsoluteChildPath (new FilePath (match.Groups ["obj"].Value)).ChangeExtension(".d");
+					var obj = Project.GetAbsoluteChildPath (new FilePath (match.Groups ["obj"].Value)).ChangeExtension (".d");
 
 					foreach (var pf in Project.Files)
-						if (pf.FilePath==obj) {
+						if (pf.FilePath == obj) {
 							error.FileName = pf.FilePath;
 							break;
 						}
@@ -462,7 +459,7 @@ namespace MonoDevelop.D.Building
 		/// <summary>
 		/// Scans errorString line-wise for filename-line-message patterns (e.g. "myModule(1): Something's wrong here") and add these error locations to the CompilerResults cr.
 		/// </summary>
-		protected void HandleCompilerOutput (BuildResult br,string errorString)
+		protected void HandleCompilerOutput (BuildResult br, string errorString)
 		{
 			var reader = new StringReader (errorString);
 			string next;
@@ -473,7 +470,7 @@ namespace MonoDevelop.D.Building
 					if (!Path.IsPathRooted (error.FileName))
 						error.FileName = Project.GetAbsoluteChildPath (error.FileName);
 
-					br.Append(error);
+					br.Append (error);
 				}
 			}
 
@@ -491,13 +488,13 @@ namespace MonoDevelop.D.Building
 		/// <param name="cr">
 		/// A <see cref="CompilerResults"/>: The return code from a compilation run
 		/// </param>
-		void HandleReturnCode (BuildResult br,string executable, int returnCode)
+		void HandleReturnCode (BuildResult br, string executable, int returnCode)
 		{
 			if (returnCode != 0) {
 				if (monitor != null)
 					monitor.Log.WriteLine ("Exit code " + returnCode.ToString ());
 
-				br.AddError(string.Empty, 0, 0, string.Empty,
+				br.AddError (string.Empty, 0, 0, string.Empty,
                     GettextCatalog.GetString ("Build failed - check build output for details"));
 			}
 		}

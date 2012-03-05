@@ -23,8 +23,6 @@ namespace MonoDevelop.D.OptionPanels
 		private Gtk.ListStore compilerStore = new Gtk.ListStore (typeof(string), typeof(DCompilerConfiguration));
 		private DCompilerConfiguration configuration;
 		string defaultCompilerVendor;
-		private Gtk.ListStore defaultLibStore = new Gtk.ListStore (typeof(string));
-		private Gtk.ListStore includePathStore = new Gtk.ListStore (typeof(string));
 		private BuildArgumentOptions releaseArgumentsDialog = null;
 		private BuildArgumentOptions debugArgumentsDialog = null;
 
@@ -41,14 +39,6 @@ namespace MonoDevelop.D.OptionPanels
 
 			cmbCompilers.Model = compilerStore;
 
-			tvDefaultLibs.Model = defaultLibStore;
-			tvDefaultLibs.HeadersVisible = false;
-			tvDefaultLibs.AppendColumn ("Library", textRenderer, "text", 0);
-			
-			tvIncludePaths.Model = includePathStore;
-			tvIncludePaths.HeadersVisible = false;
-			tvIncludePaths.AppendColumn ("Include", textRenderer, "text", 0);	
-			
 			releaseArgumentsDialog = new BuildArgumentOptions ();
 			debugArgumentsDialog = new BuildArgumentOptions ();
 		}
@@ -221,8 +211,8 @@ namespace MonoDevelop.D.OptionPanels
 					txtSharedLibLinker.Text =
 					txtStaticLibLinker.Text = null;
 
-				defaultLibStore.Clear ();
-				includePathStore.Clear ();
+				text_DefaultLibraries.Buffer.Clear ();
+				text_Includes.Buffer.Clear ();
 
 				releaseArgumentsDialog.Load (null, false);
 				debugArgumentsDialog.Load (null, true);
@@ -254,13 +244,8 @@ namespace MonoDevelop.D.OptionPanels
 			releaseArgumentsDialog.Load (config, false);		
 			debugArgumentsDialog.Load (config, true);				
 
-			defaultLibStore.Clear ();
-			foreach (string lib in config.DefaultLibraries)
-				defaultLibStore.AppendValues (lib);
-
-			includePathStore.Clear ();
-			foreach (var p in config.ParseCache.ParsedDirectories)
-				includePathStore.AppendValues (p);
+			text_DefaultLibraries.Buffer.Text = string.Join ("\n", config.DefaultLibraries);
+			text_Includes.Buffer.Text = string.Join ("\n", config.ParseCache.ParsedDirectories);
 
 			btnMakeDefault.Active = 
 				configuration.Vendor == defaultCompilerVendor;
@@ -322,28 +307,14 @@ namespace MonoDevelop.D.OptionPanels
 			releaseArgumentsDialog.Store ();			
 			debugArgumentsDialog.Store ();					
 			
-			defaultLibStore.GetIterFirst (out iter);
 			configuration.DefaultLibraries.Clear ();
-			while (defaultLibStore.IterIsValid (iter)) {
-				line = (string)defaultLibStore.GetValue (iter, 0);
-				configuration.DefaultLibraries.Add (line);
-				defaultLibStore.IterNext (ref iter);
-			}
-
+			configuration.DefaultLibraries.AddRange (text_DefaultLibraries.Buffer.Text.Split (new[]{'\n'}, StringSplitOptions.RemoveEmptyEntries));
+			
 			#region Store new include paths
-			var paths = new List<string> ();
-
-			includePathStore.GetIterFirst (out iter);
-			while (includePathStore.IterIsValid (iter)) {
-				line = (string)includePathStore.GetValue (iter, 0);
-				
-				paths.Add (line);
-
-				includePathStore.IterNext (ref iter);
-			}
+			var paths = text_Includes.Buffer.Text.Split (new[]{'\n'}, StringSplitOptions.RemoveEmptyEntries);
 
 			// If current dir count != the new dir count
-			bool cacheUpdateRequired = paths.Count != configuration.ParseCache.ParsedDirectories.Count;
+			bool cacheUpdateRequired = paths.Length != configuration.ParseCache.ParsedDirectories.Count;
 
 			// If there's a new directory in it
 			if (!cacheUpdateRequired)
@@ -353,8 +324,8 @@ namespace MonoDevelop.D.OptionPanels
 						break;
 					}
 
-            if (!cacheUpdateRequired && paths.Count != 0)
-                cacheUpdateRequired = 
+			if (!cacheUpdateRequired && paths.Length != 0)
+				cacheUpdateRequired = 
                     configuration.ParseCache.Root.Modules.Count == 0 && 
                     configuration.ParseCache.Root.Packages.Count == 0;
 
@@ -396,58 +367,8 @@ namespace MonoDevelop.D.OptionPanels
 		{
 			ShowArgumentsDialog (true);			
 		}
-
-		protected void btnBrowseDefaultLib_Clicked (object sender, System.EventArgs e)
-		{
-			var dialog = new AddLibraryDialog (AddLibraryDialog.FileFilterType.LibraryFiles)
-			{
-				TransientFor = Toplevel as Gtk.Window,
-				WindowPosition = Gtk.WindowPosition.Center
-			};
-
-			if (dialog.Run () == (int)Gtk.ResponseType.Ok)
-				txtDefaultLib.Text = dialog.SelectedFileName;
-		}
 		
-		private void OnDefaultLibAdded (object sender, System.EventArgs e)
-		{
-			if (txtDefaultLib.Text.Length > 0) {				
-				defaultLibStore.AppendValues (txtDefaultLib.Text);
-				txtDefaultLib.Text = string.Empty;
-			}			
-		}
-		
-		protected void btnAddDefaultLib_Click (object sender, System.EventArgs e)
-		{
-			OnDefaultLibAdded (sender, e);
-		}
-		
-		protected void btnRemoveDefaultLib_Clicked (object sender, System.EventArgs e)
-		{
-			Gtk.TreeIter iter;
-			tvDefaultLibs.Selection.GetSelected (out iter);
-			defaultLibStore.Remove (ref iter);
-		}
-
-		protected void tvDefaultLibs_CursorChanged (object sender, System.EventArgs e)
-		{
-			btnRemoveDefaultLib.Sensitive = true;
-		}
-		
-		protected void txtDefaultLib_Changed (object sender, System.EventArgs e)
-		{
-			if (string.IsNullOrEmpty (txtDefaultLib.Text))
-				btnAddDefaultLib.Sensitive = false;
-			else
-				btnAddDefaultLib.Sensitive = true;
-		}
-
-		protected void txtDefaultLib_Activated (object sender, System.EventArgs e)
-		{
-			OnDefaultLibAdded (sender, e);
-		}
-		
-		protected void btnBrowseIncludePath_Clicked (object sender, System.EventArgs e)
+		protected void OnButtonAddIncludeClicked (object sender, System.EventArgs e)
 		{
 			Gtk.FileChooserDialog dialog = new Gtk.FileChooserDialog (
 				"Select D Source Folder",
@@ -464,48 +385,10 @@ namespace MonoDevelop.D.OptionPanels
 
 			try {
 				if (dialog.Run () == (int)Gtk.ResponseType.Ok)
-					txtIncludePath.Text = dialog.Filename;
+					text_Includes.Buffer.Text += "\n" + string.Join ("\n", dialog.Filenames);
 			} finally {
 				dialog.Destroy ();
 			}
-		}
-		
-		private void OnIncludePathAdded (object sender, System.EventArgs e)
-		{
-			if (txtIncludePath.Text.Length > 0) {				
-				includePathStore.AppendValues (txtIncludePath.Text);
-				txtIncludePath.Text = string.Empty;
-			}			
-		}
-		
-		protected void btnAddIncludePath_Clicked (object sender, System.EventArgs e)
-		{
-			OnIncludePathAdded (sender, e);
-		}
-
-		protected void btnRemoveIncludePath_Clicked (object sender, System.EventArgs e)
-		{
-			Gtk.TreeIter iter;
-			tvIncludePaths.Selection.GetSelected (out iter);
-			includePathStore.Remove (ref iter);
-		}
-
-		protected void tvIncludePaths_CursorChanged (object sender, System.EventArgs e)
-		{
-			btnRemoveIncludePath.Sensitive = true;
-		}
-
-		protected void txtIncludePath_Changed (object sender, System.EventArgs e)
-		{
-			if (string.IsNullOrEmpty (txtIncludePath.Text))
-				btnAddIncludePath.Sensitive = false;
-			else
-				btnAddIncludePath.Sensitive = true;
-		}
-
-		protected void txtIncludePath_Activated (object sender, System.EventArgs e)
-		{
-			OnIncludePathAdded (sender, e);
 		}
 
 		protected void OnButtonBinPathBrowserClicked (object sender, System.EventArgs e)
