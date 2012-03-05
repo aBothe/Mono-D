@@ -1,7 +1,12 @@
 ﻿// xcopy /Q "$(TargetDir)*" "$(SolutionDir)..\tutorial.lib\MonoDevelop\main\build\AddIns\BackendBindings" /Y
 This document contains a list of to-do features:
 
-* Implement static type property resolution
+* Fix expression resolution for type highlighting, renaming & references finding
+* Implement template parameter-argument check
+* Implement declaration condition checks
+* Add Expression Value Resolution
+* Implement correct template instance type recognition / method overload recognition
+
 * Alter block statement/body boundaries on new-line/delete line events 
 	so no wrong function scope's getting detected anymore
 * Highlight context-dependent keywords (__traits, default version keywords, 
