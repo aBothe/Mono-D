@@ -276,7 +276,7 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 								if (string.IsNullOrEmpty(imp.ModuleAlias))
 									HandleNonAliasedImport(imp,VisibleMembers);
 						}
-						else if (s is MixinStatement)
+						else if (s is ExpressionStatement)
 						{
 							// TODO: Parse MixinStatements à la mixin("int x" ~ "="~ to!string(5) ~";");
 						}

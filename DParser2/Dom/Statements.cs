@@ -797,7 +797,7 @@ namespace D_Parser.Dom.Statements
 		}
 	}
 
-	public class MixinStatement : AbstractStatement,IExpressionContainingStatement
+	/*public class MixinStatement : AbstractStatement,IExpressionContainingStatement
 	{
 		public IExpression MixinExpression;
 
@@ -810,7 +810,7 @@ namespace D_Parser.Dom.Statements
 		{
 			get { return new[]{MixinExpression}; }
 		}
-	}
+	}*/
 
 	public abstract class ConditionStatement : StatementContainingStatement
 	{

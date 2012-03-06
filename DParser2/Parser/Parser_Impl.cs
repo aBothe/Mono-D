@@ -393,8 +393,7 @@ namespace D_Parser.Parser
 
 				//MixinDeclaration
 				else if (Lexer.CurrentPeekToken.Kind == OpenParenthesis)
-					module.Add(MixinDeclaration());
-
+                    module.Add(MixinDeclaration());
 				else
 				{
 					Step();
@@ -576,21 +575,15 @@ namespace D_Parser.Parser
 		}
 
 
-		MixinStatement MixinDeclaration()
+		IStatement MixinDeclaration()
 		{
-			Expect(Mixin);
-			var mx = new MixinStatement();
-			mx.StartLocation = t.Location;
-
-			if (Expect(OpenParenthesis))
-			{
-				mx.MixinExpression= AssignExpression();
-				Expect(CloseParenthesis);
-			}
-
+            var mx = AssignExpression();
 			Expect(Semicolon);
-			mx.EndLocation = t.EndLocation;
-			return mx;
+
+            if (mx == null)
+                return null;
+
+            return new ExpressionStatement { StartLocation=mx.Location, Expression=mx, EndLocation=t.EndLocation };
 		}
 		#endregion
 
