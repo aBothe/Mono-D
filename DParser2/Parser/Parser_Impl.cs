@@ -1625,7 +1625,7 @@ namespace D_Parser.Parser
 		bool IsAttributeSpecifier()
 		{
 			return (laKind == (Extern) || laKind == (Export) || laKind == (Align) || laKind == Pragma || laKind == (Deprecated) || IsProtectionAttribute()
-				|| laKind == (Static) || laKind == (Final) || laKind == (Override) || laKind == (Abstract) || laKind == (Scope) || laKind == (__gshared)
+				|| laKind == (Static) || laKind == (Final) || laKind == (Override) || laKind == (Abstract) || laKind == (Scope) || laKind == (__gshared) || laKind==Synchronized
 				|| ((laKind == (Auto) || MemberFunctionAttribute[laKind]) && (Lexer.CurrentPeekToken.Kind != (OpenParenthesis) && Lexer.CurrentPeekToken.Kind != (Identifier)))
 				|| laKind==PropertyAttribute);
 		}
