@@ -263,11 +263,14 @@ namespace MonoDevelop.D
 			return DLanguageBinding.IsDFile (fileName) || fileName.ToLower ().EndsWith (".rc");
 		}
 
+        /// <summary>
+        /// Returns the absolute file name + path to the link target
+        /// </summary>
 		public override FilePath GetOutputFileName (ConfigurationSelector configuration)
 		{
 			var cfg = GetConfiguration (configuration) as DProjectConfiguration;
 
-			return cfg.OutputDirectory.Combine (cfg.CompiledOutputName);
+            return cfg.OutputDirectory.IsAbsolute ? cfg.OutputDirectory.Combine(cfg.CompiledOutputName) : cfg.OutputDirectory.Combine(cfg.CompiledOutputName).ToAbsolute(BaseDirectory);
 		}
 
 		protected override BuildResult DoBuild (IProgressMonitor monitor, ConfigurationSelector configuration)
@@ -343,10 +346,10 @@ namespace MonoDevelop.D
 
 		protected virtual ExecutionCommand CreateExecutionCommand (DProjectConfiguration conf)
 		{
-			var app = Path.Combine (conf.OutputDirectory, conf.Output);
+			var app = GetOutputFileName(conf.Selector);
 			var cmd = new NativeExecutionCommand (app);
 			cmd.Arguments = conf.CommandLineParameters;
-			cmd.WorkingDirectory = Path.GetFullPath (conf.OutputDirectory);
+			cmd.WorkingDirectory = conf.OutputDirectory.ToAbsolute(BaseDirectory);
 			cmd.EnvironmentVariables = conf.EnvironmentVariables;
 			return cmd;
 		}
