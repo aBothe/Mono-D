@@ -239,6 +239,7 @@
     <Content Include="Building\CompilerPresets\ldc2.xml">
       <SubType>Designer</SubType>
     </Content>
+    <EmbeddedResource Include="icons\element-alias-16.png" />
     <Content Include="Remaining features.txt" />
   </ItemGroup>
   <ItemGroup>

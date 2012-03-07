@@ -104,9 +104,14 @@ namespace MonoDevelop.D.Completion
 				images["field_private"] = new IconId("md-private-field");
 				images["field_protected"] = new IconId("md-protected-field");
 
+                images["alias"] = new IconId("d-alias");
+                images["alias_internal"] = new IconId("d-internal-alias");
+                images["alias_private"] = new IconId("d-private-alias");
+                images["alias_protected"] = new IconId("d-protected-alias");
+
 				images["property"] = new IconId("md-property");
 				images["property_internal"] = new IconId("md-internal-property");
-				images["property_private"] = new IconId("m-privated-property");
+				images["property_private"] = new IconId("md-privated-property");
 				images["property_protected"] = new IconId("md-protected-property");
 
 				images["delegate"] = new IconId("md-delegate");
@@ -338,6 +343,17 @@ namespace MonoDevelop.D.Completion
 					return DCodeCompletionSupport.GetNodeImage("literal");
 				else if (n is DVariable)
 				{
+                    if (((DVariable)n).IsAlias)
+                    {
+                        if (n.ContainsAttribute(DTokens.Package))
+                            return DCodeCompletionSupport.GetNodeImage("alias_internal");
+                        else if (n.ContainsAttribute(DTokens.Protected))
+                            return DCodeCompletionSupport.GetNodeImage("alias_protected");
+                        else if (n.ContainsAttribute(DTokens.Private))
+                            return DCodeCompletionSupport.GetNodeImage("alias_private");
+                        return DCodeCompletionSupport.GetNodeImage("alias");
+                    }
+
 					if (n.ContainsPropertyAttribute())
 					{
 						if (n.ContainsAttribute(DTokens.Package))
@@ -365,13 +381,10 @@ namespace MonoDevelop.D.Completion
 
 					var realParent = n.Parent as DNode;
 
-					if (n.Parent is IAbstractSyntaxTree && !(n as DVariable).IsAlias)
-						return DCodeCompletionSupport.GetNodeImage("field");
-
 					if (realParent == null)
 						return DCodeCompletionSupport.GetNodeImage("local");
 
-					if (realParent is DClassLike)
+                    if (realParent is DClassLike || n.Parent is IAbstractSyntaxTree)
 					{
 						if (n.ContainsAttribute(DTokens.Package))
 							return DCodeCompletionSupport.GetNodeImage("field_internal");
