@@ -420,12 +420,12 @@ namespace D_Parser.Parser
 			{
 				Step();
 
-				var dm = new DMethod(DMethod.MethodType.Allocator);
-				dm.Name = "new";
+                var dm = new DMethod(DMethod.MethodType.Allocator) { StartLocation=t.Location };
 				ApplyAttributes(dm);
 
 				dm.Parameters = Parameters(dm);
 				FunctionBody(dm);
+                dm.EndLocation = t.EndLocation;
 				module.Add(dm);
 			}
 
@@ -434,12 +434,13 @@ namespace D_Parser.Parser
 			{
 				Step();
 
-				var dm = new DMethod(DMethod.MethodType.Deallocator);
+                var dm = new DMethod(DMethod.MethodType.Deallocator) { StartLocation=t.Location };
 				dm.Name = "delete";
 				ApplyAttributes(dm);
 
 				dm.Parameters = Parameters(dm);
 				FunctionBody(dm);
+                dm.EndLocation = t.EndLocation;
 				module.Add(dm);
 			}
 
@@ -631,19 +632,28 @@ namespace D_Parser.Parser
 				// AliasThis
 				if (laKind == Identifier && PK(This))
 				{
-					Step();
-					var dv = new DVariable();
+                    var dv = new DVariable { 
+                        Description = GetComments(),
+                        StartLocation=t.Location, 
+                        IsAlias=true, 
+                        Name="this"
+                    };
 					LastParsedObject = dv;
-					dv.Description = GetComments();
-					dv.StartLocation = Lexer.LastToken.Location;
-					dv.IsAlias = true;
-					dv.Name = "this";
-					dv.NameLocation = t.Location;
-					dv.Type = new IdentifierDeclaration(t.Value);
+
+                    Step();
+                    dv.Type = new IdentifierDeclaration(t.Value)
+                    {
+                        Location=t.Location, 
+                        EndLocation=t.EndLocation 
+                    };
+
+                    Step();
+                    dv.NameLocation = t.Location;
 					dv.EndLocation = t.EndLocation;
-					Step();
+					
 					Expect(Semicolon);
 					dv.Description += CheckForPostSemicolonComment();
+
 					return new[]{dv};
 				}
 
@@ -1571,9 +1581,8 @@ namespace D_Parser.Parser
 
 		DMethod _Invariant()
 		{
-			var inv = new DMethod();
+            var inv = new DMethod { SpecialType= DMethod.MethodType.ClassInvariant };
 			LastParsedObject = inv;
-			inv.Attributes.Add(new DAttribute(Invariant));
 
 			Expect(Invariant);
 			inv.StartLocation = t.Location;
@@ -1582,7 +1591,8 @@ namespace D_Parser.Parser
 				Step();
 				Expect(CloseParenthesis);
 			}
-			inv.Body=BlockStatement();
+            if(!IsEOF)
+			    inv.Body=BlockStatement();
 			inv.EndLocation = t.EndLocation;
 			return inv;
 		}

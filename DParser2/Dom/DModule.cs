@@ -206,6 +206,7 @@ namespace D_Parser.Dom
     {
         public IExpression Initializer; // Variable
         public bool IsAlias = false;
+        public bool IsAliasThis { get { return IsAlias && Name == "this"; } }
 
 		public bool IsLocal
 		{
@@ -318,7 +319,8 @@ namespace D_Parser.Dom
 			Allocator,
             Destructor,
 			Deallocator,
-            Unittest
+            Unittest,
+            ClassInvariant
         }
 
         public DMethod() { }

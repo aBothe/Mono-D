@@ -278,12 +278,20 @@ namespace MonoDevelop.D.Gui
 		{
 			var n = model.GetValue(iter, 0) as INode;
 
-			string label=null;
+			string label=n.Name ?? "";
 
-			if (n is DMethod && (n as DMethod).SpecialType == DMethod.MethodType.Unittest)
-				label = "(Unit test)";
-			else if (n != null)
-				label = n.Name;
+            var dm = n as DMethod;
+            if (dm!=null)
+            {
+                if (dm.SpecialType == DMethod.MethodType.Unittest)
+                    label = "(Unittest)";
+                else if (dm.SpecialType == DMethod.MethodType.ClassInvariant)
+                    label = "(Class Invariant)";
+                else if (dm.SpecialType == DMethod.MethodType.Allocator)
+                    label = "(Class Allocator)";
+                else if (dm.SpecialType == DMethod.MethodType.Deallocator)
+                    label = "(Class Deallocator)";
+            }
 
 			(cell as CellRendererText).Text = label;
 		}
