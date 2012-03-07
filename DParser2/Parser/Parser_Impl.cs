@@ -3821,7 +3821,8 @@ namespace D_Parser.Parser
 
 			var ret = new DClassLike(t.Kind) { 
 				StartLocation = t.Location, 
-				Description = GetComments() 
+				Description = GetComments(),
+                ClassType=DTokens.Struct,
 			};
 			LastParsedObject = ret;
 
@@ -4034,7 +4035,8 @@ namespace D_Parser.Parser
 			Expect(Interface);
 			var dc = new DClassLike() { 
 				StartLocation = t.Location, 
-				Description = GetComments() 
+				Description = GetComments(),
+                ClassType= DTokens.Interface
 			};
 			LastParsedObject = dc;
 
