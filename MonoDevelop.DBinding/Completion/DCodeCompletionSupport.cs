@@ -120,6 +120,9 @@ namespace MonoDevelop.D.Completion
 				images["delegate_protected"] = new IconId("md-protected-delegate");
 
 				images["literal"] = new IconId("md-literal");
+				images["literal_private"] = new IconId("md-private-literal");
+				images["literal_protected"] = new IconId("md-protected-literal");
+				images["literal_internal"] = new IconId("md-internal-literal");
 			}
 			catch (Exception ex)
 			{
@@ -377,7 +380,15 @@ namespace MonoDevelop.D.Completion
 					}
 
 					if (n.ContainsAttribute(DTokens.Const))
+					{
+						if (n.ContainsAttribute(DTokens.Package))
+							return DCodeCompletionSupport.GetNodeImage("literal_internal");
+						else if (n.ContainsAttribute(DTokens.Protected))
+							return DCodeCompletionSupport.GetNodeImage("literal_protected");
+						else if (n.ContainsAttribute(DTokens.Private))
+							return DCodeCompletionSupport.GetNodeImage("literal_private");
 						return DCodeCompletionSupport.GetNodeImage("literal");
+					}
 
 					var realParent = n.Parent as DNode;
 
