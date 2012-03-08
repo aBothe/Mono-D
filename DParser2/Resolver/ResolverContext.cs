@@ -8,8 +8,7 @@ namespace D_Parser.Resolver
 		public IBlockNode ScopedBlock;
 		public IStatement ScopedStatement;
 
-		public bool ResolveBaseTypes = true;
-		public bool ResolveAliases = true;
+		public ResolutionOptions Options = ResolutionOptions.Default;
 
 		public void ApplyFrom(ResolverContext other)
 		{
@@ -18,9 +17,7 @@ namespace D_Parser.Resolver
 
 			ScopedBlock = other.ScopedBlock;
 			ScopedStatement = other.ScopedStatement;
-
-			ResolveBaseTypes = other.ResolveBaseTypes;
-			ResolveAliases = other.ResolveAliases;
+			Options = other.Options;
 		}
 	}
 

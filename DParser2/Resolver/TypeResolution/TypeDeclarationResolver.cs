@@ -336,7 +336,7 @@ namespace D_Parser.Resolver.TypeResolution
 			//HACK: Really dirty stack overflow prevention via manually counting call depth
 			var DoResolveBaseType =
 				stackNum_HandleNodeMatch > 5 ?
-				false : ctxt.CurrentContext.ResolveBaseTypes;
+				false : ctxt.CurrentContext.Options.HasFlag(ResolutionOptions.ResolveBaseClasses);
 
 			// Prevent infinite recursion if the type accidently equals the node's name
 			if (m.Type != null && m.Type.ToString(false) == m.Name)
@@ -388,7 +388,7 @@ namespace D_Parser.Resolver.TypeResolution
 				}
 
 				#region Resolve aliases if wished
-				if (ctxt.CurrentContext.ResolveAliases && memberbaseTypes != null)
+				if (ctxt.CurrentContext.Options.HasFlag(ResolutionOptions.ResolveAliases) && memberbaseTypes != null)
 				{
 					/*
 					 * To ensure that absolutely all kinds of alias definitions became resolved (includes aliased alias definitions!), 

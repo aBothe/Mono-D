@@ -20,36 +20,48 @@ namespace D_Parser.Resolver.ASTScanner
 			return scan.Matches;
 		}
 
-		protected override void HandleItem(INode n)
+		protected override bool HandleItem(INode n)
 		{
-			if (n != null && n.Name == filterId)
-				Matches.Add(n);
+            if (n != null && n.Name == filterId)
+            {
+                Matches.Add(n);
 
-			/*
-			 * Can't tell if workaround .. or just nice idea:
-			 * 
-			 * To still be able to show sub-packages e.g. when std. has been typed,
-			 * take the first import that begins with std.
-			 * In HandleNodeMatch, it'll be converted to a module package result then.
-			 */
-			else if (n is IAbstractSyntaxTree)
-			{
-				var modName = ((IAbstractSyntaxTree)n).ModuleName;
-				if (modName.Split('.')[0] == filterId)
-				{
-					bool canAdd = true;
+                if (Context.CurrentContext.Options.HasFlag(ResolutionOptions.StopAfterFirstMatch))
+                    return true;
+            }
 
-					foreach(var m in Matches)
-						if (m is IAbstractSyntaxTree)
-						{
-							canAdd = false;
-							break;
-						}
+            /*
+             * Can't tell if workaround .. or just nice idea:
+             * 
+             * To still be able to show sub-packages e.g. when std. has been typed,
+             * take the first import that begins with std.
+             * In HandleNodeMatch, it'll be converted to a module package result then.
+             */
+            else if (n is IAbstractSyntaxTree)
+            {
+                var modName = ((IAbstractSyntaxTree)n).ModuleName;
+                if (modName.Split('.')[0] == filterId)
+                {
+                    bool canAdd = true;
 
-					if(canAdd)
-						Matches.Add(n);
-				}
-			}
+                    foreach (var m in Matches)
+                        if (m is IAbstractSyntaxTree)
+                        {
+                            canAdd = false;
+                            break;
+                        }
+
+                    if (canAdd)
+                    {
+                        Matches.Add(n);
+
+                        if (Context.CurrentContext.Options.HasFlag(ResolutionOptions.StopAfterFirstMatch))
+                            return true;
+                    }
+                }
+            }
+
+            return false;
 		}
 
 		/// <summary>

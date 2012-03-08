@@ -49,12 +49,17 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 		}
 		#endregion
 
-		protected abstract void HandleItem(INode n);
+        /// <summary>
+        /// Return true if search shall stop(!), false if search shall go on
+        /// </summary>
+		protected abstract bool HandleItem(INode n);
 
-		protected virtual void HandleItems(IEnumerable<INode> nodes)
+		protected virtual bool HandleItems(IEnumerable<INode> nodes)
 		{
-			foreach (var n in nodes)
-				HandleItem(n);
+            foreach (var n in nodes)
+                if (HandleItem(n))
+                    return true;
+            return false;
 		}
 
 		public void IterateThroughScopeLayers(CodeLocation Caret, MemberFilter VisibleMembers= MemberFilter.All)
@@ -75,22 +80,23 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 					// MyClass > BaseA > BaseB > Object
 					while (curWatchedClass != null)
 					{
-						if (curWatchedClass.TemplateParameters != null)
-							HandleItems(curWatchedClass.TemplateParameterNodes as IEnumerable<INode>);
+                        if (curWatchedClass.TemplateParameters != null &&
+                            HandleItems(curWatchedClass.TemplateParameterNodes as IEnumerable<INode>))
+                                return;
 
 						foreach (var m in curWatchedClass)
 						{
 							var dm2 = m as DNode;
 							var dm3 = m as DMethod; // Only show normal & delegate methods
 							if (!CanAddMemberOfType(VisibleMembers, m) || dm2 == null ||
-								(dm3 != null && !(dm3.SpecialType == DMethod.MethodType.Normal || dm3.SpecialType == DMethod.MethodType.Delegate))
-								)
+								(dm3 != null && !(dm3.SpecialType == DMethod.MethodType.Normal || dm3.SpecialType == DMethod.MethodType.Delegate)))
 								continue;
 
 							// Add static and non-private members of all base classes; 
 							// Add everything if we're still handling the currently scoped class
-							if (curWatchedClass == curScope || dm2.IsStatic || !dm2.ContainsAttribute(DTokens.Private))
-								HandleItem(m);
+                            if ((curWatchedClass == curScope || dm2.IsStatic || !dm2.ContainsAttribute(DTokens.Private)) && 
+                                HandleItem(m))
+                                    return;
 						}
 
 						// Stop adding if Object class level got reached
@@ -113,28 +119,29 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 					var dm = curScope as DMethod;
 
 					// Add 'out' variable if typing in the out test block currently
-					if (dm.OutResultVariable != null && dm.Out != null && dm.GetSubBlockAt(Caret) == dm.Out)
-						HandleItem(new DVariable // Create pseudo-variable
-							{
-								Name = dm.OutResultVariable.Id as string,
-								NameLocation = dm.OutResultVariable.Location,
-								Type = dm.Type, // TODO: What to do on auto functions?
-								Parent = dm,
-								StartLocation = dm.OutResultVariable.Location,
-								EndLocation = dm.OutResultVariable.EndLocation,
-							});
+                    if (dm.OutResultVariable != null && dm.Out != null && dm.GetSubBlockAt(Caret) == dm.Out && 
+                        HandleItem(new DVariable // Create pseudo-variable
+                            {
+                                Name = dm.OutResultVariable.Id as string,
+                                NameLocation = dm.OutResultVariable.Location,
+                                Type = dm.Type, // TODO: What to do on auto functions?
+                                Parent = dm,
+                                StartLocation = dm.OutResultVariable.Location,
+                                EndLocation = dm.OutResultVariable.EndLocation,
+                            }))
+                            return;
 
-					if (VisibleMembers.HasFlag(MemberFilter.Variables))
-						HandleItems(dm.Parameters);
+                    if (VisibleMembers.HasFlag(MemberFilter.Variables) && HandleItems(dm.Parameters))
+                            return;
 
-					if (dm.TemplateParameters != null)
-						HandleItems(dm.TemplateParameterNodes as IEnumerable<INode>);
+                    if (dm.TemplateParameters != null && HandleItems(dm.TemplateParameterNodes as IEnumerable<INode>))
+                            return;
 
 					// The method's declaration children are handled above already via BlockStatement.GetItemHierarchy().
 					// except AdditionalChildren:
-					foreach (var ch in dm.AdditionalChildren)
-						if (CanAddMemberOfType(VisibleMembers, ch))
-							HandleItem(ch);
+                    foreach (var ch in dm.AdditionalChildren)
+                        if (CanAddMemberOfType(VisibleMembers, ch) && HandleItem(ch))
+                            return;
 
 					// If the method is a nested method,
 					// this method won't be 'linked' to the parent statement tree directly - 
@@ -144,8 +151,9 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 						var nestedBlock = (dm.Parent as DMethod).GetSubBlockAt(Caret);
 
 						// Search for the deepest statement scope and add all declarations done in the entire hierarchy
-						if(nestedBlock!=null)
-							IterateThroughItemHierarchy(nestedBlock.SearchStatementDeeply(Caret), Caret,VisibleMembers);
+                        if (nestedBlock != null && 
+                            IterateThroughItemHierarchy(nestedBlock.SearchStatementDeeply(Caret), Caret, VisibleMembers))
+                            return;
 					}
 				}
 				else foreach (var n in curScope)
@@ -153,7 +161,8 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 						// Add anonymous enums' items
 						if (n is DEnum && string.IsNullOrEmpty(n.Name) && CanAddMemberOfType(VisibleMembers, n))
 						{
-							HandleItems((n as DEnum).Children);
+                            if (HandleItems((n as DEnum).Children))
+                                return;
 							continue;
 						}
 
@@ -163,19 +172,22 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 							(dm3 != null && !(dm3.SpecialType == DMethod.MethodType.Normal || dm3.SpecialType == DMethod.MethodType.Delegate)))
 							continue;
 
-						HandleItem(n);
+                        if (HandleItem(n))
+                            return;
 					}
 
 				// Handle imports
-				if (curScope is DBlockNode)
-					HandleDBlockNode((DBlockNode)curScope,VisibleMembers);
+                if (curScope is DBlockNode)
+                    if (HandleDBlockNode((DBlockNode)curScope, VisibleMembers))
+                        return;
 
 				curScope = curScope.Parent as IBlockNode;
 			}
 
 			// Add __ctfe variable
-			if(CanAddMemberOfType(VisibleMembers, __ctfe))
-				HandleItem(__ctfe);
+            if (CanAddMemberOfType(VisibleMembers, __ctfe))
+                if (HandleItem(__ctfe))
+                    return;
 		}
 
 		static bool CanAddMemberOfType(MemberFilter VisibleMembers, INode n)
@@ -216,7 +228,8 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 		/// Walks up the statement scope hierarchy and enlists all declarations that have been made BEFORE the caret position. 
 		/// (If CodeLocation.Empty given, this parameter will be ignored)
 		/// </summary>
-		void IterateThroughItemHierarchy(IStatement Statement, CodeLocation Caret, MemberFilter VisibleMembers)
+        /// <returns>True if scan shall stop, false if not</returns>
+		bool IterateThroughItemHierarchy(IStatement Statement, CodeLocation Caret, MemberFilter VisibleMembers)
 		{
 			// To a prevent double entry of the same declaration, skip a most scoped declaration first
 			if (Statement is DeclarationStatement)
@@ -244,7 +257,8 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 									continue;
 							}
 
-							HandleItem(decl);
+                            if (HandleItem(decl))
+                                return true;
 						}
 				}
 
@@ -272,9 +286,10 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 
 							var impStmt = (ImportStatement)s;
 
-							foreach (var imp in impStmt.Imports)
-								if (string.IsNullOrEmpty(imp.ModuleAlias))
-									HandleNonAliasedImport(imp,VisibleMembers);
+                            foreach (var imp in impStmt.Imports)
+                                if (string.IsNullOrEmpty(imp.ModuleAlias))
+                                    if (HandleNonAliasedImport(imp, VisibleMembers))
+                                        return true;
 						}
 						else if (s is ExpressionStatement)
 						{
@@ -297,6 +312,8 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 
 				Statement = Statement.Parent;
 			}
+
+            return false;
 		}
 
 		#region Imports
@@ -333,7 +350,7 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 		/// <summary>
 		/// Handle the node's static statements (but not the node itself)
 		/// </summary>
-		void HandleDBlockNode(DBlockNode dbn, MemberFilter VisibleMembers, bool takePublicImportsOnly=false)
+		bool HandleDBlockNode(DBlockNode dbn, MemberFilter VisibleMembers, bool takePublicImportsOnly=false)
 		{
 			if (dbn != null && dbn.StaticStatements != null)
 			{
@@ -349,30 +366,35 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 					/*
 					 * Mainly used for selective imports/import module aliases
 					 */
-					if (dstmt != null && dstmt.Declarations != null)
-						foreach (var d in dstmt.Declarations)
-							HandleItem(d); //TODO: Handle visibility?
+                    if (dstmt != null && dstmt.Declarations != null)
+                        foreach (var d in dstmt.Declarations)
+                            if (HandleItem(d)) //TODO: Handle visibility?
+                                return true;
 
 					if (dstmt is ImportStatement)
 					{
 						var impStmt = (ImportStatement)dstmt;
 
-						foreach (var imp in impStmt.Imports)
-							if (string.IsNullOrEmpty(imp.ModuleAlias))
-								HandleNonAliasedImport(imp, VisibleMembers);
+                        foreach (var imp in impStmt.Imports)
+                            if (string.IsNullOrEmpty(imp.ModuleAlias))
+                                if (HandleNonAliasedImport(imp, VisibleMembers))
+                                    return true;
 					}
 				}
 			}
 
 			// Every module imports 'object' implicitly
-			if (!takePublicImportsOnly)
-				HandleNonAliasedImport(_objectImport, VisibleMembers);
+            if (!takePublicImportsOnly)
+                if (HandleNonAliasedImport(_objectImport, VisibleMembers))
+                    return true;
+
+            return false;
 		}
 
-		void HandleNonAliasedImport(ImportStatement.Import imp, MemberFilter VisibleMembers)
+		bool HandleNonAliasedImport(ImportStatement.Import imp, MemberFilter VisibleMembers)
 		{
 			if (imp == null || imp.ModuleIdentifier == null)
-				return;
+				return false;
 
 			var thisModuleName = (ctxt.ScopedBlock.NodeRoot as IAbstractSyntaxTree).ModuleName;
 			var moduleName = imp.ModuleIdentifier.ToString();
@@ -382,7 +404,7 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 			if(!scannedModules.TryGetValue(thisModuleName,out seenModules))
 				seenModules = scannedModules[thisModuleName] = new List<string>();
 			else if (seenModules.Contains(moduleName))
-				return;
+				return false;
 			seenModules.Add(moduleName);
 
 			foreach (var module in ctxt.ParseCache.LookupModuleName(moduleName))
@@ -390,34 +412,40 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 				if (module == null || module.FileName == (ctxt.ScopedBlock.NodeRoot as IAbstractSyntaxTree).FileName)
 					continue;
 
-				HandleItem(module);
+                if (HandleItem(module))
+                    return true;
 
 				foreach (var i in module)
 				{
 					var dn = i as DNode;
-					if (dn != null)
-					{
-						// Add anonymous enums' items
-						if (dn is DEnum &&
-							string.IsNullOrEmpty(i.Name) &&
-							dn.IsPublic &&
-							!dn.ContainsAttribute(DTokens.Package) &&
-							CanAddMemberOfType(VisibleMembers, i))
-						{
-							HandleItems((i as DEnum).Children);
-							continue;
-						}
+                    if (dn != null)
+                    {
+                        // Add anonymous enums' items
+                        if (dn is DEnum &&
+                            string.IsNullOrEmpty(i.Name) &&
+                            dn.IsPublic &&
+                            !dn.ContainsAttribute(DTokens.Package) &&
+                            CanAddMemberOfType(VisibleMembers, i))
+                        {
+                            if (HandleItems((i as DEnum).Children))
+                                return true;
+                            continue;
+                        }
 
-						if (dn.IsPublic && !dn.ContainsAttribute(DTokens.Package) &&
-							CanAddMemberOfType(VisibleMembers, dn))
-							HandleItem(dn);
-					}
-					else
-						HandleItem(i);
+                        if (dn.IsPublic && !dn.ContainsAttribute(DTokens.Package) &&
+                            CanAddMemberOfType(VisibleMembers, dn))
+                            if (HandleItem(dn))
+                                return true;
+                    }
+                    else
+                        if (HandleItem(i))
+                            return true;
 				}
 
-				HandleDBlockNode(module as DBlockNode, VisibleMembers, true);
+                if (HandleDBlockNode(module as DBlockNode, VisibleMembers, true))
+                    return true;
 			}
+            return false;
 		}
 
 		#endregion
