@@ -7,19 +7,19 @@ namespace D_Parser.Resolver
 {
 	public enum ResolutionOptions
 	{
-		ResolveAliases,
-		ResolveBaseClasses,
+		ResolveAliases=2^0,
+		ResolveBaseClasses=2^1,
 
 		/// <summary>
 		/// Stops resolution if first match has been found
 		/// </summary>
-		StopAfterFirstMatch,
+		StopAfterFirstMatch=2^2,
 
 		/// <summary>
 		/// Stops resolution at the end of a match's block if first match has been found.
 		/// This will still resolve possible overloads but stops after leaving the overloads' scope.
 		/// </summary>
-		StopAfterFirstOverloads,
+		StopAfterFirstOverloads = StopAfterFirstMatch + 2^3,
 
 		Default = ResolveAliases | ResolveBaseClasses
 	}

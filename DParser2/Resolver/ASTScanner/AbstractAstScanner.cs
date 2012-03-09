@@ -65,10 +65,16 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 		public void IterateThroughScopeLayers(CodeLocation Caret, MemberFilter VisibleMembers= MemberFilter.All)
 		{
 			// 1)
-			if (ctxt.ScopedStatement != null)
-				IterateThroughItemHierarchy(ctxt.ScopedStatement, Caret,VisibleMembers);
+			if (ctxt.ScopedStatement != null && 
+				IterateThroughItemHierarchy(ctxt.ScopedStatement, Caret, VisibleMembers) &&
+					(ctxt.CurrentContext.Options.HasFlag(ResolutionOptions.StopAfterFirstOverloads) || 
+					ctxt.CurrentContext.Options.HasFlag(ResolutionOptions.StopAfterFirstMatch)))
+					return;
 
 			var curScope = ctxt.ScopedBlock;
+
+			bool breakOnNextScope = false;
+			bool breakImmediately = ctxt.CurrentContext.Options == ResolutionOptions.StopAfterFirstMatch;
 
 			// 2)
 			while (curScope != null)
@@ -81,7 +87,7 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 					while (curWatchedClass != null)
 					{
                         if (curWatchedClass.TemplateParameters != null &&
-                            HandleItems(curWatchedClass.TemplateParameterNodes as IEnumerable<INode>))
+                            (breakOnNextScope=HandleItems(curWatchedClass.TemplateParameterNodes as IEnumerable<INode>)) && breakImmediately)
                                 return;
 
 						foreach (var m in curWatchedClass)
@@ -95,7 +101,8 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 							// Add static and non-private members of all base classes; 
 							// Add everything if we're still handling the currently scoped class
                             if ((curWatchedClass == curScope || dm2.IsStatic || !dm2.ContainsAttribute(DTokens.Private)) && 
-                                HandleItem(m))
+                                (breakOnNextScope= HandleItem(m)) && 
+								breakImmediately)
                                     return;
 						}
 
@@ -120,7 +127,7 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 
 					// Add 'out' variable if typing in the out test block currently
                     if (dm.OutResultVariable != null && dm.Out != null && dm.GetSubBlockAt(Caret) == dm.Out && 
-                        HandleItem(new DVariable // Create pseudo-variable
+                        (breakOnNextScope=HandleItem(new DVariable // Create pseudo-variable
                             {
                                 Name = dm.OutResultVariable.Id as string,
                                 NameLocation = dm.OutResultVariable.Location,
@@ -128,19 +135,25 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
                                 Parent = dm,
                                 StartLocation = dm.OutResultVariable.Location,
                                 EndLocation = dm.OutResultVariable.EndLocation,
-                            }))
+                            })) && 
+							breakImmediately)
                             return;
 
-                    if (VisibleMembers.HasFlag(MemberFilter.Variables) && HandleItems(dm.Parameters))
+                    if (VisibleMembers.HasFlag(MemberFilter.Variables) && 
+						(breakOnNextScope=HandleItems(dm.Parameters)) && 
+						breakImmediately)
                             return;
 
-                    if (dm.TemplateParameters != null && HandleItems(dm.TemplateParameterNodes as IEnumerable<INode>))
+                    if (dm.TemplateParameters != null && 
+						(breakOnNextScope= HandleItems(dm.TemplateParameterNodes as IEnumerable<INode>)) && 
+						breakImmediately)
                             return;
 
 					// The method's declaration children are handled above already via BlockStatement.GetItemHierarchy().
 					// except AdditionalChildren:
                     foreach (var ch in dm.AdditionalChildren)
-                        if (CanAddMemberOfType(VisibleMembers, ch) && HandleItem(ch))
+                        if (CanAddMemberOfType(VisibleMembers, ch) && 
+							(breakOnNextScope=HandleItem(ch) && breakImmediately))
                             return;
 
 					// If the method is a nested method,
@@ -152,7 +165,8 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 
 						// Search for the deepest statement scope and add all declarations done in the entire hierarchy
                         if (nestedBlock != null && 
-                            IterateThroughItemHierarchy(nestedBlock.SearchStatementDeeply(Caret), Caret, VisibleMembers))
+                            (breakOnNextScope=IterateThroughItemHierarchy(nestedBlock.SearchStatementDeeply(Caret), Caret, VisibleMembers)) &&
+							breakImmediately)
                             return;
 					}
 				}
@@ -161,7 +175,7 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 						// Add anonymous enums' items
 						if (n is DEnum && string.IsNullOrEmpty(n.Name) && CanAddMemberOfType(VisibleMembers, n))
 						{
-                            if (HandleItems((n as DEnum).Children))
+                            if ((breakOnNextScope = HandleItems((n as DEnum).Children)) && breakImmediately)
                                 return;
 							continue;
 						}
@@ -172,20 +186,23 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 							(dm3 != null && !(dm3.SpecialType == DMethod.MethodType.Normal || dm3.SpecialType == DMethod.MethodType.Delegate)))
 							continue;
 
-                        if (HandleItem(n))
+                        if ((breakOnNextScope= HandleItem(n)) && breakImmediately)
                             return;
 					}
 
 				// Handle imports
                 if (curScope is DBlockNode)
-                    if (HandleDBlockNode((DBlockNode)curScope, VisibleMembers))
+                    if ((breakOnNextScope = HandleDBlockNode((DBlockNode)curScope, VisibleMembers)) && breakImmediately)
                         return;
+
+				if (ctxt.CurrentContext.Options.HasFlag(ResolutionOptions.StopAfterFirstOverloads))
+					return;
 
 				curScope = curScope.Parent as IBlockNode;
 			}
 
 			// Add __ctfe variable
-            if (CanAddMemberOfType(VisibleMembers, __ctfe))
+            if (!breakOnNextScope && CanAddMemberOfType(VisibleMembers, __ctfe))
                 if (HandleItem(__ctfe))
                     return;
 		}
