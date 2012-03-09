@@ -9,6 +9,9 @@ namespace D_Parser.Resolver.TypeResolution
 	{
 		public static ResolveResult[] Resolve(PostfixExpression ex, ResolverContextStack ctxt)
 		{
+			if (ex is PostfixExpression_MethodCall)
+				return Resolve(ex as PostfixExpression_MethodCall, ctxt);
+
 			var baseExpression = Resolve(ex.PostfixForeExpression, ctxt);
 
 			if (baseExpression == null)
@@ -24,9 +27,6 @@ namespace D_Parser.Resolver.TypeResolution
 
 			if (ex is PostfixExpression_Access)
 				return Resolve(ex as PostfixExpression_Access, ctxt, baseExpression);
-
-			else if (ex is PostfixExpression_MethodCall)
-				return Resolve(ex as PostfixExpression_MethodCall, ctxt, baseExpression);
 
 			var r = new List<ResolveResult>(baseExpression.Length);
 			foreach (var b in baseExpression)
@@ -87,8 +87,10 @@ namespace D_Parser.Resolver.TypeResolution
 
 		public static ResolveResult[] Resolve(PostfixExpression_MethodCall call, ResolverContextStack ctxt, ResolveResult[] baseExpression=null)
 		{
-			if(baseExpression==null)
+			if (baseExpression == null)
+			{
 				baseExpression = Resolve(call.PostfixForeExpression, ctxt);
+			}
 
 			#region Search possible methods, opCalls or delegates that could be called
 			var methodContainingResultsToCheck = new List<ResolveResult>();

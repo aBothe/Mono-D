@@ -164,7 +164,7 @@ namespace MonoDevelop.D.OptionPanels
 	public class ProjectOptionsBinding : MultiConfigItemOptionsPanel
 	{
 		private ProjectOptions panel;
-		
+
 		public override Gtk.Widget CreatePanelWidget ()
 		{
 			return panel = new ProjectOptions ();
@@ -172,7 +172,8 @@ namespace MonoDevelop.D.OptionPanels
 		
 		public override void LoadConfigData ()
 		{
-			panel.Load ((DProject)ConfiguredProject, (DProjectConfiguration)CurrentConfiguration);
+			if(ConfiguredProject is DProject && CurrentConfiguration is DProjectConfiguration)
+				panel.Load (ConfiguredProject as DProject, CurrentConfiguration as DProjectConfiguration);
 		}
 		
 		public override void ApplyChanges ()
