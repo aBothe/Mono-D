@@ -195,7 +195,7 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
                     if ((breakOnNextScope = HandleDBlockNode((DBlockNode)curScope, VisibleMembers)) && breakImmediately)
                         return;
 
-				if (ctxt.CurrentContext.Options.HasFlag(ResolutionOptions.StopAfterFirstOverloads))
+				if (breakOnNextScope && ctxt.CurrentContext.Options.HasFlag(ResolutionOptions.StopAfterFirstOverloads))
 					return;
 
 				curScope = curScope.Parent as IBlockNode;
