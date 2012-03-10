@@ -16,31 +16,27 @@ namespace MonoDevelop.D.OptionPanels
 	/// </summary>
 	public partial class DGlobalOptions : Gtk.Bin
 	{
-		private DProjectConfiguration configuration;
-		
-		public DGlobalOptions () 
+		public DGlobalOptions ()
 		{
 			this.Build ();			
 		}
 	
-		public void Load (DProjectConfiguration config)
+		public void Load ()
 		{
-			configuration = config;			
+			text_ManualBaseUrl.Text = D.Refactoring.DDocumentationLauncher.DigitalMarsUrl;	
 		}
 
-		public bool Validate()
+		public bool Validate ()
 		{
-			return true;
+			return !string.IsNullOrWhiteSpace (text_ManualBaseUrl.Text);
 		}
 		
 		public bool Store ()
 		{
-			if (configuration == null)
-				return false;
+			Refactoring.DDocumentationLauncher.DigitalMarsUrl = text_ManualBaseUrl.Text;
 			
 			return true;
 		}
-
 	}
 	
 	public class DGlobalOptionsBinding : OptionsPanel
@@ -49,12 +45,14 @@ namespace MonoDevelop.D.OptionPanels
 		
 		public override Gtk.Widget CreatePanelWidget ()
 		{
-			return panel = new DGlobalOptions ();
+			panel = new DGlobalOptions ();
+			panel.Load ();
+			return panel;
 		}
 
-		public override bool ValidateChanges()
+		public override bool ValidateChanges ()
 		{
-			return panel.Validate();
+			return panel.Validate ();
 		}
 			
 		public override void ApplyChanges ()

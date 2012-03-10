@@ -5,6 +5,9 @@ namespace MonoDevelop.D.OptionPanels
 	public partial class DGlobalOptions
 	{
 		private global::Gtk.HBox hbox1;
+		private global::Gtk.Table table1;
+		private global::Gtk.Label label1;
+		private global::Gtk.Entry text_ManualBaseUrl;
 		
 		protected virtual void Build ()
 		{
@@ -16,6 +19,34 @@ namespace MonoDevelop.D.OptionPanels
 			this.hbox1 = new global::Gtk.HBox ();
 			this.hbox1.Name = "hbox1";
 			this.hbox1.Spacing = 6;
+			// Container child hbox1.Gtk.Box+BoxChild
+			this.table1 = new global::Gtk.Table (((uint)(3)), ((uint)(2)), false);
+			this.table1.Name = "table1";
+			this.table1.RowSpacing = ((uint)(6));
+			this.table1.ColumnSpacing = ((uint)(6));
+			// Container child table1.Gtk.Table+TableChild
+			this.label1 = new global::Gtk.Label ();
+			this.label1.Name = "label1";
+			this.label1.LabelProp = global::Mono.Unix.Catalog.GetString ("Help manual base url");
+			this.table1.Add (this.label1);
+			global::Gtk.Table.TableChild w1 = ((global::Gtk.Table.TableChild)(this.table1 [this.label1]));
+			w1.XOptions = ((global::Gtk.AttachOptions)(4));
+			w1.YOptions = ((global::Gtk.AttachOptions)(4));
+			// Container child table1.Gtk.Table+TableChild
+			this.text_ManualBaseUrl = new global::Gtk.Entry ();
+			this.text_ManualBaseUrl.TooltipMarkup = "Can be either a URL or a directory on your hard disk";
+			this.text_ManualBaseUrl.CanFocus = true;
+			this.text_ManualBaseUrl.Name = "text_ManualBaseUrl";
+			this.text_ManualBaseUrl.IsEditable = true;
+			this.text_ManualBaseUrl.InvisibleChar = '●';
+			this.table1.Add (this.text_ManualBaseUrl);
+			global::Gtk.Table.TableChild w2 = ((global::Gtk.Table.TableChild)(this.table1 [this.text_ManualBaseUrl]));
+			w2.LeftAttach = ((uint)(1));
+			w2.RightAttach = ((uint)(2));
+			w2.YOptions = ((global::Gtk.AttachOptions)(4));
+			this.hbox1.Add (this.table1);
+			global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(this.hbox1 [this.table1]));
+			w3.Position = 0;
 			this.Add (this.hbox1);
 			if ((this.Child != null)) {
 				this.Child.ShowAll ();
