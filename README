@@ -1,10 +1,10 @@
 Setting up MonoDevelop to work on the addin
 ===========================================
 1. Build the project
-1. Add symlinks from Mono-D/bin/Debug/* to your MonoDevelop AddIns folder
-1. In the solution view, choose MonoDevelop.D -> Properties -> Run -> Custom Commands
-    1. Choose Execute
-    1. Set you MonoDevelop.exe as Commands
-    1. Set your MonoDevelop.exe folder as Working Directory
-1. Press F5 to debug
+2. Add symlinks from Mono-D/bin/Debug/* to your MonoDevelop AddIns folder
+3. In the solution view, choose MonoDevelop.D -> Properties -> Run -> Custom Commands
+    a. Choose Execute
+    b. Set you MonoDevelop.exe as Commands
+    c. Set your MonoDevelop.exe folder as Working Directory
+4. Press F5 to debug
 
