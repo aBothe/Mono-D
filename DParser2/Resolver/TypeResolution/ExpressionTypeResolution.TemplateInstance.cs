@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using D_Parser.Dom.Expressions;
 using D_Parser.Dom;
+using D_Parser.Parser;
 
 namespace D_Parser.Resolver.TypeResolution
 {
@@ -73,6 +74,18 @@ namespace D_Parser.Resolver.TypeResolution
 					returnedTemplates.Add(rr);
 					continue;
 				}
+
+				/* 
+				 * Add structs desite there are template parameters 
+				 * -- Vector2(0,0) will not be handled by this method,
+				 * but we need the Vector2 definition anyway
+				 */
+				if (args == null && dn is DClassLike && ((DClassLike)dn).ClassType == DTokens.Struct)
+				{
+					returnedTemplates.Add(rr);
+					continue;
+				}
+
 
 				// If there aren't any parameters to check..
 				if (dn.TemplateParameters == null || dn.TemplateParameters.Length == 0)
