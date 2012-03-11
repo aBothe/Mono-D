@@ -65,11 +65,11 @@ namespace MonoDevelop.D.Formatting
 						'*' :
 						'+') + " ";
 
-					var prevLineIndent = ed.GetLineIndent (ed.GetLineByOffset (lastBegin));
+					var commentBeginIndent = ed.GetLineIndent (ed.GetLineByOffset (lastBegin));
 
 					ed.InsertAtCaret (
 						Document.Editor.EolMarker + 
-					    prevLineIndent + 
+					    commentBeginIndent + 
 						(dPolicy.InsertStarAtCommentNewLine ? charsToInsert : ""));
 					return false;
 				}

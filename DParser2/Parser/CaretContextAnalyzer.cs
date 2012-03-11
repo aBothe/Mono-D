@@ -226,9 +226,10 @@ namespace D_Parser.Parser
 			 *	1) Caret offset hasn't been reached yet
 			 *	2) An end of a context block is still expected
 			 */
-			bool isBeyondCaret = false; // Only reset bool states if NOT beyond target offset
-			while (off < Offset ||
-				(isBeyondCaret = (lastBeginOffset != -1 && lastEndOffset == -1 && off < Text.Length)))
+			//bool isBeyondCaret = false; // Only reset bool states if NOT beyond target offset
+			while (off < Offset 
+				// ||	(isBeyondCaret = (lastBeginOffset != -1 && lastEndOffset == -1 && off < Text.Length))
+				)
 			{
 				cur = Text[off];
 				if (off < Text.Length - 1)
@@ -256,7 +257,7 @@ namespace D_Parser.Parser
 							}
 							else if (cur == '\'')
 							{
-								IsChar = isBeyondCaret;
+								IsChar = false;
 								lastEndOffset = off;
 							}
 						}
@@ -293,12 +294,12 @@ namespace D_Parser.Parser
 						}
 						else if (IsAlternateVerbatimString && cur == '`')
 						{
-							IsInString = IsAlternateVerbatimString = isBeyondCaret;
+							IsInString = IsAlternateVerbatimString = false;
 							lastEndOffset = off;
 						}
 						else if (!IsAlternateVerbatimString && cur == '\"')
 						{
-							IsInString = IsVerbatimString = isBeyondCaret;
+							IsInString = IsVerbatimString = false;
 							lastEndOffset = off;
 						}
 					}
@@ -317,7 +318,7 @@ namespace D_Parser.Parser
 						}
 						else if (IsInLineComment && cur == '\n')
 						{
-							IsInLineComment = isBeyondCaret;
+							IsInLineComment = false;
 							lastEndOffset = off;
 						}
 					}
@@ -331,7 +332,7 @@ namespace D_Parser.Parser
 					}
 					else if (IsInBlockComment && cur == '*' && peekChar == '/')
 					{
-						IsInBlockComment = isBeyondCaret;
+						IsInBlockComment = false;
 						off++;
 						lastEndOffset = off + 1;
 					}
@@ -345,7 +346,7 @@ namespace D_Parser.Parser
 					}
 					else if (IsInNestedBlockComment && cur == '+' && peekChar == '/')
 					{
-						IsInNestedBlockComment = isBeyondCaret;
+						IsInNestedBlockComment = false;
 						off++;
 						lastEndOffset = off + 1;
 					}
