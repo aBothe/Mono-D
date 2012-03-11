@@ -7,7 +7,7 @@ using D_Parser.Resolver.TypeResolution;
 
 namespace D_Parser.Resolver.ASTScanner
 {
-	public abstract class AbstractAstScanner
+	public abstract class AbstractVisitor
 	{
 		#region Properties
 		public static DVariable __ctfe;
@@ -26,12 +26,12 @@ namespace D_Parser.Resolver.ASTScanner
 		#endregion
 
 		#region Constructor
-		public AbstractAstScanner(ResolverContextStack context)
+		public AbstractVisitor(ResolverContextStack context)
 		{
 			ctxt=context;
 		}
 
-		static AbstractAstScanner()
+		static AbstractVisitor()
 		{
 			__ctfe = new DVariable
 			{

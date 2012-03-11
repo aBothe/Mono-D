@@ -13,6 +13,8 @@ using MonoDevelop.D.Resolver;
 using MonoDevelop.Core;
 using D_Parser.Resolver.TypeResolution;
 using D_Parser.Misc;
+using MonoDevelop.D.Refactoring;
+using D_Parser.Dom.Expressions;
 
 // Code taken and modified from MonoDevelop.CSharp.Highlighting.HighlightUsagesExtension.cs
 
@@ -227,7 +229,7 @@ namespace MonoDevelop.D.Highlighting
 				if (referencedNode == null)
 					return false;
 
-				var references = Refactoring.DReferenceFinder.ScanNodeReferencesInModule(dom,parseCache,referencedNode);
+				var references = DReferenceFinder.ScanNodeReferencesInModule(dom,parseCache,referencedNode);
 
 				if (referencedNode.NodeRoot is IAbstractSyntaxTree &&
 					(referencedNode.NodeRoot as IAbstractSyntaxTree).FileName == dom.FileName)
@@ -248,7 +250,7 @@ namespace MonoDevelop.D.Highlighting
 		}
 
 
-		void ShowReferences(List<IdentifierDeclaration> references)
+		void ShowReferences(List<ISyntaxRegion> references)
 		{
 			RemoveMarkers();
 			HashSet<int> lineNumbers = new HashSet<int>();
@@ -259,7 +261,7 @@ namespace MonoDevelop.D.Highlighting
 				bool alphaBlend = false;
 				foreach (var r in references)
 				{
-					var loc = r.NonInnerTypeDependendLocation;
+					var loc = r is AbstractTypeDeclaration ? ((AbstractTypeDeclaration)r).NonInnerTypeDependendLocation : r.Location;
 
 					var marker = GetMarker(loc.Line);
 					int offset = textEditorData.Document.LocationToOffset(loc.Line, loc.Column);

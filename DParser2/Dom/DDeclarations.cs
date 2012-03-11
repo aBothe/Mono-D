@@ -5,7 +5,7 @@ using D_Parser.Parser;
 
 namespace D_Parser.Dom
 {
-	public interface ITypeDeclaration
+	public interface ITypeDeclaration : ISyntaxRegion
 	{
 		CodeLocation Location { get; set; }
 		CodeLocation EndLocation { get; set; }

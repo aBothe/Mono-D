@@ -10,7 +10,7 @@ namespace D_Parser.Misc
 	/// <summary>
 	/// Stores syntax trees while regarding their package hierarchy.
 	/// </summary>
-	public class ParseCache
+	public class ParseCache : IEnumerable<IAbstractSyntaxTree>, IEnumerable<ModulePackage>
 	{
 		#region Properties
 		public bool IsParsing { get; private set; }
@@ -262,6 +262,21 @@ namespace D_Parser.Misc
 			return ModuleName.Split ('.');
 		}
 		#endregion
+
+		public IEnumerator<IAbstractSyntaxTree> GetEnumerator()
+		{
+			return Root.GetEnumerator();
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+
+		IEnumerator<ModulePackage> IEnumerable<ModulePackage>.GetEnumerator()
+		{
+			return ((IEnumerable<ModulePackage>)Root).GetEnumerator();
+		}
 	}
 
 	public class RootPackage : ModulePackage
@@ -272,7 +287,7 @@ namespace D_Parser.Misc
 		}
 	}
 
-	public class ModulePackage
+	public class ModulePackage : IEnumerable<IAbstractSyntaxTree>, IEnumerable<ModulePackage>
 	{
 		public ModulePackage Parent { get; internal set; }
 
@@ -289,6 +304,32 @@ namespace D_Parser.Misc
 		public override string ToString ()
 		{
 			return Path;
+		}
+
+		public IEnumerator<IAbstractSyntaxTree> GetEnumerator()
+		{
+			foreach (var kv in Modules)
+				yield return kv.Value;
+
+			foreach (var kv in Packages)
+				foreach (var ast in kv.Value)
+					yield return ast;
+		}
+
+		IEnumerator<ModulePackage> IEnumerable<ModulePackage>.GetEnumerator()
+		{
+			foreach (var kv in Packages)
+			{
+				yield return kv.Value;
+
+				foreach (var p in (IEnumerable<ModulePackage>)kv.Value)
+					yield return p;
+			}
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
 		}
 	}
 

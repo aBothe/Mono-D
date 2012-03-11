@@ -4,7 +4,7 @@ using D_Parser.Resolver.TypeResolution;
 
 namespace D_Parser.Resolver.ASTScanner
 {
-	public class NameScan : AbstractAstScanner
+	public class NameScan : AbstractVisitor
 	{
 		string filterId;
 		public List<INode> Matches = new List<INode>();
@@ -67,10 +67,7 @@ namespace D_Parser.Resolver.ASTScanner
 		/// <summary>
 		/// Scans through the node. Also checks if n is a DClassLike or an other kind of type node and checks their specific child and/or base class nodes.
 		/// </summary>
-		/// <param name="n"></param>
-		/// <param name="name"></param>
 		/// <param name="parseCache">Needed when trying to search base classes</param>
-		/// <returns></returns>
 		public static INode[] ScanNodeForIdentifier(IBlockNode curScope, string name, ResolverContextStack ctxt)
 		{
 			var matches = new List<INode>();

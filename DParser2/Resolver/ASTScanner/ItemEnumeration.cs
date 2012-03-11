@@ -23,7 +23,7 @@ namespace D_Parser.Resolver.ASTScanner
 		All = Imports | Variables | Methods | Types | Keywords
 	}
 
-	public class ItemEnumeration : AbstractAstScanner
+	public class ItemEnumeration : AbstractVisitor
 	{
 		protected ItemEnumeration(ResolverContextStack ctxt): base(ctxt) { }
 

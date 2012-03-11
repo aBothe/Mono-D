@@ -67,9 +67,18 @@ namespace MonoDevelop.D.Refactoring
 
 				foreach (var reference in references)
 				{
+					CodeLocation loc;
+
+					if (reference is AbstractTypeDeclaration)
+						loc = ((AbstractTypeDeclaration)reference).NonInnerTypeDependendLocation;
+					else if (reference is IExpression)
+						loc = ((IExpression)reference).Location;
+					else
+						continue;
+
 					searchResults.Add( new SearchResult(new FileProvider(mod.FileName,project),
-						targetDoc.LocationToOffset(	reference.NonInnerTypeDependendLocation.Line,
-													reference.NonInnerTypeDependendLocation.Column),
+						targetDoc.LocationToOffset(	loc.Line,
+													loc.Column),
 						member.Name.Length));
 				}
 
@@ -87,7 +96,7 @@ namespace MonoDevelop.D.Refactoring
 		/// 
 		/// </summary>
 		/// <returns>Array of expressions/type declarations referencing the given node</returns>
-		public static List<IdentifierDeclaration> ScanNodeReferencesInModule(
+		public static List<ISyntaxRegion> ScanNodeReferencesInModule(
 			IAbstractSyntaxTree scannedFileAST,
 			ParseCacheList parseCache,
 			params INode[] declarationsToCompareWith)
@@ -97,7 +106,7 @@ namespace MonoDevelop.D.Refactoring
 			foreach (var n in declarationsToCompareWith)
 				namesToCompareWith.Add(n.Name);
 
-			var matchedReferences = new List<IdentifierDeclaration>();
+			var matchedReferences = new List<ISyntaxRegion>();
 
 			var identifiers=CodeSymbolsScanner.IdentifierScan.ScanForTypeIdentifiers(scannedFileAST);
 
@@ -175,7 +184,7 @@ namespace MonoDevelop.D.Refactoring
 			return matchedReferences;
 		}
 
-		public class IdLocationComparer : IComparer<IdentifierDeclaration>
+		public class IdLocationComparer : IComparer<ISyntaxRegion>
 		{
 			bool rev;
 			public IdLocationComparer(bool reverse = false)
@@ -183,9 +192,9 @@ namespace MonoDevelop.D.Refactoring
 				rev = reverse;
 			}
 
-			public int Compare(IdentifierDeclaration x, IdentifierDeclaration y)
+			public int Compare(ISyntaxRegion x, ISyntaxRegion y)
 			{
-				if (x == null || y == null || x.Location==y.Location)
+				if (x == null || y == null || y==x)
 					return 0;
 
 				return (rev? x.Location<y.Location : x.Location>y.Location)?1:-1;

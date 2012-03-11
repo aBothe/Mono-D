@@ -7,10 +7,8 @@ namespace D_Parser.Dom.Expressions
 {
 	public delegate INode[] ResolveTypeHandler(string identifier);
 
-	public interface IExpression
+	public interface IExpression : ISyntaxRegion
 	{
-		CodeLocation Location { get; }
-		CodeLocation EndLocation { get; }
 	}
 
 	/// <summary>

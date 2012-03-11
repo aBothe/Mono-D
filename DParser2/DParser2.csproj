@@ -68,6 +68,7 @@
     <Compile Include="Completion\Providers\ImportStatementCompletionProvider.cs" />
     <Compile Include="Completion\Providers\MemberCompletionProvider.cs" />
     <Compile Include="Completion\Providers\PropertyAttributeCompletionProvider.cs" />
+    <Compile Include="Dom\ISyntaxRegion.cs" />
     <Compile Include="Dom\TemplateParameters.cs" />
     <Compile Include="Misc\ParseCache.cs" />
     <Compile Include="Misc\ParseCacheList.cs" />
@@ -77,7 +78,7 @@
     <Compile Include="Resolver\ASTScanner\NameScan.cs" />
     <Compile Include="Resolver\ResolutionOptions.cs" />
     <Compile Include="Resolver\TypeResolution\ExpressionTypeResolution.cs" />
-    <Compile Include="Resolver\ASTScanner\AbstractAstScanner.cs" />
+    <Compile Include="Resolver\ASTScanner\AbstractVisitor.cs" />
     <Compile Include="Resolver\TypeResolution\ExpressionTypeResolution.PostfixExpressions.cs" />
     <Compile Include="Resolver\TypeResolution\ExpressionTypeResolution.TemplateInstance.cs" />
     <Compile Include="Resolver\TypeResolution\ExpressionTypeResolution.TraitsResolver.cs" />
