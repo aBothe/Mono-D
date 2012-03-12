@@ -137,12 +137,14 @@ namespace MonoDevelop.D.Refactoring
 			ISyntaxRegion id = null;
 
 			if (o is ITypeDeclaration)
-				id=TrackDownSyntaxNode((ITypeDeclaration)o);
+				id = ExtractId((ITypeDeclaration)o);
+			else if (o is IExpression)
+				id = ExtractId((IExpression)o);
 
 			if (id == null)
 				return;
 
-			ResolveAndTestIdentifierObject(id);
+			ResolveAndTestIdentifierObject(o,id);
 		}
 
 		/// <summary>
@@ -150,7 +152,7 @@ namespace MonoDevelop.D.Refactoring
 		/// Uses the namesToCompareWith list to decide if worth a resolution or not.
 		/// </summary>
 		/// <returns>Returns null if nothing nearly matching was found.</returns>
-		ITypeDeclaration TrackDownSyntaxNode(ITypeDeclaration td)
+		ISyntaxRegion ExtractId(ITypeDeclaration td)
 		{
 			IdentifierDeclaration id = null;
 
@@ -171,11 +173,54 @@ namespace MonoDevelop.D.Refactoring
 			return null;
 		}
 
+		ISyntaxRegion ExtractId(IExpression x)
+		{
+			if (x is IdentifierExpression)
+			{
+				var idx = (IdentifierExpression)x;
+
+				if (namesToCompareWith.Contains((string)idx.Value))
+					return idx;
+			}
+			else if (x is PostfixExpression_Access)
+			{
+				var pfa = (PostfixExpression_Access)x;
+
+				if (pfa.AccessExpression is IdentifierExpression)
+				{
+					var idx = (IdentifierExpression)pfa.AccessExpression;
+
+					if(namesToCompareWith.Contains((string)idx.Value))
+						return idx;
+				}
+				else if (pfa.AccessExpression is NewExpression)
+				{
+					var nt = ((NewExpression)pfa.AccessExpression).Type;
+
+					return ExtractId(nt);
+				}
+				else if (pfa.AccessExpression is TemplateInstanceExpression)
+				{
+					var tix = (TemplateInstanceExpression)pfa.AccessExpression;
+
+					if (namesToCompareWith.Contains(tix.TemplateIdentifier.ToString()))
+						return tix;
+				}
+				
+				return ExtractId(pfa.PostfixForeExpression);
+			}
+
+			return null;
+		}
+
 		/// <summary>
 		/// Resolve the symbol to which the identifier is related to
 		/// </summary>
-		void ResolveAndTestIdentifierObject(ISyntaxRegion o)
+		void ResolveAndTestIdentifierObject(ISyntaxRegion o,ISyntaxRegion idObject=null)
 		{
+			if (idObject == null)
+				idObject = o;
+
 			UpdateOrCreateIdentifierContext(o);
 
 			var resolveResults = o is ITypeDeclaration ?
@@ -185,7 +230,7 @@ namespace MonoDevelop.D.Refactoring
 			if (resolveResults != null)
 				foreach (var targetSymbol in resolveResults)
 				{
-					HandleResolveResult(targetSymbol, o);
+					HandleResolveResult(targetSymbol, o, idObject);
 				}
 		}
 
@@ -207,12 +252,12 @@ namespace MonoDevelop.D.Refactoring
 				ctxt.ScopedBlock = DResolver.SearchBlockAt(ast, o.Location, out ctxt.CurrentContext.ScopedStatement);
 		}
 
-		void HandleResolveResult(ResolveResult rr, ISyntaxRegion id)
+		void HandleResolveResult(ResolveResult rr, ISyntaxRegion o, ISyntaxRegion idObject)
 		{
 			var tsym = rr;
 
-			// Track down result bases until one associated to 'id' has been found - and finally mark it as a reference
-			while (tsym != null && tsym.DeclarationOrExpressionBase != id)
+			// Track down result bases until one associated to 'o' has been found - and finally mark it as a reference
+			while (tsym != null && tsym.DeclarationOrExpressionBase != o)
 				tsym = tsym.ResultBase;
 
 			// Get the associated declaration node
@@ -227,7 +272,7 @@ namespace MonoDevelop.D.Refactoring
 				declarationsToCompareWith.Contains(targetSymbolNode))
 			{
 				// ... Reference found!
-				matchedReferences.Add(id);
+				matchedReferences.Add(idObject);
 			}
 		}
 
