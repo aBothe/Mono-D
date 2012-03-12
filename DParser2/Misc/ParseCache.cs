@@ -16,6 +16,10 @@ namespace D_Parser.Misc
 		public bool IsParsing { get; private set; }
 
 		public RootPackage Root = new RootPackage ();
+		/// <summary>
+		/// If a parse directory is relative, like ../ or similar, use this path as base path
+		/// </summary>
+		public string FallbackPath;
 		public List<string> ParsedDirectories = new List<string> ();
 
 		public Exception LastParseException { get; private set; }
@@ -24,15 +28,17 @@ namespace D_Parser.Misc
 		#region Parsing management
 		public ParsePerformanceData[] Parse ()
 		{
-			return Parse (ParsedDirectories);
+			return Parse (ParsedDirectories,FallbackPath);
 		}
 
 		/// <summary>
 		/// Parses all directories and updates the cache contents
 		/// </summary>
-		public ParsePerformanceData[] Parse (IEnumerable<string> directoriesToParse)
+		public ParsePerformanceData[] Parse (IEnumerable<string> directoriesToParse,string fallbackAbsolutePath)
 		{
 			var performanceLogs = new List<ParsePerformanceData> ();
+
+			FallbackPath = fallbackAbsolutePath;
 
 			if (directoriesToParse == null) {
 				ParsedDirectories.Clear ();
@@ -46,10 +52,14 @@ namespace D_Parser.Misc
 			foreach (var dir in directoriesToParse) {
 				parsedDirs.Add (dir);
 
-				var ppd = new ParsePerformanceData { BaseDirectory = dir };
+				var dir_abs = dir;
+				if (!Path.IsPathRooted(dir))
+					dir_abs = Path.Combine(fallbackAbsolutePath, dir_abs);
+
+				var ppd = new ParsePerformanceData { BaseDirectory = dir_abs };
 				performanceLogs.Add (ppd);
 
-				Parse (dir, newRoot, ppd, true);
+				Parse (dir_abs, newRoot, ppd, true);
 			}
 
 			IsParsing = false;

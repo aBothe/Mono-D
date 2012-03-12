@@ -21,7 +21,12 @@ namespace MonoDevelop.D.Building
 		}
 
 		public readonly ParseCache ParseCache = new ParseCache ();
-		public string BinPath = "";
+		string _binPath;
+		public string BinPath
+		{
+			get { return _binPath; }
+			set { _binPath = ParseCache.FallbackPath = value; }
+		}
 		public string Vendor;
 		public readonly Dictionary<DCompileTarget, LinkTargetConfiguration> LinkTargetConfigurations = new Dictionary<DCompileTarget, LinkTargetConfiguration> ();
 

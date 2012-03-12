@@ -92,6 +92,7 @@ namespace MonoDevelop.D
 		#region Parsed project modules
 		public void UpdateLocalIncludeCache ()
 		{
+			LocalIncludeCache.FallbackPath = BaseDirectory;
 			DCompilerConfiguration.UpdateParseCacheAsync (LocalIncludeCache);
 		}
 
@@ -122,7 +123,7 @@ namespace MonoDevelop.D
 		/// </summary>
 		public void UpdateParseCache ()
 		{
-			LocalFileCache.Parse (new[] { BaseDirectory.ToString () });
+			LocalFileCache.Parse (new[] { BaseDirectory.ToString () }, BaseDirectory);
 		}
 
 		protected override void OnFileRemovedFromProject (ProjectFileEventArgs e)
