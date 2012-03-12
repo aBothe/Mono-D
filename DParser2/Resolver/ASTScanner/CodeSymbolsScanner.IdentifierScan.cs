@@ -19,9 +19,9 @@ namespace D_Parser.Resolver.ASTScanner
 			/// 3) IdentifierExpression
 			/// occurring in the given Node
 			/// </summary>
-			public static List<object> ScanForTypeIdentifiers(INode Node)
+			public static List<ISyntaxRegion> ScanForTypeIdentifiers(INode Node)
 			{
-				var l = new List<object>();
+				var l = new List<ISyntaxRegion>();
 
 				if (Node != null)
 					SearchIn(Node, l);
@@ -29,7 +29,7 @@ namespace D_Parser.Resolver.ASTScanner
 				return l;
 			}
 
-			static void SearchIn(INode node, List<object> l)
+			static void SearchIn(INode node, List<ISyntaxRegion> l)
 			{
 				if (node == null)
 					return;
@@ -117,7 +117,7 @@ namespace D_Parser.Resolver.ASTScanner
 				}
 			}
 
-			static void SearchIn(IStatement stmt, List<object> l)
+			static void SearchIn(IStatement stmt, List<ISyntaxRegion> l)
 			{
 				if (stmt == null)
 					return;
@@ -176,7 +176,7 @@ namespace D_Parser.Resolver.ASTScanner
 				}
 			}
 
-			static void SearchIn(ITypeDeclaration type, List<object> l)
+			static void SearchIn(ITypeDeclaration type, List<ISyntaxRegion> l)
 			{
 				while (type != null)
 				{
@@ -217,7 +217,7 @@ namespace D_Parser.Resolver.ASTScanner
 				}
 			}
 
-			static void SearchIn(IExpression ex, List<object> l)
+			static void SearchIn(IExpression ex, List<ISyntaxRegion> l)
 			{
 				if (ex == null)
 					return;

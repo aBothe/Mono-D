@@ -19,6 +19,17 @@ namespace MonoDevelop.D.Refactoring
 {
 	public class DReferenceFinder
 	{
+		#region Properties
+		ResolverContextStack ctxt;
+		ParseCacheList parseCaches;
+		List<ISyntaxRegion> matchedReferences = new List<ISyntaxRegion>();
+		IAbstractSyntaxTree ast;
+		List<string> namesToCompareWith;
+		INode[] declarationsToCompareWith;
+		#endregion
+
+		protected DReferenceFinder() { }
+
 		public static IEnumerable<SearchResult> FindReferences(
 			DProject project, 
 			INode member, 
@@ -106,82 +117,118 @@ namespace MonoDevelop.D.Refactoring
 			foreach (var n in declarationsToCompareWith)
 				namesToCompareWith.Add(n.Name);
 
-			var matchedReferences = new List<ISyntaxRegion>();
-
 			var identifiers=CodeSymbolsScanner.IdentifierScan.ScanForTypeIdentifiers(scannedFileAST);
 
-			ResolverContextStack ctxt=null;
+			var reff = new DReferenceFinder { 
+				ast=scannedFileAST,
+				parseCaches=parseCache,
+				declarationsToCompareWith=declarationsToCompareWith,
+				namesToCompareWith=namesToCompareWith
+			};
 
 			foreach (var o in identifiers)
+				reff.HandleSyntaxNode(o);
+
+			return reff.matchedReferences;
+		}
+
+		void HandleSyntaxNode(ISyntaxRegion o)
+		{
+			ISyntaxRegion id = null;
+
+			if (o is ITypeDeclaration)
+				id=TrackDownSyntaxNode((ITypeDeclaration)o);
+
+			if (id == null)
+				return;
+
+			ResolveAndTestIdentifierObject(id);
+		}
+
+		/// <summary>
+		/// Scans a type declaration object for possible name matches.
+		/// Uses the namesToCompareWith list to decide if worth a resolution or not.
+		/// </summary>
+		/// <returns>Returns null if nothing nearly matching was found.</returns>
+		ITypeDeclaration TrackDownSyntaxNode(ITypeDeclaration td)
+		{
+			IdentifierDeclaration id = null;
+
+			while (td != null && id == null)
 			{
-				IdentifierDeclaration id = null;
+				if (td is IdentifierDeclaration)
+					id = (td as IdentifierDeclaration);
+				else if (td is TemplateInstanceExpression)
+					id = (td as TemplateInstanceExpression).TemplateIdentifier;
 
-				var curTypeDecl = o as ITypeDeclaration;
-				while(curTypeDecl !=null && id==null)
-				{
-					if (curTypeDecl is IdentifierDeclaration)
-						id = (curTypeDecl as IdentifierDeclaration);
-					else if (curTypeDecl is TemplateInstanceExpression)
-						id = (curTypeDecl as TemplateInstanceExpression).TemplateIdentifier;
-
-					curTypeDecl = curTypeDecl.InnerDeclaration;
-
-					if (!namesToCompareWith.Contains(id.Id))
-						id = null;
-				}
-
-				if (id == null)
-					continue;
-
-				// Get the context of the used identifier
-				if (ctxt == null)
-				{
-					IStatement stmt = null;
-					ctxt = new ResolverContextStack(parseCache, new ResolverContext
-					{
-						ScopedBlock = DResolver.SearchBlockAt(scannedFileAST, (o as ITypeDeclaration).Location,
-						out stmt),
-						ScopedStatement=stmt
-					});
-				}
-				else
-					ctxt.ScopedBlock = DResolver.SearchBlockAt(
-					scannedFileAST, (o as ITypeDeclaration).Location,
-					out ctxt.CurrentContext.ScopedStatement
-				);
-
-				// Resolve the symbol to which the identifier is related to
-				var resolveResults = TypeDeclarationResolver.Resolve(o as ITypeDeclaration, ctxt);
-
-				if (resolveResults == null)
-					continue;
-
-                foreach (var targetSymbol in resolveResults)
-                {
-					var tsym=targetSymbol;
-
-					while (tsym!=null && tsym.DeclarationOrExpressionBase != id)
-						tsym = tsym.ResultBase;
-
-					// Get the associated declaration node
-					var targetSymbolNode = DResolver.GetResultMember(tsym);
-
-					if (targetSymbolNode == null)
-						break;
-
-					// Compare with the members whose references shall be looked up
-					if (declarationsToCompareWith.Length == 1 ?
-						targetSymbolNode == declarationsToCompareWith[0] :
-						declarationsToCompareWith.Contains(targetSymbolNode))
-					{
-						// ... Reference found!
-						matchedReferences.Add(id);
-					}
-                }
+				if (id!=null && namesToCompareWith.Contains(id.Id))
+					return td;
+				
+				id = null;
+				td = td.InnerDeclaration;
 			}
 
+			return null;
+		}
 
-			return matchedReferences;
+		/// <summary>
+		/// Resolve the symbol to which the identifier is related to
+		/// </summary>
+		void ResolveAndTestIdentifierObject(ISyntaxRegion o)
+		{
+			UpdateOrCreateIdentifierContext(o);
+
+			var resolveResults = o is ITypeDeclaration ?
+				TypeDeclarationResolver.Resolve(o as ITypeDeclaration, ctxt) :
+				(o is IExpression ? ExpressionTypeResolver.Resolve((IExpression)o, ctxt) : null);
+
+			if (resolveResults != null)
+				foreach (var targetSymbol in resolveResults)
+				{
+					HandleResolveResult(targetSymbol, o);
+				}
+		}
+
+		/// <summary>
+		/// Get the context of the used identifier
+		/// </summary>
+		void UpdateOrCreateIdentifierContext(ISyntaxRegion o)
+		{
+			if (ctxt == null)
+			{
+				IStatement stmt = null;
+				ctxt = new ResolverContextStack(parseCaches, new ResolverContext
+				{
+					ScopedBlock = DResolver.SearchBlockAt(ast, o.Location, out stmt),
+					ScopedStatement = stmt
+				});
+			}
+			else
+				ctxt.ScopedBlock = DResolver.SearchBlockAt(ast, o.Location, out ctxt.CurrentContext.ScopedStatement);
+		}
+
+		void HandleResolveResult(ResolveResult rr, ISyntaxRegion id)
+		{
+			var tsym = rr;
+
+			// Track down result bases until one associated to 'id' has been found - and finally mark it as a reference
+			while (tsym != null && tsym.DeclarationOrExpressionBase != id)
+				tsym = tsym.ResultBase;
+
+			// Get the associated declaration node
+			var targetSymbolNode = DResolver.GetResultMember(tsym);
+
+			if (targetSymbolNode == null)
+				return;
+
+			// Compare with the members whose references shall be looked up
+			if (declarationsToCompareWith.Length == 1 ?
+				targetSymbolNode == declarationsToCompareWith[0] :
+				declarationsToCompareWith.Contains(targetSymbolNode))
+			{
+				// ... Reference found!
+				matchedReferences.Add(id);
+			}
 		}
 
 		public class IdLocationComparer : IComparer<ISyntaxRegion>
