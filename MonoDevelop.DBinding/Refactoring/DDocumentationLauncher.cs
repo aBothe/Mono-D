@@ -27,8 +27,8 @@ namespace MonoDevelop.D.Refactoring
 				if (OS.IsWindows)
 					url = url.Replace('/','\\');
 
-				if (!url.StartsWith("file://"))
-					url = "file://" + url;
+				if (!url.StartsWith("file:///"))
+					url = "file:///" + url;
 			}
 
 			try
@@ -68,13 +68,12 @@ namespace MonoDevelop.D.Refactoring
 
 						return phobos_url;
 					}
-				} else if (result is StaticTypeResult) {
-					var srr = (StaticTypeResult)result;
+				} else if (result is StaticTypeResult || result is DelegateResult || result is ArrayResult) {
 
-					if (srr.DeclarationOrExpressionBase is ITypeDeclaration)
-						return GetRefUrlFor ((ITypeDeclaration)srr.DeclarationOrExpressionBase);
-					else if (srr.DeclarationOrExpressionBase is IExpression)
-						return GetRefUrlFor ((IExpression)srr.DeclarationOrExpressionBase);
+					if (result.DeclarationOrExpressionBase is ITypeDeclaration)
+						return GetRefUrlFor ((ITypeDeclaration)result.DeclarationOrExpressionBase);
+					else if (result.DeclarationOrExpressionBase is IExpression)
+						return GetRefUrlFor ((IExpression)result.DeclarationOrExpressionBase);
 				}
 			}
 
@@ -182,6 +181,8 @@ namespace MonoDevelop.D.Refactoring
 				url += "#Typeof";
 			else if (t is DTokenDeclaration)
 				url = "type.html";
+			else if (t is DelegateDeclaration)
+				url += "#BasicType2";
 
 			return url;
 		}
