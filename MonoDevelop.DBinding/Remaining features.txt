@@ -1,7 +1,6 @@
 ﻿// xcopy /Q "$(TargetDir)*" "$(SolutionDir)..\tutorial.lib\MonoDevelop\main\build\AddIns\BackendBindings" /Y
 This document contains a list of to-do features:
 
-* Fix expression resolution for type highlighting, renaming & references finding
 * Implement template parameter-argument check
 * Implement declaration condition checks
 * Add Expression Value Resolution
