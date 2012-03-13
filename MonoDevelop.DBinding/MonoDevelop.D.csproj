@@ -81,9 +81,7 @@
     <Reference Include="System" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Data" />
-    <Reference Include="Mono.Cairo">
-      <HintPath>C:\Program Files %28x86%29\GtkSharp\2.12\lib\Mono.Cairo\Mono.Cairo.dll</HintPath>
-    </Reference>
+    <Reference Include="Mono.Cairo" />
     <Reference Include="Mono.TextEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>..\Mono.TextEditor.dll</HintPath>
       <Private>False</Private>
