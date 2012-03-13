@@ -73,6 +73,7 @@
     <Compile Include="Misc\ParseCache.cs" />
     <Compile Include="Misc\ParseCacheList.cs" />
     <Compile Include="Misc\ParseLog.cs" />
+    <Compile Include="Refactoring\ReferenceFinder.cs" />
     <Compile Include="Resolver\ASTScanner\CodeSymbolsScanner.IdentifierScan.cs" />
     <Compile Include="Resolver\ASTScanner\ItemEnumeration.cs" />
     <Compile Include="Resolver\ASTScanner\NameScan.cs" />

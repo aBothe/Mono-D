@@ -96,7 +96,7 @@ namespace MonoDevelop.D.Refactoring
 		{
 			try
 			{
-				foreach (var sr in DReferenceFinder.FindReferences(
+				foreach (var sr in ReferenceFinder.FindReferences(
 					IdeApp.Workbench.ActiveDocument.HasProject?
 					IdeApp.Workbench.ActiveDocument.Project as DProject:null, 
 					n, monitor))

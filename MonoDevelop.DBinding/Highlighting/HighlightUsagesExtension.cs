@@ -229,7 +229,7 @@ namespace MonoDevelop.D.Highlighting
 				if (referencedNode == null)
 					return false;
 
-				var references = DReferenceFinder.ScanNodeReferencesInModule(dom,parseCache,referencedNode);
+				var references = ReferenceFinder.ScanNodeReferencesInModule(dom,parseCache,referencedNode);
 
 				if (referencedNode.NodeRoot is IAbstractSyntaxTree &&
 					(referencedNode.NodeRoot as IAbstractSyntaxTree).FileName == dom.FileName)
