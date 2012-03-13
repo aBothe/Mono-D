@@ -1578,23 +1578,23 @@ namespace D_Parser.Parser
 						if ((char)ReaderPeek() == '.') // Triple dot
 						{
 							ReaderRead();
-							return new DToken(DTokens.TripleDot, x, y);
+							return new DToken(DTokens.TripleDot, x, y,3);
 						}
-						return new DToken(DTokens.DoubleDot, x, y);
+						return new DToken(DTokens.DoubleDot, x, y,2);
 					}
-					return new DToken(DTokens.Dot, x, y);
+					return new DToken(DTokens.Dot, x, y,1);
 				case ')':
-					return new DToken(DTokens.CloseParenthesis, x, y);
+					return new DToken(DTokens.CloseParenthesis, x, y,1);
 				case '(':
-					return new DToken(DTokens.OpenParenthesis, x, y);
+					return new DToken(DTokens.OpenParenthesis, x, y,1);
 				case ']':
-					return new DToken(DTokens.CloseSquareBracket, x, y);
+					return new DToken(DTokens.CloseSquareBracket, x, y,1);
 				case '[':
-					return new DToken(DTokens.OpenSquareBracket, x, y);
+					return new DToken(DTokens.OpenSquareBracket, x, y,1);
 				case '}':
-					return new DToken(DTokens.CloseCurlyBrace, x, y);
+					return new DToken(DTokens.CloseCurlyBrace, x, y,1);
 				case '{':
-					return new DToken(DTokens.OpenCurlyBrace, x, y);
+					return new DToken(DTokens.OpenCurlyBrace, x, y,1);
 				default:
 					return null;
 			}
