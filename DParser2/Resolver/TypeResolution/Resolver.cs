@@ -7,6 +7,7 @@ using D_Parser.Dom;
 using D_Parser.Dom.Expressions;
 using D_Parser.Dom.Statements;
 using D_Parser.Parser;
+using System.Linq;
 
 namespace D_Parser.Resolver.TypeResolution
 {
@@ -222,9 +223,31 @@ namespace D_Parser.Resolver.TypeResolution
 						return new[] { rb };
 
 					// If member/type etc. is part of the actual module, omit external symbols
-					if (n.NodeRoot == ctxt.CurrentContext.ScopedBlock.NodeRoot)
-						newRes.Add(rb);
+					if (n.NodeRoot != ctxt.CurrentContext.ScopedBlock.NodeRoot)
+						foreach (var r in newRes)
+						{
+							bool omit = false;
+
+							var k = GetResultMember(r);
+							if (k != null && k.NodeRoot == ctxt.CurrentContext.ScopedBlock.NodeRoot)
+							{
+								omit = true;
+								break;
+							}
+
+							if (omit)
+								continue;
+						}
+					else
+						foreach (var r in newRes.ToArray())
+						{
+							var k = GetResultMember(r);
+							if (k != null && k.NodeRoot != ctxt.CurrentContext.ScopedBlock.NodeRoot)
+								newRes.Remove(r);
+						}
 				}
+				
+				newRes.Add(rb);
 			}
 
 			return newRes.Count > 0 ? newRes.ToArray():null;

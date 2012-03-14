@@ -21,45 +21,6 @@ namespace D_Parser.Dom.Expressions
 
 	public class ExpressionHelper
 	{
-		public static bool ToBool(object value)
-		{
-			bool b = false;
-
-			try
-			{
-				b = Convert.ToBoolean(value);
-			}
-			catch { }
-
-			return b;
-		}
-
-		public static double ToDouble(object value)
-		{
-			double d = 0;
-
-			try
-			{
-				d = Convert.ToDouble(value);
-			}
-			catch { }
-
-			return d;
-		}
-
-		public static long ToLong(object value)
-		{
-			long d = 0;
-
-			try
-			{
-				d = Convert.ToInt64(value);
-			}
-			catch { }
-
-			return d;
-		}
-
 		/// <summary>
 		/// Scans through all container expressions recursively and returns the one that's nearest to 'Where'.
 		/// Will return 'e' if nothing found or if there wasn't anything to scan
@@ -81,6 +42,13 @@ namespace D_Parser.Dom.Expressions
 				foreach (var se in subExpressions)
 					if (se != null && Where >= se.Location && Where <= se.EndLocation)
 					{
+						/*
+						 * a.b -- take the entire access expression instead of b only in order to be able to resolve it correctly
+						 */
+						var pfa = e as PostfixExpression_Access;
+						if (pfa != null && pfa.AccessExpression == se && !(pfa.AccessExpression is ContainerExpression))
+							continue;
+
 						e = se;
 						foundOne = true;
 						break;
