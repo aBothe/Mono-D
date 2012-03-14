@@ -70,6 +70,8 @@
     <Compile Include="Completion\Providers\PropertyAttributeCompletionProvider.cs" />
     <Compile Include="Dom\ISyntaxRegion.cs" />
     <Compile Include="Dom\TemplateParameters.cs" />
+    <Compile Include="Evaluation\ExpressionEvaluator.cs" />
+    <Compile Include="Evaluation\PrimitiveValue.cs" />
     <Compile Include="Misc\ParseCache.cs" />
     <Compile Include="Misc\ParseCacheList.cs" />
     <Compile Include="Misc\ParseLog.cs" />
