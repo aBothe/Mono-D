@@ -1,16 +1,14 @@
 ﻿
-DParser2 - A language analysis library for the D Programming language 
+Copyright 2012 Alexander Bothe
 
-made by Alexander Bothe <a_bothe@gmx.net>
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-Idiot proof license:
+    http://www.apache.org/licenses/LICENSE-2.0
 
- - You may use this program
- - You may view and modify its source code
- - You may distribute this program
- - You may create your own software that uses parts of this program or that uses this program as-is
- - If you publish an other program that uses parts of this program 
-   or if you integrate this program entirely into an other program, 
-   you have to mention who originally created the software.
-
- - You agree to this license by using this software or viewing its source code
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
