@@ -320,7 +320,7 @@ namespace D_Parser.Parser
 				{
 					BlockAttributes.Push(c);
 
-					ClassBody(module, true);
+					ClassBody(module, true, false);
 
 					BlockAttributes.Pop();
 				}
@@ -342,7 +342,7 @@ namespace D_Parser.Parser
 					{
 						BlockAttributes.Push(c);
 
-						ClassBody(module, true);
+						ClassBody(module, true, false);
 
 						BlockAttributes.Pop();
 					}
@@ -408,7 +408,7 @@ namespace D_Parser.Parser
 				while (DeclarationAttributes.Count > 0)
 					BlockAttributes.Push(DeclarationAttributes.Pop());
 
-				ClassBody(module, true);
+				ClassBody(module, true, false);
 
 				for (int i = popCount; i > 0; i--)
 					BlockAttributes.Pop();
@@ -3926,7 +3926,7 @@ namespace D_Parser.Parser
 			return ret;
 		}
 
-		public void ClassBody(DBlockNode ret,bool KeepBlockAttributes=false)
+		public void ClassBody(DBlockNode ret,bool KeepBlockAttributes=false,bool UpdateBoundaries=true)
 		{
 			var OldPreviousCommentString = PreviousComment;
 			PreviousComment = "";
@@ -3938,7 +3938,9 @@ namespace D_Parser.Parser
 				if(!KeepBlockAttributes)
 					BlockAttributes = new Stack<DAttribute>();
 
-				ret.BlockStartLocation = t.Location;
+				if(UpdateBoundaries)
+					ret.BlockStartLocation = t.Location;
+
 				while (!IsEOF && laKind != (CloseCurlyBrace))
 				{
 					DeclDef(ret);
@@ -3950,7 +3952,8 @@ namespace D_Parser.Parser
 				if (Expect(CloseCurlyBrace))
 					LastParsedObject = null;
 
-				ret.EndLocation = t.EndLocation;
+				if(UpdateBoundaries)
+					ret.EndLocation = t.EndLocation;
 
 				if(!KeepBlockAttributes)
 					BlockAttributes = stk_backup;
@@ -4294,12 +4297,15 @@ namespace D_Parser.Parser
 
 		private INode TemplateDeclaration()
 		{
+			var startLoc = la.Location;
 			// TemplateMixinDeclaration
 			bool isTemplateMixinDecl = laKind == Mixin;
 			if (isTemplateMixinDecl)
 				Step();
 			Expect(Template);
-			var dc = new DClassLike(Template) { Description=GetComments() };
+			var dc = new DClassLike(Template) { Description=GetComments(),
+				StartLocation=startLoc
+			};
 			LastParsedObject = dc;
 
 			ApplyAttributes(dc);
@@ -4307,23 +4313,22 @@ namespace D_Parser.Parser
 			if (isTemplateMixinDecl)
 				dc.Attributes.Add(new DAttribute(Mixin));
 
-			dc.StartLocation = t.Location;
-
-			Expect(Identifier);
-			dc.Name = t.Value;
-			dc.NameLocation = t.Location;
+			if (Expect(Identifier))
+			{
+				dc.Name = t.Value;
+				dc.NameLocation = t.Location;
+			}
 
 			dc.TemplateParameters = TemplateParameterList();
 
 			if (laKind == (If))
-				Constraint();
+				dc.TemplateConstraint=Constraint();
 
 			if (laKind == (Colon))
 				dc.BaseClasses = BaseClassList();
 
 			ClassBody(dc);
 
-			dc.EndLocation = t.EndLocation;
 			return dc;
 		}
 
