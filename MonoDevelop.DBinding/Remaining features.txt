@@ -13,6 +13,7 @@ This document contains a list of to-do features:
 * Highlight context-dependent keywords (__traits, default version keywords, 
 	variable arguments pointers, scope identifiers [success/exit/failure] etc.)
 	see http://www.d-programming-language.org/version.html#PredefinedVersions
+* Recommend (e.g. enum) items in expression contexts
 
 * Variable renaming
 	- Add preview/selection for code changes about to be done
