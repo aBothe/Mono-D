@@ -139,7 +139,6 @@
 		<Word>debug</Word>
 		<Word>delete</Word>
 		<Word>macro</Word>
-		<Word>mixin</Word>
 		<Word>pragma</Word>
 		<Word>typedef</Word>
 		<Word>unittest</Word>
@@ -149,6 +148,7 @@
 		<Word>__LINE__</Word>
 		<Word>__thread</Word>
 		<Word>__traits</Word>
+		<Word>__vector</Word>
 	</Keywords>
 
 	<Keywords color="keyword.type">
@@ -184,6 +184,8 @@
 		<Word>dstring</Word>
 		<Word>__ctfe</Word>
 		<Word>size_t</Word>
+
+		<Word>mixin</Word>
 	</Keywords>
 
 	<Keywords color = "constant.language.void">
