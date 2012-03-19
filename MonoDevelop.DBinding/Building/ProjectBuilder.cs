@@ -136,6 +136,8 @@ namespace MonoDevelop.D.Building
 					linkerExecutable = Commands.Linker;
 			}
 
+            monitor.Log.WriteLine("Current dictionary: " + Project.BaseDirectory);
+
 			int exitCode = ExecuteCommand (linkerExecutable, argumentString, Project.BaseDirectory, monitor,
                 out stdError,
                 out stdOut);
@@ -151,6 +153,8 @@ namespace MonoDevelop.D.Building
 		BuildResult DoStepByStepBuild ()
 		{
 			monitor.BeginTask ("Build Project", Project.Files.Count + 1);
+
+            monitor.Log.WriteLine("Current dictionary: "+Project.BaseDirectory);
 
 			var br = new BuildResult ();
 			var modificationsDone = false;
