@@ -97,12 +97,12 @@ namespace MonoDevelop.D.OptionPanels
 					.GetArguments (isDebug)
 					.Clone ();
 			
-			argsStore [DCompileTarget.StaticLibrary] = config
+			argsStore [DCompileTarget.SharedLibrary] = config
 					.GetOrCreateTargetConfiguration (DCompileTarget.SharedLibrary)
 					.GetArguments (isDebug)
 					.Clone ();
 			
-			argsStore [DCompileTarget.SharedLibrary] = config
+			argsStore [DCompileTarget.StaticLibrary] = config
 					.GetOrCreateTargetConfiguration (DCompileTarget.StaticLibrary)
 					.GetArguments (isDebug)
 					.Clone ();
