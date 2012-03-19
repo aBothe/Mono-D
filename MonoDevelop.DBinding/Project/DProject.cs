@@ -154,7 +154,7 @@ namespace MonoDevelop.D
 		public DProject (ProjectCreateInformation info, XmlElement projectOptions)
 		{			
 			Init ();
-
+            
 			string binPath = ".";
 			
 			if (info != null) {
@@ -165,6 +165,27 @@ namespace MonoDevelop.D
 				if (info.BinPath != null)
 					binPath = info.BinPath;
 			}
+
+            var outputPrefix = "";
+
+            if (projectOptions != null)
+            {
+                // Set project's target type to the one which has been defined in the project template
+                if (projectOptions.Attributes["Target"] != null)
+                    CompileTarget = (DCompileTarget)Enum.Parse(
+                        typeof(DCompileTarget),
+                        projectOptions.Attributes["Target"].InnerText);
+
+                // Set project's compiler
+                if (projectOptions.Attributes["Compiler"] != null)
+                    UsedCompilerVendor = projectOptions.Attributes["Compiler"].InnerText;
+
+                // Non Windows-OS require a 'lib' prefix as library name -- like libphobos2.a
+                if (CompileTarget == DCompileTarget.StaticLibrary || CompileTarget == DCompileTarget.SharedLibrary && !OS.IsWindows)
+                {
+                    outputPrefix = "lib";
+                }
+            }
 			
 			var libs = new List<string> ();
 			if (projectOptions != null) {
@@ -197,27 +218,14 @@ namespace MonoDevelop.D
 			unittestConfig.ExtraCompilerArguments += "-unittest ";
 
 			Configurations.Add (unittestConfig);
-
-
+            
 			// Prepare all configurations
 			foreach (DProjectConfiguration c in Configurations) {
 				c.OutputDirectory = Path.Combine (this.GetRelativeChildPath (binPath), c.Id);
 				c.ObjectDirectory += Path.DirectorySeparatorChar + c.Id;
-				c.Output = Name;
+				c.Output = outputPrefix + Name;
 
 				if (projectOptions != null) {
-					// Set project's target type to the one which has been defined in the project template
-					if (projectOptions.Attributes ["Target"] != null) {
-						CompileTarget = (DCompileTarget)Enum.Parse (
-							typeof(DCompileTarget),
-							projectOptions.Attributes ["Target"].InnerText);
-					}
-					
-					// Set project's compiler
-					if (projectOptions.Attributes ["Compiler"] != null) {
-						UsedCompilerVendor = projectOptions.Attributes ["Compiler"].InnerText;
-					}
-
 					// Set extra compiler&linker args
 					if (projectOptions.Attributes ["CompilerArgs"].InnerText != null) {
 						c.ExtraCompilerArguments += projectOptions.Attributes ["CompilerArgs"].InnerText;
