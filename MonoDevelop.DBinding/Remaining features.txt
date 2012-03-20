@@ -3,6 +3,9 @@ This document contains a list of to-do features:
 
 * Implement template parameter-argument check
 * Implement declaration condition checks
+	- omit debug/versioned declarations 
+	  if not fitting to environment dependencied 
+	  ([debug/release] or [Windows/Mac/Unix/BSD] etc.)
 * Add Expression Value Resolution
 * Implement correct template instance type recognition / method overload recognition
 * Mixin support
@@ -20,18 +23,15 @@ This document contains a list of to-do features:
 * Interface/Abstract class implementation
 * Import management
 	- Add missing imports
-	- Remove unused imports
+	- (Remove unused imports)
 * Code formatting
 	- Enable custom text indent properties (use spaces instead of tabs, tabsize etc.)
 	- Reformat the entire document
 	- Policy system
 	- Rewrite formatting engine - let the indent depent on the currently scoped statement/node -- better: It'll be easier to apply indent rules!
-* Fade out inactive code parts
+* (Fade out inactive code parts)
 * Semantic highlighting
 	- Highlight code symbols
-* Omit debug/versioned declarations 
-  if not fitting to environment dependencied 
-  ([debug/release] or [Windows/Mac/Unix/BSD] etc.)
 * Fix parameter insight
 	- Add array index completion
 	- Add delegate parameter recognition
