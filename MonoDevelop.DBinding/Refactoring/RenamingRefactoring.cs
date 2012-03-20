@@ -78,7 +78,7 @@ namespace MonoDevelop.D.Refactoring
 				if (mod == null)
 					continue;
 
-				var references = ReferenceFinder.ScanNodeReferencesInModule(mod, parseCache,n);
+				var references = ReferenceFinding.ScanNodeReferencesInModule(mod, parseCache,n);
 
 				if ((n.NodeRoot as IAbstractSyntaxTree).FileName == mod.FileName)
 					references.Insert(0, new IdentifierDeclaration(n.Name) { Location = n.NameLocation });
@@ -86,7 +86,7 @@ namespace MonoDevelop.D.Refactoring
 				if (references.Count < 1)
 					continue;
 
-				references.Sort(new ReferenceFinder.IdLocationComparer(true));
+				references.Sort(new ReferenceFinding.IdLocationComparer(true));
 
 				if (!foundReferences.ContainsKey(mod.FileName))
 					foundReferences.Add(mod.FileName, new List<CodeLocation>());

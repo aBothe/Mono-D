@@ -16,24 +16,19 @@ using System.Threading;
 using MonoDevelop.D.Completion;
 using MonoDevelop.D.Building;
 using D_Parser.Resolver.TypeResolution;
+using MonoDevelop.Refactoring;
+using MonoDevelop.Ide.Commands;
 
 namespace MonoDevelop.D.Refactoring
 {
 	public enum Commands
 	{
 		ContextMenuRefactoringCommands,
-
-		GotoDeclaration,
-		FindReferences,
-		RenameSymbols,
-
 		OpenDDocumentation,
 	}
 
 	public class ContextMenuRefactoringCommandHandler : CommandHandler
 	{
-		ISearchProgressMonitor monitor;
-		ResolverContextStack ctxt;
 		ResolveResult res;
 		INode n;
 
@@ -43,13 +38,9 @@ namespace MonoDevelop.D.Refactoring
 				(dataItem as Action)();
 		}
 
-		IAbstractSyntaxTree Module
-		{
-			get { return n.NodeRoot as IAbstractSyntaxTree; }
-		}
-
 		protected override void Update(CommandArrayInfo info)
 		{
+			ResolverContextStack ctxt;
 			var rr = Resolver.DResolverWrapper.ResolveHoveredCode(out ctxt);
 
 			if (rr != null && rr.Length > 0)
@@ -60,10 +51,10 @@ namespace MonoDevelop.D.Refactoring
 
 				if (n != null)
 				{
-					info.Add(IdeApp.CommandService.GetCommandInfo(Commands.GotoDeclaration), new Action(GotoDeclaration));
-					info.Add(IdeApp.CommandService.GetCommandInfo(Commands.FindReferences), new Action(FindReferences));
+					info.Add(IdeApp.CommandService.GetCommandInfo(RefactoryCommands.GotoDeclaration), new Action(GotoDeclaration));
+					info.Add(IdeApp.CommandService.GetCommandInfo(RefactoryCommands.FindReferences), new Action(FindReferences));
 					info.AddSeparator();
-					info.Add(IdeApp.CommandService.GetCommandInfo(Commands.RenameSymbols), new Action(RenameSymbol));
+					info.Add(IdeApp.CommandService.GetCommandInfo(EditCommands.Rename), new Action(RenameSymbol));
 				}
 			}
 			info.Add(IdeApp.CommandService.GetCommandInfo(Commands.OpenDDocumentation), new Action(OpenDDoc));
@@ -77,43 +68,14 @@ namespace MonoDevelop.D.Refactoring
 				Refactoring.DDocumentationLauncher.LaunchRelativeDUrl(url);
 		}
 
-
 		void GotoDeclaration()
 		{
-			IdeApp.Workbench.OpenDocument(
-				Module.FileName,
-				n.StartLocation.Line,
-				n.StartLocation.Column, OpenDocumentOptions.Default);
+			RefactoringCommandsExtension.GotoDeclaration(n);
 		}
 
 		public void FindReferences()
 		{
-			monitor = IdeApp.Workbench.ProgressMonitors.GetSearchProgressMonitor(true, true);
-			ThreadPool.QueueUserWorkItem(FindReferencesThread);
-		}
-
-		void FindReferencesThread(object state)
-		{
-			try
-			{
-				foreach (var sr in ReferenceFinder.FindReferences(
-					IdeApp.Workbench.ActiveDocument.HasProject?
-					IdeApp.Workbench.ActiveDocument.Project as DProject:null, 
-					n, monitor))
-					monitor.ReportResult(sr);
-			}
-			catch (Exception ex)
-			{
-				if (monitor != null)
-					monitor.ReportError("Error finding references", ex);
-				else
-					LoggingService.LogError("Error finding references", ex);
-			}
-			finally
-			{
-				if (monitor != null)
-					monitor.Dispose();
-			}
+			ReferenceFinding.StartReferenceSearchAsync(n);
 		}
 
 		void RenameSymbol()

@@ -1,6 +1,4 @@
 using D_Parser.Dom;
-using D_Parser.Resolver;
-using MonoDevelop.Components.Commands;
 using MonoDevelop.D.Completion;
 using MonoDevelop.D.Parser;
 using MonoDevelop.Ide.CodeCompletion;
@@ -159,41 +157,13 @@ namespace MonoDevelop.D
 		{
 			return doc.IsFile && DLanguageBinding.IsDFile(doc.FileName);
 		}
-
-		[CommandHandler(Refactoring.Commands.OpenDDocumentation)]
-		public void OpenDDocumentation()
-		{
-			var url=Refactoring.DDocumentationLauncher.GetReferenceUrl();
-
-			if (url != null)
-				Refactoring.DDocumentationLauncher.LaunchRelativeDUrl(url);
-		}
-	
-		[CommandHandler(Refactoring.Commands.FindReferences)]
-		public void FindReferences()
-		{
-
-		}
-
-		[CommandHandler(Refactoring.Commands.GotoDeclaration)]
-		public void GotoDeclaration()
-		{
-
-		}
-
-		[CommandHandler(Refactoring.Commands.RenameSymbols)]
-		public void StartRename()
-		{
-			
-		}
 	}
-	
 
 	class NoSelectionCustomNode : DNode
 	{
-		public NoSelectionCustomNode (D_Parser.Dom.INode parent)
+		public NoSelectionCustomNode(D_Parser.Dom.INode parent)
 		{
 			this.Parent = parent;
-		}		
+		}
 	}	
 }

@@ -1,17 +1,55 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using D_Parser.Dom;
+using D_Parser.Dom.Expressions;
 using D_Parser.Misc;
 using MonoDevelop.Core;
 using MonoDevelop.D.Building;
+using MonoDevelop.Ide;
 using MonoDevelop.Ide.FindInFiles;
-using D_Parser.Dom.Expressions;
 
 namespace MonoDevelop.D.Refactoring
 {
-	public class ReferenceFinder : D_Parser.Refactoring.ReferenceFinder
+	public class ReferenceFinding : D_Parser.Refactoring.ReferenceFinder
 	{
-		public static IEnumerable<SearchResult> FindReferences(
+		ISearchProgressMonitor monitor;
+
+		public static void StartReferenceSearchAsync(INode n)
+		{
+			var rf = new ReferenceFinding {
+				monitor = IdeApp.Workbench.ProgressMonitors.GetSearchProgressMonitor(true, true)
+			};
+
+			ThreadPool.QueueUserWorkItem(rf.FindReferencesThread,n);
+		}
+
+		void FindReferencesThread(object state)
+		{
+			try
+			{
+				foreach (var sr in ReferenceFinding.FindReferences(
+					IdeApp.Workbench.ActiveDocument.HasProject ?
+					IdeApp.Workbench.ActiveDocument.Project as DProject : null,
+					(INode)state, monitor))
+					monitor.ReportResult(sr);
+			}
+			catch (Exception ex)
+			{
+				if (monitor != null)
+					monitor.ReportError("Error finding references", ex);
+				else
+					LoggingService.LogError("Error finding references", ex);
+			}
+			finally
+			{
+				if (monitor != null)
+					monitor.Dispose();
+			}
+		}
+
+		static IEnumerable<SearchResult> FindReferences(
 			DProject project,
 			INode member,
 			ISearchProgressMonitor monitor = null)
