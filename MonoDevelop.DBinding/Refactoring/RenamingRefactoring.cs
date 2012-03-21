@@ -19,14 +19,17 @@ namespace MonoDevelop.D.Refactoring
 		INode n;
 		Dictionary<string, List<CodeLocation>> foundReferences;
 
+		public static bool CanRename(INode n)
+		{
+			return n!=null && !(n is IAbstractSyntaxTree) && !string.IsNullOrEmpty(n.Name);
+		}
+
 		public bool Run(DProject project,INode targetMember, string newName=null)
 		{
-			if(targetMember==null || Ide.IdeApp.Workbench.ActiveDocument ==null)
+			if(!CanRename(targetMember) || Ide.IdeApp.Workbench.ActiveDocument ==null)
 				return false;
 
 			n = targetMember;
-
-
 
 			// Request new name
 			if (newName == null)
@@ -36,7 +39,7 @@ namespace MonoDevelop.D.Refactoring
 				return false;
 
 			// Validate new name
-			if (newName == "")
+			if (string.IsNullOrWhiteSpace(newName))
 			{
 				MessageService.ShowError("Symbol name must not be empty!");
 				return false;

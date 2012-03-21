@@ -53,8 +53,12 @@ namespace MonoDevelop.D.Refactoring
 				{
 					info.Add(IdeApp.CommandService.GetCommandInfo(RefactoryCommands.GotoDeclaration), new Action(GotoDeclaration));
 					info.Add(IdeApp.CommandService.GetCommandInfo(RefactoryCommands.FindReferences), new Action(FindReferences));
-					info.AddSeparator();
-					info.Add(IdeApp.CommandService.GetCommandInfo(EditCommands.Rename), new Action(RenameSymbol));
+
+					if (RenamingRefactoring.CanRename(n))
+					{
+						info.AddSeparator();
+						info.Add(IdeApp.CommandService.GetCommandInfo(EditCommands.Rename), new Action(RenameSymbol));
+					}
 				}
 			}
 			info.Add(IdeApp.CommandService.GetCommandInfo(Commands.OpenDDocumentation), new Action(OpenDDoc));
