@@ -77,5 +77,11 @@ namespace MonoDevelop.D.Refactoring
 			new RenamingRefactoring().Run(IdeApp.Workbench.ActiveDocument.HasProject ?
 					IdeApp.Workbench.ActiveDocument.Project as DProject : null, firstResultNode);
 		}
+
+		[CommandHandler(RefactoryCommands.ImportSymbol)]
+		void TryImportMissingSymbol()
+		{
+			SymbolImportRefactoring.CreateImportStatementForCurrentCodeContext();
+		}
 	}
 }

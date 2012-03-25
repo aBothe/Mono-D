@@ -1,34 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using D_Parser.Resolver;
-using MonoDevelop.Ide;
-using MonoDevelop.Core;
-using MonoDevelop.Ide.Gui.Content;
-using MonoDevelop.D.Parser;
-using D_Parser.Completion;
-using MonoDevelop.D.Building;
+﻿using D_Parser.Completion;
 using D_Parser.Dom;
-using D_Parser.Dom.Statements;
-using D_Parser.Resolver.TypeResolution;
 using D_Parser.Misc;
+using D_Parser.Resolver;
+using D_Parser.Resolver.TypeResolution;
+using MonoDevelop.Core;
+using MonoDevelop.D.Building;
+using MonoDevelop.D.Parser;
+using MonoDevelop.Ide;
+using MonoDevelop.Ide.Gui.Content;
 
 namespace MonoDevelop.D.Resolver
 {
 	public class DResolverWrapper
 	{
-		public static ResolveResult[] ResolveHoveredCode(
-			out ResolverContextStack ResolverContext, 
-			MonoDevelop.Ide.Gui.Document doc=null)
+		public static EditorData GetEditorData(MonoDevelop.Ide.Gui.Document doc = null)
 		{
-			ResolverContext = null;
+			var ed = new EditorData();
 
-			// Editor property preparations
-			if(doc==null)
-				doc=IdeApp.Workbench.ActiveDocument;
+			if (doc == null)
+				doc = IdeApp.Workbench.ActiveDocument;
 
-			if (doc == null || doc.FileName == FilePath.Null || IdeApp.ProjectOperations.CurrentSelectedSolution == null)
+			if (doc == null || 
+				doc.FileName == FilePath.Null || 
+				IdeApp.ProjectOperations.CurrentSelectedSolution == null)
 				return null;
 
 			var editor = doc.GetContent<ITextBuffer>();
@@ -37,41 +31,36 @@ namespace MonoDevelop.D.Resolver
 
 			int line, column;
 			editor.GetLineColumnFromPosition(editor.CursorPosition, out line, out column);
-
+			ed.CaretLocation = new CodeLocation(column, line);
+			ed.CaretOffset = editor.CursorPosition;
 
 			var ast = doc.ParsedDocument as ParsedDModule;
 
 			var Project = doc.Project as DProject;
-			var SyntaxTree = ast.DDom;
+			ed.SyntaxTree = ast.DDom as DModule;
+			ed.ModuleCode = editor.Text;
 
-			if (SyntaxTree == null)
+			if (ed.SyntaxTree == null)
 				return null;
 
 			// Encapsule editor data for resolving
-			var parseCache = Project != null ? 
-				Project.ParseCache : 
-				ParseCacheList.Create( DCompilerService.Instance.GetDefaultCompiler().ParseCache );
+			ed.ParseCache = Project != null ?
+				Project.ParseCache :
+				ParseCacheList.Create(DCompilerService.Instance.GetDefaultCompiler().ParseCache);
 
-			var edData = new EditorData
-			{
-				CaretLocation = new CodeLocation(column, line),
-				CaretOffset = editor.CursorPosition,
-				ModuleCode = editor.Text,
-				SyntaxTree = SyntaxTree as DModule,
-				ParseCache = parseCache
-			};
+			return ed;
+		}
+
+		public static ResolveResult[] ResolveHoveredCode(
+			out ResolverContextStack ResolverContext, 
+			MonoDevelop.Ide.Gui.Document doc=null)
+		{
+			var edData = GetEditorData(doc);
+
+			ResolverContext = ResolverContextStack.Create(edData);
 
 			// Resolve the hovered piece of code
-			IStatement stmt = null;
-			var results= DResolver.ResolveType(edData,
-				ResolverContext = new ResolverContextStack(parseCache, new ResolverContext
-				{
-					ScopedBlock = DResolver.SearchBlockAt(SyntaxTree, edData.CaretLocation, out stmt),
-					ScopedStatement = stmt
-				}),
-				true, true);
-
-			return results;
+			return DResolver.ResolveType(edData, ResolverContext, DResolver.AstReparseOptions.AlsoParseBeyondCaret | DResolver.AstReparseOptions.OnlyAssumeIdentifierList);
 		}
 	}
 }

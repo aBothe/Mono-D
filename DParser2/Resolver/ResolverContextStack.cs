@@ -2,6 +2,8 @@
 using D_Parser.Dom;
 using D_Parser.Dom.Statements;
 using D_Parser.Misc;
+using D_Parser.Completion;
+using D_Parser.Resolver.TypeResolution;
 
 namespace D_Parser.Resolver
 {
@@ -60,6 +62,16 @@ namespace D_Parser.Resolver
 			}
 		}
 		#endregion
+
+		public static ResolverContextStack Create(IEditorData editor)
+		{
+			IStatement stmt = null;
+			return new ResolverContextStack(editor.ParseCache, new ResolverContext
+			{
+				ScopedBlock = DResolver.SearchBlockAt(editor.SyntaxTree, editor.CaretLocation, out stmt),
+				ScopedStatement = stmt
+			});
+		}
 
 		public ResolverContextStack(ParseCacheList ParseCache,	ResolverContext initialContext)
 		{

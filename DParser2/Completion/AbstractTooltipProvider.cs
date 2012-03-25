@@ -22,14 +22,7 @@ namespace D_Parser.Completion
 		{
 			try
 			{
-				IStatement curStmt = null;
-				var rr = DResolver.ResolveType(Editor,new ResolverContextStack(Editor.ParseCache,
-					new ResolverContext
-					{
-						ScopedBlock = DResolver.SearchBlockAt(Editor.SyntaxTree, Editor.CaretLocation, out curStmt),
-						ScopedStatement = curStmt
-					}), 
-					true, true);
+				var rr = DResolver.ResolveType(Editor, DResolver.AstReparseOptions.AlsoParseBeyondCaret | DResolver.AstReparseOptions.OnlyAssumeIdentifierList);
 
 				if (rr.Length < 1)
 					return null;

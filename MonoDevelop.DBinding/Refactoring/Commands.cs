@@ -1,23 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using D_Parser.Dom;
+using D_Parser.Resolver;
+using D_Parser.Resolver.TypeResolution;
 using MonoDevelop.Components.Commands;
 using MonoDevelop.Ide;
-using MonoDevelop.Ide.Gui.Content;
-using MonoDevelop.Core;
-using D_Parser.Dom.Statements;
-using D_Parser.Resolver;
-using D_Parser.Dom;
-using D_Parser.Completion;
-using MonoDevelop.D.Parser;
-using MonoDevelop.Ide.Gui;
-using MonoDevelop.Ide.FindInFiles;
-using System.Threading;
-using MonoDevelop.D.Completion;
-using MonoDevelop.D.Building;
-using D_Parser.Resolver.TypeResolution;
-using MonoDevelop.Refactoring;
 using MonoDevelop.Ide.Commands;
+using MonoDevelop.Refactoring;
 
 namespace MonoDevelop.D.Refactoring
 {
@@ -43,6 +31,8 @@ namespace MonoDevelop.D.Refactoring
 			ResolverContextStack ctxt;
 			var rr = Resolver.DResolverWrapper.ResolveHoveredCode(out ctxt);
 
+			bool noRes = false;//true;
+
 			if (rr != null && rr.Length > 0)
 			{
 				res = rr[rr.Length - 1];
@@ -51,6 +41,7 @@ namespace MonoDevelop.D.Refactoring
 
 				if (n != null)
 				{
+					noRes = false;
 					info.Add(IdeApp.CommandService.GetCommandInfo(RefactoryCommands.GotoDeclaration), new Action(GotoDeclaration));
 					info.Add(IdeApp.CommandService.GetCommandInfo(RefactoryCommands.FindReferences), new Action(FindReferences));
 
@@ -61,6 +52,10 @@ namespace MonoDevelop.D.Refactoring
 					}
 				}
 			}
+
+			if(noRes)
+				info.Add(IdeApp.CommandService.GetCommandInfo(RefactoryCommands.ImportSymbol), new Action(ImportSymbol));
+
 			info.Add(IdeApp.CommandService.GetCommandInfo(Commands.OpenDDocumentation), new Action(OpenDDoc));
 		}
 
@@ -70,6 +65,11 @@ namespace MonoDevelop.D.Refactoring
 
 			if (url != null)
 				Refactoring.DDocumentationLauncher.LaunchRelativeDUrl(url);
+		}
+
+		void ImportSymbol()
+		{
+			SymbolImportRefactoring.CreateImportStatementForCurrentCodeContext();
 		}
 
 		void GotoDeclaration()

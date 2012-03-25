@@ -16,26 +16,42 @@ namespace D_Parser.Resolver.TypeResolution
 	/// </summary>
 	public partial class DResolver
 	{
-		public static ResolveResult[] ResolveType(IEditorData editor,
-			ResolverContextStack ctxt,
-			bool alsoParseBeyondCaret = false,
-			bool onlyAssumeIdentifierList = false)
+		[Flags]
+		public enum AstReparseOptions
 		{
+			AlsoParseBeyondCaret=1,
+			OnlyAssumeIdentifierList=2
+		}
+
+		/// <summary>
+		/// Reparses the code of the current scope and returns the object (either IExpression or ITypeDeclaration derivative)
+		/// that is beneath the caret location.
+		/// 
+		/// Used for code completion/symbol resolution.
+		/// </summary>
+		/// <param name="ctxt">Can be null</param>
+		public static object GetScopedCodeObject(IEditorData editor,
+			ResolverContextStack ctxt=null,
+			AstReparseOptions Options=0)
+		{
+			if (ctxt == null)
+				ctxt = ResolverContextStack.Create(editor);
+
 			var code = editor.ModuleCode;
 
 			int start = 0;
-			CodeLocation startLocation=CodeLocation.Empty;
+			var startLocation = CodeLocation.Empty;
 			bool IsExpression = false;
-			
+
 			if (ctxt.CurrentContext.ScopedStatement is IExpressionContainingStatement)
 			{
-				var exprs=(ctxt.CurrentContext.ScopedStatement as IExpressionContainingStatement).SubExpressions;
+				var exprs = (ctxt.CurrentContext.ScopedStatement as IExpressionContainingStatement).SubExpressions;
 				IExpression targetExpr = null;
 
-				if(exprs!=null)
+				if (exprs != null)
 					foreach (var ex in exprs)
 						if ((targetExpr = ExpressionHelper.SearchExpressionDeeply(ex, editor.CaretLocation))
-							!=ex)
+							!= ex)
 							break;
 
 				if (targetExpr != null && editor.CaretLocation >= targetExpr.Location && editor.CaretLocation <= targetExpr.EndLocation)
@@ -45,12 +61,12 @@ namespace D_Parser.Resolver.TypeResolution
 					IsExpression = true;
 				}
 			}
-			
-			if(!IsExpression)
+
+			if (!IsExpression)
 			{
 				// First check if caret is inside a comment/string etc.
-				int lastStart=-1;
-				int lastEnd=-1;
+				int lastStart = -1;
+				int lastEnd = -1;
 				var caretContext = CaretContextAnalyzer.GetTokenContext(code, editor.CaretOffset, out lastStart, out lastEnd);
 
 				// Return if comment etc. found
@@ -62,34 +78,49 @@ namespace D_Parser.Resolver.TypeResolution
 				startLocation = DocumentHelper.OffsetToLocation(editor.ModuleCode, start);
 			}
 
-			if (start < 0 || editor.CaretOffset<=start)
+			if (start < 0 || editor.CaretOffset <= start)
 				return null;
 
-			var expressionCode = code.Substring(start, alsoParseBeyondCaret ? code.Length - start : editor.CaretOffset - start);
+			var expressionCode = code.Substring(start, Options.HasFlag(AstReparseOptions.AlsoParseBeyondCaret) ? code.Length - start : editor.CaretOffset - start);
 
 			var parser = DParser.Create(new StringReader(expressionCode));
 			parser.Lexer.SetInitialLocation(startLocation);
 			parser.Step();
 
-			if (!IsExpression && onlyAssumeIdentifierList && parser.Lexer.LookAhead.Kind == DTokens.Identifier)
-				return TypeDeclarationResolver.Resolve(parser.IdentifierList(), ctxt);
+			if (!IsExpression && Options.HasFlag(AstReparseOptions.OnlyAssumeIdentifierList) && parser.Lexer.LookAhead.Kind == DTokens.Identifier)
+			{
+				return parser.IdentifierList();
+			}
 			else if (IsExpression || parser.IsAssignExpression())
 			{
-				var expr = parser.AssignExpression();
-
-				if (expr != null)
-				{
-					// Do not accept number literals but (100.0) etc.
-					if (expr is IdentifierExpression && (expr as IdentifierExpression).Format.HasFlag(LiteralFormat.Scalar))
-						return null;
-
-					expr = ExpressionHelper.SearchExpressionDeeply(expr, editor.CaretLocation);
-
-					return ExpressionTypeResolver.Resolve(expr, ctxt);
-				}
+				return ExpressionHelper.SearchExpressionDeeply(parser.AssignExpression(), editor.CaretLocation);
 			}
 			else
-				return TypeDeclarationResolver.Resolve(parser.Type(), ctxt);
+				return parser.Type();
+		}
+
+		public static ResolveResult[] ResolveType(IEditorData editor,AstReparseOptions Options=0)
+		{
+			return ResolveType(editor,ResolverContextStack.Create(editor),Options);
+		}
+
+		public static ResolveResult[] ResolveType(IEditorData editor, ResolverContextStack ctxt, AstReparseOptions Options=0)
+		{
+			if (ctxt == null)
+				return null;
+
+			var o = GetScopedCodeObject(editor, ctxt, Options);
+
+			if (o is IExpression)
+			{
+				// Do not accept number literals but (100.0) etc.
+				if (o is IdentifierExpression && ((IdentifierExpression)o).Format.HasFlag(LiteralFormat.Scalar))
+					return null;
+
+				return ExpressionTypeResolver.Resolve((IExpression)o, ctxt);
+			}
+			else if(o is ITypeDeclaration)
+				return TypeDeclarationResolver.Resolve((ITypeDeclaration)o, ctxt);
 
 			return null;
 		}

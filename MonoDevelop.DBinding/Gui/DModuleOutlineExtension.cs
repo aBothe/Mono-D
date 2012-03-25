@@ -29,7 +29,6 @@ namespace MonoDevelop.D.Gui
 		TreeStore TreeStore;
 		Widget[] toolbarWidgets;
 
-		bool refreshingOutline;
 		bool clickedOnOutlineItem;
 		bool dontJumpToDeclaration;
 		bool outlineReady;
@@ -138,7 +137,7 @@ namespace MonoDevelop.D.Gui
 			DispatchService.AssertGuiThread();
 			Gdk.Threads.Enter();
 
-			refreshingOutline = false;
+			//refreshingOutline = false;
 			if (TreeStore == null || !TreeView.IsRealized)
 			{
 				refillOutlineStoreId = 0;
