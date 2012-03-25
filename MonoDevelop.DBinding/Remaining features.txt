@@ -1,41 +1,45 @@
 ﻿
 This document contains a list of to-do features:
 
+Code-Completion / Parser / Resolver / Refactoring:
+* Add Expression Value Resolution
 * Implement template parameter-argument check
 * Implement declaration condition checks
 	- omit debug/versioned declarations 
 	  if not fitting to environment dependencied 
 	  ([debug/release] or [Windows/Mac/Unix/BSD] etc.)
-* Add Expression Value Resolution
 * Implement correct template instance type recognition / method overload recognition
 * Mixin support
 * UFCS -- assert("fdas" == "asdf".reverse()); and stuff -- very complex & time-intensive!
-
-* Alter block statement/body boundaries on new-line/delete line events 
-	so no wrong function scope's getting detected anymore
-* Highlight context-dependent keywords (__traits, default version keywords, 
-	variable arguments pointers, scope identifiers [success/exit/failure] etc.)
-	see http://www.d-programming-language.org/version.html#PredefinedVersions
 * Recommend (e.g. enum) items in expression contexts
-
-* Variable renaming
-	- Add preview/selection for code changes about to be done
+* CTFE
 * Interface/Abstract class implementation
 * Import management
 	- Add missing imports
 	- (Remove unused imports)
+
+
+Potential Issues:
+* Alter block statement/body boundaries on new-line/delete line events 
+	so no wrong function scope's getting detected anymore
+
+
+Opt-in:
+* Variable renaming -- Add preview/selection for code changes about to be done
 * Code formatting
 	- Enable custom text indent properties (use spaces instead of tabs, tabsize etc.)
 	- Reformat the entire document
 	- Policy system
 	- Rewrite formatting engine - let the indent depent on the currently scoped statement/node -- better: It'll be easier to apply indent rules!
+* Example syntax highlighting in tooltips in DDoc comments
+* Add button in project's context menus that navigates to the project's main() entry function -- pay attention to pragma(startaddress,foo)!
 * (Fade out inactive code parts)
 * Semantic highlighting
 	- Highlight code symbols
+	- Highlight context-dependent keywords (__traits, default version keywords, 
+	  variable arguments pointers, scope identifiers [success/exit/failure] etc.)
+	  see http://www.d-programming-language.org/version.html#PredefinedVersions
 * Fix parameter insight
 	- Add array index completion
 	- Add delegate parameter recognition
 	- Extend code symbol resolution by resolving the right method (argument-parameter-check)
-* Example syntax highlighting in tooltips in DDoc comments
-* Add button in project's context menus that navigates to the project's main() entry function -- pay attention to pragma(startaddress,foo)!
-* CTFE
