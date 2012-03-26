@@ -1,9 +1,6 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using D_Parser.Dom.Expressions;
 using D_Parser.Dom;
+using D_Parser.Dom.Expressions;
 using D_Parser.Dom.Statements;
 using D_Parser.Parser;
 using D_Parser.Resolver;
@@ -65,10 +62,8 @@ namespace D_Parser.Completion
 		/// counts its already typed arguments
 		/// and returns a wrapper containing all the information.
 		/// </summary>
-		public static ArgumentsResolutionResult LookupArgumentRelatedStatement(
-			string code, 
-			int caret, 
-			CodeLocation caretLocation,
+		public static ArgumentsResolutionResult ResolveArgumentContext(
+			IEditorData data,
 			ResolverContextStack ctxt)
 		{
 			IStatement scopedStatement = null;
@@ -77,12 +72,12 @@ namespace D_Parser.Completion
 			if (MethodScope == null)
 				return null;
 
-			var curMethodBody = MethodScope.GetSubBlockAt(caretLocation);
+			var curMethodBody = MethodScope.GetSubBlockAt(data.CaretLocation);
 
 			if (curMethodBody == null && MethodScope.Parent is DMethod)
 			{
 				MethodScope = MethodScope.Parent as DMethod;
-				curMethodBody = MethodScope.GetSubBlockAt(caretLocation);
+				curMethodBody = MethodScope.GetSubBlockAt(data.CaretLocation);
 			}
 
 			if (curMethodBody == null)
@@ -90,16 +85,16 @@ namespace D_Parser.Completion
 
 			var blockOpenerLocation = curMethodBody.StartLocation;
 			var blockOpenerOffset = blockOpenerLocation.Line <= 0 ? blockOpenerLocation.Column :
-				DocumentHelper.LocationToOffset(code, blockOpenerLocation);
+				DocumentHelper.LocationToOffset(data.ModuleCode, blockOpenerLocation);
 
-			if (blockOpenerOffset >= 0 && caret - blockOpenerOffset > 0)
+			if (blockOpenerOffset >= 0 && data.CaretOffset - blockOpenerOffset > 0)
 			{
-				var codeToParse = code.Substring(blockOpenerOffset, caret - blockOpenerOffset);
+				var codeToParse = data.ModuleCode.Substring(blockOpenerOffset, data.CaretOffset - blockOpenerOffset);
 
 				curMethodBody = DParser.ParseBlockStatement(codeToParse, blockOpenerLocation, MethodScope);
 
 				if (curMethodBody != null)
-					ctxt.ScopedStatement = scopedStatement = curMethodBody.SearchStatementDeeply(caretLocation);
+					ctxt.ScopedStatement = scopedStatement = curMethodBody.SearchStatementDeeply(data.CaretLocation);
 				else
 					return null;
 			}
@@ -107,7 +102,7 @@ namespace D_Parser.Completion
 			if (scopedStatement == null)
 				return null;
 
-			var e= SearchForMethodCallsOrTemplateInstances(scopedStatement, caretLocation);
+			var e = SearchForMethodCallsOrTemplateInstances(scopedStatement, data.CaretLocation);
 
 			/*
 			 * 1) foo(			-- normal arguments only
@@ -135,7 +130,7 @@ namespace D_Parser.Completion
 					int i = 0;
 					foreach (var arg in call.Arguments)
 					{
-						if (caretLocation >= arg.Location && caretLocation <= arg.EndLocation)
+						if (data.CaretLocation >= arg.Location && data.CaretLocation <= arg.EndLocation)
 						{
 							res.CurrentlyTypedArgumentIndex = i;
 							break;
@@ -155,7 +150,7 @@ namespace D_Parser.Completion
 					return res;
 
 				if (acc.AccessExpression is NewExpression)
-					Handle(acc.AccessExpression as NewExpression, res, caretLocation, ctxt, baseTypes);
+					Handle(acc.AccessExpression as NewExpression, res, data.CaretLocation, ctxt, baseTypes);
 			}
 			// 3)
 			else if (e is TemplateInstanceExpression)
@@ -171,7 +166,7 @@ namespace D_Parser.Completion
 					int i = 0;
 					foreach (var arg in templ.Arguments)
 					{
-						if (caretLocation >= arg.Location && caretLocation <= arg.EndLocation)
+						if (data.CaretLocation >= arg.Location && data.CaretLocation <= arg.EndLocation)
 						{
 							res.CurrentlyTypedArgumentIndex = i;
 							break;
@@ -181,7 +176,7 @@ namespace D_Parser.Completion
 				}
 			}
 			else if (e is NewExpression)
-				Handle(e as NewExpression, res, caretLocation, ctxt);
+				Handle(e as NewExpression, res, data.CaretLocation, ctxt);
 
 			return res;
 		}
@@ -207,20 +202,9 @@ namespace D_Parser.Completion
 			}
 		}
 
-		public static ArgumentsResolutionResult ResolveArgumentContext(
-			string code,
-			int caretOffset,
-			CodeLocation caretLocation,
-			DMethod MethodScope,
-			D_Parser.Misc.ParseCacheList parseCache)
+		public static ArgumentsResolutionResult ResolveArgumentContext(IEditorData editorData)
 		{
-			IStatement stmt = null;
-			var ctxt = new ResolverContextStack(parseCache, new ResolverContext { 
-				ScopedBlock = DResolver.SearchBlockAt(MethodScope, caretLocation, out stmt),
-				ScopedStatement = stmt
-			});
-
-			return LookupArgumentRelatedStatement(code, caretOffset, caretLocation, ctxt);
+			return ResolveArgumentContext(editorData, ResolverContextStack.Create(editorData));
 		}
 
 		static IExpression SearchForMethodCallsOrTemplateInstances(IStatement Statement, CodeLocation Caret)

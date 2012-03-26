@@ -1,17 +1,11 @@
-using System;
-
-//using Mono.TextEditor;
-using MonoDevelop.Ide.CodeCompletion;
-using MonoDevelop.Ide.Gui;
-
-using D_Parser.Resolver;
+using D_Parser.Completion;
 using D_Parser.Dom;
 using D_Parser.Dom.Statements;
-using D_Parser.Parser;
-using System.IO;
-using D_Parser.Dom.Expressions;
-using D_Parser.Completion;
+using D_Parser.Resolver;
 using D_Parser.Resolver.TypeResolution;
+using MonoDevelop.D.Resolver;
+using MonoDevelop.Ide.CodeCompletion;
+using MonoDevelop.Ide.Gui;
 
 namespace MonoDevelop.D.Completion
 {
@@ -33,18 +27,13 @@ namespace MonoDevelop.D.Completion
 			IStatement stmt = null;
 			var curBlock = DResolver.SearchBlockAt (SyntaxTree, caretLocation, out stmt);
 
-			if (!(curBlock is D_Parser.Dom.DMethod))
+			if (!(curBlock is DMethod))
 				return null;
 
 			try {
-				var parseCache = DCodeCompletionSupport.EnumAvailableModules (doc);
+				var edData = DResolverWrapper.GetEditorData(doc);
 
-				var argsResult = ParameterInsightResolution.ResolveArgumentContext (
-					doc.Editor.Text, 
-					caretOffset, 
-					caretLocation, 
-					curBlock as D_Parser.Dom.DMethod, 
-					parseCache);
+				var argsResult = ParameterInsightResolution.ResolveArgumentContext (edData);
 				
 				if (argsResult == null || argsResult.ResolvedTypesOrMethods == null || argsResult.ResolvedTypesOrMethods.Length < 1)
 					return null;
