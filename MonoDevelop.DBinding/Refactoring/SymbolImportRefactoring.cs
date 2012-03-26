@@ -9,6 +9,8 @@ using MonoDevelop.D.Resolver;
 using D_Parser.Resolver.TypeResolution;
 using D_Parser.Resolver;
 using D_Parser.Dom;
+using D_Parser.Dom.Expressions;
+using D_Parser.Completion;
 
 namespace MonoDevelop.D.Refactoring
 {
@@ -24,15 +26,95 @@ namespace MonoDevelop.D.Refactoring
 			 */
 
 			// 1)
-			var edData=DResolverWrapper.GetEditorData();
-			var o = DResolver.GetScopedCodeObject(edData);
+			var doc = IdeApp.Workbench.ActiveDocument;
+			var edData = DResolverWrapper.GetEditorData(doc);
+
+			var sr = new SymbolImportRefactoring();
+
+			var name = SymbolImportRefactoring.GetSelectedSymbolRoot(edData);
+
+			if (string.IsNullOrEmpty(name))
+			{
+				MessageService.ShowError("No text symbol selected.");
+				return;
+			}
 
 			// 2)
+			var possibleNodes=SearchInCache(edData.ParseCache, name).ToList();
 
-			var name = "";
+			if (possibleNodes.Count == 0)
+			{
+				MessageService.ShowError("Symbol could not be found in global module range.");
+				return;
+			}
+
+			//TODO: Choice dialog
+
+			var chosenNode = possibleNodes[0];
+
+			if (chosenNode == null)
+				return;
+
+			var chosenImportModule = chosenNode.NodeRoot as IAbstractSyntaxTree;
+
+			if (chosenImportModule == null)
+				return;
+
+			// 3)
+			var insertLocation=CodeLocation.Empty; // At this location, a line break + the new import statement will be inserted
+
+			foreach (var stmt in edData.SyntaxTree.StaticStatements)
+				if (stmt is ImportStatement)
+					insertLocation = stmt.EndLocation;
+
+			if (insertLocation == CodeLocation.Empty && edData.SyntaxTree.OptionalModuleStatement != null)
+				insertLocation = edData.SyntaxTree.OptionalModuleStatement.EndLocation;
+
+			// 4)
+			var importCode = "import " + chosenImportModule.ModuleName + ";\n";
+
+			doc.Editor.Insert(doc.Editor.GetLine(insertLocation.Line).EndOffset,importCode);
+		}
+
+		static string GetSelectedSymbolRoot(IEditorData edData)
+		{
+			var o = DResolver.GetScopedCodeObject(edData,null, DResolver.AstReparseOptions.AlsoParseBeyondCaret);
+
 			if (o is ITypeDeclaration)
 			{
-				
+				var rootType = ((ITypeDeclaration)o).InnerMost;
+
+				if (rootType is IdentifierDeclaration)
+					return ((IdentifierDeclaration)rootType).Id;
+				else if (rootType is TemplateInstanceExpression)
+					return ((TemplateInstanceExpression)rootType).TemplateIdentifier.Id;
+			}
+			else if (o is IExpression)
+			{
+				var curEx = (IExpression)o;
+
+				while (curEx is PostfixExpression)
+					curEx = ((PostfixExpression)curEx).PostfixForeExpression;
+
+				if (curEx is IdentifierExpression)
+					return ((IdentifierExpression)curEx).Value as string;
+				else if (curEx is TemplateInstanceExpression)
+					return ((TemplateInstanceExpression)curEx).TemplateIdentifier.Id;
+			}
+			return null;
+		}
+
+		static IEnumerable<INode> SearchInCache(ParseCacheList parseCache, string name)
+		{
+			foreach (var pc in parseCache)
+			{
+				foreach (IAbstractSyntaxTree mod in pc)
+				{
+					foreach (var n in mod)
+						if (n != null && n.Name == name && n is DNode &&
+							((DNode)n).IsPublic)
+							yield return n;
+				}
 			}
 		}
 	}

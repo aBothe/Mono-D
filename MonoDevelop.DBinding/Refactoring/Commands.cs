@@ -31,7 +31,7 @@ namespace MonoDevelop.D.Refactoring
 			ResolverContextStack ctxt;
 			var rr = Resolver.DResolverWrapper.ResolveHoveredCode(out ctxt);
 
-			bool noRes = false;//true;
+			bool noRes = true;
 
 			if (rr != null && rr.Length > 0)
 			{

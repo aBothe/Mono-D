@@ -457,7 +457,7 @@ namespace D_Parser.Parser
 			ret.ModuleName = ModuleFullyQualifiedName();
 			if (Expect(Semicolon))
 				LastParsedObject = null;
-			ret.EndLocation = t.Location;
+			ret.EndLocation = t.EndLocation;
 			return ret;
 		}
 
@@ -513,7 +513,7 @@ namespace D_Parser.Parser
 
 			CheckForPostSemicolonComment();
 
-			importStatement.EndLocation = t.Location;
+			importStatement.EndLocation = t.EndLocation;
 
 			// Prepare for resolving external items
 			importStatement.CreatePseudoAliases();
