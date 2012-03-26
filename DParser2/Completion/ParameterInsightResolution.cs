@@ -66,11 +66,6 @@ namespace D_Parser.Completion
 			IEditorData data,
 			ResolverContextStack ctxt)
 		{
-			var MethodScope = ctxt.ScopedBlock as DMethod;
-
-			if (MethodScope == null)
-				return null;
-
 			var e = DResolver.GetScopedCodeObject(data, ctxt, DResolver.AstReparseOptions.ReturnRawParsedExpression);
 			
 			/*
@@ -146,6 +141,40 @@ namespace D_Parser.Completion
 			}
 			else if (e is NewExpression)
 				CalculateCurrentArgument(e as NewExpression, res, data.CaretLocation, ctxt);
+
+			/*
+			 * alias int function(int a, bool b) myDeleg;
+			 * alias myDeleg myDeleg2;
+			 * 
+			 * myDeleg dg;
+			 * 
+			 * dg( -- it's not needed to have myDeleg but the base type for what it stands for
+			 * 
+			 * ISSUE:
+			 * myDeleg( -- not allowed though
+			 * myDeleg2( -- allowed neither!
+			 */
+			if (res.ResolvedTypesOrMethods != null)
+			{
+				var finalResults = new List<ResolveResult>();
+
+				foreach (var _r in res.ResolvedTypesOrMethods)
+				{
+					var r = _r;
+					while (r is MemberResult && !(((MemberResult)r).Node is DMethod))
+					{
+						var mr = (MemberResult)r;
+
+						if (mr.MemberBaseTypes == null || mr.MemberBaseTypes.Length == 0)
+							break;
+
+						r = mr.MemberBaseTypes[0];
+					}
+					finalResults.Add(r);
+				}
+
+				res.ResolvedTypesOrMethods = finalResults.ToArray();
+			}
 
 			return res;
 		}

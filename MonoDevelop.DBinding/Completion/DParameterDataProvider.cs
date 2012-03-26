@@ -6,6 +6,7 @@ using D_Parser.Resolver.TypeResolution;
 using MonoDevelop.D.Resolver;
 using MonoDevelop.Ide.CodeCompletion;
 using MonoDevelop.Ide.Gui;
+using D_Parser.Dom.Expressions;
 
 namespace MonoDevelop.D.Completion
 {
@@ -15,19 +16,14 @@ namespace MonoDevelop.D.Completion
 		ArgumentsResolutionResult args;
 		int selIndex = 0;
 
-		public ResolveResult CurrentResult { get { return args.ResolvedTypesOrMethods [selIndex]; } }
+		public ResolveResult CurrentResult { get {
+			return args.ResolvedTypesOrMethods[selIndex];
+		} }
 
-		DMethod scopeMethod = null;
 		
 		public static DParameterDataProvider Create (Document doc, IAbstractSyntaxTree SyntaxTree, CodeCompletionContext ctx)
 		{
 			var caretLocation = new CodeLocation (ctx.TriggerLineOffset, ctx.TriggerLine);
-
-			IStatement stmt = null;
-			var curBlock = DResolver.SearchBlockAt (SyntaxTree, caretLocation, out stmt);
-
-			if (!(curBlock is DMethod))
-				return null;
 
 			try {
 				var edData = DResolverWrapper.GetEditorData(doc);
@@ -40,7 +36,7 @@ namespace MonoDevelop.D.Completion
 				if (argsResult == null || argsResult.ResolvedTypesOrMethods == null || argsResult.ResolvedTypesOrMethods.Length < 1)
 					return null;
 
-				return new DParameterDataProvider (doc, argsResult) { scopeMethod=curBlock as DMethod };
+				return new DParameterDataProvider (doc, argsResult);
 			} catch {
 				return null;
 			}
@@ -119,21 +115,52 @@ namespace MonoDevelop.D.Completion
 
 		public string GetMethodMarkup (int overload, string[] parameterMarkup, int currentParameter)
 		{
-			//string result1 = (overload+1).ToString()+"/"+args.ResolvedTypesOrMethods.Length.ToString();
-			string s = "";
+			selIndex = overload;
 
-			if (CurrentResult is MemberResult) {
-				MemberResult mr = (CurrentResult as MemberResult);
-				var dv = mr.Node as DMethod;
+			if (CurrentResult is TemplateInstanceResult)
+			{
+				var s = "";
+				var tir = (TemplateInstanceResult)CurrentResult;
 
-				if (dv == null) {
-					if (mr.Node is DNode)
-						return ((DNode)mr.Node).ToString (false);
-					else
-						return null;
+				var dm = tir.Node as DMethod;
+				if (dm != null)
+				{
+					s = GetMethodMarkup(dm, parameterMarkup, currentParameter);
+				}
+				else if (tir.Node is DClassLike)
+				{
+					s = tir.Node.Name + "(" + string.Join(",", parameterMarkup) + ")";
 				}
 
-				switch (dv.SpecialType) {
+				// Optional: description
+				if (!string.IsNullOrWhiteSpace(tir.Node.Description))
+					s += "\n\n " + tir.Node.Description;
+
+				return s;
+			}
+			else if (CurrentResult is DelegateResult)
+			{
+				var dr = (DelegateResult)CurrentResult;
+
+				if (dr.IsDelegateDeclaration)
+				{
+					var dg = (DelegateDeclaration)dr.DeclarationOrExpressionBase;
+
+					return dg.ReturnType.ToString() + " " + (dg.IsFunction?"function":"delegate") + "(" + string.Join(",", parameterMarkup) + ")";
+				}
+				else
+					return GetMethodMarkup(((FunctionLiteral)dr.DeclarationOrExpressionBase).AnonymousMethod, parameterMarkup, currentParameter);
+			}
+
+			return "";
+		}
+
+		string GetMethodMarkup(DMethod dm, string[] parameterMarkup, int currentParameter)
+		{
+			var s = "";
+
+			switch (dm.SpecialType)
+			{
 				case DMethod.MethodType.Constructor:
 					s = "(Constructor) ";
 					break;
@@ -143,81 +170,67 @@ namespace MonoDevelop.D.Completion
 				case DMethod.MethodType.Allocator:
 					s = "(Allocator) ";
 					break;
-				}
+			}
 
-				if (dv.Attributes.Count > 0)
-					s = dv.AttributeString + ' ';
+			if (dm.Attributes.Count > 0)
+				s = dm.AttributeString + ' ';
 
-				s += dv.Name;
+			s += dm.Name;
 
-				// Template parameters
-				if (dv.TemplateParameters != null && dv.TemplateParameters.Length > 0) {
-					s += "(";
-
-					if (args.IsTemplateInstanceArguments)
-						s += string.Join (",", parameterMarkup);
-					else
-						foreach (var p in dv.TemplateParameters)
-							s += p.ToString () + ",";
-
-					s = s.Trim (',') + ")";
-				}
-
-				// Parameters
+			// Template parameters
+			if (dm.TemplateParameters != null && dm.TemplateParameters.Length > 0)
+			{
 				s += "(";
 
-				if (!args.IsTemplateInstanceArguments)
-					s += string.Join (",", parameterMarkup);
+				if (args.IsTemplateInstanceArguments)
+					s += string.Join(",", parameterMarkup);
 				else
-					foreach (var p in dv.Parameters)
-						s += p.ToString () + ",";
+					foreach (var p in dm.TemplateParameters)
+						s += p.ToString() + ",";
 
-				s = s.Trim (',') + ")";
-
-
-				// Optional: description
-				if (!string.IsNullOrWhiteSpace (mr.Node.Description))
-					s += "\n\n " + mr.Node.Description;
-				return s;
-			}
-			
-			if (CurrentResult is TypeResult && args.IsTemplateInstanceArguments) {				
-				var tr = (CurrentResult as TypeResult);
-				
-				s = tr.Node.Name;
-				
-				s += "(" + string.Join (",", parameterMarkup) + ")";
-				s += "\r\n " + tr.Node.Description;
-
-				return s;
+				s = s.Trim(',') + ")";
 			}
 
-			return "";
+			// Parameters
+			s += "(";
+
+			if (!args.IsTemplateInstanceArguments)
+				s += string.Join(",", parameterMarkup);
+			else
+				foreach (var p in dm.Parameters)
+					s += p.ToString() + ",";
+
+			return s.Trim(',') + ")";
 		}
 
 		public string GetParameterMarkup (int overload, int paramIndex)
 		{
 			selIndex = overload;
 
-			if (CurrentResult is MemberResult) {
-				var dm = (CurrentResult as MemberResult).Node as DMethod;
+			if (CurrentResult is TemplateInstanceResult)
+			{
+				var tir = (TemplateInstanceResult)CurrentResult;
 
-				if (dm != null) {
-					if (args.IsTemplateInstanceArguments && dm.TemplateParameters != null)
-						return dm.TemplateParameters [paramIndex].ToString ();
-					else
-						return (dm.Parameters [paramIndex] as DNode).ToString (false);
+				if (tir.Node is DClassLike)
+					return ((DClassLike)tir.Node).TemplateParameters[paramIndex].ToString();
+
+				var dm = tir.Node as DMethod;
+
+				if (dm != null)
+				{
+					if (args.IsTemplateInstanceArguments)
+						return dm.TemplateParameters[paramIndex].ToString();
+					return ((DNode)dm.Parameters[paramIndex]).ToString(false);
 				}
 			}
-
-			if (args.IsTemplateInstanceArguments && 
-				CurrentResult is TypeResult &&
-				(CurrentResult as TypeResult).Node is DClassLike)
+			else if (CurrentResult is DelegateResult)
 			{
-				var dc = (CurrentResult as TypeResult).Node as DClassLike;
+				var dr = (DelegateResult)CurrentResult;
 
-				if (dc.TemplateParameters != null && dc.TemplateParameters.Length > paramIndex)
-					return dc.TemplateParameters [paramIndex].ToString ();
+				if (dr.IsDelegateDeclaration)
+					return ((DNode)((DelegateDeclaration)dr.DeclarationOrExpressionBase).Parameters[paramIndex]).ToString(false);
+				else
+					return ((DNode)((FunctionLiteral)dr.DeclarationOrExpressionBase).AnonymousMethod.Parameters[paramIndex]).ToString(false);
 			}
 				
 			return null;
@@ -227,19 +240,36 @@ namespace MonoDevelop.D.Completion
 		{			
 			selIndex = overload;
 
-			if (CurrentResult is MemberResult)
-			if (((CurrentResult as MemberResult).Node is DMethod)) {
-				var dm = (CurrentResult as MemberResult).Node as DMethod;
-				if (args.IsTemplateInstanceArguments)
-					return dm.TemplateParameters != null ? dm.TemplateParameters.Length : 0;
-				return dm.Parameters.Count;
-			}
-			if (CurrentResult is TypeResult && (CurrentResult as TypeResult).Node is DClassLike)
+			if (CurrentResult is TemplateInstanceResult)
 			{
-				var dc = ((CurrentResult as TypeResult).Node as DClassLike);
+				var tir = (TemplateInstanceResult)CurrentResult;
 
-				if (dc.TemplateParameters != null)
-					return dc.TemplateParameters.Length;
+				if (tir.Node is DClassLike)
+				{
+					var dc=(DClassLike)tir.Node;
+
+					if(dc.TemplateParameters!=null)
+						return dc.TemplateParameters.Length;
+					return 0;
+				}
+				
+				var dm = tir.Node as DMethod;
+
+				if (dm != null)
+				{
+					if (args.IsTemplateInstanceArguments)
+						return dm.TemplateParameters != null ? dm.TemplateParameters.Length : 0;
+					return dm.Parameters.Count;
+				}
+			}
+			else if (CurrentResult is DelegateResult)
+			{
+				var dr = (DelegateResult)CurrentResult;
+
+				if (dr.IsDelegateDeclaration)
+					return ((DelegateDeclaration)dr.DeclarationOrExpressionBase).Parameters.Count;
+				else
+					return ((FunctionLiteral)dr.DeclarationOrExpressionBase).AnonymousMethod.Parameters.Count;
 			}
 
 			return 0;

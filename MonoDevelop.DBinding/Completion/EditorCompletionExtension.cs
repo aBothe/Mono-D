@@ -11,6 +11,8 @@ namespace MonoDevelop.D
 	class DEditorCompletionExtension:CompletionTextEditorExtension
 	{
 		#region Properties / Init
+		int lastTriggerOffset;
+
 		public override bool CanRunCompletionCommand()
 		{
 			return documentEditor.CurrentMode is Mono.TextEditor.SimpleEditMode;	
@@ -109,6 +111,17 @@ namespace MonoDevelop.D
 
 		#region Parameter completion
 
+		public override void CursorPositionChanged()
+		{
+			if (CompletionWidget != null && Document.Editor.Caret.Offset < lastTriggerOffset)
+			{
+				ParameterInformationWindowManager.HideWindow(CompletionWidget);
+				lastTriggerOffset = -1;
+			}
+
+			base.CursorPositionChanged();
+		}
+
 		public override bool KeyPress(Gdk.Key key, char keyChar, Gdk.ModifierType modifier)
 		{
 			if (this.CompletionWidget != null && (keyChar == ')' || keyChar == ';'))
@@ -143,6 +156,7 @@ namespace MonoDevelop.D
 			if (dom == null)
 				return null;
 
+			lastTriggerOffset=completionContext.TriggerOffset;
 			return DParameterDataProvider.Create(Document, dom.DDom, completionContext);
 		}
 
