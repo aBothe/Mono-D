@@ -20,7 +20,11 @@ namespace D_Parser.Resolver.TypeResolution
 		public enum AstReparseOptions
 		{
 			AlsoParseBeyondCaret=1,
-			OnlyAssumeIdentifierList=2
+			OnlyAssumeIdentifierList=2,
+			/// <summary>
+			/// Returns the expression without scanning it down depending on the caret location
+			/// </summary>
+			ReturnRawParsedExpression=4,
 		}
 
 		/// <summary>
@@ -93,7 +97,10 @@ namespace D_Parser.Resolver.TypeResolution
 			}
 			else if (IsExpression || parser.IsAssignExpression())
 			{
-				return ExpressionHelper.SearchExpressionDeeply(parser.AssignExpression(), editor.CaretLocation);
+				if (Options.HasFlag(AstReparseOptions.ReturnRawParsedExpression))
+					return parser.AssignExpression();
+				else
+					return ExpressionHelper.SearchExpressionDeeply(parser.AssignExpression(), editor.CaretLocation);
 			}
 			else
 				return parser.Type();

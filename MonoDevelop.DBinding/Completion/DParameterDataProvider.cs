@@ -20,8 +20,7 @@ namespace MonoDevelop.D.Completion
 		DMethod scopeMethod = null;
 		
 		public static DParameterDataProvider Create (Document doc, IAbstractSyntaxTree SyntaxTree, CodeCompletionContext ctx)
-		{		
-			var caretOffset = ctx.TriggerOffset;
+		{
 			var caretLocation = new CodeLocation (ctx.TriggerLineOffset, ctx.TriggerLine);
 
 			IStatement stmt = null;
@@ -32,6 +31,9 @@ namespace MonoDevelop.D.Completion
 
 			try {
 				var edData = DResolverWrapper.GetEditorData(doc);
+
+				edData.CaretLocation=caretLocation;
+				edData.CaretOffset=ctx.TriggerOffset;
 
 				var argsResult = ParameterInsightResolution.ResolveArgumentContext (edData);
 				

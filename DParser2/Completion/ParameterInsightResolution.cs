@@ -66,44 +66,13 @@ namespace D_Parser.Completion
 			IEditorData data,
 			ResolverContextStack ctxt)
 		{
-			IStatement scopedStatement = null;
 			var MethodScope = ctxt.ScopedBlock as DMethod;
 
 			if (MethodScope == null)
 				return null;
 
-			var curMethodBody = MethodScope.GetSubBlockAt(data.CaretLocation);
-
-			if (curMethodBody == null && MethodScope.Parent is DMethod)
-			{
-				MethodScope = MethodScope.Parent as DMethod;
-				curMethodBody = MethodScope.GetSubBlockAt(data.CaretLocation);
-			}
-
-			if (curMethodBody == null)
-				return null;
-
-			var blockOpenerLocation = curMethodBody.StartLocation;
-			var blockOpenerOffset = blockOpenerLocation.Line <= 0 ? blockOpenerLocation.Column :
-				DocumentHelper.LocationToOffset(data.ModuleCode, blockOpenerLocation);
-
-			if (blockOpenerOffset >= 0 && data.CaretOffset - blockOpenerOffset > 0)
-			{
-				var codeToParse = data.ModuleCode.Substring(blockOpenerOffset, data.CaretOffset - blockOpenerOffset);
-
-				curMethodBody = DParser.ParseBlockStatement(codeToParse, blockOpenerLocation, MethodScope);
-
-				if (curMethodBody != null)
-					ctxt.ScopedStatement = scopedStatement = curMethodBody.SearchStatementDeeply(data.CaretLocation);
-				else
-					return null;
-			}
-
-			if (scopedStatement == null)
-				return null;
-
-			var e = SearchForMethodCallsOrTemplateInstances(scopedStatement, data.CaretLocation);
-
+			var e = DResolver.GetScopedCodeObject(data, ctxt, DResolver.AstReparseOptions.ReturnRawParsedExpression);
+			
 			/*
 			 * 1) foo(			-- normal arguments only
 			 * 2) foo!(...)(	-- normal arguments + template args
@@ -114,7 +83,7 @@ namespace D_Parser.Completion
 			 * 7) mystruct(		-- opCall call
 			 */
 			var res = new ArgumentsResolutionResult() { 
-				ParsedExpression = e
+				ParsedExpression = e as IExpression
 			};
 
 			// 1), 2)
@@ -144,13 +113,13 @@ namespace D_Parser.Completion
 			{
 				var acc = e as PostfixExpression_Access;
 
-				var baseTypes = ExpressionTypeResolver.Resolve(acc.PostfixForeExpression, ctxt);
+				res.ResolvedTypesOrMethods = ExpressionTypeResolver.Resolve(acc.PostfixForeExpression, ctxt);
 
-				if (baseTypes == null)
+				if (res.ResolvedTypesOrMethods == null)
 					return res;
 
 				if (acc.AccessExpression is NewExpression)
-					Handle(acc.AccessExpression as NewExpression, res, data.CaretLocation, ctxt, baseTypes);
+					CalculateCurrentArgument(acc.AccessExpression as NewExpression, res, data.CaretLocation, ctxt, res.ResolvedTypesOrMethods);
 			}
 			// 3)
 			else if (e is TemplateInstanceExpression)
@@ -159,7 +128,7 @@ namespace D_Parser.Completion
 
 				res.IsTemplateInstanceArguments = true;
 
-
+				res.ResolvedTypesOrMethods = TypeDeclarationResolver.ResolveIdentifier(templ.TemplateIdentifier.Id, ctxt, e);
 
 				if (templ.Arguments != null)
 				{
@@ -176,12 +145,12 @@ namespace D_Parser.Completion
 				}
 			}
 			else if (e is NewExpression)
-				Handle(e as NewExpression, res, data.CaretLocation, ctxt);
+				CalculateCurrentArgument(e as NewExpression, res, data.CaretLocation, ctxt);
 
 			return res;
 		}
 
-		static void Handle(NewExpression nex, 
+		static void CalculateCurrentArgument(NewExpression nex, 
 			ArgumentsResolutionResult res, 
 			CodeLocation caretLocation, 
 			ResolverContextStack ctxt,
