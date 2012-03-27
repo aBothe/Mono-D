@@ -424,44 +424,45 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 				return false;
 			seenModules.Add(moduleName);
 
-			foreach (var module in ctxt.ParseCache.LookupModuleName(moduleName))
-			{
-				if (module == null || module.FileName == (ctxt.ScopedBlock.NodeRoot as IAbstractSyntaxTree).FileName)
-					continue;
-
-                if (HandleItem(module))
-                    return true;
-
-				foreach (var i in module)
+			if(ctxt.ParseCache!=null)
+				foreach (var module in ctxt.ParseCache.LookupModuleName(moduleName))
 				{
-					var dn = i as DNode;
-                    if (dn != null)
-                    {
-                        // Add anonymous enums' items
-                        if (dn is DEnum &&
-                            string.IsNullOrEmpty(i.Name) &&
-                            dn.IsPublic &&
-                            !dn.ContainsAttribute(DTokens.Package) &&
-                            CanAddMemberOfType(VisibleMembers, i))
-                        {
-                            if (HandleItems((i as DEnum).Children))
-                                return true;
-                            continue;
-                        }
+					if (module == null || module.FileName == (ctxt.ScopedBlock.NodeRoot as IAbstractSyntaxTree).FileName)
+						continue;
 
-                        if (dn.IsPublic && !dn.ContainsAttribute(DTokens.Package) &&
-                            CanAddMemberOfType(VisibleMembers, dn))
-                            if (HandleItem(dn))
-                                return true;
-                    }
-                    else
-                        if (HandleItem(i))
-                            return true;
+					if (HandleItem(module))
+						return true;
+
+					foreach (var i in module)
+					{
+						var dn = i as DNode;
+						if (dn != null)
+						{
+							// Add anonymous enums' items
+							if (dn is DEnum &&
+								string.IsNullOrEmpty(i.Name) &&
+								dn.IsPublic &&
+								!dn.ContainsAttribute(DTokens.Package) &&
+								CanAddMemberOfType(VisibleMembers, i))
+							{
+								if (HandleItems((i as DEnum).Children))
+									return true;
+								continue;
+							}
+
+							if (dn.IsPublic && !dn.ContainsAttribute(DTokens.Package) &&
+								CanAddMemberOfType(VisibleMembers, dn))
+								if (HandleItem(dn))
+									return true;
+						}
+						else
+							if (HandleItem(i))
+								return true;
+					}
+
+					if (HandleDBlockNode(module as DBlockNode, VisibleMembers, true))
+						return true;
 				}
-
-                if (HandleDBlockNode(module as DBlockNode, VisibleMembers, true))
-                    return true;
-			}
             return false;
 		}
 
