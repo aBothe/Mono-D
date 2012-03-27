@@ -230,13 +230,9 @@ namespace D_Parser.Resolver.ASTScanner
 					foreach (var e in l1)
 					{
 						if (e is UnaryExpression_Type)
-							SearchIn((e as UnaryExpression_Type).Type, l);
-
-						if (e is NewExpression)
-						{
-							SearchIn((e as NewExpression).Type, l);
-							continue;
-						}
+							SearchIn(((UnaryExpression_Type)e).Type, l);
+						else if (e is NewExpression)
+							SearchIn(((NewExpression)e).Type, l);
 						else if (e is PostfixExpression_Access)
 							l.Add(e);
 						else if (e is IdentifierExpression && (e as IdentifierExpression).IsIdentifier)
@@ -248,8 +244,7 @@ namespace D_Parser.Resolver.ASTScanner
 							if (tie.TemplateIdentifier != null && !l.Contains(tie.TemplateIdentifier))
 								l.Add(tie.TemplateIdentifier);
 						}
-
-						if (e is ContainerExpression)
+						else if (e is ContainerExpression)
 						{
 							var ec = e as ContainerExpression;
 							var subex = ec.SubExpressions;

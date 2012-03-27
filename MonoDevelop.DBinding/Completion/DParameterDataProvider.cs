@@ -1,12 +1,10 @@
 using D_Parser.Completion;
 using D_Parser.Dom;
-using D_Parser.Dom.Statements;
+using D_Parser.Dom.Expressions;
 using D_Parser.Resolver;
-using D_Parser.Resolver.TypeResolution;
 using MonoDevelop.D.Resolver;
 using MonoDevelop.Ide.CodeCompletion;
 using MonoDevelop.Ide.Gui;
-using D_Parser.Dom.Expressions;
 
 namespace MonoDevelop.D.Completion
 {
