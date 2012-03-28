@@ -4,18 +4,16 @@ This document contains a list of to-do features:
 Code-Completion / Parser / Resolver / Refactoring:
 * Add Expression Value Resolution
 * Implement template parameter-argument check
-* Implement declaration condition checks
-	- omit debug/versioned declarations 
-	  if not fitting to environment dependencied 
-	  ([debug/release] or [Windows/Mac/Unix/BSD] etc.)
 * Implement correct template instance type recognition / method overload recognition
 * Mixin support
 * UFCS -- assert("fdas" == "asdf".reverse()); and stuff -- very complex & time-intensive!
 * Recommend (e.g. enum) items in expression contexts
 * CTFE
+* Implement declaration condition checks
+	- omit debug/versioned declarations 
+	  if not fitting to environment dependencied 
+	  ([debug/release] or [Windows/Mac/Unix/BSD] etc.)
 * Interface/Abstract class implementation
-* Import management
-	- (Remove unused imports)
 
 
 Potential Issues:
@@ -30,6 +28,7 @@ Opt-in:
 	- Reformat the entire document
 	- Policy system
 	- Rewrite formatting engine - let the indent depent on the currently scoped statement/node -- better: It'll be easier to apply indent rules!
+* Parse DDoc syntax in comments and format it
 * Example syntax highlighting in tooltips in DDoc comments
 * Add button in project's context menus that navigates to the project's main() entry function -- pay attention to pragma(startaddress,foo)!
 * (Fade out inactive code parts)
@@ -41,4 +40,5 @@ Opt-in:
 * Fix parameter insight
 	- Add array index completion
 	- Add delegate parameter recognition
-	- Extend code symbol resolution by resolving the right method (argument-parameter-check)
+* Import management
+	- (Remove unused imports)
