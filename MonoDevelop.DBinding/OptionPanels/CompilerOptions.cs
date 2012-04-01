@@ -48,7 +48,9 @@ namespace MonoDevelop.D.OptionPanels
 						break;
 					}
 				} while (cmbCompiler.Model.IterNext (ref iter));
-			}			
+			}
+			
+			check_EnableUFCSCompletion.Active = config.CompletionOptions.ShowUFCSItems;
 		}
 
 		public bool Validate ()
@@ -65,6 +67,8 @@ namespace MonoDevelop.D.OptionPanels
 			Gtk.TreeIter iter;
 			if (cmbCompiler.GetActiveIter (out iter))
 				configuration.DefaultCompiler = cmbCompiler.Model.GetValue (iter, 0) as string;
+			
+			configuration.CompletionOptions.ShowUFCSItems = check_EnableUFCSCompletion.Active;
 			
 			return true;
 		}

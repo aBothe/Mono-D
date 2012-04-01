@@ -316,6 +316,9 @@ namespace D_Parser.Resolver.TypeResolution
 		/// </summary>
 		public static ResolveResult[] TryRemoveAliasesFromResult(IEnumerable<ResolveResult> initialResults)
 		{
+			if (initialResults == null)
+				return null;
+
 			var ret = new List<ResolveResult>(initialResults);
 			var l2 = new List<ResolveResult>();
 

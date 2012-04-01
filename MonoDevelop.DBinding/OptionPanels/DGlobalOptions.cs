@@ -23,7 +23,8 @@ namespace MonoDevelop.D.OptionPanels
 	
 		public void Load ()
 		{
-			text_ManualBaseUrl.Text = D.Refactoring.DDocumentationLauncher.DigitalMarsUrl;	
+			text_ManualBaseUrl.Text = D.Refactoring.DDocumentationLauncher.DigitalMarsUrl;
+			check_EnableUFCSCompletion.Active = DCompilerService.Instance.CompletionOptions.ShowUFCSItems;
 		}
 
 		public bool Validate ()
@@ -34,6 +35,7 @@ namespace MonoDevelop.D.OptionPanels
 		public bool Store ()
 		{
 			Refactoring.DDocumentationLauncher.DigitalMarsUrl = text_ManualBaseUrl.Text;
+			DCompilerService.Instance.CompletionOptions.ShowUFCSItems = check_EnableUFCSCompletion.Active;
 			
 			return true;
 		}

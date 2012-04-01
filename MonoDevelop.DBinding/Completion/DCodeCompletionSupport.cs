@@ -1,19 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using D_Parser;
 using D_Parser.Completion;
 using D_Parser.Dom;
-using D_Parser.Dom.Statements;
+using D_Parser.Misc;
 using D_Parser.Parser;
-using D_Parser.Resolver;
 using MonoDevelop.Core;
+using MonoDevelop.D.Building;
 using MonoDevelop.Ide.CodeCompletion;
 using MonoDevelop.Ide.Gui;
-using MonoDevelop.D.Building;
-using D_Parser.Misc;
 
 namespace MonoDevelop.D.Completion
 {
@@ -36,7 +30,8 @@ namespace MonoDevelop.D.Completion
 					CaretOffset=caretOffset,
 					ModuleCode=EditorDocument.Editor.Text,
 					SyntaxTree=SyntaxTree as DModule,
-					ParseCache=codeCache
+					ParseCache=codeCache,
+					Options = DCompilerService.Instance.CompletionOptions
 				};
 
 			AbstractCompletionProvider.BuildCompletionData(

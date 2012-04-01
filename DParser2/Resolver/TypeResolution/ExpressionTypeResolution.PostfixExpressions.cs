@@ -85,12 +85,12 @@ namespace D_Parser.Resolver.TypeResolution
 			return null;
 		}
 
-		public static ResolveResult[] Resolve(PostfixExpression_MethodCall call, ResolverContextStack ctxt, ResolveResult[] baseExpression=null)
+		public static ResolveResult[] Resolve(PostfixExpression_MethodCall call, ResolverContextStack ctxt)
 		{
-			if (baseExpression == null)
-			{
-				baseExpression = Resolve(call.PostfixForeExpression, ctxt);
-			}
+			var baseExpression = call.PostfixForeExpression is PostfixExpression_Access ? 
+				Resolve((PostfixExpression_Access)call.PostfixForeExpression,ctxt,null,call) :
+				Resolve(call.PostfixForeExpression, ctxt);
+
 
 			#region Search possible methods, opCalls or delegates that could be called
 			var methodContainingResultsToCheck = new List<ResolveResult>();
@@ -184,6 +184,11 @@ namespace D_Parser.Resolver.TypeResolution
 				return null;
 
 			#region Compare (template) parameters with given arguments to filter out unwanted overloads
+
+			/*
+			 * Concerning UFCS: If baseExpression represents an UFCS result, take its baseexpression as first argument!
+			 */
+
 			var resolvedCallArguments = new List<ResolveResult[]>();
 
 			// Note: If an arg wasn't able to be resolved (returns null) - add it anyway to keep the indexes parallel
@@ -240,12 +245,23 @@ namespace D_Parser.Resolver.TypeResolution
 			return null;
 		}
 
-		public static ResolveResult[] Resolve(PostfixExpression_Access acc, ResolverContextStack ctxt, ResolveResult[] resultBases = null)
+		public static ResolveResult[] Resolve(PostfixExpression_Access acc, 
+			ResolverContextStack ctxt, 
+			ResolveResult[] resultBases = null,
+			IExpression supExpression=null)
 		{
 			var baseExpression = resultBases ?? Resolve(acc.PostfixForeExpression, ctxt);
 
 			if (acc.AccessExpression is TemplateInstanceExpression)
-				return Resolve((TemplateInstanceExpression)acc.AccessExpression, ctxt, baseExpression);
+			{
+				var res=Resolve((TemplateInstanceExpression)acc.AccessExpression, ctxt, baseExpression);
+
+				// Try to resolve ufcs(?)
+				if (res == null && baseExpression!=null && baseExpression.Length!=0)
+					return UFCSResolver.TryResolveUFCS(baseExpression[0], acc, ctxt);
+				
+				return res;
+			}
 			else if (acc.AccessExpression is NewExpression)
 			{
 				/*
@@ -255,11 +271,11 @@ namespace D_Parser.Resolver.TypeResolution
 			}
 			else if (acc.AccessExpression is IdentifierExpression)
 			{
-                var id = ((IdentifierExpression)acc.AccessExpression).Value as string;
+				var id = ((IdentifierExpression)acc.AccessExpression).Value as string;
 				/*
 				 * First off, try to resolve the identifier as it was a type declaration's identifer list part
 				 */
-				var results = TypeDeclarationResolver.ResolveFurtherTypeIdentifier(id,baseExpression,ctxt,acc);
+				var results = TypeDeclarationResolver.ResolveFurtherTypeIdentifier(id, baseExpression, ctxt, acc);
 
 				if (results != null)
 					return results;
@@ -271,9 +287,14 @@ namespace D_Parser.Resolver.TypeResolution
 				foreach (var b in baseExpression)
 				{
 					/*
-					 * 1) Static properties
-					 * 2) ??
+					 * 1) UFCS
+					 * 2) Static properties 
 					 */
+					var ufcsResult = UFCSResolver.TryResolveUFCS(b, acc, ctxt);
+
+					if (ufcsResult != null)
+						return ufcsResult;
+
 					var staticTypeProperty = StaticPropertyResolver.TryResolveStaticProperties(b, id, ctxt);
 
 					if (staticTypeProperty != null)

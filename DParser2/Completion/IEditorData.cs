@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using D_Parser.Dom;
+﻿using D_Parser.Dom;
 using D_Parser.Misc;
 
 namespace D_Parser.Completion
@@ -26,6 +23,12 @@ namespace D_Parser.Completion
 			SyntaxTree = data.SyntaxTree;
 			ParseCache = data.ParseCache;
 		}
+
+		public CompletionOptions Options
+		{
+			get;
+			set;
+		}
 	}
 
 	public interface IEditorData
@@ -36,5 +39,6 @@ namespace D_Parser.Completion
 		DModule SyntaxTree { get; }
 
 		ParseCacheList ParseCache { get; }
+		CompletionOptions Options { get; }
 	}
 }

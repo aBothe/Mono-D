@@ -26,12 +26,7 @@ namespace D_Parser.Resolver.TypeResolution
 
 		public static ResolveResult[] ResolveIdentifier(string id, ResolverContextStack ctxt, object idObject)
 		{
-			var loc = CodeLocation.Empty;
-
-			if (idObject is ITypeDeclaration)
-				loc = (idObject as ITypeDeclaration).Location;
-			else if (idObject is IExpression)
-				loc = (idObject as IExpression).Location;
+			var loc = idObject is ISyntaxRegion ? ((ISyntaxRegion)idObject).Location:CodeLocation.Empty;
 
 			var matches = NameScan.SearchMatchesAlongNodeHierarchy(ctxt, loc, id);
 

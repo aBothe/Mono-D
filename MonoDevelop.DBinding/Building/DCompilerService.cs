@@ -9,6 +9,7 @@ using MonoDevelop.Projects;
 using MonoDevelop.Core.Serialization;
 using System.Xml;
 using System.Threading;
+using D_Parser.Misc;
 
 namespace MonoDevelop.D.Building
 {
@@ -87,6 +88,7 @@ namespace MonoDevelop.D.Building
 		}
 
 		public string DefaultCompiler;
+		public CompletionOptions CompletionOptions;
 
 		public static bool IsInitialized { get { return _instance != null; } }
 		
@@ -149,8 +151,13 @@ namespace MonoDevelop.D.Building
 				case "ResCmp":
 					Win32ResourceCompiler.Instance.Load (x.ReadSubtree ());
 					break;
+
 				case "DDocBaseUrl":
 					MonoDevelop.D.Refactoring.DDocumentationLauncher.DigitalMarsUrl = x.ReadString ();
+					break;
+					
+				case "CompletionOptions":
+					CompletionOptions.Load (x.ReadSubtree ());
 					break;
 				}
 			}
@@ -179,6 +186,10 @@ namespace MonoDevelop.D.Building
 			
 			x.WriteStartElement ("DDocBaseUrl");
 			x.WriteCData (D.Refactoring.DDocumentationLauncher.DigitalMarsUrl);
+			x.WriteEndElement ();
+			
+			x.WriteStartElement ("CompletionOptions");
+			CompletionOptions.Save (x);
 			x.WriteEndElement ();
 		}
 		#endregion

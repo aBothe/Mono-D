@@ -6,7 +6,9 @@ namespace MonoDevelop.D.OptionPanels
 	{
 		private global::Gtk.HBox hbox1;
 		private global::Gtk.Table table1;
+		private global::Gtk.CheckButton check_EnableUFCSCompletion;
 		private global::Gtk.Label label1;
+		private global::Gtk.Label label2;
 		private global::Gtk.Entry text_ManualBaseUrl;
 		
 		protected virtual void Build ()
@@ -20,18 +22,46 @@ namespace MonoDevelop.D.OptionPanels
 			this.hbox1.Name = "hbox1";
 			this.hbox1.Spacing = 6;
 			// Container child hbox1.Gtk.Box+BoxChild
-			this.table1 = new global::Gtk.Table (((uint)(3)), ((uint)(2)), false);
+			this.table1 = new global::Gtk.Table (((uint)(4)), ((uint)(3)), false);
 			this.table1.Name = "table1";
 			this.table1.RowSpacing = ((uint)(6));
 			this.table1.ColumnSpacing = ((uint)(6));
+			// Container child table1.Gtk.Table+TableChild
+			this.check_EnableUFCSCompletion = new global::Gtk.CheckButton ();
+			this.check_EnableUFCSCompletion.CanFocus = true;
+			this.check_EnableUFCSCompletion.Name = "check_EnableUFCSCompletion";
+			this.check_EnableUFCSCompletion.Label = global::Mono.Unix.Catalog.GetString ("Enable UFCS Completion (very slow currently)");
+			this.check_EnableUFCSCompletion.DrawIndicator = true;
+			this.check_EnableUFCSCompletion.UseUnderline = true;
+			this.table1.Add (this.check_EnableUFCSCompletion);
+			global::Gtk.Table.TableChild w1 = ((global::Gtk.Table.TableChild)(this.table1 [this.check_EnableUFCSCompletion]));
+			w1.TopAttach = ((uint)(2));
+			w1.BottomAttach = ((uint)(3));
+			w1.LeftAttach = ((uint)(1));
+			w1.RightAttach = ((uint)(2));
+			w1.XOptions = ((global::Gtk.AttachOptions)(4));
+			w1.YOptions = ((global::Gtk.AttachOptions)(4));
 			// Container child table1.Gtk.Table+TableChild
 			this.label1 = new global::Gtk.Label ();
 			this.label1.Name = "label1";
 			this.label1.LabelProp = global::Mono.Unix.Catalog.GetString ("Help manual base url");
 			this.table1.Add (this.label1);
-			global::Gtk.Table.TableChild w1 = ((global::Gtk.Table.TableChild)(this.table1 [this.label1]));
-			w1.XOptions = ((global::Gtk.AttachOptions)(4));
-			w1.YOptions = ((global::Gtk.AttachOptions)(4));
+			global::Gtk.Table.TableChild w2 = ((global::Gtk.Table.TableChild)(this.table1 [this.label1]));
+			w2.XOptions = ((global::Gtk.AttachOptions)(4));
+			w2.YOptions = ((global::Gtk.AttachOptions)(4));
+			// Container child table1.Gtk.Table+TableChild
+			this.label2 = new global::Gtk.Label ();
+			this.label2.Name = "label2";
+			this.label2.Xalign = 0F;
+			this.label2.LabelProp = global::Mono.Unix.Catalog.GetString ("<b>Editing &amp; Completion Options</b>");
+			this.label2.UseMarkup = true;
+			this.table1.Add (this.label2);
+			global::Gtk.Table.TableChild w3 = ((global::Gtk.Table.TableChild)(this.table1 [this.label2]));
+			w3.TopAttach = ((uint)(1));
+			w3.BottomAttach = ((uint)(2));
+			w3.LeftAttach = ((uint)(1));
+			w3.RightAttach = ((uint)(2));
+			w3.YOptions = ((global::Gtk.AttachOptions)(4));
 			// Container child table1.Gtk.Table+TableChild
 			this.text_ManualBaseUrl = new global::Gtk.Entry ();
 			this.text_ManualBaseUrl.TooltipMarkup = "Can be either a URL or a directory on your hard disk";
@@ -40,13 +70,13 @@ namespace MonoDevelop.D.OptionPanels
 			this.text_ManualBaseUrl.IsEditable = true;
 			this.text_ManualBaseUrl.InvisibleChar = '●';
 			this.table1.Add (this.text_ManualBaseUrl);
-			global::Gtk.Table.TableChild w2 = ((global::Gtk.Table.TableChild)(this.table1 [this.text_ManualBaseUrl]));
-			w2.LeftAttach = ((uint)(1));
-			w2.RightAttach = ((uint)(2));
-			w2.YOptions = ((global::Gtk.AttachOptions)(4));
+			global::Gtk.Table.TableChild w4 = ((global::Gtk.Table.TableChild)(this.table1 [this.text_ManualBaseUrl]));
+			w4.LeftAttach = ((uint)(1));
+			w4.RightAttach = ((uint)(2));
+			w4.YOptions = ((global::Gtk.AttachOptions)(4));
 			this.hbox1.Add (this.table1);
-			global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(this.hbox1 [this.table1]));
-			w3.Position = 0;
+			global::Gtk.Box.BoxChild w5 = ((global::Gtk.Box.BoxChild)(this.hbox1 [this.table1]));
+			w5.Position = 0;
 			this.Add (this.hbox1);
 			if ((this.Child != null)) {
 				this.Child.ShowAll ();

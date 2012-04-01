@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using D_Parser.Completion.Providers;
 using D_Parser.Dom;
 using D_Parser.Dom.Expressions;
 using D_Parser.Dom.Statements;
@@ -30,7 +31,8 @@ namespace D_Parser.Completion
 
 		protected override void BuildCompletionDataInternal(IEditorData Editor, string EnteredText)
 		{
-			var resolveResults = ExpressionTypeResolver.Resolve(AccessExpression, ResolverContextStack.Create(Editor));
+			var ctxt=ResolverContextStack.Create(Editor);
+			var resolveResults = ExpressionTypeResolver.Resolve(AccessExpression, ctxt);
 
 			if (resolveResults == null) //TODO: Add after-space list creation when an unbound . (Dot) was entered which means to access the global scope
 				return;
@@ -39,6 +41,9 @@ namespace D_Parser.Completion
 			{
 				lastResultPath = rr.ResultPath;
 				BuildCompletionData(rr, ScopedBlock);
+
+				if(Editor.Options.ShowUFCSItems)
+					UFCSCompletionProvider.Generate(rr, ctxt, Editor, CompletionDataGenerator);
 			}
 		}
 
@@ -222,7 +227,6 @@ namespace D_Parser.Completion
 
 			if (mrr.ResultBase == null)
 				StaticTypePropertyProvider.AddGenericProperties(mrr, CompletionDataGenerator, mrr.Node, false);
-
 		}
 
 		void BuildCompletionData(ModulePackageResult mpr)

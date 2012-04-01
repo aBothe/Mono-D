@@ -137,8 +137,6 @@
     <Compile Include="OptionPanels\DGlobalOptions.cs" />
     <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.DGlobalOptions.cs" />
     <Compile Include="Completion\DParameterDataProvider.cs" />
-    <Compile Include="OptionPanels\CompilerOptions.cs" />
-    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.CompilerOptions.cs" />
     <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.DCompilerOptions.cs" />
     <Compile Include="OptionPanels\BuildArgumentOptions.cs" />
     <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.BuildArgumentOptions.cs" />

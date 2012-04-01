@@ -59,6 +59,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Completion\AbstractCompletionProvider.cs" />
@@ -68,10 +69,12 @@
     <Compile Include="Completion\Providers\ImportStatementCompletionProvider.cs" />
     <Compile Include="Completion\Providers\MemberCompletionProvider.cs" />
     <Compile Include="Completion\Providers\PropertyAttributeCompletionProvider.cs" />
+    <Compile Include="Completion\Providers\UFCSCompletionProvider.cs" />
     <Compile Include="Dom\ISyntaxRegion.cs" />
     <Compile Include="Dom\TemplateParameters.cs" />
     <Compile Include="Evaluation\ExpressionEvaluator.cs" />
     <Compile Include="Evaluation\PrimitiveValue.cs" />
+    <Compile Include="Misc\CompletionOptions.cs" />
     <Compile Include="Misc\ParseCache.cs" />
     <Compile Include="Misc\ParseCacheList.cs" />
     <Compile Include="Misc\ParseLog.cs" />
@@ -79,6 +82,7 @@
     <Compile Include="Resolver\ASTScanner\CodeSymbolsScanner.IdentifierScan.cs" />
     <Compile Include="Resolver\ASTScanner\ItemEnumeration.cs" />
     <Compile Include="Resolver\ASTScanner\NameScan.cs" />
+    <Compile Include="Resolver\ASTScanner\UFCSVisitor.cs" />
     <Compile Include="Resolver\ResolutionOptions.cs" />
     <Compile Include="Resolver\TypeResolution\ExpressionTypeResolution.cs" />
     <Compile Include="Resolver\ASTScanner\AbstractVisitor.cs" />

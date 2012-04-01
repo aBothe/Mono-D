@@ -5,10 +5,11 @@
     <target-gtk-version>2.12</target-gtk-version>
   </configuration>
   <import>
-    <widget-library name="../../Mono.TextEditor.dll" />
     <widget-library name="../../ext/MonoDevelop.DesignerSupport.dll" />
     <widget-library name="../../MonoDevelop.Ide.dll" />
+    <widget-library name="../../ext/MonoDevelop.Refactoring.dll" />
     <widget-library name="../../ext/MonoDevelop.SourceEditor2.dll" />
+    <widget-library name="../../Mono.TextEditor.dll" />
     <widget-library name="../bin/Debug/MonoDevelop.D.dll" internal="true" />
   </import>
   <widget class="Gtk.Bin" id="MonoDevelop.D.OptionPanels.ProjectOptions" design-size="511 343">
@@ -809,8 +810,8 @@ Example:
         <child>
           <widget class="Gtk.Table" id="table1">
             <property name="MemberName" />
-            <property name="NRows">3</property>
-            <property name="NColumns">2</property>
+            <property name="NRows">4</property>
+            <property name="NColumns">3</property>
             <property name="RowSpacing">6</property>
             <property name="ColumnSpacing">6</property>
             <child>
@@ -824,6 +825,43 @@ Example:
             </child>
             <child>
               <placeholder />
+            </child>
+            <child>
+              <placeholder />
+            </child>
+            <child>
+              <placeholder />
+            </child>
+            <child>
+              <placeholder />
+            </child>
+            <child>
+              <placeholder />
+            </child>
+            <child>
+              <widget class="Gtk.CheckButton" id="check_EnableUFCSCompletion">
+                <property name="MemberName" />
+                <property name="CanFocus">True</property>
+                <property name="Label" translatable="yes">Enable UFCS Completion (very slow currently)</property>
+                <property name="DrawIndicator">True</property>
+                <property name="HasLabel">True</property>
+                <property name="UseUnderline">True</property>
+              </widget>
+              <packing>
+                <property name="TopAttach">2</property>
+                <property name="BottomAttach">3</property>
+                <property name="LeftAttach">1</property>
+                <property name="RightAttach">2</property>
+                <property name="AutoSize">True</property>
+                <property name="XOptions">Fill</property>
+                <property name="YOptions">Fill</property>
+                <property name="XExpand">False</property>
+                <property name="XFill">True</property>
+                <property name="XShrink">False</property>
+                <property name="YExpand">False</property>
+                <property name="YFill">True</property>
+                <property name="YShrink">False</property>
+              </packing>
             </child>
             <child>
               <widget class="Gtk.Label" id="label1">
@@ -843,6 +881,28 @@ Example:
               </packing>
             </child>
             <child>
+              <widget class="Gtk.Label" id="label2">
+                <property name="MemberName" />
+                <property name="Xalign">0</property>
+                <property name="LabelProp" translatable="yes">&lt;b&gt;Editing &amp;amp; Completion Options&lt;/b&gt;</property>
+                <property name="UseMarkup">True</property>
+              </widget>
+              <packing>
+                <property name="TopAttach">1</property>
+                <property name="BottomAttach">2</property>
+                <property name="LeftAttach">1</property>
+                <property name="RightAttach">2</property>
+                <property name="AutoSize">False</property>
+                <property name="YOptions">Fill</property>
+                <property name="XExpand">True</property>
+                <property name="XFill">True</property>
+                <property name="XShrink">False</property>
+                <property name="YExpand">False</property>
+                <property name="YFill">True</property>
+                <property name="YShrink">False</property>
+              </packing>
+            </child>
+            <child>
               <widget class="Gtk.Entry" id="text_ManualBaseUrl">
                 <property name="MemberName" />
                 <property name="Tooltip" translatable="yes">Can be either a URL or a directory on your hard disk</property>
@@ -853,7 +913,7 @@ Example:
               <packing>
                 <property name="LeftAttach">1</property>
                 <property name="RightAttach">2</property>
-                <property name="AutoSize">True</property>
+                <property name="AutoSize">False</property>
                 <property name="YOptions">Fill</property>
                 <property name="XExpand">True</property>
                 <property name="XFill">True</property>
@@ -867,67 +927,6 @@ Example:
           <packing>
             <property name="Position">0</property>
             <property name="AutoSize">True</property>
-          </packing>
-        </child>
-      </widget>
-    </child>
-  </widget>
-  <widget class="Gtk.Bin" id="MonoDevelop.D.OptionPanels.CompilerOptions" design-size="611 549">
-    <property name="MemberName" />
-    <child>
-      <widget class="Gtk.Table" id="table1">
-        <property name="MemberName" />
-        <property name="NRows">3</property>
-        <property name="NColumns">2</property>
-        <property name="RowSpacing">6</property>
-        <property name="ColumnSpacing">6</property>
-        <child>
-          <placeholder />
-        </child>
-        <child>
-          <placeholder />
-        </child>
-        <child>
-          <placeholder />
-        </child>
-        <child>
-          <placeholder />
-        </child>
-        <child>
-          <widget class="Gtk.ComboBox" id="cmbCompiler">
-            <property name="MemberName" />
-            <property name="IsTextCombo">True</property>
-            <property name="Items" translatable="yes" />
-          </widget>
-          <packing>
-            <property name="LeftAttach">1</property>
-            <property name="RightAttach">2</property>
-            <property name="AutoSize">True</property>
-            <property name="XOptions">Fill</property>
-            <property name="YOptions">Fill</property>
-            <property name="XExpand">False</property>
-            <property name="XFill">True</property>
-            <property name="XShrink">False</property>
-            <property name="YExpand">False</property>
-            <property name="YFill">True</property>
-            <property name="YShrink">False</property>
-          </packing>
-        </child>
-        <child>
-          <widget class="Gtk.Label" id="label4">
-            <property name="MemberName" />
-            <property name="LabelProp" translatable="yes">Default Compiler</property>
-          </widget>
-          <packing>
-            <property name="AutoSize">True</property>
-            <property name="XOptions">Fill</property>
-            <property name="YOptions">Fill</property>
-            <property name="XExpand">False</property>
-            <property name="XFill">True</property>
-            <property name="XShrink">False</property>
-            <property name="YExpand">False</property>
-            <property name="YFill">True</property>
-            <property name="YShrink">False</property>
           </packing>
         </child>
       </widget>

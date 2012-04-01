@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using D_Parser.Dom.Expressions;
+using D_Parser.Resolver.ASTScanner;
+using D_Parser.Dom;
 
 namespace D_Parser.Resolver.TypeResolution
 {
@@ -15,5 +18,32 @@ namespace D_Parser.Resolver.TypeResolution
 	/// </summary>
 	public class UFCSResolver
 	{
+		public static ResolveResult[] TryResolveUFCS(
+			ResolveResult firstArgument, 
+			PostfixExpression_Access acc, 
+			ResolverContextStack ctxt)
+		{
+			var name="";
+
+			if (acc.AccessExpression is IdentifierExpression)
+				name = ((IdentifierExpression)acc.AccessExpression).Value as string;
+			else if (acc.AccessExpression is TemplateInstanceExpression)
+				name = ((TemplateInstanceExpression)acc.AccessExpression).TemplateIdentifier.Id;
+			else
+				return null;
+
+
+			var vis = new UFCSVisitor(ctxt) {
+				FirstParamToCompareWith=firstArgument,
+				NameToSearch=name
+			};
+
+			vis.IterateThroughScopeLayers(acc.Location);
+
+			if (vis.Matches.Count!=0)
+				return TypeDeclarationResolver.HandleNodeMatches(vis.Matches, ctxt, null, acc);
+
+			return null;
+		}
 	}
 }
