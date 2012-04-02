@@ -152,5 +152,16 @@ namespace D_Parser.Resolver
 			NodeMatches = null;
 			return false;
 		}
+
+		/// <summary>
+		/// Clones the stack object and also clones the highest item on the context stack (only!)
+		/// </summary>
+		public ResolverContextStack Clone()
+		{
+			var rc=new ResolverContext();
+			rc.ApplyFrom(CurrentContext);
+
+			return new ResolverContextStack(ParseCache, rc);
+		}
 	}
 }

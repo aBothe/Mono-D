@@ -62,7 +62,7 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
             return false;
 		}
 
-		public void IterateThroughScopeLayers(CodeLocation Caret, MemberFilter VisibleMembers= MemberFilter.All)
+		public virtual void IterateThroughScopeLayers(CodeLocation Caret, MemberFilter VisibleMembers= MemberFilter.All)
 		{
 			// 1)
 			if (ctxt.ScopedStatement != null && 

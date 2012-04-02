@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using D_Parser.Resolver;
 using D_Parser.Resolver.ASTScanner;
+using System.Threading;
 
 namespace D_Parser.Completion.Providers
 {
@@ -25,7 +26,11 @@ namespace D_Parser.Completion.Providers
 			 */
 
 			// 1)
-			var vis = new UFCSVisitor(ctxt) { FirstParamToCompareWith=rr };
+			var vis = new UFCSVisitor(ctxt)
+			{ 
+				FirstParamToCompareWith=rr,
+				WorkAsync=true
+			};
 
 			// 2), 3), 4), 5)
 			vis.IterateThroughScopeLayers(ed.CaretLocation);
