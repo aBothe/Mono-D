@@ -30,13 +30,14 @@ namespace D_Parser.Resolver.ASTScanner
 		/// </summary>
 		public bool WorkAsync;
 
-		Thread[] resolveThreads = new Thread[Environment.ProcessorCount];
-		Stack<DMethod>[] queues = new Stack<DMethod>[Environment.ProcessorCount];
+		static int threadCount = Environment.ProcessorCount;
+		Thread[] resolveThreads = new Thread[threadCount];
+		Stack<DMethod>[] queues = new Stack<DMethod>[threadCount];
 
 		public override void IterateThroughScopeLayers(CodeLocation Caret, MemberFilter VisibleMembers = MemberFilter.All)
 		{
 			if (WorkAsync)
-				for (int i = 0; i < Environment.ProcessorCount; i++)
+				for (int i = 0; i < threadCount; i++)
 				{
 					queues[i] = new Stack<DMethod>();
 					resolveThreads[i] = new Thread(_th);
@@ -46,11 +47,11 @@ namespace D_Parser.Resolver.ASTScanner
 
 			if (WorkAsync)
 			{
-				for (int i = 0; i < Environment.ProcessorCount; i++)
+				for (int i = 0; i < threadCount; i++)
 					resolveThreads[i].Start(queues[i]);
 
 				// Wait for all threads to finish resolving
-				for (int i = 0; i < Environment.ProcessorCount; i++)
+				for (int i = 0; i < threadCount; i++)
 				{
 					var th = resolveThreads[i];
 					if (th != null && th.IsAlive)
@@ -86,7 +87,7 @@ namespace D_Parser.Resolver.ASTScanner
 					if (WorkAsync) // Assign items to threads evenly
 					{
 						k++;
-						queues[k % Environment.ProcessorCount].Push(dm);
+						queues[k % threadCount].Push(dm);
 					}
 					else
 						HandleMethod(dm);
@@ -107,7 +108,8 @@ namespace D_Parser.Resolver.ASTScanner
 			//TODO: Compare the resolved parameter with the first parameter given
 			if (true)
 			{
-				Matches.Add(dm);
+				lock (Matches)
+					Matches.Add(dm);
 			}
 		}
 	}
