@@ -11,7 +11,9 @@ namespace D_Parser.Resolver.ASTScanner
 {
 	public class UFCSVisitor : AbstractVisitor
 	{
-		public UFCSVisitor(ResolverContextStack ctxt) : base(ctxt) {
+		public UFCSVisitor(ResolverContextStack ctxt)
+			: base(ctxt)
+		{
 		}
 
 		/// <summary>
@@ -20,7 +22,7 @@ namespace D_Parser.Resolver.ASTScanner
 		public string NameToSearch;
 		public ResolveResult FirstParamToCompareWith;
 
-		public List<DMethod> Matches=new List<DMethod>();
+		public List<DMethod> Matches = new List<DMethod>();
 
 		#region Threading
 		/// <summary>
@@ -30,62 +32,51 @@ namespace D_Parser.Resolver.ASTScanner
 
 		Thread[] resolveThreads = new Thread[Environment.ProcessorCount];
 		Stack<DMethod>[] queues = new Stack<DMethod>[Environment.ProcessorCount];
-		bool[] go = new bool[Environment.ProcessorCount];
-		bool finishedQueuing;
 
 		public override void IterateThroughScopeLayers(CodeLocation Caret, MemberFilter VisibleMembers = MemberFilter.All)
 		{
-			finishedQueuing = false;
-
-			/*
-			 * Start handling methods even WHILE enqueing for maximum performance.
-			 */
-
 			if (WorkAsync)
 				for (int i = 0; i < Environment.ProcessorCount; i++)
 				{
 					queues[i] = new Stack<DMethod>();
-					var th = resolveThreads[i] = new Thread(_th);
-					th.Start(i);
+					resolveThreads[i] = new Thread(_th);
 				}
 
 			base.IterateThroughScopeLayers(Caret, VisibleMembers);
 
-			finishedQueuing = true;
-
-			// Wait for all threads to finish resolving
-			for (int i = 0; i < Environment.ProcessorCount; i++)
+			if (WorkAsync)
 			{
-				var th = resolveThreads[i];
-				if (th != null && th.IsAlive)
+				for (int i = 0; i < Environment.ProcessorCount; i++)
+					resolveThreads[i].Start(queues[i]);
+
+				// Wait for all threads to finish resolving
+				for (int i = 0; i < Environment.ProcessorCount; i++)
 				{
-					th.Join(10000);
-					th = null;
+					var th = resolveThreads[i];
+					if (th != null && th.IsAlive)
+					{
+						th.Join(10000);
+						th = null;
+					}
 				}
 			}
 		}
 
 		void _th(object s)
 		{
-			int i = (int)s;
+			var q = (Stack<DMethod>)s;
+
 			Thread.CurrentThread.IsBackground = true;
 
-			var q=queues[i];
-			do
-			{
-				while (q.Count > 0)
-					HandleMethod(q.Pop());
-
-				Thread.Sleep(1);
-			}
-			while ((q.Count!= 0 && !finishedQueuing) || !go[i]);
+			while (q.Count > 0)
+				HandleMethod(q.Pop());
 		}
 		#endregion
 
 		long k;
 		protected override bool HandleItem(INode n)
 		{
-			if ((NameToSearch == null ? !string.IsNullOrEmpty(n.Name) : n.Name == NameToSearch) && 
+			if ((NameToSearch == null ? !string.IsNullOrEmpty(n.Name) : n.Name == NameToSearch) &&
 				n is DMethod)
 			{
 				var dm = (DMethod)n;
@@ -96,7 +87,6 @@ namespace D_Parser.Resolver.ASTScanner
 					{
 						k++;
 						queues[k % Environment.ProcessorCount].Push(dm);
-						go[k % Environment.ProcessorCount] = true;
 					}
 					else
 						HandleMethod(dm);
