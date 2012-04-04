@@ -129,6 +129,8 @@
 		<Word>synchronized</Word>
 		<Word>volatile</Word>
 		<Word>__gshared</Word>
+
+		<Word>mixin</Word>
 	</Keywords>
 
 	<Keywords color = "keyword.misc">
@@ -184,8 +186,6 @@
 		<Word>dstring</Word>
 		<Word>__ctfe</Word>
 		<Word>size_t</Word>
-
-		<Word>mixin</Word>
 	</Keywords>
 
 	<Keywords color = "constant.language.void">
