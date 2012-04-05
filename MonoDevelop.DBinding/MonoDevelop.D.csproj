@@ -55,6 +55,10 @@
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ICSharpCode.NRefactory">
+      <HintPath>..\ext\ICSharpCode.NRefactory.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Mono.Addins">
       <HintPath>..\ext\Mono.Addins.dll</HintPath>
       <Private>False</Private>
@@ -62,8 +66,12 @@
     <Reference Include="Mono.Posix, Version=2.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
     </Reference>
+    <Reference Include="Mono.TextEditor">
+      <HintPath>..\ext\Mono.TextEditor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="MonoDevelop.Core">
-      <HintPath>..\MonoDevelop.Core.dll</HintPath>
+      <HintPath>..\ext\MonoDevelop.Core.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="MonoDevelop.DesignerSupport">
@@ -71,7 +79,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="MonoDevelop.Ide">
-      <HintPath>..\MonoDevelop.Ide.dll</HintPath>
+      <HintPath>..\ext\MonoDevelop.Ide.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="MonoDevelop.Refactoring">
@@ -86,10 +94,6 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Data" />
     <Reference Include="Mono.Cairo" />
-    <Reference Include="Mono.TextEditor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\Mono.TextEditor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="gdk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
     <Reference Include="gtk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
     <Reference Include="gtk-dotnet, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />

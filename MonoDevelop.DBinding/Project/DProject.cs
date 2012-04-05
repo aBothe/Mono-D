@@ -105,7 +105,7 @@ namespace MonoDevelop.D
 				var ddom = DParser.ParseFile (pf.FilePath.ToAbsolute (BaseDirectory));
 
 				// Update relative module name
-				ddom.ModuleName = ParsedDModule.BuildModuleName (pf);
+				ddom.ModuleName = DParserWrapper.BuildModuleName (pf);
 
 				LocalFileCache.AddOrUpdate (ddom);
 			} catch (Exception ex) {

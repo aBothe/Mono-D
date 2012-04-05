@@ -10,6 +10,7 @@ using MonoDevelop.Ide.CodeCompletion;
 using MonoDevelop.SourceEditor;
 using MonoDevelop.Projects.Policies;
 using D_Parser.Parser;
+using Mono.TextEditor;
 
 namespace MonoDevelop.D.Formatting
 {
@@ -75,13 +76,13 @@ namespace MonoDevelop.D.Formatting
 				}
 			}
 			
-			if (TextEditorProperties.IndentStyle == IndentStyle.Smart) {
+			if (Document.Editor.Options.IndentStyle == IndentStyle.Smart) {
 				int newIndentation = 0;
 
 				if (key == Key.Return) {
 					ed.InsertAtCaret (Document.Editor.EolMarker);
 
-					var tr = ed.Document.OpenTextReader ();
+					var tr = ed.Document.CreateReader();
 					var cb = DCodeFormatter.NativeFormatterInstance.CalculateIndentation (tr, ed.Caret.Line);
 					tr.Close ();
 
@@ -100,7 +101,7 @@ namespace MonoDevelop.D.Formatting
 					var origInd = ed.GetLineIndent (ed.Caret.Line);
 					int originalIndentation = origInd.Length;
 
-					var tr = ed.Document.OpenTextReader ();
+					var tr = ed.Document.CreateReader ();
 					var cb = DCodeFormatter.NativeFormatterInstance.CalculateIndentation (tr, ed.Caret.Line);
 					tr.Close ();
 

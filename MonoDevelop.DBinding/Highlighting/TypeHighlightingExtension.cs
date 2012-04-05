@@ -10,6 +10,7 @@ using System.Threading;
 using D_Parser.Resolver;
 using MonoDevelop.D.Completion;
 using D_Parser.Resolver.ASTScanner;
+using MonoDevelop.Ide.Gui;
 
 namespace MonoDevelop.D.Highlighting
 {
@@ -112,12 +113,12 @@ namespace MonoDevelop.D.Highlighting
 		public class HighlightMarker : TextMarker, IDisposable
 		{
 			string text;
-			Document doc;
+			TextDocument doc;
 			string style;
 			int startColumn;
 			LineSegment line;
 
-			public HighlightMarker(Document doc,LineSegment line, string style, int startColumn, string text)
+			public HighlightMarker(TextDocument doc,LineSegment line, string style, int startColumn, string text)
 			{
 				this.doc = doc;
 				this.line = line;

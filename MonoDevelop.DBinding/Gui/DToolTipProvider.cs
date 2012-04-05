@@ -1,15 +1,12 @@
-﻿using System;
+﻿using D_Parser.Completion;
+using D_Parser.Dom;
+using Gtk;
 using Mono.TextEditor;
 using MonoDevelop.Components;
 using MonoDevelop.D.Completion;
-using D_Parser.Dom;
-using MonoDevelop.Ide;
-using D_Parser.Resolver;
-using Gtk;
-using System.Text;
-using D_Parser.Completion;
-using Pango;
 using MonoDevelop.D.Parser;
+using MonoDevelop.Ide;
+using Pango;
 
 namespace MonoDevelop.D.Gui
 {
@@ -18,10 +15,6 @@ namespace MonoDevelop.D.Gui
 	/// </summary>
 	public class DToolTipProvider:ITooltipProvider
 	{
-		public DToolTipProvider()
-		{
-		}
-		
 		public TooltipItem GetItem(TextEditor editor, int offset)
 		{
 			// Note: Normally, the document already should be open

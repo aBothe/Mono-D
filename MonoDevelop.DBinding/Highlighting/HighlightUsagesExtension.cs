@@ -1,20 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using MonoDevelop.Ide.Gui.Content;
-using MonoDevelop.Projects.Dom.Parser;
-using Mono.TextEditor;
-using MonoDevelop.D.Parser;
 using D_Parser.Dom;
-using D_Parser.Resolver;
-using MonoDevelop.D.Building;
-using MonoDevelop.D.Resolver;
-using MonoDevelop.Core;
-using D_Parser.Resolver.TypeResolution;
 using D_Parser.Misc;
+using D_Parser.Resolver;
+using D_Parser.Resolver.TypeResolution;
+using Mono.TextEditor;
+using MonoDevelop.Core;
+using MonoDevelop.D.Building;
+using MonoDevelop.D.Parser;
 using MonoDevelop.D.Refactoring;
-using D_Parser.Dom.Expressions;
+using MonoDevelop.D.Resolver;
+using MonoDevelop.Ide.Gui.Content;
+using ICSharpCode.NRefactory.Editor;
 
 // Code taken and modified from MonoDevelop.CSharp.Highlighting.HighlightUsagesExtension.cs
 
@@ -44,7 +42,7 @@ namespace MonoDevelop.D.Highlighting
 			RemoveMarkers();
 		}
 
-		void HandleTextEditorDataDocumentTextReplaced(object sender, ReplaceEventArgs e)
+		void HandleTextEditorDataDocumentTextReplaced(object sender, DocumentChangeEventArgs e)
 		{
 			RemoveMarkers();
 		}
@@ -274,7 +272,7 @@ namespace MonoDevelop.D.Highlighting
 						textEditorData.Parent.TextViewMargin.AlphaBlendSearchResults = alphaBlend = true;
 					}
 					
-					marker.Usages.Add(new Mono.TextEditor.Segment(offset, nameLength));
+					marker.Usages.Add(new TextSegment(offset, nameLength));
 					lineNumbers.Add(loc.Line);
 				}
 			}

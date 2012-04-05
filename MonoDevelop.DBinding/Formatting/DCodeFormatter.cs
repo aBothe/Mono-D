@@ -12,15 +12,15 @@ namespace MonoDevelop.D.Formatting
 		public static readonly DFormatter NativeFormatterInstance=new DFormatter();
 
 		public override bool SupportsOnTheFlyFormatting	{	get	{return false;}	}
-
+		
 		// CorrectIndenting is completely unused in the entire MonoDevelopment code environment - doesn't have to be implemented
 
 		/// <summary>
 		/// Used for format selected code
 		/// </summary>
-		public override void OnTheFlyFormat(PolicyContainer policyParent, IEnumerable<string> mimeTypeChain, Mono.TextEditor.TextEditorData data, int startOffset, int endOffset)
+		public override void OnTheFlyFormat(Ide.Gui.Document doc, int startOffset, int endOffset)
 		{
-			
+			base.OnTheFlyFormat(doc, startOffset, endOffset);
 		}
 
 		/// <summary>

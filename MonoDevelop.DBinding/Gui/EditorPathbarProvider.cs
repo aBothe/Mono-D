@@ -1,17 +1,12 @@
 using System;
 using System.Collections.Generic;
+using D_Parser.Dom;
 using Gtk;
-using MonoDevelop.Ide;
-using MonoDevelop.Ide.Gui;
-using MonoDevelop.Ide.Gui.Content;
-using MonoDevelop.Ide.CodeCompletion;
 using MonoDevelop.Components;
-using MonoDevelop.Projects.Dom;
-using MonoDevelop.Projects.Dom.Output;
 using MonoDevelop.D.Completion;
 using MonoDevelop.D.Parser;
-using D_Parser;
-using D_Parser.Dom;
+using MonoDevelop.Ide;
+using MonoDevelop.Ide.Gui;
 
 
 namespace MonoDevelop.D.Gui

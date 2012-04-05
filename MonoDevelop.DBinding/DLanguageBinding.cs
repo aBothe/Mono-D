@@ -1,17 +1,6 @@
-using System;
-using MonoDevelop.Projects;
-using System.CodeDom.Compiler;
 using MonoDevelop.Core;
-using System.Xml;
-using MonoDevelop.Projects.Dom.Parser;
-using MonoDevelop.Projects.CodeGeneration;
-using MonoDevelop.D.Parser;
-using System.Reflection;
-using MonoDevelop.D.Completion;
-using D_Parser.Completion;
 using MonoDevelop.D.Building;
-using System.Collections.Generic;
-using System.Threading;
+using MonoDevelop.Projects;
 
 namespace MonoDevelop.D
 {
@@ -43,14 +32,14 @@ namespace MonoDevelop.D
 			return fileName.EndsWith(".d") || fileName.EndsWith(".di");
 		}
 
-		public bool IsSourceCodeFile (string fileName)
+		public FilePath GetFileName(FilePath fileNameWithoutExtension)
 		{
-			return IsDFile(fileName);
+			return fileNameWithoutExtension.ChangeExtension(".d");
 		}
 
-		public string GetFileName (string fileNameWithoutExtension)
+		public bool IsSourceCodeFile(FilePath fileName)
 		{
-			return fileNameWithoutExtension + ".d";
+			return IsDFile(fileName);
 		}
 
 		public string Language {
@@ -74,19 +63,6 @@ namespace MonoDevelop.D
 		public string BlockCommentEndTag {
 			get {
 				return "*/";
-			}
-		}
-
-		DParserWrapper parser = new DParserWrapper();
-		public IParser Parser {
-			get {
-				return parser;
-			}
-		}
-
-		public IRefactorer Refactorer {
-			get {
-				return null;
 			}
 		}
 	}

@@ -8,6 +8,7 @@ using MonoDevelop.Core;
 using MonoDevelop.D.Building;
 using MonoDevelop.Ide.CodeCompletion;
 using MonoDevelop.Ide.Gui;
+using ICSharpCode.NRefactory.Completion;
 
 namespace MonoDevelop.D.Completion
 {
@@ -255,7 +256,7 @@ namespace MonoDevelop.D.Completion
 		}
 	}
 
-	public class DCompletionData : CompletionData, IComparable<CompletionData>
+	public class DCompletionData : CompletionData, IComparable<ICompletionData>
 	{
 		public DCompletionData(INode n)
 		{
@@ -469,7 +470,7 @@ namespace MonoDevelop.D.Completion
 			set { }
 		}
 
-		public int CompareTo(CompletionData other)
+		public int CompareTo(ICompletionData other)
 		{
 			return Node.Name != null ? Node.Name.CompareTo(other.DisplayText) : -1;
 		}
@@ -479,20 +480,20 @@ namespace MonoDevelop.D.Completion
 			AddOverload(new DCompletionData(n));
 		}
 
-		public void AddOverload(CompletionData n)
+		public void AddOverload(ICompletionData n)
 		{
 			if (Overloads == null)
 			{
-				Overloads = new List<CompletionData>();
+				Overloads = new List<ICompletionData>();
 				Overloads.Add(this);
 			}
 
 			Overloads.Add(n);
 		}
 
-		List<CompletionData> Overloads = null;
+		List<ICompletionData> Overloads = null;
 
-		public override bool IsOverloaded
+		public override bool HasOverloads
 		{
 			get
 			{
@@ -500,7 +501,7 @@ namespace MonoDevelop.D.Completion
 			}
 		}
 
-		public override IEnumerable<CompletionData> OverloadedData
+		public override IEnumerable<ICompletionData> OverloadedData
 		{
 			get
 			{

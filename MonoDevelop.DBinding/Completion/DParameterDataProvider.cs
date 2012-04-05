@@ -5,6 +5,7 @@ using D_Parser.Resolver;
 using MonoDevelop.D.Resolver;
 using MonoDevelop.Ide.CodeCompletion;
 using MonoDevelop.Ide.Gui;
+using ICSharpCode.NRefactory.Completion;
 
 namespace MonoDevelop.D.Completion
 {
@@ -18,7 +19,45 @@ namespace MonoDevelop.D.Completion
 			return args.ResolvedTypesOrMethods[selIndex];
 		} }
 
-		
+		/// <summary>
+		/// Might be either an INode or a ITemplateParameter.
+		/// </summary>
+		public object GetParameterObj(int paramIndex)
+		{
+			if (paramIndex < 0)
+				return null;
+
+			if (CurrentResult is TemplateInstanceResult)
+			{
+				var tir = (TemplateInstanceResult)CurrentResult;
+
+				if (tir.Node is DClassLike)
+					return ((DClassLike)tir.Node).TemplateParameters[paramIndex];
+
+				var dm = tir.Node as DMethod;
+
+				if (dm != null)
+				{
+					if (args.IsTemplateInstanceArguments)
+						return dm.TemplateParameters[paramIndex];
+					return dm.Parameters[paramIndex];
+				}
+			}
+			else if (CurrentResult is DelegateResult)
+			{
+				var dr = (DelegateResult)CurrentResult;
+
+				if (dr.IsDelegateDeclaration)
+					return ((DelegateDeclaration)dr.DeclarationOrExpressionBase).Parameters[paramIndex];
+				else
+					return ((FunctionLiteral)dr.DeclarationOrExpressionBase).AnonymousMethod.Parameters[paramIndex];
+			}
+
+			return null;
+		}
+
+		int startoffset;
+
 		public static DParameterDataProvider Create (Document doc, IAbstractSyntaxTree SyntaxTree, CodeCompletionContext ctx)
 		{
 			var caretLocation = new CodeLocation (ctx.TriggerLineOffset, ctx.TriggerLine);
@@ -34,7 +73,7 @@ namespace MonoDevelop.D.Completion
 				if (argsResult == null || argsResult.ResolvedTypesOrMethods == null || argsResult.ResolvedTypesOrMethods.Length < 1)
 					return null;
 
-				return new DParameterDataProvider (doc, argsResult);
+				return new DParameterDataProvider(doc, argsResult) { startoffset=ctx.TriggerOffset };
 			} catch {
 				return null;
 			}
@@ -64,6 +103,9 @@ namespace MonoDevelop.D.Completion
 			return result;
 		}			
 	
+
+
+
 		#region IParameterDataProvider implementation
 		
 		public int GetCurrentParameterIndex (ICompletionWidget widget, CodeCompletionContext ctx)
@@ -111,7 +153,7 @@ namespace MonoDevelop.D.Completion
 			return 0;
 		}
 
-		public string GetMethodMarkup (int overload, string[] parameterMarkup, int currentParameter)
+		public string GetHeading(int overload, string[] parameterMarkup, int currentParameter)
 		{
 			selIndex = overload;
 
@@ -201,36 +243,17 @@ namespace MonoDevelop.D.Completion
 			return s.Trim(',') + ")";
 		}
 
-		public string GetParameterMarkup (int overload, int paramIndex)
+		public string GetParameterDescription(int overload, int paramIndex)
 		{
 			selIndex = overload;
 
-			if (CurrentResult is TemplateInstanceResult)
-			{
-				var tir = (TemplateInstanceResult)CurrentResult;
+			var param = GetParameterObj(paramIndex);
 
-				if (tir.Node is DClassLike)
-					return ((DClassLike)tir.Node).TemplateParameters[paramIndex].ToString();
+			if (param is AbstractNode)
+				return ((AbstractNode)param).ToString(false);
+			else if (param is ITemplateParameter)
+				return param.ToString();
 
-				var dm = tir.Node as DMethod;
-
-				if (dm != null)
-				{
-					if (args.IsTemplateInstanceArguments)
-						return dm.TemplateParameters[paramIndex].ToString();
-					return ((DNode)dm.Parameters[paramIndex]).ToString(false);
-				}
-			}
-			else if (CurrentResult is DelegateResult)
-			{
-				var dr = (DelegateResult)CurrentResult;
-
-				if (dr.IsDelegateDeclaration)
-					return ((DNode)((DelegateDeclaration)dr.DeclarationOrExpressionBase).Parameters[paramIndex]).ToString(false);
-				else
-					return ((DNode)((FunctionLiteral)dr.DeclarationOrExpressionBase).AnonymousMethod.Parameters[paramIndex]).ToString(false);
-			}
-				
 			return null;
 		}
 
@@ -273,10 +296,37 @@ namespace MonoDevelop.D.Completion
 			return 0;
 		}
 
-		public int OverloadCount {
+		/// <summary>
+		/// Count of overloads
+		/// </summary>
+		public int Count {
 			get { return args.ResolvedTypesOrMethods.Length; }
 		}
 		#endregion
+
+		public bool AllowParameterList(int overload)
+		{
+			return true;
+		}
+
+		public string GetDescription(int overload, int currentParameter)
+		{
+			selIndex = overload;
+
+			var param = GetParameterObj(currentParameter);
+
+			if (param is INode)
+				return ((INode)param).Description;
+
+			return null;
+		}
+
+		public int StartOffset
+		{
+			get {
+				return startoffset;
+			}
+		}
 	}
 }
 

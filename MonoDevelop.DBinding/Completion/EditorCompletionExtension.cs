@@ -4,6 +4,7 @@ using MonoDevelop.D.Parser;
 using MonoDevelop.Ide.CodeCompletion;
 using MonoDevelop.Ide.Gui;
 using MonoDevelop.Ide.Gui.Content;
+using ICSharpCode.NRefactory.Completion;
 
 
 namespace MonoDevelop.D
@@ -38,12 +39,6 @@ namespace MonoDevelop.D
 		{
 			int i = 0;
 			return HandleCodeCompletion(completionContext,'\0',ref i);
-		}
-
-		public override ICompletionDataList HandleCodeCompletion(CodeCompletionContext completionContext, char completionChar)
-		{
-			int i = 0;
-			return HandleCodeCompletion(completionContext, completionChar, ref i);
 		}
 
 		public override ICompletionDataList HandleCodeCompletion(CodeCompletionContext completionContext, char triggerChar, ref int triggerWordLength)
@@ -115,7 +110,7 @@ namespace MonoDevelop.D
 		{
 			if (CompletionWidget != null && Document.Editor.Caret.Offset < lastTriggerOffset)
 			{
-				ParameterInformationWindowManager.HideWindow(CompletionWidget);
+				ParameterInformationWindowManager.HideWindow(this,CompletionWidget);
 				lastTriggerOffset = -1;
 			}
 
@@ -125,7 +120,7 @@ namespace MonoDevelop.D
 		public override bool KeyPress(Gdk.Key key, char keyChar, Gdk.ModifierType modifier)
 		{
 			if (this.CompletionWidget != null && (keyChar == ')' || keyChar == ';'))
-				ParameterInformationWindowManager.HideWindow(this.CompletionWidget);
+				ParameterInformationWindowManager.HideWindow(this, CompletionWidget);
 			
 			return base.KeyPress(key, keyChar, modifier);
 		}
