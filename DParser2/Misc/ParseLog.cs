@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using D_Parser.Dom;
 
 namespace D_Parser.Misc
 {

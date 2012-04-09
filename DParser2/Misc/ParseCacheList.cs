@@ -29,7 +29,7 @@ namespace D_Parser.Misc
 		{
 			foreach (var pc in this)
 			{
-				var r = pc.GetOrCreatePackage(packageName);
+				var r = pc.Root.GetOrCreateSubPackage(packageName);
 
 				if (r != null)
 					yield return r;

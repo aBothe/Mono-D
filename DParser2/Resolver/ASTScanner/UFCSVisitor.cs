@@ -11,9 +11,7 @@ namespace D_Parser.Resolver.ASTScanner
 {
 	public class UFCSVisitor : AbstractVisitor
 	{
-		public UFCSVisitor(ResolverContextStack ctxt)
-			: base(ctxt)
-		{
+		public UFCSVisitor(ResolverContextStack ctxt) : base(ctxt) {
 		}
 
 		/// <summary>
@@ -22,7 +20,7 @@ namespace D_Parser.Resolver.ASTScanner
 		public string NameToSearch;
 		public ResolveResult FirstParamToCompareWith;
 
-		public List<DMethod> Matches = new List<DMethod>();
+		public List<DMethod> Matches=new List<DMethod>();
 
 		#region Threading
 		/// <summary>
@@ -44,7 +42,7 @@ namespace D_Parser.Resolver.ASTScanner
 				}
 
 			base.IterateThroughScopeLayers(Caret, VisibleMembers);
-
+			
 			if (WorkAsync)
 			{
 				for (int i = 0; i < threadCount; i++)
@@ -69,15 +67,18 @@ namespace D_Parser.Resolver.ASTScanner
 
 			Thread.CurrentThread.IsBackground = true;
 
+			var threadSafeContext = Context.Clone();
+			threadSafeContext.CurrentContext.Options |= ResolutionOptions.StopAfterFirstOverloads;
+
 			while (q.Count > 0)
-				HandleMethod(q.Pop());
+				HandleMethod(threadSafeContext,q.Pop());
 		}
 		#endregion
 
 		long k;
 		protected override bool HandleItem(INode n)
 		{
-			if ((NameToSearch == null ? !string.IsNullOrEmpty(n.Name) : n.Name == NameToSearch) &&
+			if ((NameToSearch == null ? !string.IsNullOrEmpty(n.Name) : n.Name == NameToSearch) && 
 				n is DMethod)
 			{
 				var dm = (DMethod)n;
@@ -90,25 +91,23 @@ namespace D_Parser.Resolver.ASTScanner
 						queues[k % threadCount].Push(dm);
 					}
 					else
-						HandleMethod(dm);
+						HandleMethod(Context,dm);
 				}
 			}
 
 			return false;
 		}
 
-		void HandleMethod(object s)
+		void HandleMethod(ResolverContextStack threadSafeContext,object s)
 		{
 			var dm = (DMethod)s;
-
-			var threadSafeContext = Context.Clone();
 
 			var firstParam = TypeResolution.TypeDeclarationResolver.Resolve(dm.Parameters[0].Type, threadSafeContext);
 
 			//TODO: Compare the resolved parameter with the first parameter given
 			if (true)
 			{
-				lock (Matches)
+				lock(Matches)
 					Matches.Add(dm);
 			}
 		}

@@ -71,13 +71,16 @@
     <Compile Include="Completion\Providers\PropertyAttributeCompletionProvider.cs" />
     <Compile Include="Completion\Providers\UFCSCompletionProvider.cs" />
     <Compile Include="Dom\ISyntaxRegion.cs" />
+    <Compile Include="Dom\ModulePackage.cs" />
     <Compile Include="Dom\TemplateParameters.cs" />
     <Compile Include="Evaluation\ExpressionEvaluator.cs" />
     <Compile Include="Evaluation\PrimitiveValue.cs" />
     <Compile Include="Misc\CompletionOptions.cs" />
+    <Compile Include="Misc\ModuleNameHelper.cs" />
     <Compile Include="Misc\ParseCache.cs" />
     <Compile Include="Misc\ParseCacheList.cs" />
     <Compile Include="Misc\ParseLog.cs" />
+    <Compile Include="Misc\ThreadedDirectoryParser.cs" />
     <Compile Include="Refactoring\ReferenceFinder.cs" />
     <Compile Include="Resolver\ASTScanner\CodeSymbolsScanner.IdentifierScan.cs" />
     <Compile Include="Resolver\ASTScanner\ItemEnumeration.cs" />
