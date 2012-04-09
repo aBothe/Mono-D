@@ -134,6 +134,7 @@ namespace MonoDevelop.D.Building
             macros["libs"] = libs;
             macros["includes"] = includes;
             macros["objectsDirectory"] = ObjectsDirectory;
+			macros["relativeTargetDirectory"]=RelativeTargetDirectory;
             macros["target"] = TargetFile;
             macros["exe"] = Path.ChangeExtension(TargetFile, DCompilerService.ExecutableExtension);
             macros["lib"] = Path.ChangeExtension(TargetFile, DCompilerService.StaticLibraryExtension);
