@@ -2624,6 +2624,12 @@ namespace D_Parser.Parser
 
 					if (laKind == OpenParenthesis)
 						fl.AnonymousMethod.Parameters = Parameters(fl.AnonymousMethod);
+
+					while (FunctionAttribute[laKind])
+					{
+						Step();
+						fl.AnonymousMethod.Attributes.Add(new DAttribute(t.Kind, t.Value));
+					}
 				}
 
 				FunctionBody(fl.AnonymousMethod);

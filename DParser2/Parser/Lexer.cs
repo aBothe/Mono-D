@@ -827,6 +827,7 @@ namespace D_Parser.Parser
 
 				#region Read digits that occur after a comma
 				DToken nextToken = null; // if we accidently read a 'dot'
+				bool AllowSuffixes = true;
 				if ((NumBase == 0 && ch == '.') || peek == '.')
 				{
 					if (ch != '.') ReaderRead();
@@ -842,8 +843,12 @@ namespace D_Parser.Parser
 						if (peek == '.')
 						{
 							ReaderRead();
-							nextToken = new DToken(DTokens.DoubleDot, Col - 1, Line);
+							nextToken = new DToken(DTokens.DoubleDot, Col - 1, Line, 2);
 						}
+						else if(IsIdentifierPart(peek))
+							nextToken = new DToken(DTokens.Dot, Col - 1, Line, 1);
+
+						AllowSuffixes = false;
 					}
 					else
 					{
@@ -911,22 +916,24 @@ namespace D_Parser.Parser
 							goto unsigned;
 					}
 				}
-
-
-				if (peek == 'f' || peek == 'F')
-				{ // float value
-					ReaderRead();
-					suffix += "f";
-					isfloat = true;
-					peek = (char)ReaderPeek();
-				}
-				else if (peek == 'L')
-				{ // real value
-					ReaderRead();
-					suffix += 'L';
-					//isreal = true;
-					islong = true;
-					peek = (char)ReaderPeek();
+				
+				if(HasDot || AllowSuffixes)
+				{
+					if (peek == 'f' || peek == 'F')
+					{ // float value
+						ReaderRead();
+						suffix += "f";
+						isfloat = true;
+						peek = (char)ReaderPeek();
+					}
+					else if (peek == 'L')
+					{ // real value
+						ReaderRead();
+						suffix += 'L';
+						//isreal = true;
+						islong = true;
+						peek = (char)ReaderPeek();
+					}
 				}
 
 				if (peek == 'i')
