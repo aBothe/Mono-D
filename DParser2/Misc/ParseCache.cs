@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using D_Parser.Dom;
+using D_Parser.Resolver.ASTScanner;
+using System.Threading;
 
 namespace D_Parser.Misc
 {
@@ -11,9 +13,16 @@ namespace D_Parser.Misc
 	public class ParseCache : IEnumerable<IAbstractSyntaxTree>, IEnumerable<ModulePackage>
 	{
 		#region Properties
-		public bool IsParsing { get; private set; }
+		public bool IsParsing { get { return parseThread != null && parseThread.IsAlive; } }
+		Thread parseThread;
 
 		public RootPackage Root = new RootPackage ();
+
+		public bool EnableUfcsCaching = true;
+		/// <summary>
+		/// The cache which holds resolution results of the global scope's methods' first parameters - used to increase completion performance
+		/// </summary>
+		public readonly UFCSCache UfcsCache = new UFCSCache();
 		/// <summary>
 		/// If a parse directory is relative, like ../ or similar, use this path as base path
 		/// </summary>
@@ -24,47 +33,81 @@ namespace D_Parser.Misc
 		#endregion
 
 		#region Parsing management
-		public ParsePerformanceData[] Parse ()
+		public delegate void ParseFinishedHandler(ParsePerformanceData[] PerformanceData);
+		public event ParseFinishedHandler FinishedParsing;
+		public event Action FinishedUfcsCaching;
+
+		public void BeginParse ()
 		{
-			return Parse (ParsedDirectories,FallbackPath);
+			BeginParse (ParsedDirectories,FallbackPath);
 		}
 
 		/// <summary>
 		/// Parses all directories and updates the cache contents
 		/// </summary>
-		public ParsePerformanceData[] Parse (IEnumerable<string> directoriesToParse,string fallbackAbsolutePath)
+		public void BeginParse (IEnumerable<string> directoriesToParse,string fallbackAbsolutePath)
 		{
 			var performanceLogs = new List<ParsePerformanceData> ();
 
+			AbortParsing();
+
 			FallbackPath = fallbackAbsolutePath;
 
-			if (directoriesToParse == null) {
-				ParsedDirectories.Clear ();
-				return null;
+			if (directoriesToParse == null)
+			{
+				ParsedDirectories.Clear();
+
+				if(FinishedParsing!=null)
+					FinishedParsing(null);
+				return;
 			}
 
-			IsParsing = true;
+			parseThread = new Thread(parseDg);
 
-			var parsedDirs = new List<string> ();
-			var newRoot = new RootPackage ();
-			foreach (var dir in directoriesToParse) {
-				parsedDirs.Add (dir);
+			parseThread.IsBackground = true;
+			parseThread.Start(new Tuple<IEnumerable<string>,List<ParsePerformanceData>>(directoriesToParse, performanceLogs));
+		}
+
+		public void AbortParsing()
+		{
+			if (parseThread != null && parseThread.IsAlive)
+				parseThread.Abort();
+		}
+
+		void parseDg(object o)
+		{
+			var tup = (Tuple<IEnumerable<string>, List<ParsePerformanceData>>)o;
+
+			var parsedDirs = new List<string>();
+			var newRoot = new RootPackage();
+			foreach (var dir in tup.Item1)
+			{
+				parsedDirs.Add(dir);
 
 				var dir_abs = dir;
 				if (!Path.IsPathRooted(dir))
-					dir_abs = Path.Combine(fallbackAbsolutePath, dir_abs);
+					dir_abs = Path.Combine(FallbackPath, dir_abs);
 
 				var ppd = ThreadedDirectoryParser.Parse(dir_abs, newRoot);
-				
+
 				if (ppd != null)
-					performanceLogs.Add(ppd);
+					tup.Item2.Add(ppd);
 			}
 
-			IsParsing = false;
+			UfcsCache.Clear();
 			ParsedDirectories = parsedDirs;
 			Root = newRoot;
 
-			return performanceLogs.ToArray ();
+			if (FinishedParsing!=null)
+				FinishedParsing(tup.Item2.ToArray());
+
+			if (EnableUfcsCaching)
+			{
+				UfcsCache.Update(ParseCacheList.Create(this));
+
+				if (FinishedUfcsCaching != null)
+					FinishedUfcsCaching();
+			}
 		}
 		
 		public bool UpdateRequired (string[] paths)

@@ -32,16 +32,17 @@ namespace D_Parser.Resolver.TypeResolution
 			else
 				return null;
 
+			var methodMatches = new List<DMethod>();
+			foreach (var pc in ctxt.ParseCache)
+			{
+				var tempResults=pc.UfcsCache.FindFitting(ctxt, acc.Location, firstArgument, name);
 
-			var vis = new UFCSVisitor(ctxt) {
-				FirstParamToCompareWith=firstArgument,
-				NameToSearch=name
-			};
+				if (tempResults != null)
+					methodMatches.AddRange(tempResults);
+			}
 
-			vis.IterateThroughScopeLayers(acc.Location);
-
-			if (vis.Matches.Count!=0)
-				return TypeDeclarationResolver.HandleNodeMatches(vis.Matches, ctxt, null, acc);
+			if (methodMatches.Count!=0)
+				return TypeDeclarationResolver.HandleNodeMatches(methodMatches, ctxt, null, acc);
 
 			return null;
 		}

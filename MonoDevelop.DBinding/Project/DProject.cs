@@ -123,7 +123,7 @@ namespace MonoDevelop.D
 		/// </summary>
 		public void UpdateParseCache ()
 		{
-			LocalFileCache.Parse (new[] { BaseDirectory.ToString () }, BaseDirectory);
+			LocalFileCache.BeginParse (new[] { BaseDirectory.ToString () }, BaseDirectory);
 		}
 
 		protected override void OnFileRemovedFromProject (ProjectFileEventArgs e)

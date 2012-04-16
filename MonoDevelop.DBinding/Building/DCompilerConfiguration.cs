@@ -15,11 +15,7 @@ namespace MonoDevelop.D.Building
 	/// </summary>
 	public class DCompilerConfiguration
 	{
-		public static bool ResetToDefaults (DCompilerConfiguration cfg)
-		{
-			return CompilerPresets.PresetLoader.TryLoadPresets (cfg);
-		}
-
+		#region Properties
 		public readonly ParseCache ParseCache = new ParseCache ();
 		string _binPath;
 		public string BinPath
@@ -28,7 +24,23 @@ namespace MonoDevelop.D.Building
 			set { _binPath = ParseCache.FallbackPath = value; }
 		}
 		public string Vendor;
+		public List<string> DefaultLibraries = new List<string>();
 		public readonly Dictionary<DCompileTarget, LinkTargetConfiguration> LinkTargetConfigurations = new Dictionary<DCompileTarget, LinkTargetConfiguration> ();
+		#endregion
+
+		#region Ctor/Init
+		public DCompilerConfiguration()
+		{
+			ParseCache.FinishedParsing += finishedParsing;
+			ParseCache.FinishedUfcsCaching += finishedUfcsAnalysis;
+		}
+		#endregion
+
+		#region Configuration-related methods
+		public static bool ResetToDefaults(DCompilerConfiguration cfg)
+		{
+			return CompilerPresets.PresetLoader.TryLoadPresets(cfg);
+		}
 
 		public LinkTargetConfiguration GetOrCreateTargetConfiguration (DCompileTarget Target)
 		{
@@ -60,7 +72,9 @@ namespace MonoDevelop.D.Building
 			foreach (var kv in LinkTargetConfigurations)
 				kv.Value.Linker = NewLinkerPath;
 		}
+		#endregion
 
+		#region Parsing stuff
 		/// <summary>
 		/// Updates the configuration's global parse cache
 		/// </summary>
@@ -69,38 +83,40 @@ namespace MonoDevelop.D.Building
 			UpdateParseCacheAsync (ParseCache);
 		}
 
+		void finishedParsing(ParsePerformanceData[] pfd)
+		{
+			foreach (var perfData in pfd)
+			{
+				LoggingService.LogInfo(
+					"Parsed {0} files in \"{1}\" in {2}s (~{3}ms per file)",
+					perfData.AmountFiles,
+					perfData.BaseDirectory,
+					Math.Round(perfData.TotalDuration, 3),
+					Math.Round(perfData.FileDuration * 1000));
+			}
+
+			if (ParseCache.LastParseException != null)
+				LoggingService.LogError("Error while updating parse cache", ParseCache.LastParseException);
+		}
+
+		void finishedUfcsAnalysis()
+		{
+			LoggingService.LogInfo("Finished Ufcs cache preparation in {0}s ({1} parameters parsed, ~{2}ms per resolution)",
+				ParseCache.UfcsCache.CachingDuration.TotalSeconds,
+				ParseCache.UfcsCache.CachedMethods.Count,
+				ParseCache.UfcsCache.CachedMethods.Count==0 ? 0 : Math.Round(ParseCache.UfcsCache.CachingDuration.TotalMilliseconds / ParseCache.UfcsCache.CachedMethods.Count));
+		}
+
 		public static void UpdateParseCacheAsync (ParseCache Cache)
 		{
 			if (Cache == null || Cache.ParsedDirectories == null || Cache.ParsedDirectories.Count < 1)
 				return;
 
-			var th = new Thread (() => {
-				var perfResults = Cache.Parse ();
-				try {
-					foreach (var perfData in perfResults) {
-						LoggingService.LogInfo (
-                            "Parsed {0} files in \"{1}\" in {2}s (~{3}ms per file)",
-                            perfData.AmountFiles,
-                            perfData.BaseDirectory,
-                            Math.Round (perfData.TotalDuration, 3),
-                            Math.Round (perfData.FileDuration * 1000));
-					}
-
-					if (Cache.LastParseException != null)
-						LoggingService.LogError ("Error while updating parse cache", Cache.LastParseException);
-				} catch (Exception ex) {
-					LoggingService.LogError ("Error while updating parse cache", ex);
-				}
-			});
-
-			th.Name = "Update parse cache thread";
-			th.IsBackground = true;
-			th.Start ();
+			Cache.BeginParse();
 		}
+		#endregion
 
-		public List<string> DefaultLibraries = new List<string> ();
-
-        #region Loading & Saving
+		#region Loading & Saving
 		/// <summary>
 		/// Note: the ParseCache's Root package will NOT be copied but simply assigned to the local root package!
 		/// Changes made to the local root package will affect o's Root package!!

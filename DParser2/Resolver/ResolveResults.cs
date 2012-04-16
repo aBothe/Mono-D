@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using D_Parser.Dom.Expressions;
 using D_Parser.Misc;
+using System;
 
 namespace D_Parser.Resolver
 {
@@ -18,6 +19,19 @@ namespace D_Parser.Resolver
 		public object DeclarationOrExpressionBase;
 
 		public abstract string ResultPath {get;}
+
+		public override bool Equals(object obj)
+		{
+			if(obj is ResolveResult)
+				return ResultComparer.IsEqual(this,(ResolveResult)obj);
+
+			return base.Equals(obj);
+		}
+
+		public int GetHashCode(ResolveResult obj)
+		{
+			return base.GetHashCode();
+		}
 	}
 
 	public abstract class TemplateInstanceResult : ResolveResult
