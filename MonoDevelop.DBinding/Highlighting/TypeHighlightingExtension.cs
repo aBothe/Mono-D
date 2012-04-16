@@ -71,7 +71,7 @@ namespace MonoDevelop.D.Highlighting
 
 				var txtDoc = Document.Editor.Document;
 
-				LineSegment curLine=null;
+				DocumentLine curLine=null;
 				int ln=-1;
 				foreach (var kv in res.ResolvedIdentifiers)
 				{
@@ -116,9 +116,9 @@ namespace MonoDevelop.D.Highlighting
 			TextDocument doc;
 			string style;
 			int startColumn;
-			LineSegment line;
+			DocumentLine line;
 
-			public HighlightMarker(TextDocument doc,LineSegment line, string style, int startColumn, string text)
+			public HighlightMarker(TextDocument doc,DocumentLine line, string style, int startColumn, string text)
 			{
 				this.doc = doc;
 				this.line = line;
