@@ -1,11 +1,10 @@
 using D_Parser.Dom;
+using ICSharpCode.NRefactory.Completion;
 using MonoDevelop.D.Completion;
 using MonoDevelop.D.Parser;
 using MonoDevelop.Ide.CodeCompletion;
 using MonoDevelop.Ide.Gui;
 using MonoDevelop.Ide.Gui.Content;
-using ICSharpCode.NRefactory.Completion;
-
 
 namespace MonoDevelop.D
 {
@@ -13,15 +12,6 @@ namespace MonoDevelop.D
 	{
 		#region Properties / Init
 		int lastTriggerOffset;
-
-		public override bool CanRunCompletionCommand()
-		{
-			return documentEditor.CurrentMode is Mono.TextEditor.SimpleEditMode;	
-		}
-		public override bool CanRunParameterCompletionCommand()
-		{
-			return documentEditor.CurrentMode is Mono.TextEditor.SimpleEditMode;	
-		}
 		private Mono.TextEditor.TextEditorData documentEditor;
 		
 		public override void Initialize()
@@ -30,11 +20,9 @@ namespace MonoDevelop.D
 			
 			documentEditor = Document.Editor;	
 		}
-
 		#endregion
 
 		#region Code completion
-
 		public override ICompletionDataList CodeCompletionCommand(CodeCompletionContext completionContext)
 		{
 			int i = 0;
@@ -71,40 +59,13 @@ namespace MonoDevelop.D
 
 			return l;
 		}
-
-		// Taken from CSharpTextEditorCompletion.cs
-		public override bool GetCompletionCommandOffset(out int cpos, out int wlen)
-		{
-			cpos = wlen = 0;
-			int pos = Editor.Caret.Offset - 1;
-			while (pos >= 0)
-			{
-				char c = Editor.GetCharAt(pos);
-				if (!char.IsLetterOrDigit(c) && c != '_')
-					break;
-				pos--;
-			}
-			if (pos == -1)
-				return false;
-
-			pos++;
-			cpos = pos;
-			int len = Editor.Length;
-
-			while (pos < len)
-			{
-				char c = Editor.GetCharAt(pos);
-				if (!char.IsLetterOrDigit(c) && c != '_')
-					break;
-				pos++;
-			}
-			wlen = pos - cpos;
-			return true;
-		}
-
 		#endregion
 
 		#region Parameter completion
+		public override int GetCurrentParameterIndex(int startOffset)
+		{
+			return 0; //TODO: Get actually typed parameter
+		}
 
 		public override void CursorPositionChanged()
 		{
@@ -125,17 +86,6 @@ namespace MonoDevelop.D
 			return base.KeyPress(key, keyChar, modifier);
 		}
 
-		public override IParameterDataProvider ParameterCompletionCommand(CodeCompletionContext completionContext)
-		{
-			return base.ParameterCompletionCommand(completionContext);
-		}
-
-		public override bool GetParameterCompletionCommandOffset(out int cpos)
-		{
-			return base.GetParameterCompletionCommandOffset(out cpos);
-		}
-
-
 		public override IParameterDataProvider HandleParameterCompletion(CodeCompletionContext completionContext, char completionChar)
 		{
 			if (completionChar != ',' &&
@@ -154,12 +104,6 @@ namespace MonoDevelop.D
 			lastTriggerOffset=completionContext.TriggerOffset;
 			return DParameterDataProvider.Create(Document, dom.DDom, completionContext);
 		}
-
-		public override void RunParameterCompletionCommand()
-		{
-			base.RunParameterCompletionCommand();
-		}
-
 		#endregion
 
 		public override bool ExtendsEditor(Document doc, IEditableTextBuffer editor)

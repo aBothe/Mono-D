@@ -2,10 +2,10 @@ using D_Parser.Completion;
 using D_Parser.Dom;
 using D_Parser.Dom.Expressions;
 using D_Parser.Resolver;
+using ICSharpCode.NRefactory.Completion;
 using MonoDevelop.D.Resolver;
 using MonoDevelop.Ide.CodeCompletion;
 using MonoDevelop.Ide.Gui;
-using ICSharpCode.NRefactory.Completion;
 
 namespace MonoDevelop.D.Completion
 {
@@ -107,7 +107,7 @@ namespace MonoDevelop.D.Completion
 
 
 		#region IParameterDataProvider implementation
-		
+
 		public int GetCurrentParameterIndex (ICompletionWidget widget, CodeCompletionContext ctx)
 		{
 			/*
@@ -150,7 +150,7 @@ namespace MonoDevelop.D.Completion
 						return i + 1;
 			}
 			*/
-			return 0;
+			return 1;
 		}
 
 		public string GetHeading(int overload, string[] parameterMarkup, int currentParameter)
@@ -233,7 +233,7 @@ namespace MonoDevelop.D.Completion
 
 			// Parameters
 			s += "(";
-
+			
 			if (!args.IsTemplateInstanceArguments)
 				s += string.Join(",", parameterMarkup);
 			else
