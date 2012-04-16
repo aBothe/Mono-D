@@ -878,11 +878,11 @@ namespace D_Parser.Dom.Expressions
 				switch (Format)
 				{
 					case Parser.LiteralFormat.CharLiteral:
-						return "'"+Value+"'";
+						return "'"+Value??""+"'";
 					case Parser.LiteralFormat.StringLiteral:
-						return "\"" + Value + "\"";
+						return "\"" + Value??"" + "\"";
 					case Parser.LiteralFormat.VerbatimStringLiteral:
-						return "r\"" + Value + "\"";
+						return "r\"" + Value??"" + "\"";
 				}
 
 			return Value==null?null: Value.ToString();
