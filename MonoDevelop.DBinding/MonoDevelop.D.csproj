@@ -55,7 +55,7 @@
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ICSharpCode.NRefactory">
+    <Reference Include="ICSharpCode.NRefactory, Version=0.0.0.0, Culture=neutral, PublicKeyToken=efe927acf176eea2, processorArchitecture=MSIL">
       <HintPath>..\ext\ICSharpCode.NRefactory.dll</HintPath>
       <Private>False</Private>
     </Reference>
@@ -66,27 +66,27 @@
     <Reference Include="Mono.Posix, Version=2.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
     </Reference>
-    <Reference Include="Mono.TextEditor">
+    <Reference Include="Mono.TextEditor, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\ext\Mono.TextEditor.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="MonoDevelop.Core">
+    <Reference Include="MonoDevelop.Core, Version=2.6.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\ext\MonoDevelop.Core.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="MonoDevelop.DesignerSupport">
+    <Reference Include="MonoDevelop.DesignerSupport, Version=2.6.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\ext\MonoDevelop.DesignerSupport.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="MonoDevelop.Ide">
+    <Reference Include="MonoDevelop.Ide, Version=2.6.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\ext\MonoDevelop.Ide.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="MonoDevelop.Refactoring">
+    <Reference Include="MonoDevelop.Refactoring, Version=2.6.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\ext\MonoDevelop.Refactoring.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="MonoDevelop.SourceEditor2">
+    <Reference Include="MonoDevelop.SourceEditor2, Version=2.6.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\ext\MonoDevelop.SourceEditor2.dll</HintPath>
       <Private>False</Private>
     </Reference>
