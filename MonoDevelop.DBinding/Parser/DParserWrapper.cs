@@ -5,6 +5,7 @@ using ICSharpCode.NRefactory.TypeSystem;
 using MonoDevelop.Ide.Tasks;
 using MonoDevelop.Ide.TypeSystem;
 using MonoDevelop.Projects;
+using System;
 
 namespace MonoDevelop.D.Parser
 {
@@ -16,8 +17,32 @@ namespace MonoDevelop.D.Parser
 	/// </summary>
 	public class DParserWrapper : ITypeSystemParser
 	{
+		public static DParserWrapper Instance=new DParserWrapper();
+
+		internal static ParsedDocument LastParsedMod;
+
 		public ParsedDocument Parse(bool storeAst, string file, TextReader content, Project prj = null)
 		{
+			// HACK(?) The folds are parsed before the document gets loaded 
+			// - so reuse the last parsed document to save time
+			// -- What if multiple docs are opened?
+			if (LastParsedMod is ParsedDModule && LastParsedMod.FileName == file)
+			{
+				var d = (ParsedDModule)LastParsedMod;
+				if (prj is DProject)
+				{
+					var pf = prj.GetProjectFile(file);
+
+					// Build appropriate module name
+					if (pf != null)
+						d.DDom.ModuleName = BuildModuleName(pf);
+				}
+				LastParsedMod = null;
+				return d;
+			}
+			else
+				LastParsedMod = null;
+
 			var doc = new ParsedDModule(file);
 
 			var parser = DParser.Create(content);

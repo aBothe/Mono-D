@@ -195,6 +195,10 @@
 	<Parser class = "MonoDevelop.D.Parser.DParserWrapper" mimeType = "text/x-d" />
   </Extension>
 
+  <Extension path = "/MonoDevelop/TypeSystem/FoldingParser">
+	<Parser class = "MonoDevelop.D.Parser.FoldingParser" mimeType = "text/x-d" />
+  </Extension>
+
   <!-- Context menu extensions -->
   <Extension path = "/MonoDevelop/Ide/Commands">
 	<Command id = "MonoDevelop.D.Refactoring.Commands.ContextMenuRefactoringCommands"

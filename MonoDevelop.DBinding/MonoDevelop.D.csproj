@@ -135,6 +135,7 @@
     <Compile Include="Highlighting\TypeHighlightingExtension.cs" />
     <Compile Include="OptionPanels\ProjectOptions.cs" />
     <Compile Include="Parser\DParserWrapper.cs" />
+    <Compile Include="Parser\FoldingParser.cs" />
     <Compile Include="Parser\ParsedDModule.cs" />
     <Compile Include="Project\DProjectBinding.cs" />
     <Compile Include="Project\DProject.cs" />
