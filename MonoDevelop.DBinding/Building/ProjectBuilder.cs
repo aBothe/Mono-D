@@ -16,7 +16,7 @@ namespace MonoDevelop.D.Building
 			get { return Project.Compiler; }
 		}
 
-		public DCompileTarget BuildTargetType;
+		public DCompileTarget BuildTargetType { get { return BuildConfig.CompileTarget; } }
 
 		LinkTargetConfiguration Commands { get { return Compiler.GetOrCreateTargetConfiguration (BuildTargetType); } }
 
@@ -53,8 +53,7 @@ namespace MonoDevelop.D.Building
 		{
 			this.Project = Project;
 			BuildConfig = Project.GetConfiguration (BuildConfigurationSelector) as DProjectConfiguration;
-			BuildTargetType = Project.CompileTarget;
-            
+
 			BuiltObjects.Clear ();
 
 			if (Compiler == null) {

@@ -71,8 +71,6 @@ namespace MonoDevelop.D
 			}
 		}
 
-		[ItemProperty("Target")]
-		public DCompileTarget CompileTarget = DCompileTarget.Executable;
 		[ItemProperty("IncrementalLinking")]
 		public bool EnableIncrementalLinking = true;
 
@@ -166,13 +164,15 @@ namespace MonoDevelop.D
 					binPath = info.BinPath;
 			}
 
+			var compTarget = DCompileTarget.Executable;
+
             var outputPrefix = "";
 
             if (projectOptions != null)
             {
                 // Set project's target type to the one which has been defined in the project template
                 if (projectOptions.Attributes["Target"] != null)
-                    CompileTarget = (DCompileTarget)Enum.Parse(
+                    compTarget = (DCompileTarget)Enum.Parse(
                         typeof(DCompileTarget),
                         projectOptions.Attributes["Target"].InnerText);
 
@@ -181,7 +181,7 @@ namespace MonoDevelop.D
                     UsedCompilerVendor = projectOptions.Attributes["Compiler"].InnerText;
 
                 // Non Windows-OS require a 'lib' prefix as library name -- like libphobos2.a
-                if (CompileTarget == DCompileTarget.StaticLibrary || CompileTarget == DCompileTarget.SharedLibrary && !OS.IsWindows)
+                if (compTarget == DCompileTarget.StaticLibrary || compTarget == DCompileTarget.SharedLibrary && !OS.IsWindows)
                 {
                     outputPrefix = "lib";
                 }
@@ -221,6 +221,8 @@ namespace MonoDevelop.D
             
 			// Prepare all configurations
 			foreach (DProjectConfiguration c in Configurations) {
+
+				c.CompileTarget = compTarget;
 				c.OutputDirectory = Path.Combine (this.GetRelativeChildPath (binPath), c.Id);
 				c.ObjectDirectory += Path.DirectorySeparatorChar + c.Id;
 				c.Output = outputPrefix + Name;
@@ -350,7 +352,7 @@ namespace MonoDevelop.D
 				return false;
 			var cmd = CreateExecutionCommand (cfg);
 
-			return CompileTarget == DCompileTarget.Executable && context.ExecutionHandler.CanExecute (cmd);
+			return cfg.CompileTarget == DCompileTarget.Executable && context.ExecutionHandler.CanExecute (cmd);
 		}
 
 		protected virtual ExecutionCommand CreateExecutionCommand (DProjectConfiguration conf)
@@ -373,7 +375,7 @@ namespace MonoDevelop.D
 			bool pause = conf.PauseConsoleOutput;
 			IConsole console;
 
-			if (CompileTarget != DCompileTarget.Executable) {
+			if (conf.CompileTarget != DCompileTarget.Executable) {
 				MessageService.ShowMessage ("Compile target is not an executable!");
 				return;
 			}

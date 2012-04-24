@@ -1,15 +1,15 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <stetic-interface>
   <configuration>
-    <images-root-path>..</images-root-path>
+    <images-root-path>..\..\MonoDevelop.DBinding</images-root-path>
     <target-gtk-version>2.12</target-gtk-version>
   </configuration>
   <import>
+    <widget-library name="../../ext/Mono.TextEditor.dll" />
     <widget-library name="../../ext/MonoDevelop.DesignerSupport.dll" />
-    <widget-library name="../../MonoDevelop.Ide.dll" />
+    <widget-library name="../../ext/MonoDevelop.Ide.dll" />
     <widget-library name="../../ext/MonoDevelop.Refactoring.dll" />
     <widget-library name="../../ext/MonoDevelop.SourceEditor2.dll" />
-    <widget-library name="../../Mono.TextEditor.dll" />
     <widget-library name="../bin/Debug/MonoDevelop.D.dll" internal="true" />
   </import>
   <widget class="Gtk.Bin" id="MonoDevelop.D.OptionPanels.ProjectOptions" design-size="511 343">

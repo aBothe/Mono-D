@@ -64,11 +64,11 @@ namespace MonoDevelop.D.Refactoring
 
 		public static void GotoDeclaration(INode n)
 		{
-			if(n!=null)
+			if (n != null && n.NodeRoot is IAbstractSyntaxTree)
 				IdeApp.Workbench.OpenDocument(
 					((IAbstractSyntaxTree)n.NodeRoot).FileName,
 					n.StartLocation.Line,
-					n.StartLocation.Column, OpenDocumentOptions.Default);
+					n.StartLocation.Column);
 		}
 
 		[CommandHandler(EditCommands.Rename)]

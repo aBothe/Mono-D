@@ -67,7 +67,7 @@ namespace MonoDevelop.D.OptionPanels
 			
 			if (model_compileTarget.GetIterFirst (out iter))
 				do {
-					if (proj.CompileTarget == (DCompileTarget)model_compileTarget.GetValue (iter, 1)) {
+					if (config.CompileTarget == (DCompileTarget)model_compileTarget.GetValue (iter, 1)) {
 						combo_ProjectType.SetActiveIter (iter);
 						break;
 					} 
@@ -99,7 +99,7 @@ namespace MonoDevelop.D.OptionPanels
 			configuration.ObjectDirectory = text_ObjectsDirectory.Text;
 			
 			if (combo_ProjectType.GetActiveIter (out iter))
-				project.CompileTarget = (DCompileTarget)model_compileTarget.GetValue (iter, 1);
+				configuration.CompileTarget = (DCompileTarget)model_compileTarget.GetValue (iter, 1);
 			
 			// Store libs
 			configuration.ExtraLibraries.Clear ();

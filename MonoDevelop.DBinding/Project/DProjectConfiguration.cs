@@ -17,7 +17,9 @@ namespace MonoDevelop.D
 			get;
 			protected set;
 		}
-		
+
+		[ItemProperty("Target")]
+		public DCompileTarget CompileTarget = DCompileTarget.Executable;
 		[ItemProperty("OutputName")]
 		public string Output = "";
 		[ItemProperty("ExtraCompilerArguments", DefaultValue = "")]
@@ -71,7 +73,7 @@ namespace MonoDevelop.D
 				if (Project != null) {
 					var ext = "";
 						
-					switch (Project.CompileTarget) {
+					switch (CompileTarget) {
 					case DCompileTarget.SharedLibrary:
 						ext = DCompilerService.SharedLibraryExtension;
 						break;
