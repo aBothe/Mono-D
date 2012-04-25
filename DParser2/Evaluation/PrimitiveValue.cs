@@ -1,19 +1,33 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using D_Parser.Dom.Expressions;
 
 namespace D_Parser.Evaluation
 {
-	public struct PrimitiveValue
+	public class PrimitiveValue : IExpressionValue
 	{
-		public readonly PrimitiveType Type;
-		public readonly object Value;
+		public PrimitiveType Type
+		{
+			get;
+			private set;
+		}
 
-		public PrimitiveValue(PrimitiveType ValueType, object Value)
+		public object Value
+		{
+			get;
+			private set;
+		}
+
+		public IExpression BaseExpression
+		{
+			get;
+			private set;
+		}
+
+		public PrimitiveValue(PrimitiveType ValueType, object Value, IExpression Expression)
 		{
 			this.Type = ValueType;
 			this.Value = Value;
+			this.BaseExpression = Expression;
 		}
 
 		/// <summary>
@@ -45,11 +59,14 @@ namespace D_Parser.Evaluation
 
 	public enum PrimitiveType
 	{
-		Bool,
-		Char,
-		Int,
-		Float,
-		String,
-		Reference
+		Bool=1,
+		Char=2,
+		Int=4,
+		Float=8,
+		String=16,
+
+		Pointer=32,
+		Array=64,
+		Reference=128,
 	}
 }

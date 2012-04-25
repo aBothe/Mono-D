@@ -74,6 +74,8 @@
     <Compile Include="Dom\ModulePackage.cs" />
     <Compile Include="Dom\TemplateParameters.cs" />
     <Compile Include="Evaluation\ExpressionEvaluator.cs" />
+    <Compile Include="Evaluation\ExpressionEvaluator.PrimaryExpression.cs" />
+    <Compile Include="Evaluation\IExpressionValue.cs" />
     <Compile Include="Evaluation\PrimitiveValue.cs" />
     <Compile Include="Misc\CompletionOptions.cs" />
     <Compile Include="Misc\ModuleNameHelper.cs" />
@@ -87,6 +89,7 @@
     <Compile Include="Resolver\ASTScanner\MatchFilterVisitor.cs" />
     <Compile Include="Resolver\ASTScanner\NameScan.cs" />
     <Compile Include="Misc\UFCSCache.cs" />
+    <Compile Include="Resolver\InheritanceCheck.cs" />
     <Compile Include="Resolver\ResolutionOptions.cs" />
     <Compile Include="Resolver\ResultComparer.cs" />
     <Compile Include="Resolver\TypeResolution\ExpressionTypeResolution.cs" />

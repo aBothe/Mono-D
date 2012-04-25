@@ -7,19 +7,22 @@ using D_Parser.Resolver;
 
 namespace D_Parser.Evaluation
 {
-	public class ExpressionEvaluator
+	public partial class ExpressionEvaluator
 	{
 		ResolverContextStack ctxt;
 
 		private ExpressionEvaluator() { }
 
-		public static object Evaluate(IExpression expression, ResolverContextStack ctxt)
+		public static IExpressionValue Evaluate(IExpression expression, ResolverContextStack ctxt)
 		{
 			return new ExpressionEvaluator { ctxt = ctxt }.Evaluate(expression);
 		}
 
-		public object Evaluate(IExpression x)
+		public IExpressionValue Evaluate(IExpression x)
 		{
+			if (x is PrimaryExpression)
+				return Evaluate((PrimaryExpression)x);
+
 			return null;
 		}
 

@@ -215,7 +215,8 @@ namespace D_Parser.Resolver.TypeResolution
 					methodContainingResultsToCheck, ctxt, false);
 
 				methodContainingResultsToCheck.Clear();
-				methodContainingResultsToCheck.AddRange(filteredMethods);
+				if(filteredMethods!=null)
+					methodContainingResultsToCheck.AddRange(filteredMethods);
 			}
 			#endregion
 

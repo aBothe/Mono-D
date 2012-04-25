@@ -15,6 +15,7 @@ using MonoDevelop.Ide;
 using MonoDevelop.Projects;
 using D_Parser.Misc;
 using MonoDevelop.D.Parser;
+using D_Parser.Resolver;
 
 namespace MonoDevelop.D
 {
@@ -37,12 +38,12 @@ namespace MonoDevelop.D
 		/// <summary>
 		/// Stores parse information from project-wide includes
 		/// </summary>
-		public readonly ParseCache LocalIncludeCache = new ParseCache ();
+		public readonly ParseCache LocalIncludeCache = new ParseCache { EnableUfcsCaching = false };
 
 		/// <summary>
 		/// Stores parse information from files inside the project's base directory
 		/// </summary>
-		public readonly ParseCache LocalFileCache = new ParseCache ();
+		public readonly ParseCache LocalFileCache = new ParseCache { EnableUfcsCaching = false };
 
 		public ParseCacheList ParseCache {
 			get {
@@ -90,6 +91,7 @@ namespace MonoDevelop.D
 		#region Parsed project modules
 		public void UpdateLocalIncludeCache ()
 		{
+			analysisFinished_LocalIncludes = false;
 			LocalIncludeCache.FallbackPath = BaseDirectory;
 			DCompilerConfiguration.UpdateParseCacheAsync (LocalIncludeCache);
 		}
@@ -105,7 +107,11 @@ namespace MonoDevelop.D
 				// Update relative module name
 				ddom.ModuleName = DParserWrapper.BuildModuleName (pf);
 
+				LocalFileCache.UfcsCache.RemoveModuleItems(LocalFileCache.GetModuleByFileName(pf.FilePath, BaseDirectory));
 				LocalFileCache.AddOrUpdate (ddom);
+				LocalFileCache.UfcsCache.CacheModuleMethods(ddom, new ResolverContextStack(ParseCache, new ResolverContext{
+					ScopedBlock= ddom
+					}));
 			} catch (Exception ex) {
 				LoggingService.LogError ("Error while parsing " + pf.FilePath.ToString (), ex);
 			}
@@ -121,7 +127,38 @@ namespace MonoDevelop.D
 		/// </summary>
 		public void UpdateParseCache ()
 		{
+			analysisFinished_LocalCache = false;
 			LocalFileCache.BeginParse (new[] { BaseDirectory.ToString () }, BaseDirectory);
+		}
+
+		bool analysisFinished_GlobalCache, analysisFinished_LocalIncludes, analysisFinished_LocalCache;
+
+		void LocalIncludeCache_FinishedParsing(ParsePerformanceData[] PerformanceData)
+		{
+			analysisFinished_LocalIncludes = true;
+			TryBuildUfcsCache();
+		}
+
+		void LocalFileCache_FinishedParsing(ParsePerformanceData[] PerformanceData)
+		{
+			analysisFinished_LocalCache = true;
+			TryBuildUfcsCache();
+		}
+
+		void GlobalParseCache_FinishedParsing(ParsePerformanceData[] PerformanceData)
+		{
+			analysisFinished_GlobalCache = true;
+			TryBuildUfcsCache();
+		}
+
+		void TryBuildUfcsCache()
+		{
+			if (analysisFinished_GlobalCache && !Compiler.ParseCache.IsParsing &&
+				analysisFinished_LocalCache && analysisFinished_LocalIncludes)
+			{
+				LocalIncludeCache.UfcsCache.Update(ParseCacheList.Create(Compiler.ParseCache, LocalIncludeCache), LocalIncludeCache);
+				LocalFileCache.UfcsCache.Update(ParseCache, LocalFileCache);
+			}
 		}
 
 		protected override void OnFileRemovedFromProject (ProjectFileEventArgs e)
@@ -142,6 +179,8 @@ namespace MonoDevelop.D
 		#region Init
 		void Init ()
 		{
+			LocalFileCache.FinishedParsing += new D_Parser.Misc.ParseCache.ParseFinishedHandler(LocalFileCache_FinishedParsing);
+			LocalIncludeCache.FinishedParsing += new D_Parser.Misc.ParseCache.ParseFinishedHandler(LocalIncludeCache_FinishedParsing);
 		}
 
 		public DProject ()
@@ -433,6 +472,7 @@ namespace MonoDevelop.D
 
 		protected override void OnEndLoad ()
 		{
+			Compiler.ParseCache.FinishedParsing += new D_Parser.Misc.ParseCache.ParseFinishedHandler(GlobalParseCache_FinishedParsing);
 			UpdateLocalIncludeCache ();
 			UpdateParseCache ();
 

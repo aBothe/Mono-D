@@ -24,7 +24,10 @@ namespace MonoDevelop.D.Gui
 	public class DModuleOutlineExtension : TextEditorExtension, IOutlinedDocument
 	{
 		#region Properties
-		IAbstractSyntaxTree SyntaxTree;
+		public IAbstractSyntaxTree SyntaxTree
+		{
+			get { return Document.ParsedDocument is ParsedDModule ? ((ParsedDModule)Document.ParsedDocument).DDom : null; }
+		}
 		MonoDevelop.Ide.Gui.Components.PadTreeView TreeView;
 		TreeStore TreeStore;
 		Widget[] toolbarWidgets;
@@ -148,17 +151,12 @@ namespace MonoDevelop.D.Gui
 			TreeStore.Clear();
 			try
 			{
-				if (Document.ParsedDocument is ParsedDModule)
+				if (SyntaxTree != null)
 				{
-					SyntaxTree = (Document.ParsedDocument as ParsedDModule).DDom;
+					var caretLocation = Document.Editor.Caret.Location;
+					BuildTreeChildren(TreeIter.Zero, SyntaxTree, new CodeLocation(caretLocation.Column, caretLocation.Line));
 
-					if (SyntaxTree != null)
-					{
-						var caretLocation = Document.Editor.Caret.Location;
-						BuildTreeChildren(TreeIter.Zero, SyntaxTree, new CodeLocation(caretLocation.Column, caretLocation.Line));
-
-						TreeView.ExpandAll();
-					}
+					TreeView.ExpandAll();
 				}
 			}
 			catch (Exception ex)

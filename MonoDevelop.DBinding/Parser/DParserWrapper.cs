@@ -23,13 +23,16 @@ namespace MonoDevelop.D.Parser
 
 		public ParsedDocument Parse(bool storeAst, string file, TextReader content, Project prj = null)
 		{
+			if (!storeAst)
+				return null;
+
 			// HACK(?) The folds are parsed before the document gets loaded 
 			// - so reuse the last parsed document to save time
 			// -- What if multiple docs are opened?
 			if (LastParsedMod is ParsedDModule && LastParsedMod.FileName == file)
 			{
 				var d = (ParsedDModule)LastParsedMod;
-				if (prj is DProject)
+				if (prj!=null)
 				{
 					var pf = prj.GetProjectFile(file);
 
@@ -53,9 +56,6 @@ namespace MonoDevelop.D.Parser
 			// Parse the code
 			var ast = parser.Parse();
 
-			ast.FileName = file;
-			doc.DDom = ast;
-
 			// Update project owner information
 			if (prj is DProject)
 			{
@@ -65,6 +65,9 @@ namespace MonoDevelop.D.Parser
 				if (pf != null)
 					ast.ModuleName = BuildModuleName(pf);
 			}
+
+			ast.FileName = file;
+			doc.DDom = ast;
 
 			// Add parser errors to the parser output
 			foreach (var parserError in parser.ParseErrors)

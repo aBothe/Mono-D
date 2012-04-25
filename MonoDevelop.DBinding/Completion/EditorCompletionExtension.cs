@@ -43,6 +43,7 @@ namespace MonoDevelop.D
 			triggerWordLength = (char.IsLetter(triggerChar) || triggerChar=='_' || triggerChar=='@') ? 1 : 0;
 
 			// Require a parsed D source
+			
 			var dom = base.Document.ParsedDocument as ParsedDModule;
 
 			if (dom == null)

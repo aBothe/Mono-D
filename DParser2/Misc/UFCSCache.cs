@@ -27,7 +27,7 @@ namespace D_Parser.Resolver.ASTScanner
 			CachedMethods.Clear();
 		}
 
-		public void Update(ParseCacheList pcList)
+		public void Update(ParseCacheList pcList, ParseCache subCacheToUpdate=null)
 		{
 			var sw = new Stopwatch();
 			sw.Start();
@@ -40,9 +40,13 @@ namespace D_Parser.Resolver.ASTScanner
 			});
 
 			// Enum through all modules of the parse cache
-			foreach (var pc in pcList)
-				foreach (var module in pc)
-					CacheModuleMethods(module,ctxt);
+			if (subCacheToUpdate != null)
+				foreach (var module in subCacheToUpdate)
+					CacheModuleMethods(module, ctxt);
+			else
+				foreach (var pc in pcList)
+					foreach (var module in pc)
+						CacheModuleMethods(module,ctxt);
 
 			sw.Stop();
 			CachingDuration = sw.Elapsed;
@@ -68,7 +72,7 @@ namespace D_Parser.Resolver.ASTScanner
 				{
 					var dm = n as DMethod;
 
-					// UFCS only allowes free function that contain at least one parameter
+					// UFCS only allows free function that contain at least one parameter
 					if (dm == null || dm.Parameters.Count == 0 || dm.Parameters[0].Type == null)
 						continue;
 

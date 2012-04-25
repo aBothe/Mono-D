@@ -820,6 +820,7 @@ namespace D_Parser.Dom.Expressions
 		}
 	}
 
+	#region Primary Expressions
 	public interface PrimaryExpression : IExpression { }
 
 	public class TemplateInstanceExpression : AbstractTypeDeclaration,PrimaryExpression,ContainerExpression
@@ -1358,6 +1359,7 @@ namespace D_Parser.Dom.Expressions
 			get { return new[]{Expression}; }
 		}
 	}
+	#endregion
 
 	#region Initializers
 

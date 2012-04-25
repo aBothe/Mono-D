@@ -3,6 +3,7 @@ using D_Parser.Dom;
 using D_Parser.Dom.Statements;
 using ICSharpCode.NRefactory.TypeSystem;
 using MonoDevelop.Ide.TypeSystem;
+using D_Parser.Resolver;
 
 namespace MonoDevelop.D.Parser
 {
@@ -19,7 +20,7 @@ namespace MonoDevelop.D.Parser
 						if (prj is DProject && FileName.StartsWith(prj.BaseDirectory))
 						{
 							var dprj = prj as DProject;
-
+							_ddom = null;
 							return dprj.LocalFileCache.GetModuleByFileName(FileName, prj.BaseDirectory);
 						}
 				
@@ -34,7 +35,11 @@ namespace MonoDevelop.D.Parser
 						{
 							var dprj = prj as DProject;
 
+							var oldAst = dprj.LocalFileCache.GetModuleByFileName(FileName, prj.BaseDirectory);
+							dprj.LocalFileCache.UfcsCache.RemoveModuleItems(oldAst);
+							oldAst = null;
 							dprj.LocalFileCache.AddOrUpdate(value);
+							dprj.LocalFileCache.UfcsCache.CacheModuleMethods(value,new ResolverContextStack(dprj.ParseCache, new ResolverContext()));
 						}
 				
 				_ddom=value;
