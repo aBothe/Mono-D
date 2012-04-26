@@ -60,6 +60,9 @@ namespace MonoDevelop.D.Building
 
 				CompilerPresets.PresetLoader.LoadPresets (_instance);
 			}
+
+			// Init global parse cache
+			_instance.UpdateParseCachesAsync();
 		}
 
 		public void Save ()

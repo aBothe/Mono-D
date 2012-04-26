@@ -14,12 +14,7 @@ namespace MonoDevelop.D
 
 			// Init compiler configurations if not done yet
 			if (!DCompilerService.IsInitialized)
-			{
 				DCompilerService.Load();
-
-				// Init global parse cache
-				DCompilerService.Instance.UpdateParseCachesAsync();
-			}
 		}
 
 		~DLanguageBinding()
