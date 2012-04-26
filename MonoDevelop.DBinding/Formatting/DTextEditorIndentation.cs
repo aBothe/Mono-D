@@ -76,7 +76,7 @@ namespace MonoDevelop.D.Formatting
 				}
 			}
 			
-			if (Document.Editor.Options.IndentStyle == IndentStyle.Smart) {
+			if (Document.Editor.Options.IndentStyle == IndentStyle.Smart || Document.Editor.Options.IndentStyle == IndentStyle.Virtual) {
 				int newIndentation = 0;
 
 				if (key == Key.Return) {
