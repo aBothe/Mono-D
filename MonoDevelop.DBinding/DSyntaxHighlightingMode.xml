@@ -33,7 +33,7 @@
 		<End>"</End>
 	</Span>
 
-	<Span color = "string.double" rule="String" stopateol = "false" escape='\"'>
+	<Span color = "string.double" rule="String" stopateol = "false" escape='\'>
 		<Begin>"</Begin>
 		<End>"</End>
 	</Span>
@@ -43,13 +43,11 @@
 		<End>`</End>
 	</Span>
 
-	<Span color = "string.single" rule="String" stopateol = "true" escape="\'">
+	<Span color = "string.single" rule="String" stopateol = "true" escape="\">
 		<Begin>&apos;</Begin>
 		<End>&apos;</End>
 	</Span>
 
-	<Rule name = "Comment"></Rule>
-	<Rule name = "String"></Rule>
 <!--
 	<Match color = "constant.digit"></Match>-->
 	<!-- @property-like Attributes -->
@@ -219,7 +217,7 @@
 	
 	
 	<!-- Style rules -->
-
+	<Rule name = "String"></Rule>
 	<Rule name = "Comment">
 		<Keywords color="comment.keyword.todo" ignorecase="True">
 			<Word>TODO</Word>
