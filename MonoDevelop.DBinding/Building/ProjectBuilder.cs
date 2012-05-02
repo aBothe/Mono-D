@@ -348,18 +348,26 @@ namespace MonoDevelop.D.Building
 				return file.Replace ('\\', '/');
 		}
 
-		string GetRelObjFilename (string obj)
+		public static string GetRelObjFilename(string baseDirectory,string obj)
 		{
-			return obj.StartsWith (Project.BaseDirectory) ?
-                obj.Substring (Project.BaseDirectory.ToString ().Length + 1) :
-                obj;
+			return obj.StartsWith(baseDirectory) ? obj.Substring(baseDirectory.ToString().Length + 1) : obj;
 		}
 
-		string HandleObjectFileNaming (ProjectFile f, string extension)
+		string GetRelObjFilename (string obj)
+		{
+			return GetRelObjFilename(Project.BaseDirectory, obj);
+		}
+
+		string HandleObjectFileNaming(ProjectFile f, string extension)
+		{
+			return HandleObjectFileNaming(AbsoluteObjectDirectory, BuiltObjects, f, extension);
+		}
+
+		public static string HandleObjectFileNaming (string AbsoluteObjectDirectory, List<string> AlreadyBuiltObjects,ProjectFile f, string extension)
 		{
 			var obj = Path.Combine (AbsoluteObjectDirectory, f.FilePath.FileNameWithoutExtension) + extension;
 
-			if (!BuiltObjects.Contains (GetRelObjFilename (obj))) {
+			if (!AlreadyBuiltObjects.Contains (GetRelObjFilename (f.Project.BaseDirectory,obj))) {
 				if (File.Exists (obj))
 					File.Delete (obj);
 				return obj;
@@ -370,14 +378,16 @@ namespace MonoDevelop.D.Building
                 f.ProjectVirtualPath.ParentDirectory.ToString ().Replace (Path.DirectorySeparatorChar, '.') + "." +
                 f.FilePath.FileNameWithoutExtension) + extension;
 
-			if (!BuiltObjects.Contains (GetRelObjFilename (obj))) {
+			if (!AlreadyBuiltObjects.Contains(GetRelObjFilename(f.Project.BaseDirectory, obj)))
+			{
 				if (File.Exists (obj))
 					File.Delete (obj);
 				return obj;
 			}
 
 			int i = 2;
-			while (BuiltObjects.Contains(GetRelObjFilename(obj)) && File.Exists(obj)) {
+			while (AlreadyBuiltObjects.Contains(GetRelObjFilename(f.Project.BaseDirectory, obj)) && File.Exists(obj))
+			{
 				// Simply add a number between the obj name and its extension
 				obj = Path.Combine (AbsoluteObjectDirectory,
                         f.ProjectVirtualPath.ParentDirectory.ToString ().Replace (Path.DirectorySeparatorChar, '.') + "." +

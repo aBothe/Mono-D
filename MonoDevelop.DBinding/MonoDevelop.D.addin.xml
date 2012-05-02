@@ -205,12 +205,20 @@
 				defaultHandler = "MonoDevelop.D.Refactoring.ContextMenuRefactoringCommandHandler"
 				_label="Refactoring Commands"
 					 type="array" />
-<!--
-	<Command id="MonoDevelop.D.Refactoring.Commands.RenameSymbols"
-					 _label="_Rename"/>-->
+
 	<Command id="MonoDevelop.D.Refactoring.Commands.OpenDDocumentation"
 					 _label="Open D Documentation"
 					 shortcut="F1"/>
+
+	<Command id = "MonoDevelop.D.Refactoring.Commands.GenerateMakefile"
+				defaultHandler = "MonoDevelop.D.Building.MakefileGenerationCommandHandler"
+				_label="Generate Makefile"/>
+  </Extension>
+
+  <Extension path = "/MonoDevelop/Ide/ContextMenu/ProjectPad">
+	<Condition id="ItemType" value="MonoDevelop.D.DProject">
+		<CommandItem id = "MonoDevelop.D.Refactoring.Commands.GenerateMakefile"/>
+	</Condition>
   </Extension>
 
   <Extension path = "/MonoDevelop/SourceEditor2/ContextMenu/Editor">

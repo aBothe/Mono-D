@@ -11,6 +11,7 @@ namespace MonoDevelop.D.Refactoring
 {
 	public enum Commands
 	{
+		GenerateMakefile,
 		ContextMenuRefactoringCommands,
 		OpenDDocumentation,
 	}
