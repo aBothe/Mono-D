@@ -93,8 +93,6 @@ namespace MonoDevelop.D.Building
 					ObjectFile = "$@", SourceFile = "$?"
 				});
 
-			s.AppendLine("\t@echo Start compilation...");
-			
 			foreach(var kv in srcObjPairs)
 			{
 				s.AppendLine(kv.Value + " : "+ kv.Key);
