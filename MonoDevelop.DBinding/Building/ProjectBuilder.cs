@@ -89,7 +89,7 @@ namespace MonoDevelop.D.Building
             
 			// Enum files & build resource files
 			foreach (var pf in Project.Files) {
-				if (pf.BuildAction != BuildAction.Compile)
+				if (pf.BuildAction != BuildAction.Compile || pf.Subtype == Subtype.Directory)
 					continue;
 
 				if (pf.FilePath.Extension.EndsWith (".rc", StringComparison.OrdinalIgnoreCase)) {
