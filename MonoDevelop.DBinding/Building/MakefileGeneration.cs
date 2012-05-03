@@ -8,12 +8,13 @@ using MonoDevelop.Ide.Gui.Pads.ProjectPad;
 using MonoDevelop.Ide.Gui.Pads;
 using System.IO;
 using MonoDevelop.Projects;
+using MonoDevelop.Ide;
 
 namespace MonoDevelop.D.Building
 {
 	public class MakefileGeneration
 	{
-		public static void GenerateMakefile(DProject prj, DProjectConfiguration cfg, string file = null)
+		public static void GenerateMakefile(DProject prj, DProjectConfiguration cfg, ref string file)
 		{
 			if (string.IsNullOrEmpty(file))
 				file = prj.BaseDirectory.Combine("makefile");
@@ -36,30 +37,31 @@ namespace MonoDevelop.D.Building
 			s.AppendLine("compiler=" + buildCommands.Compiler);
 			s.AppendLine("linker=" + buildCommands.Linker);
 			s.AppendLine();
-			s.AppendLine("target="+ cfg.OutputDirectory.Combine(cfg.CompiledOutputName));
-			s.AppendLine();
+			s.AppendLine("target="+ cfg.OutputDirectory.Combine(cfg.CompiledOutputName).ToRelative(Project.BaseDirectory));
 
 			var srcObjPairs = new Dictionary<string, string>();
+			var objs= new List<string>();
 
 			foreach (var pf in Project.Files)
 			{
 				if (pf.BuildAction != BuildAction.Compile)
 					continue;
-				/*
-				srcObjPairs[pf.FilePath.ToRelative(Project.BaseDirectory)] = ProjectBuilder.HandleObjectFileNaming(
-					cfg.ObjectDirectory, 
-					);*/
+				
+				var obj = ProjectBuilder.HandleObjectFileNaming(
+					cfg.ObjectDirectory,objs, pf, DCompilerService.ObjectExtension);
+
+				objs.Add(obj);
+				srcObjPairs[pf.FilePath.ToRelative(Project.BaseDirectory)] = obj;
 			}
 
-
-
-			s.AppendLine("all: $(sources) $(target)");
-
-
+			s.AppendLine("objects = "+ string.Join(" ",objs));
+			s.AppendLine();
+			s.AppendLine();
+			s.AppendLine("all: $(target)");
 
 			// Linker
 			s.AppendLine();
-			s.AppendLine("target: $(objects)");
+			s.AppendLine("$(target): $(objects)");
 
 			var libs = new List<string> (compiler.DefaultLibraries);
 			libs.AddRange (cfg.ExtraLibraries);
@@ -73,23 +75,37 @@ namespace MonoDevelop.D.Building
                     RelativeTargetDirectory = cfg.OutputDirectory.ToRelative (Project.BaseDirectory),
                     Libraries = libs
                 });
+
+			s.AppendLine("\t@echo Linking...");
 			s.AppendLine("\t$(linker) "+ linkArgs.Trim());
 
 
 			// Compiler
 			s.AppendLine();
-			s.AppendLine("%.d : $" + DCompilerService.ObjectExtension);
-
 			var sourceFileIncludePaths=new List<string>(compiler.ParseCache.ParsedDirectories);
 			sourceFileIncludePaths.AddRange (Project.LocalIncludeCache.ParsedDirectories);
 
-			s.AppendLine("\t$(compiler) "+ ProjectBuilder.FillInMacros(
+			var compilerCommand = "\t$(compiler) "+ ProjectBuilder.FillInMacros(
 				Arguments.CompilerArguments + " " + cfg.ExtraCompilerArguments,
 				new DCompilerMacroProvider{
 					IncludePathConcatPattern = buildCommands.IncludePathPattern,
 					Includes = sourceFileIncludePaths,
-					ObjectFile = "$@", SourceFile = "$<"
-				}));
+					ObjectFile = "$@", SourceFile = "$?"
+				});
+
+			s.AppendLine("\t@echo Start compilation...");
+			
+			foreach(var kv in srcObjPairs)
+			{
+				s.AppendLine(kv.Value + " : "+ kv.Key);
+				s.AppendLine(compilerCommand);
+				s.AppendLine();
+			}
+
+			// Clean up
+			s.AppendLine("clean:");
+			s.AppendLine("\t"+(OS.IsWindows?"del /Q":"$(RM)")+" \"$(target)\" $(objects)");
+			
 
 			return s.ToString();
 		}
@@ -115,8 +131,15 @@ namespace MonoDevelop.D.Building
 				var prj = (DProject)selectedItem.DataItem;
 				var cfg = prj.GetConfiguration(Ide.IdeApp.Workspace.ActiveConfiguration) as DProjectConfiguration;
 
-				if(cfg != null)
-					MakefileGeneration.GenerateMakefile(prj, cfg);
+				if (cfg != null)
+				{
+					var file = "";
+					MakefileGeneration.GenerateMakefile(prj, cfg, ref file);
+
+					MessageService.ShowMessage("Makefile generated", "See " + file);
+				}
+				else
+					MessageService.ShowError("Makefile could not be generated!");
 			}
 		}
 
