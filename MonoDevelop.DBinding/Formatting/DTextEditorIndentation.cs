@@ -106,27 +106,14 @@ namespace MonoDevelop.D.Formatting
 					tr.Close ();
 
 					newIndentation = cb == null ? 0 : cb.GetLineIndentation (ed.Caret.Line);
-
 					var newInd = CalculateIndentationString (newIndentation);
-					var line = Document.Editor.GetLine (ed.Caret.Line);
 
-					if (origInd == newInd)
-						return false;
+					if (origInd != newInd)
+						ed.Replace (
+							Document.Editor.GetLine (ed.Caret.Line).Offset,
+							originalIndentation,
+							newInd);
 
-					ed.Replace (
-						line.Offset,
-						originalIndentation,
-						newInd);
-
-					// Convert spaces to tabs if not in the same format -- to ensure that the caret offset is moved correctly
-					if (origInd.Length > 0 && origInd [0] == ' ' &&
-					   newInd.Length > 0 && newInd [0] != ' ') {
-						originalIndentation = originalIndentation / Document.Editor.Options.TabSize +
-							originalIndentation % Document.Editor.Options.TabSize;
-					}
-
-					ed.Caret.Column += newInd.Length - originalIndentation;
-					
 					return false;
 				}
 			}
