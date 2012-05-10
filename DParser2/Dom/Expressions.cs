@@ -864,6 +864,7 @@ namespace D_Parser.Dom.Expressions
 	/// </summary>
 	public class IdentifierExpression : PrimaryExpression
 	{
+		public bool ModuleScoped;
 		public bool IsIdentifier { get { return Value is string && Format==LiteralFormat.None; } }
 
 		public readonly object Value;
@@ -875,16 +876,18 @@ namespace D_Parser.Dom.Expressions
 
 		public override string ToString()
 		{
-			if(Format!=Parser.LiteralFormat.None)
+			if (Format != Parser.LiteralFormat.None)
 				switch (Format)
 				{
 					case Parser.LiteralFormat.CharLiteral:
-						return "'"+Value??""+"'";
+						return "'" + Value ?? "" + "'";
 					case Parser.LiteralFormat.StringLiteral:
-						return "\"" + Value??"" + "\"";
+						return "\"" + Value ?? "" + "\"";
 					case Parser.LiteralFormat.VerbatimStringLiteral:
-						return "r\"" + Value??"" + "\"";
+						return "r\"" + Value ?? "" + "\"";
 				}
+			else if (IsIdentifier && ModuleScoped)
+				return "." + Value;
 
 			return Value==null?null: Value.ToString();
 		}

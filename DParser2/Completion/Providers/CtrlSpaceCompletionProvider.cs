@@ -81,6 +81,18 @@ namespace D_Parser.Completion
 				// In class bodies, do not show variables
 				else if (!(parsedBlock is BlockStatement || trackVars.IsParsingInitializer))
 					visibleMembers = MemberFilter.Imports | MemberFilter.Types | MemberFilter.Keywords;
+				
+				/*
+				 * Handle module-scoped things:
+				 * When typing a dot without anything following, trigger completion and show types, methods and vars that are located in the module & import scope
+				 */
+				else if (trackVars.LastParsedObject is TokenExpression && 
+					((TokenExpression)trackVars.LastParsedObject).Token == DTokens.Dot)
+				{
+					visibleMembers = MemberFilter.Methods | MemberFilter.Types | MemberFilter.Variables;
+					curBlock = Editor.SyntaxTree;
+					curStmt = null;
+				}
 
 				// In a method, parse from the method's start until the actual caret position to get an updated insight
 				if (visibleMembers.HasFlag(MemberFilter.Variables) &&
@@ -95,6 +107,8 @@ namespace D_Parser.Completion
 				}
 				else
 					curStmt = null;
+
+				
 
 				if (visibleMembers != MemberFilter.Imports) // Do not pass the curStmt because we already inserted all updated locals a few lines before!
 					listedItems = ItemEnumeration.EnumAllAvailableMembers(curBlock, curStmt, Editor.CaretLocation, Editor.ParseCache, visibleMembers);

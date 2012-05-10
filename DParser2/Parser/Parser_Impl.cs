@@ -820,7 +820,7 @@ namespace D_Parser.Parser
 
 		bool IsBasicType()
 		{
-			return BasicTypes[laKind] || laKind == (Typeof) || MemberFunctionAttribute[laKind] || (laKind == (Dot) && Lexer.CurrentPeekToken.Kind == (Identifier)) || laKind == (Identifier);
+			return BasicTypes[laKind] || laKind == (Typeof) || MemberFunctionAttribute[laKind] || (laKind == (Dot) && Lexer.CurrentPeekToken.Kind == (Identifier) || BasicTypes[Lexer.CurrentPeekToken.Kind]) || laKind == (Identifier);
 		}
 
 		/// <summary>
@@ -830,6 +830,10 @@ namespace D_Parser.Parser
 
 		ITypeDeclaration BasicType()
 		{
+			bool isModuleScoped = laKind == Dot;
+			if (isModuleScoped)
+				Step();
+
 			ITypeDeclaration td = null;
 			if (BasicTypes[laKind])
 			{
@@ -877,10 +881,7 @@ namespace D_Parser.Parser
 					return td;
 			}
 
-			if (laKind == (Dot))
-				Step();
-
-			if (AllowWeakTypeParsing&& laKind != Identifier)
+			if (AllowWeakTypeParsing && laKind != Identifier)
 				return null;
 
 			if (td == null)
@@ -889,8 +890,16 @@ namespace D_Parser.Parser
 				td.InnerMost = IdentifierList();
 
 			// A type is never a declaration identifier
-			if(td==null)
+			if (td == null)
 				ExpectingIdentifier = false;
+			else if(isModuleScoped)
+			{
+				var innerMost = td.InnerMost;
+				if (innerMost is IdentifierDeclaration)
+					((IdentifierDeclaration)innerMost).ModuleScoped = true;
+				else if (innerMost is TemplateInstanceExpression)
+					((TemplateInstanceExpression)innerMost).TemplateIdentifier.ModuleScoped = true;
+			}
 
 			return td;
 		}
@@ -1725,10 +1734,7 @@ namespace D_Parser.Parser
 				if (!BasicTypes[laKind])
 				{
 					// Skip initial dot
-					if (laKind == Dot)
-						Step();
-
-					if (Peek(1).Kind != Identifier)
+					if (Peek(laKind == Dot ? 2 :1).Kind != Identifier)
 					{
 						if (laKind == Identifier)
 						{
@@ -2429,8 +2435,16 @@ namespace D_Parser.Parser
 
 		IExpression PrimaryExpression(IBlockNode Scope=null)
 		{
-			if (laKind == Dot)
+			bool isModuleScoped = laKind == Dot;
+			if (isModuleScoped)
+			{
 				Step();
+				if (IsEOF)
+				{
+					LastParsedObject = new TokenExpression(Dot) { Location = t.Location, EndLocation = t.EndLocation };
+					ExpectingIdentifier = true;
+				}
+			}
 
 			if (laKind == __FILE__ || laKind == __LINE__)
 			{
@@ -2462,8 +2476,13 @@ namespace D_Parser.Parser
 			}
 
 			// TemplateInstance
-			if (IsTemplateInstance) 
-				return TemplateInstance();
+			if (IsTemplateInstance)
+			{
+				var tix = TemplateInstance();
+				if (tix != null && tix.TemplateIdentifier!=null)
+					tix.TemplateIdentifier.ModuleScoped = isModuleScoped;
+				return tix;
+			}
 
 			if (IsLambaExpression())
 				return LambaExpression(Scope);
@@ -2472,11 +2491,13 @@ namespace D_Parser.Parser
 			if (laKind == Identifier)
 			{
 				Step();
+
 				return new IdentifierExpression(t.Value)
-				{
-					Location = t.Location,
-					EndLocation = t.EndLocation
-				};
+					{
+						Location = t.Location,
+						EndLocation = t.EndLocation,
+						ModuleScoped = isModuleScoped
+					};
 			}
 
 			// SpecialTokens (this,super,null,true,false,$) // $ has been handled before

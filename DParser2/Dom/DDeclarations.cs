@@ -105,6 +105,7 @@ namespace D_Parser.Dom
     /// </summary>
     public class IdentifierDeclaration : AbstractTypeDeclaration
     {
+		public bool ModuleScoped;
 		public string Id;
 
         public IdentifierDeclaration() { }
@@ -113,7 +114,7 @@ namespace D_Parser.Dom
 
 		public override string ToString(bool IncludesBase)
 		{
-			return (IncludesBase&& InnerDeclaration != null ? (InnerDeclaration.ToString() + ".") : "") +Convert.ToString(Id);
+			return (ModuleScoped?".":"")+ (IncludesBase&& InnerDeclaration != null ? (InnerDeclaration.ToString() + ".") : "") +Convert.ToString(Id);
 		}
 	}
 

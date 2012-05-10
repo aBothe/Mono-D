@@ -314,7 +314,7 @@ namespace D_Parser.Resolver.TypeResolution
 			IEnumerable<ResolveResult> resultBases = null)
 		{
 			if (resultBases == null)
-				return TypeDeclarationResolver.ResolveIdentifier(tix.TemplateIdentifier.Id, ctxt, tix);
+				return TypeDeclarationResolver.ResolveIdentifier(tix.TemplateIdentifier.Id, ctxt, tix, tix.TemplateIdentifier.ModuleScoped);
 
 			return TypeDeclarationResolver.ResolveFurtherTypeIdentifier(tix.TemplateIdentifier.Id, resultBases, ctxt, tix);
 		}

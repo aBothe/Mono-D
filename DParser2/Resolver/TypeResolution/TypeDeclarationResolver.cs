@@ -24,13 +24,19 @@ namespace D_Parser.Resolver.TypeResolution
 			return null;
 		}
 
-		public static ResolveResult[] ResolveIdentifier(string id, ResolverContextStack ctxt, object idObject)
+		public static ResolveResult[] ResolveIdentifier(string id, ResolverContextStack ctxt, object idObject, bool ModuleScope = false)
 		{
 			var loc = idObject is ISyntaxRegion ? ((ISyntaxRegion)idObject).Location:CodeLocation.Empty;
+
+			if (ModuleScope)
+				ctxt.PushNewScope(ctxt.ScopedBlock.NodeRoot as IAbstractSyntaxTree);
 
 			var matches = NameScan.SearchMatchesAlongNodeHierarchy(ctxt, loc, id);
 
 			var r= HandleNodeMatches(matches, ctxt, null, idObject);
+
+			if (ModuleScope)
+				ctxt.Pop();
 
 			if (idObject is TemplateInstanceExpression)
 				return TemplateInstanceResolver.ResolveAndFilterTemplateResults(((TemplateInstanceExpression)idObject).Arguments, r, ctxt);
@@ -38,19 +44,17 @@ namespace D_Parser.Resolver.TypeResolution
 			return TemplateInstanceResolver.ApplyDefaultTemplateParameters(r, ctxt);
 		}
 
-		public static ResolveResult[] Resolve(IdentifierDeclaration declaration, ResolverContextStack ctxt, ResolveResult[] resultBases=null)
+		public static ResolveResult[] Resolve(IdentifierDeclaration id, ResolverContextStack ctxt, ResolveResult[] resultBases=null)
 		{
-			var id = declaration as IdentifierDeclaration;
+			if (id.InnerDeclaration == null && resultBases==null)
+				return ResolveIdentifier(id.Id, ctxt, id, id.ModuleScoped);
 
-			if (declaration.InnerDeclaration == null && resultBases==null)
-				return ResolveIdentifier(id.Id, ctxt, id);
-
-			var rbases = resultBases ?? Resolve(declaration.InnerDeclaration, ctxt);
+			var rbases = resultBases ?? Resolve(id.InnerDeclaration, ctxt);
 
 			if (rbases == null || rbases.Length == 0)
 				return null;
 
-			return ResolveFurtherTypeIdentifier(id.Id,rbases,ctxt,declaration);
+			return ResolveFurtherTypeIdentifier(id.Id,rbases,ctxt,id);
 		}
 
 		/// <summary>

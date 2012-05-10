@@ -151,7 +151,7 @@ namespace D_Parser.Resolver.TypeResolution
 				var id = ex as IdentifierExpression;
 
 				if (id.IsIdentifier)
-					return TypeDeclarationResolver.ResolveIdentifier(id.Value as string, ctxt, id);
+					return TypeDeclarationResolver.ResolveIdentifier(id.Value as string, ctxt, id, id.ModuleScoped);
 				//TODO: Recognize correct scalar format, i.e. 0.5 => double; 0.5f => float; char, wchar, dchar
 				else if (id.Format == LiteralFormat.CharLiteral)
 					return new[] { TypeDeclarationResolver.Resolve(new DTokenDeclaration(DTokens.Char)) };
