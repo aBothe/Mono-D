@@ -5,7 +5,11 @@ using System.Text;
 
 namespace D_Parser.Resolver
 {
-	class InheritanceCheck
+	public class InheritanceCheck
 	{
+		public static bool ImplicitlyConvertible(ResolveResult type, ResolveResult checkAgainst)
+		{
+			return false;
+		}
 	}
 }
