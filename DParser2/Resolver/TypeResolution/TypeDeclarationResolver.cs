@@ -43,7 +43,7 @@ namespace D_Parser.Resolver.TypeResolution
 
 			return TemplateInstanceResolver.ApplyDefaultTemplateParameters(r, ctxt);
 		}
-
+		
 		public static ResolveResult[] Resolve(IdentifierDeclaration id, ResolverContextStack ctxt, ResolveResult[] resultBases=null)
 		{
 			if (id.InnerDeclaration == null && resultBases==null)
@@ -333,9 +333,10 @@ namespace D_Parser.Resolver.TypeResolution
 			stackNum_HandleNodeMatch++;
 
 			//HACK: Really dirty stack overflow prevention via manually counting call depth
-			var DoResolveBaseType =
-				stackNum_HandleNodeMatch > 5 ?
-				false : ctxt.CurrentContext.Options.HasFlag(ResolutionOptions.ResolveBaseClasses);
+			var DoResolveBaseType = 
+				!(m is DClassLike && m.Name == "Object") && 
+				ctxt.CurrentContext.Options.HasFlag(ResolutionOptions.ResolveBaseClasses) &&
+				stackNum_HandleNodeMatch <= 5;
 
 			// Prevent infinite recursion if the type accidently equals the node's name
 			if (m.Type != null && m.Type.ToString(false) == m.Name)
@@ -350,7 +351,10 @@ namespace D_Parser.Resolver.TypeResolution
 				var isa = (ImportSymbolAlias)m;
 
 				if (isa.IsModuleAlias ? isa.Type == null : isa.Type.InnerDeclaration == null)
+				{
+					stackNum_HandleNodeMatch--;
 					return null;
+				}
 
 				var alias = new MemberResult { 
 					Node=m
@@ -385,46 +389,6 @@ namespace D_Parser.Resolver.TypeResolution
 					if (memberbaseTypes == null && ctxt.ScopedStatement != null)
 						memberbaseTypes = GetForeachIteratorType(v, ctxt);
 				}
-
-				#region Resolve aliases if wished
-				if (ctxt.CurrentContext.Options.HasFlag(ResolutionOptions.ResolveAliases) && memberbaseTypes != null)
-				{
-					/*
-					 * To ensure that absolutely all kinds of alias definitions became resolved (includes aliased alias definitions!), 
-					 * loop through the resolution process again, after at least one aliased type has been found.
-					 */
-					while (memberbaseTypes.Length > 0)
-					{
-						bool hadAliasResolution = false;
-						var memberBaseTypes_Override = new List<ResolveResult>();
-
-						foreach (var type in memberbaseTypes)
-						{
-							var mr = type as MemberResult;
-							if (mr != null && mr.Node is DVariable)
-							{
-								var dv = mr.Node as DVariable;
-								// Note: Normally, a variable's base type mustn't be an other variable but an alias defintion...
-								if (dv.IsAlias)
-								{
-									var newRes = TypeDeclarationResolver.Resolve(dv.Type, ctxt);
-									if (newRes != null)
-										memberBaseTypes_Override.AddRange(newRes);
-									hadAliasResolution = true;
-									continue;
-								}
-							}
-
-							// If no alias found, re-add it to our override list again
-							memberBaseTypes_Override.Add(type);
-						}
-						memberbaseTypes = memberBaseTypes_Override.ToArray();
-
-						if (!hadAliasResolution)
-							break;
-					}
-				}
-				#endregion
 
 				memberbaseTypes = TemplateInstanceResolver.SubstituteTemplateParameters(memberbaseTypes, resultBase);
 
