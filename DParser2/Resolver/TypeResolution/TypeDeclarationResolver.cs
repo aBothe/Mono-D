@@ -67,10 +67,13 @@ namespace D_Parser.Resolver.TypeResolution
 			ResolverContextStack ctxt,
 			object typeIdObject=null)
 		{
+			if((resultBases = DResolver.TryRemoveAliasesFromResult(resultBases))==null)
+				return null;
+
 			var r = new List<ResolveResult>();
 
 			var nextResults = new List<ResolveResult>();
-			foreach (var b in DResolver.TryRemoveAliasesFromResult(resultBases))
+			foreach (var b in resultBases)
 			{
 				IEnumerable<ResolveResult> scanResults = new[]{ b };
 
