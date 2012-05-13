@@ -62,6 +62,8 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
             return false;
 		}
 
+		bool breakImmediately { get { return ctxt.CurrentContext.Options == ResolutionOptions.StopAfterFirstMatch; } }
+
 		public virtual void IterateThroughScopeLayers(CodeLocation Caret, MemberFilter VisibleMembers= MemberFilter.All)
 		{
 			// 1)
@@ -74,7 +76,6 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 			var curScope = ctxt.ScopedBlock;
 
 			bool breakOnNextScope = false;
-			bool breakImmediately = ctxt.CurrentContext.Options == ResolutionOptions.StopAfterFirstMatch;
 
 			// 2)
 			while (curScope != null)
@@ -82,44 +83,8 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 				// Walk up inheritance hierarchy
 				if (curScope is DClassLike)
 				{
-					var curWatchedClass = curScope as DClassLike;
-					// MyClass > BaseA > BaseB > Object
-					while (curWatchedClass != null)
-					{
-                        if (curWatchedClass.TemplateParameters != null &&
-                            (breakOnNextScope=HandleItems(curWatchedClass.TemplateParameterNodes as IEnumerable<INode>)) && breakImmediately)
-                                return;
-
-						foreach (var m in curWatchedClass)
-						{
-							var dm2 = m as DNode;
-							var dm3 = m as DMethod; // Only show normal & delegate methods
-							if (!CanAddMemberOfType(VisibleMembers, m) || dm2 == null ||
-								(dm3 != null && !(dm3.SpecialType == DMethod.MethodType.Normal || dm3.SpecialType == DMethod.MethodType.Delegate)))
-								continue;
-
-							// Add static and non-private members of all base classes; 
-							// Add everything if we're still handling the currently scoped class
-                            if ((curWatchedClass == curScope || dm2.IsStatic || !dm2.ContainsAttribute(DTokens.Private)) && 
-                                (breakOnNextScope= HandleItem(m)) && 
-								breakImmediately)
-                                    return;
-						}
-
-						// Stop adding if Object class level got reached
-						if (!string.IsNullOrEmpty(curWatchedClass.Name) && curWatchedClass.Name.ToLower() == "object")
-							break;
-
-						// 3)
-						var baseclassDefs = DResolver.ResolveBaseClass(curWatchedClass, ctxt);
-
-						if (baseclassDefs == null || baseclassDefs.Length < 0)
-							break;
-						if (curWatchedClass == baseclassDefs[0].Node)
-							break;
-
-						curWatchedClass = baseclassDefs[0].Node as DClassLike;
-					}
+					if (IterateThrough((DClassLike)curScope, VisibleMembers, ref breakOnNextScope))
+						return;
 				}
 				else if (curScope is DMethod)
 				{
@@ -207,6 +172,47 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
                     return;
 		}
 
+		bool IterateThrough(DClassLike cls, MemberFilter VisibleMembers, ref bool breakOnNextScope)
+		{
+			var curWatchedClass = cls;
+			// MyClass > BaseA > BaseB > Object
+			while (curWatchedClass != null)
+			{
+				if (curWatchedClass.TemplateParameters != null &&
+					(breakOnNextScope = HandleItems(curWatchedClass.TemplateParameterNodes as IEnumerable<INode>)) && breakImmediately)
+					return true;
+
+				foreach (var m in curWatchedClass)
+				{
+					var dm2 = m as DNode;
+					var dm3 = m as DMethod; // Only show normal & delegate methods
+					if (!CanAddMemberOfType(VisibleMembers, m) || dm2 == null ||
+						(dm3 != null && !(dm3.SpecialType == DMethod.MethodType.Normal || dm3.SpecialType == DMethod.MethodType.Delegate)))
+						continue;
+
+					// Add static and non-private members of all base classes; 
+					// Add everything if we're still handling the currently scoped class
+					if ((curWatchedClass == cls || dm2.IsStatic || !dm2.ContainsAttribute(DTokens.Private)) &&
+						(breakOnNextScope = HandleItem(m)) &&
+						breakImmediately)
+						return true;
+				}
+
+				// Stop adding if Object class level got reached
+				if (!string.IsNullOrEmpty(curWatchedClass.Name) && curWatchedClass.Name.ToLower() == "object")
+					return false;
+
+				// 3)
+				var baseclassDefs = DResolver.ResolveBaseClass(curWatchedClass, ctxt);
+
+				if (baseclassDefs == null || baseclassDefs.Length < 0 || curWatchedClass == baseclassDefs[0].Node)
+					return false;
+
+				curWatchedClass = baseclassDefs[0].Node as DClassLike;
+			}
+			return false;
+		}
+
 		static bool CanAddMemberOfType(MemberFilter VisibleMembers, INode n)
 		{
 			if (n is DMethod)
@@ -276,6 +282,45 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 
                             if (HandleItem(decl))
                                 return true;
+						}
+				}
+				/// http://dlang.org/statement.html#WithStatement
+				else if (Statement is WithStatement)
+				{
+					var ws = (WithStatement)Statement;
+
+					if (ws.ScopedStatement == null || Caret < ws.ScopedStatement.StartLocation)
+					{
+						Statement = Statement.Parent;
+						continue;
+					}
+
+					ResolveResult[] r = null;
+
+					var back = ctxt.ScopedStatement;
+					ctxt.ScopedStatement = ws.Parent;
+
+					// Must be an expression that returns an object reference
+					if (ws.WithExpression != null)
+						r = ExpressionTypeResolver.Resolve(ws.WithExpression, ctxt);
+					else if (ws.WithSymbol != null) // This symbol will be used as default
+						r = TypeDeclarationResolver.Resolve(ws.WithSymbol, ctxt);
+
+					ctxt.ScopedStatement = back;
+
+					bool resolvedMember=false;
+					if ((r = DResolver.ResolveMembersFromResult(r,out resolvedMember)) != null)
+						foreach (var rr in r)
+						{
+							if (rr is TypeResult)
+							{
+								var tr = (TypeResult)rr;
+								var dc = tr.Node as DClassLike;
+
+								bool brk = false;
+								if (IterateThrough(dc, VisibleMembers, ref brk) || brk)
+									return true;
+							}
 						}
 				}
 
