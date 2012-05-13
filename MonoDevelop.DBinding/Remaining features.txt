@@ -14,6 +14,7 @@ Code-Completion / Parser / Resolver / Refactoring:
 	  if not fitting to environment dependencied 
 	  ([debug/release] or [Windows/Mac/Unix/BSD] etc.)
 * Interface/Abstract class implementation
+* Implement with() {} statement semantics - http://dlang.org/statement.html#WithStatement
 
 
 Potential Issues:
