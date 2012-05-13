@@ -57,6 +57,7 @@ namespace MonoDevelop.D
 			Output = conf.Output;
 			ExtraCompilerArguments = conf.ExtraCompilerArguments;
 			ExtraLinkerArguments = conf.ExtraLinkerArguments;
+			CompileTarget = conf.CompileTarget;
 
             ExtraLibraries.Clear();
             ExtraLibraries.AddRange(conf.ExtraLibraries);
