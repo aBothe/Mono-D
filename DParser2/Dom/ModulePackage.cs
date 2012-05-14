@@ -37,12 +37,14 @@ namespace D_Parser.Dom
 
 		public IEnumerator<IAbstractSyntaxTree> GetEnumerator()
 		{
-			foreach (var kv in Modules)
-				yield return kv.Value;
+			lock(Modules)
+				foreach (var kv in Modules)
+					yield return kv.Value;
 
-			foreach (var kv in Packages)
-				foreach (var ast in kv.Value)
-					yield return ast;
+			lock(Packages)
+				foreach (var kv in Packages)
+					foreach (var ast in kv.Value)
+						yield return ast;
 		}
 
 		IEnumerator<ModulePackage> IEnumerable<ModulePackage>.GetEnumerator()
