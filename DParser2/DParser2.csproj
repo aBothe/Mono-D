@@ -1,0 +1,142 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{0290A229-9AA1-41C3-B525-CAFB86D8BC42}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>D_Parser</RootNamespace>
+    <PlatformTarget>x86</PlatformTarget>
+    <AssemblyName>D_Parser</AssemblyName>
+    <FileAlignment>512</FileAlignment>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>3.5</OldToolsVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <WarningLevel>4</WarningLevel>
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.XML" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Completion\AbstractCompletionProvider.cs" />
+    <Compile Include="Completion\AbstractTooltipProvider.cs" />
+    <Compile Include="Completion\Providers\AttributeCompletionProvider.cs" />
+    <Compile Include="Completion\Providers\CtrlSpaceCompletionProvider.cs" />
+    <Compile Include="Completion\Providers\ImportStatementCompletionProvider.cs" />
+    <Compile Include="Completion\Providers\MemberCompletionProvider.cs" />
+    <Compile Include="Completion\Providers\PropertyAttributeCompletionProvider.cs" />
+    <Compile Include="Completion\Providers\UFCSCompletionProvider.cs" />
+    <Compile Include="Dom\ISyntaxRegion.cs" />
+    <Compile Include="Dom\ModulePackage.cs" />
+    <Compile Include="Dom\TemplateParameters.cs" />
+    <Compile Include="Evaluation\ExpressionEvaluator.cs" />
+    <Compile Include="Evaluation\ExpressionEvaluator.PrimaryExpression.cs" />
+    <Compile Include="Evaluation\IExpressionValue.cs" />
+    <Compile Include="Evaluation\PrimitiveValue.cs" />
+    <Compile Include="Misc\CompletionOptions.cs" />
+    <Compile Include="Misc\ModuleNameHelper.cs" />
+    <Compile Include="Misc\ParseCache.cs" />
+    <Compile Include="Misc\ParseCacheList.cs" />
+    <Compile Include="Misc\ParseLog.cs" />
+    <Compile Include="Misc\ThreadedDirectoryParser.cs" />
+    <Compile Include="Refactoring\ReferenceFinder.cs" />
+    <Compile Include="Resolver\ASTScanner\CodeSymbolsScanner.IdentifierScan.cs" />
+    <Compile Include="Resolver\ASTScanner\ItemEnumeration.cs" />
+    <Compile Include="Resolver\ASTScanner\MatchFilterVisitor.cs" />
+    <Compile Include="Resolver\ASTScanner\NameScan.cs" />
+    <Compile Include="Misc\UFCSCache.cs" />
+    <Compile Include="Resolver\InheritanceCheck.cs" />
+    <Compile Include="Resolver\ResolutionOptions.cs" />
+    <Compile Include="Resolver\ResultComparer.cs" />
+    <Compile Include="Resolver\TypeResolution\ExpressionTypeResolution.cs" />
+    <Compile Include="Resolver\ASTScanner\AbstractVisitor.cs" />
+    <Compile Include="Resolver\TypeResolution\ExpressionTypeResolution.PostfixExpressions.cs" />
+    <Compile Include="Resolver\TypeResolution\ExpressionTypeResolution.TemplateInstance.cs" />
+    <Compile Include="Resolver\TypeResolution\ExpressionTypeResolution.TraitsResolver.cs" />
+    <Compile Include="Resolver\TypeResolution\TypeDeclarationResolver.cs" />
+    <Compile Include="Completion\Providers\StaticTypePropertyProvider.cs" />
+    <Compile Include="Completion\ICompletionDataGenerator.cs" />
+    <Compile Include="Parser\CaretContextAnalyzer.cs" />
+    <Compile Include="Completion\ParameterInsightResolution.cs" />
+    <Compile Include="Resolver\ASTScanner\ResultCache.cs" />
+    <Compile Include="Resolver\ResolverContextStack.cs" />
+    <Compile Include="Resolver\TypeResolution\StaticPropertiesResolver.cs" />
+    <Compile Include="Completion\IEditorData.cs" />
+    <Compile Include="Dom\AbstractNode.cs" />
+    <Compile Include="Dom\CodeLocation.cs" />
+    <Compile Include="Dom\ImportStatement.cs" />
+    <Compile Include="Dom\NodeInterfaces.cs" />
+    <Compile Include="Dom\Statements.cs" />
+    <Compile Include="Formatting\DFormatter.cs" />
+    <Compile Include="Misc\DocumentHelper.cs" />
+    <Compile Include="Parser\TokenTracker.cs" />
+    <Compile Include="Resolver\ASTScanner\CodeSymbolsScanner.cs" />
+    <Compile Include="Resolver\TypeResolution\Resolver.cs" />
+    <Compile Include="Dom\DAttribute.cs" />
+    <Compile Include="Dom\DModule.cs" />
+    <Compile Include="Parser\Lexer.cs" />
+    <Compile Include="Dom\DNode.cs" />
+    <Compile Include="Parser\Parser.cs" />
+    <Compile Include="Parser\Parser_Impl.cs" />
+    <Compile Include="Parser\DTokens.cs" />
+    <Compile Include="Dom\Expressions.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Parser\DToken.cs" />
+    <Compile Include="Dom\DDeclarations.cs" />
+    <Compile Include="Resolver\ResolverContext.cs" />
+    <Compile Include="Resolver\ResolveResults.cs" />
+    <Compile Include="Resolver\TypeResolution\UFCSResolver.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
