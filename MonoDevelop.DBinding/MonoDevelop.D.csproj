@@ -173,7 +173,12 @@
     <Compile Include="gtk-gui\MonoDevelop.D.Formatting.FormattingPanelWidget.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\Parser\DParser2\DParser2.csproj">
+      <Project>{0290A229-9AA1-41C3-B525-CAFB86D8BC42}</Project>
+      <Name>DParser2</Name>
+    </ProjectReference>
+  </ItemGroup>
   <ProjectExtensions>
     <MonoDevelop>
       <Properties>
@@ -256,12 +261,6 @@
     </Content>
     <EmbeddedResource Include="icons\element-alias-16.png" />
     <Content Include="Remaining features.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\DParser2\DParser2.csproj">
-      <Project>{0290A229-9AA1-41C3-B525-CAFB86D8BC42}</Project>
-      <Name>DParser2</Name>
-    </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
     <PostBuildEvent>
