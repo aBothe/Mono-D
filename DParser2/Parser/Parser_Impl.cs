@@ -1120,6 +1120,12 @@ namespace D_Parser.Parser
 					ret.Name = t.Value;
 					ret.NameLocation = t.Location;
 				}
+				else
+				{
+					// Code error! - to prevent infinite declaration loops, step one token forward anyway!
+					Step();
+					return ret;
+				}
 			}
 
 			if (IsDeclaratorSuffix || MemberFunctionAttribute[laKind])
