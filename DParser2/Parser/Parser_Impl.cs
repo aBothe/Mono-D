@@ -820,7 +820,13 @@ namespace D_Parser.Parser
 
 		bool IsBasicType()
 		{
-			return BasicTypes[laKind] || laKind == (Typeof) || MemberFunctionAttribute[laKind] || (laKind == (Dot) && Lexer.CurrentPeekToken.Kind == (Identifier) || BasicTypes[Lexer.CurrentPeekToken.Kind]) || laKind == (Identifier);
+			return 
+				BasicTypes[laKind] || 
+				laKind == (Typeof) || 
+				MemberFunctionAttribute[laKind] || 
+				(laKind == (Dot) && Lexer.CurrentPeekToken.Kind == (Identifier)) || 
+				//BasicTypes[Lexer.CurrentPeekToken.Kind] || 
+				laKind == (Identifier);
 		}
 
 		/// <summary>
@@ -3826,11 +3832,22 @@ namespace D_Parser.Parser
 					laKind = la.Kind;
 				}
 				else
+				{
 					while (!IsEOF && laKind != (CloseCurlyBrace))
 					{
+						var prevLocation = la.Location;
 						var s = Statement(Scope: ParentNode as IBlockNode);
+
+						// Avoid infinite loops -- hacky?
+						if (prevLocation == la.Location)
+						{
+							Step();
+							break;
+						}
+
 						bs.Add(s);
 					}
+				}
 				if (Expect(CloseCurlyBrace))
 					LastParsedObject = null;
 

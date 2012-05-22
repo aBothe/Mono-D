@@ -23,6 +23,12 @@ namespace D_Parser.Parser
 		public readonly TrackerContainer TokenTracker;
 		protected StringBuilder sb = new StringBuilder();
 
+		protected bool stopLexing = false;
+		public void StopLexing()
+		{
+			stopLexing = true;
+		}
+
 		/// <summary>
 		/// used for the original value of strings (with escape sequences).
 		/// </summary>
@@ -163,6 +169,9 @@ namespace D_Parser.Parser
 		/// <returns>An <see cref="CurrentToken"/> object.</returns>
 		public virtual DToken NextToken()
 		{
+			if (stopLexing)
+				return null;
+
 			if (lookaheadToken == null)
 			{
 				lookaheadToken = Next();
@@ -373,7 +382,10 @@ namespace D_Parser.Parser
 
 		public bool IsEOF
 		{
-			get { return lookaheadToken == null || lookaheadToken.Kind == DTokens.EOF || lookaheadToken.Kind == DTokens.__EOF__; }
+			get { return stopLexing ||
+				lookaheadToken == null || 
+				lookaheadToken.Kind == DTokens.EOF || 
+				lookaheadToken.Kind == DTokens.__EOF__; }
 		}
 
 		#region Abstract Lexer Props & Methods

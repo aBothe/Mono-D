@@ -388,14 +388,21 @@ namespace D_Parser.Parser
         
         #region Error handlers
 		public IList<ParserError> ParseErrors = new List<ParserError>();
+		public const int MaxParseErrorsBeforeFailure = 100;
 
         void SynErr(int n, string msg)
         {
+			if (ParseErrors.Count > MaxParseErrorsBeforeFailure)
+			{
+				Lexer.StopLexing();
+				return;
+			}
+
 			ParseErrors.Add(new ParserError(false,msg,n,t==null?la.Location:t.EndLocation));
         }
         void SynErr(int n)
 		{
-			ParseErrors.Add(new ParserError(false, DTokens.GetTokenString(n) + " expected" + (t!=null?(", "+DTokens.GetTokenString(t.Kind)+" found"):""), n, t == null ? la.Location : t.EndLocation));
+			SynErr(n, DTokens.GetTokenString(n) + " expected" + (t!=null?(", "+DTokens.GetTokenString(t.Kind)+" found"):""));
         }
 
         void SemErr(int n, string msg)
