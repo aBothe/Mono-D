@@ -118,12 +118,9 @@ namespace D_Parser.Parser
             Module.AssignFrom(m);
         }
 
-        public static DParser Create(TextReader tr, params TokenTracker[] trackers)
+        public static DParser Create(TextReader tr)
         {
-			var lx = new Lexer(tr);
-			if(trackers!=null && trackers.Length>0)
-				lx.TokenTracker.Trackers.AddRange(trackers);
-			return new DParser(lx);
+			return new DParser(new Lexer(tr));
         }
 
         /// <summary>

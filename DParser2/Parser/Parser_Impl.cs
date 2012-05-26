@@ -4151,7 +4151,10 @@ namespace D_Parser.Parser
 			if (laKind == (Identifier))
 			{
 				// Normal enum identifier
-				if (Lexer.CurrentPeekToken.Kind == (Assign) || Lexer.CurrentPeekToken.Kind == (OpenCurlyBrace) || Lexer.CurrentPeekToken.Kind == (Semicolon) || Lexer.CurrentPeekToken.Kind == Colon)
+				if (Lexer.CurrentPeekToken.Kind == (Assign) || // enum e = 1234;
+					Lexer.CurrentPeekToken.Kind == (OpenCurlyBrace) || // enum e { A,B,C, }
+					Lexer.CurrentPeekToken.Kind == (Semicolon) || // enum e;
+					Lexer.CurrentPeekToken.Kind == Colon) // enum e : uint {..}
 				{
 					Step();
 					mye.Name = t.Value;
@@ -4159,11 +4162,14 @@ namespace D_Parser.Parser
 				}
 				else
 				{
-					mye.Type = Type();
+					if(mye.Type == null)
+						mye.Type = Type();
 
-					Expect(Identifier);
-					mye.Name = t.Value;
-					mye.NameLocation = t.Location;
+					if (Expect(Identifier))
+					{
+						mye.Name = t.Value;
+						mye.NameLocation = t.Location;
+					}
 				}
 			}
 
@@ -4212,8 +4218,8 @@ namespace D_Parser.Parser
 
 					if (laKind == (Assign))
 					{
-						Step();
-						enumVar.Initializer = AssignExpression();
+						//Step(); -- expected by initializer
+						enumVar.Initializer = Initializer(); // Seems to be specified wrongly - theoretically there must be an AssignExpression();
 					}
 					enumVar.EndLocation = t.Location;
 					ret.Add(enumVar);

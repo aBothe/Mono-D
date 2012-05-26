@@ -113,7 +113,6 @@
     <Compile Include="Dom\Statements.cs" />
     <Compile Include="Formatting\DFormatter.cs" />
     <Compile Include="Misc\DocumentHelper.cs" />
-    <Compile Include="Parser\TokenTracker.cs" />
     <Compile Include="Resolver\ASTScanner\CodeSymbolsScanner.cs" />
     <Compile Include="Resolver\TypeResolution\Resolver.cs" />
     <Compile Include="Dom\DAttribute.cs" />
