@@ -41,6 +41,42 @@ namespace MonoDevelop.D
 		public readonly ParseCache LocalIncludeCache = new ParseCache { EnableUfcsCaching = false };
 
 		/// <summary>
+		/// List of GUIDs that identify project items within their solution.
+		/// Used to store project dependencies.
+		/// </summary>
+		[ItemProperty("DependentProjectIds")]
+		public List<string> ProjectDependencies = new List<string>();
+
+		public IEnumerable<DProject> DependingProjects
+		{
+			get {
+				foreach (var dep in ProjectDependencies)
+					yield return ParentSolution.GetSolutionItem(dep) as DProject;
+			}
+			set
+			{
+				ProjectDependencies.Clear();
+
+				if(value!=null)
+					foreach (var dep in value)
+						if(dep!=this)
+							ProjectDependencies.Add(dep.ItemId);
+			}
+		}
+
+		public IEnumerable<string> IncludePaths
+		{
+			get {
+				foreach (var p in Compiler.ParseCache.ParsedDirectories)
+					yield return p;
+				foreach (var p in LocalIncludeCache.ParsedDirectories)
+					yield return p;
+				foreach (var dep in DependingProjects)
+					yield return dep.BaseDirectory;
+			}
+		}
+
+		/// <summary>
 		/// Stores parse information from files inside the project's base directory
 		/// </summary>
 		public readonly ParseCache LocalFileCache = new ParseCache { EnableUfcsCaching = false };

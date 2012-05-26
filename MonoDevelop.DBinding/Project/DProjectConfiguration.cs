@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using MonoDevelop.Projects;
-using MonoDevelop.Core.Serialization;
-using System.Collections;
 using System.IO;
+using MonoDevelop.Core.Serialization;
 using MonoDevelop.D.Building;
+using MonoDevelop.Projects;
 
 namespace MonoDevelop.D
 {
@@ -31,6 +28,30 @@ namespace MonoDevelop.D
 		public List<string> ExtraLibraries = new List<string> ();
 		[ItemProperty("ObjectsDirectory", DefaultValue="obj")]
 		public string ObjectDirectory = "obj";
+
+		/// <summary>
+		/// Returns all libs that are included by default both by the compiler and this specific build config
+ 		/// </summary>
+		public IEnumerable<string> ReferencedLibraries
+		{
+			get
+			{
+				foreach (var i in Project.Compiler.DefaultLibraries)
+					yield return i;
+				foreach (var i in ExtraLibraries)
+					yield return i;
+
+				foreach (var dep in Project.DependingProjects)
+				{
+					var selector= dep.ParentSolution.DefaultConfigurationSelector;
+
+					var activeConfig = dep.GetConfiguration(selector) as DProjectConfiguration;
+
+					if (activeConfig != null && activeConfig.CompileTarget == DCompileTarget.StaticLibrary)
+						yield return dep.GetOutputFileName(selector);
+				}
+			}
+		}
 		#endregion
 
 		//if absent an exception occurs when opening project config	

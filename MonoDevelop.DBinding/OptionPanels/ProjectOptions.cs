@@ -3,6 +3,8 @@ using MonoDevelop.D.Building;
 using MonoDevelop.Ide.Gui.Dialogs;
 using MonoDevelop.Ide;
 using MonoDevelop.Core;
+using MonoDevelop.Projects;
+using Gtk;
 
 namespace MonoDevelop.D.OptionPanels
 {
@@ -15,25 +17,27 @@ namespace MonoDevelop.D.OptionPanels
 		private DProjectConfiguration configuration;
 		private Gtk.ListStore model_Compilers = new Gtk.ListStore (typeof(string));
 		Gtk.ListStore model_compileTarget = new Gtk.ListStore (typeof(string), typeof(DCompileTarget));
-		
+
 		public ProjectOptions ()
 		{
 			this.Build ();
 			
 			Gtk.CellRendererText textRenderer = new Gtk.CellRendererText ();
 
+			// Init compiler selection dropdown
 			cmbCompiler.Clear ();
 			Gtk.CellRendererText cellRenderer = new Gtk.CellRendererText ();			
 			cmbCompiler.PackStart (cellRenderer, false);
 			cmbCompiler.AddAttribute (cellRenderer, "text", 0);
 
 			cmbCompiler.Model = model_Compilers;
-
+			
 			foreach (var cmp in DCompilerService.Instance.Compilers)
 				model_Compilers.AppendValues (cmp.Vendor);
 			
 			combo_ProjectType.Model = model_compileTarget;
 			
+			// Init compile target checkbox
 			model_compileTarget.AppendValues ("Consoleless executable", DCompileTarget.ConsolelessExecutable);
 			model_compileTarget.AppendValues ("Executable", DCompileTarget.Executable);
 			model_compileTarget.AppendValues ("Shared library", DCompileTarget.SharedLibrary);
@@ -74,7 +78,32 @@ namespace MonoDevelop.D.OptionPanels
 				} while (model_compileTarget.IterNext (ref iter));
 			
 			text_Libraries.Buffer.Text = string.Join ("\n", config.ExtraLibraries);
-			text_Includes.Buffer.Text = string.Join ("\n", proj.LocalIncludeCache.ParsedDirectories);			
+			text_Includes.Buffer.Text = string.Join ("\n", proj.LocalIncludeCache.ParsedDirectories);
+			
+			// Init project dep list
+			int i=0;
+			foreach(var prj in proj.ParentSolution.GetAllProjects())
+			{
+				if (prj == proj)
+					continue;
+
+				var cb = new Gtk.CheckButton(prj.Name){
+					CanFocus=true,
+					DrawIndicator=true,
+					UseUnderline=true,
+					Active = proj.ProjectDependencies.Contains(prj.ItemId)
+				};
+
+				cb.Data.Add("prj", prj);
+
+				vbox_ProjectDeps.Add(cb);
+				
+				var bc=(Box.BoxChild)vbox_ProjectDeps[cb];
+				bc.Expand=false;
+				bc.Fill=false;
+				bc.Position=i++;
+			}
+			vbox_ProjectDeps.ShowAll();
 		}
 		
 		public bool Store ()
@@ -121,6 +150,20 @@ namespace MonoDevelop.D.OptionPanels
 				}
 			}
 			#endregion
+
+			// Store project deps
+			project.ProjectDependencies.Clear();
+			foreach (var i in vbox_ProjectDeps)
+			{
+				var cb = i as CheckButton;
+
+				if (cb == null || !cb.Active)
+					continue;
+
+				var prj = cb.Data["prj"] as Project;
+				if(prj!=null)
+					project.ProjectDependencies.Add(prj.ItemId);
+			}
 			
 			return true;
 		}

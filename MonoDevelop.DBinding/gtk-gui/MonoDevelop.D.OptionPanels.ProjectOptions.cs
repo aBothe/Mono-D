@@ -32,6 +32,11 @@ namespace MonoDevelop.D.OptionPanels
 		private global::Gtk.TextView extraCompilerTextView;
 		private global::Gtk.Entry text_ObjectsDirectory;
 		private global::Gtk.Label label1;
+		private global::Gtk.VBox vbox2;
+		private global::Gtk.Label label16;
+		private global::Gtk.ScrolledWindow scrolledwindow2;
+		private global::Gtk.VBox vbox_ProjectDeps;
+		private global::Gtk.Label label12;
 		private global::Gtk.VBox vbox7;
 		private global::Gtk.Table table2;
 		private global::Gtk.ScrolledWindow GtkScrolledWindow1;
@@ -39,7 +44,7 @@ namespace MonoDevelop.D.OptionPanels
 		private global::Gtk.Label label14;
 		private global::Gtk.Table table3;
 		private global::Gtk.Button button_AddInclude;
-		private global::Gtk.Label label12;
+		private global::Gtk.Label label15;
 		
 		protected virtual void Build ()
 		{
@@ -346,6 +351,48 @@ namespace MonoDevelop.D.OptionPanels
 			this.notebook1.SetTabLabel (this.table1, this.label1);
 			this.label1.ShowAll ();
 			// Container child notebook1.Gtk.Notebook+NotebookChild
+			this.vbox2 = new global::Gtk.VBox ();
+			this.vbox2.Name = "vbox2";
+			this.vbox2.Spacing = 6;
+			// Container child vbox2.Gtk.Box+BoxChild
+			this.label16 = new global::Gtk.Label ();
+			this.label16.Name = "label16";
+			this.label16.Xalign = 0F;
+			this.label16.LabelProp = global::Mono.Unix.Catalog.GetString ("Checking a project in this list will add an include (that points to the respectiv" +
+				"e project\'s base directory) to this project automatically."
+			);
+			this.label16.Wrap = true;
+			this.vbox2.Add (this.label16);
+			global::Gtk.Box.BoxChild w26 = ((global::Gtk.Box.BoxChild)(this.vbox2 [this.label16]));
+			w26.Position = 0;
+			w26.Expand = false;
+			// Container child vbox2.Gtk.Box+BoxChild
+			this.scrolledwindow2 = new global::Gtk.ScrolledWindow ();
+			this.scrolledwindow2.CanFocus = true;
+			this.scrolledwindow2.Name = "scrolledwindow2";
+			this.scrolledwindow2.ShadowType = ((global::Gtk.ShadowType)(1));
+			// Container child scrolledwindow2.Gtk.Container+ContainerChild
+			global::Gtk.Viewport w27 = new global::Gtk.Viewport ();
+			w27.ShadowType = ((global::Gtk.ShadowType)(0));
+			// Container child GtkViewport.Gtk.Container+ContainerChild
+			this.vbox_ProjectDeps = new global::Gtk.VBox ();
+			this.vbox_ProjectDeps.Name = "vbox_ProjectDeps";
+			this.vbox_ProjectDeps.Spacing = 6;
+			w27.Add (this.vbox_ProjectDeps);
+			this.scrolledwindow2.Add (w27);
+			this.vbox2.Add (this.scrolledwindow2);
+			global::Gtk.Box.BoxChild w30 = ((global::Gtk.Box.BoxChild)(this.vbox2 [this.scrolledwindow2]));
+			w30.Position = 1;
+			this.notebook1.Add (this.vbox2);
+			global::Gtk.Notebook.NotebookChild w31 = ((global::Gtk.Notebook.NotebookChild)(this.notebook1 [this.vbox2]));
+			w31.Position = 2;
+			// Notebook tab
+			this.label12 = new global::Gtk.Label ();
+			this.label12.Name = "label12";
+			this.label12.LabelProp = global::Mono.Unix.Catalog.GetString ("Project Dependencies");
+			this.notebook1.SetTabLabel (this.vbox2, this.label12);
+			this.label12.ShowAll ();
+			// Container child notebook1.Gtk.Notebook+NotebookChild
 			this.vbox7 = new global::Gtk.VBox ();
 			this.vbox7.Name = "vbox7";
 			this.vbox7.Spacing = 6;
@@ -367,18 +414,18 @@ namespace MonoDevelop.D.OptionPanels
 			this.text_Includes.Name = "text_Includes";
 			this.GtkScrolledWindow1.Add (this.text_Includes);
 			this.table2.Add (this.GtkScrolledWindow1);
-			global::Gtk.Table.TableChild w27 = ((global::Gtk.Table.TableChild)(this.table2 [this.GtkScrolledWindow1]));
-			w27.TopAttach = ((uint)(1));
-			w27.BottomAttach = ((uint)(2));
-			w27.XOptions = ((global::Gtk.AttachOptions)(4));
+			global::Gtk.Table.TableChild w33 = ((global::Gtk.Table.TableChild)(this.table2 [this.GtkScrolledWindow1]));
+			w33.TopAttach = ((uint)(1));
+			w33.BottomAttach = ((uint)(2));
+			w33.XOptions = ((global::Gtk.AttachOptions)(4));
 			// Container child table2.Gtk.Table+TableChild
 			this.label14 = new global::Gtk.Label ();
 			this.label14.Name = "label14";
 			this.label14.Xalign = 0F;
 			this.label14.LabelProp = global::Mono.Unix.Catalog.GetString ("Note: Relative paths will be related to the project\'s base directory!");
 			this.table2.Add (this.label14);
-			global::Gtk.Table.TableChild w28 = ((global::Gtk.Table.TableChild)(this.table2 [this.label14]));
-			w28.YOptions = ((global::Gtk.AttachOptions)(4));
+			global::Gtk.Table.TableChild w34 = ((global::Gtk.Table.TableChild)(this.table2 [this.label14]));
+			w34.YOptions = ((global::Gtk.AttachOptions)(4));
 			// Container child table2.Gtk.Table+TableChild
 			this.table3 = new global::Gtk.Table (((uint)(2)), ((uint)(1)), false);
 			this.table3.Name = "table3";
@@ -391,28 +438,28 @@ namespace MonoDevelop.D.OptionPanels
 			this.button_AddInclude.UseUnderline = true;
 			this.button_AddInclude.Label = global::Mono.Unix.Catalog.GetString ("Browse & Add");
 			this.table3.Add (this.button_AddInclude);
-			global::Gtk.Table.TableChild w29 = ((global::Gtk.Table.TableChild)(this.table3 [this.button_AddInclude]));
-			w29.XOptions = ((global::Gtk.AttachOptions)(4));
-			w29.YOptions = ((global::Gtk.AttachOptions)(4));
+			global::Gtk.Table.TableChild w35 = ((global::Gtk.Table.TableChild)(this.table3 [this.button_AddInclude]));
+			w35.XOptions = ((global::Gtk.AttachOptions)(4));
+			w35.YOptions = ((global::Gtk.AttachOptions)(4));
 			this.table2.Add (this.table3);
-			global::Gtk.Table.TableChild w30 = ((global::Gtk.Table.TableChild)(this.table2 [this.table3]));
-			w30.TopAttach = ((uint)(1));
-			w30.BottomAttach = ((uint)(2));
-			w30.LeftAttach = ((uint)(1));
-			w30.RightAttach = ((uint)(2));
-			w30.XOptions = ((global::Gtk.AttachOptions)(4));
+			global::Gtk.Table.TableChild w36 = ((global::Gtk.Table.TableChild)(this.table2 [this.table3]));
+			w36.TopAttach = ((uint)(1));
+			w36.BottomAttach = ((uint)(2));
+			w36.LeftAttach = ((uint)(1));
+			w36.RightAttach = ((uint)(2));
+			w36.XOptions = ((global::Gtk.AttachOptions)(4));
 			this.vbox7.Add (this.table2);
-			global::Gtk.Box.BoxChild w31 = ((global::Gtk.Box.BoxChild)(this.vbox7 [this.table2]));
-			w31.Position = 0;
+			global::Gtk.Box.BoxChild w37 = ((global::Gtk.Box.BoxChild)(this.vbox7 [this.table2]));
+			w37.Position = 0;
 			this.notebook1.Add (this.vbox7);
-			global::Gtk.Notebook.NotebookChild w32 = ((global::Gtk.Notebook.NotebookChild)(this.notebook1 [this.vbox7]));
-			w32.Position = 2;
+			global::Gtk.Notebook.NotebookChild w38 = ((global::Gtk.Notebook.NotebookChild)(this.notebook1 [this.vbox7]));
+			w38.Position = 3;
 			// Notebook tab
-			this.label12 = new global::Gtk.Label ();
-			this.label12.Name = "label12";
-			this.label12.LabelProp = global::Mono.Unix.Catalog.GetString ("Includes");
-			this.notebook1.SetTabLabel (this.vbox7, this.label12);
-			this.label12.ShowAll ();
+			this.label15 = new global::Gtk.Label ();
+			this.label15.Name = "label15";
+			this.label15.LabelProp = global::Mono.Unix.Catalog.GetString ("Includes");
+			this.notebook1.SetTabLabel (this.vbox7, this.label15);
+			this.label15.ShowAll ();
 			this.Add (this.notebook1);
 			if ((this.Child != null)) {
 				this.Child.ShowAll ();

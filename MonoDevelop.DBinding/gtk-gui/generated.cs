@@ -59,7 +59,7 @@ namespace Stetic
 				Gtk.Widget w;
 				w = this.child.Toplevel;
 				if (((w != null) 
-							&& typeof(Gtk.Window).IsInstanceOfType (w))) {
+					&& typeof(Gtk.Window).IsInstanceOfType (w))) {
 					((Gtk.Window)(w)).AddAccelGroup (this.uimanager.AccelGroup);
 					this.uimanager = null;
 				}
@@ -90,14 +90,21 @@ namespace Stetic
 						pmap.DrawRectangle (gc, true, 0, 0, sz, sz);
 						gc.RgbFgColor = new Gdk.Color (0, 0, 0);
 						pmap.DrawRectangle (gc, false, 0, 0, (sz - 1), (sz - 1));
-						gc.SetLineAttributes (3, Gdk.LineStyle.Solid, Gdk.CapStyle.Round, Gdk.JoinStyle.Round);
+						gc.SetLineAttributes (
+							3,
+							Gdk.LineStyle.Solid,
+							Gdk.CapStyle.Round,
+							Gdk.JoinStyle.Round
+						);
 						gc.RgbFgColor = new Gdk.Color (255, 0, 0);
 						pmap.DrawLine (gc, (sz / 4), (sz / 4), ((sz - 1) 
-										- (sz / 4)), ((sz - 1) 
-										- (sz / 4)));
+							- (sz / 4)), ((sz - 1) 
+							- (sz / 4))
+						);
 						pmap.DrawLine (gc, ((sz - 1) 
-										- (sz / 4)), (sz / 4), (sz / 4), ((sz - 1) 
-										- (sz / 4)));
+							- (sz / 4)), (sz / 4), (sz / 4), ((sz - 1) 
+							- (sz / 4))
+						);
 						return Gdk.Pixbuf.FromDrawable (pmap, pmap.Colormap, 0, 0, 0, 0, sz, sz);
 					}
 				}

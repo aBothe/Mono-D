@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using MonoDevelop.Components.Commands;
-using MonoDevelop.Ide.Gui;
-using MonoDevelop.Ide.Gui.Pads.ProjectPad;
-using MonoDevelop.Ide.Gui.Pads;
-using System.IO;
-using MonoDevelop.Projects;
 using MonoDevelop.Ide;
+using MonoDevelop.Ide.Gui.Pads.ProjectPad;
+using MonoDevelop.Projects;
 
 namespace MonoDevelop.D.Building
 {
@@ -63,9 +59,6 @@ namespace MonoDevelop.D.Building
 			s.AppendLine();
 			s.AppendLine("$(target): $(objects)");
 
-			var libs = new List<string> (compiler.DefaultLibraries);
-			libs.AddRange (cfg.ExtraLibraries);
-
 			var linkArgs = ProjectBuilder.FillInMacros (Arguments.LinkerArguments + " " + cfg.ExtraLinkerArguments,
                 new DLinkerMacroProvider
                 {
@@ -73,7 +66,7 @@ namespace MonoDevelop.D.Building
                     Objects = new[]{"$(objects)"},
                     TargetFile = "$@",
                     RelativeTargetDirectory = cfg.OutputDirectory.ToRelative (Project.BaseDirectory),
-                    Libraries = libs
+                    Libraries = cfg.ReferencedLibraries
                 });
 
 			s.AppendLine("\t@echo Linking...");
@@ -82,14 +75,12 @@ namespace MonoDevelop.D.Building
 
 			// Compiler
 			s.AppendLine();
-			var sourceFileIncludePaths=new List<string>(compiler.ParseCache.ParsedDirectories);
-			sourceFileIncludePaths.AddRange (Project.LocalIncludeCache.ParsedDirectories);
 
 			var compilerCommand = "\t$(compiler) "+ ProjectBuilder.FillInMacros(
 				Arguments.CompilerArguments + " " + cfg.ExtraCompilerArguments,
 				new DCompilerMacroProvider{
 					IncludePathConcatPattern = buildCommands.IncludePathPattern,
-					Includes = sourceFileIncludePaths,
+					Includes = Project.IncludePaths,
 					ObjectFile = "$@", SourceFile = "$?"
 				});
 

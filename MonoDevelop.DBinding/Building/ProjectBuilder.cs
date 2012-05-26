@@ -27,7 +27,6 @@ namespace MonoDevelop.D.Building
 		string AbsoluteObjectDirectory;
 		IProgressMonitor monitor;
 		List<string> BuiltObjects = new List<string> ();
-		List<string> sourceFileIncludePaths = new List<string> ();
 
 		public bool CanDoOneStepBuild {
 			get {
@@ -73,10 +72,6 @@ namespace MonoDevelop.D.Building
 			if (!Directory.Exists (AbsoluteObjectDirectory))
 				Directory.CreateDirectory (AbsoluteObjectDirectory);
 
-			sourceFileIncludePaths.Clear ();
-			sourceFileIncludePaths.AddRange (Compiler.ParseCache.ParsedDirectories);
-			sourceFileIncludePaths.AddRange (Project.LocalIncludeCache.ParsedDirectories);
-
 			if (CanDoOneStepBuild)
 				return DoOneStepBuild ();
 			else
@@ -102,9 +97,6 @@ namespace MonoDevelop.D.Building
 			// Build argument string
 			var target = Project.GetOutputFileName (BuildConfig.Selector);
 
-			var libs = new List<string> (Compiler.DefaultLibraries);
-			libs.AddRange (BuildConfig.ExtraLibraries);
-
 			var argumentString = FillInMacros (
                 Arguments.OneStepBuildArguments.Trim () + " " +
                 BuildConfig.ExtraCompilerArguments.Trim () + " " +
@@ -115,8 +107,8 @@ namespace MonoDevelop.D.Building
                 IncludesStringPattern = Commands.IncludePathPattern,
 
                 SourceFiles = BuiltObjects,
-                Includes = sourceFileIncludePaths,
-                Libraries = libs,
+                Includes = Project.IncludePaths,
+                Libraries = BuildConfig.ReferencedLibraries,
 
                 RelativeTargetDirectory = BuildConfig.OutputDirectory,
                 ObjectsDirectory = BuildConfig.ObjectDirectory,
@@ -211,7 +203,7 @@ namespace MonoDevelop.D.Building
                 IncludePathConcatPattern = Commands.IncludePathPattern,
                 SourceFile = f.ProjectVirtualPath,
                 ObjectFile = obj,
-                Includes = sourceFileIncludePaths,
+                Includes = Project.IncludePaths,
             });
 
 			// b.Execute compiler
@@ -305,9 +297,6 @@ namespace MonoDevelop.D.Building
 
 			// b.Build linker argument string
 			// Build argument preparation
-			var libs = new List<string> (Compiler.DefaultLibraries);
-			libs.AddRange (BuildConfig.ExtraLibraries);
-
 			var linkArgs = FillInMacros (Arguments.LinkerArguments + " " + BuildConfig.ExtraLinkerArguments,
                 new DLinkerMacroProvider
                 {
@@ -315,10 +304,8 @@ namespace MonoDevelop.D.Building
                     Objects = BuiltObjects.ToArray (),
                     TargetFile = LinkTargetFile,
                     RelativeTargetDirectory = BuildConfig.OutputDirectory.ToRelative (Project.BaseDirectory),
-                    Libraries = libs
+                    Libraries = BuildConfig.ReferencedLibraries
                 });
-
-
 
 			var linkerOutput = "";
 			var linkerErrorOutput = "";

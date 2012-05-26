@@ -50,7 +50,15 @@ namespace MonoDevelop.D.Completion
 		public static ParseCacheList EnumAvailableModules(DProject Project=null)
 		{
 			if (Project != null)
-				return ParseCacheList.Create(Project.LocalFileCache, Project.LocalIncludeCache, Project.Compiler.ParseCache);
+			{
+				var pcl= ParseCacheList.Create(Project.LocalFileCache, Project.LocalIncludeCache, Project.Compiler.ParseCache);
+
+				// Automatically include dep projects' caches
+				foreach (var dep in Project.DependingProjects)
+					pcl.Add(dep.LocalFileCache);
+
+				return pcl;
+			}
 			else
 				return ParseCacheList.Create(DCompilerService.Instance.GetDefaultCompiler().ParseCache);
 		}

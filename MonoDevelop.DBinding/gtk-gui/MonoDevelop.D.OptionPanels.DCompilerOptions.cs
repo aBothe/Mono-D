@@ -137,7 +137,11 @@ namespace MonoDevelop.D.OptionPanels
 			w8.Spacing = 2;
 			// Container child GtkHBox.Gtk.Container+ContainerChild
 			global::Gtk.Image w9 = new global::Gtk.Image ();
-			w9.Pixbuf = global::Stetic.IconLoader.LoadIcon (this, "gtk-add", global::Gtk.IconSize.Menu);
+			w9.Pixbuf = global::Stetic.IconLoader.LoadIcon (
+				this,
+				"gtk-add",
+				global::Gtk.IconSize.Menu
+			);
 			w8.Add (w9);
 			// Container child GtkHBox.Gtk.Container+ContainerChild
 			global::Gtk.Label w11 = new global::Gtk.Label ();
@@ -163,7 +167,11 @@ namespace MonoDevelop.D.OptionPanels
 			w17.Spacing = 2;
 			// Container child GtkHBox.Gtk.Container+ContainerChild
 			global::Gtk.Image w18 = new global::Gtk.Image ();
-			w18.Pixbuf = global::Stetic.IconLoader.LoadIcon (this, "gtk-remove", global::Gtk.IconSize.Menu);
+			w18.Pixbuf = global::Stetic.IconLoader.LoadIcon (
+				this,
+				"gtk-remove",
+				global::Gtk.IconSize.Menu
+			);
 			w17.Add (w18);
 			// Container child GtkHBox.Gtk.Container+ContainerChild
 			global::Gtk.Label w20 = new global::Gtk.Label ();
