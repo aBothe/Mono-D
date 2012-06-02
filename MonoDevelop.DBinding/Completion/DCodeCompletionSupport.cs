@@ -75,10 +75,17 @@ namespace MonoDevelop.D.Completion
 
 			try
 			{
+				images["template"] = new IconId("md-template");
+
 				images["class"] = new IconId("md-class");
 				images["class_internal"] = new IconId("md-internal-class");
 				images["class_private"] = new IconId("md-private-class");
 				images["class_protected"] = new IconId("md-protected-class");
+
+				images["static_class"] = new IconId("md-class-static");
+				images["static_class_internal"] = new IconId("md-internal-class-static");
+				images["static_class_private"] = new IconId("md-private-class-static");
+				images["static_class_protected"] = new IconId("md-protected-class-static");
 
 				images["struct"] = new IconId("md-struct");
 				images["struct_internal"] = new IconId("md-internal-struct");
@@ -100,13 +107,27 @@ namespace MonoDevelop.D.Completion
 				images["method_private"] = new IconId("md-private-method");
 				images["method_protected"] = new IconId("md-protected-method");
 
-				images["parameter"] = new IconId("md-field");
-				images["local"] = new IconId("md-field");
+				images["static_method"] = new IconId("md-method-static");
+				images["static_method_internal"] = new IconId("md-internal-method-static");
+				images["static_method_private"] = new IconId("md-private-method-static");
+				images["static_method_protected"] = new IconId("md-protected-method-static");
+
+				images["parameter"] = new IconId("d-parameter");
+				images["ref_parameter"] = new IconId("d-ref-parameter");
+				images["out_parameter"] = new IconId("d-out-parameter");
+				images["lazy_parameter"] = new IconId("d-lazy-parameter");
+
+				images["local"] = new IconId("md-field"); // TODO: what's the difference between local & field?
 
 				images["field"] = new IconId("md-field");
 				images["field_internal"] = new IconId("md-internal-field");
 				images["field_private"] = new IconId("md-private-field");
 				images["field_protected"] = new IconId("md-protected-field");
+
+				images["static_field"] = new IconId("md-field-static");
+				images["static_field_internal"] = new IconId("md-internal-field-static");
+				images["static_field_private"] = new IconId("md-private-field-static");
+				images["static_field_protected"] = new IconId("md-protected-field-static");
 
                 images["alias"] = new IconId("d-alias");
                 images["alias_internal"] = new IconId("d-internal-alias");
@@ -127,6 +148,11 @@ namespace MonoDevelop.D.Completion
 				images["literal_private"] = new IconId("md-private-literal");
 				images["literal_protected"] = new IconId("md-protected-literal");
 				images["literal_internal"] = new IconId("md-internal-literal");
+
+				images["static_literal"] = new IconId("md-literal-static");
+				images["static_literal_private"] = new IconId("md-private-literal-static");
+				images["static_literal_protected"] = new IconId("md-protected-literal-static");
+				images["static_literal_internal"] = new IconId("md-internal-literal-static");
 			}
 			catch (Exception ex)
 			{
@@ -285,113 +311,60 @@ namespace MonoDevelop.D.Completion
 					switch ((n as DClassLike).ClassType)
 					{
 						case DTokens.Template:
-						case DTokens.Class:
-							if (n.ContainsAttribute(DTokens.Package))
-								return DCodeCompletionSupport.GetNodeImage("class_internal");
-							else if (n.ContainsAttribute(DTokens.Protected))
-								return DCodeCompletionSupport.GetNodeImage("class_protected");
-							else if (n.ContainsAttribute(DTokens.Private))
-								return DCodeCompletionSupport.GetNodeImage("class_private");
-							return DCodeCompletionSupport.GetNodeImage("class");
+							return DCodeCompletionSupport.GetNodeImage("template");
 
-						case DTokens.Union:
+						case DTokens.Class:
+							if ( n.IsClassMember() ) // only nested classes can be static
+								return iconIdWithProtectionAttr(n, "class", true);
+							else
+								return iconIdWithProtectionAttr(n, "class", false);
+
+						case DTokens.Union: // TODO: separate icon for unions?
 						case DTokens.Struct:
-							if (n.ContainsAttribute(DTokens.Package))
-								return DCodeCompletionSupport.GetNodeImage("struct_internal");
-							else if (n.ContainsAttribute(DTokens.Protected))
-								return DCodeCompletionSupport.GetNodeImage("struct_protected");
-							else if (n.ContainsAttribute(DTokens.Private))
-								return DCodeCompletionSupport.GetNodeImage("struct_private");
-							return DCodeCompletionSupport.GetNodeImage("struct");
+							return iconIdWithProtectionAttr(n, "struct");
 
 						case DTokens.Interface:
-							if (n.ContainsAttribute(DTokens.Package))
-								return DCodeCompletionSupport.GetNodeImage("interface_internal");
-							else if (n.ContainsAttribute(DTokens.Protected))
-								return DCodeCompletionSupport.GetNodeImage("interface_protected");
-							else if (n.ContainsAttribute(DTokens.Private))
-								return DCodeCompletionSupport.GetNodeImage("interface_private");
-							return DCodeCompletionSupport.GetNodeImage("interface");
+							return iconIdWithProtectionAttr(n, "interface");
 					}
 				}
 				else if (n is DEnum)
 				{
-					if (n.ContainsAttribute(DTokens.Package))
-						return DCodeCompletionSupport.GetNodeImage("enum_internal");
-					else if (n.ContainsAttribute(DTokens.Protected))
-						return DCodeCompletionSupport.GetNodeImage("enum_protected");
-					else if (n.ContainsAttribute(DTokens.Private))
-						return DCodeCompletionSupport.GetNodeImage("enum_private");
-					return DCodeCompletionSupport.GetNodeImage("enum");
+					return iconIdWithProtectionAttr(n, "enum");
+				}
+				else if (n is DEnumValue)
+				{
+					return DCodeCompletionSupport.GetNodeImage("literal");
 				}
 				else if (n is DMethod)
 				{
 					//TODO: Getter or setter functions should be declared as a >single< property only
 					if (n.ContainsPropertyAttribute())
 					{
-						if (n.ContainsAttribute(DTokens.Package))
-							return DCodeCompletionSupport.GetNodeImage("property_internal");
-						else if (n.ContainsAttribute(DTokens.Protected))
-							return DCodeCompletionSupport.GetNodeImage("property_protected");
-						else if (n.ContainsAttribute(DTokens.Private))
-							return DCodeCompletionSupport.GetNodeImage("property_private");
-						return DCodeCompletionSupport.GetNodeImage("property");
+						return iconIdWithProtectionAttr(n, "property");
 					}
 
-					if (n.ContainsAttribute(DTokens.Package))
-						return DCodeCompletionSupport.GetNodeImage("method_internal");
-					else if (n.ContainsAttribute(DTokens.Protected))
-						return DCodeCompletionSupport.GetNodeImage("method_protected");
-					else if (n.ContainsAttribute(DTokens.Private))
-						return DCodeCompletionSupport.GetNodeImage("method_private");
-					return DCodeCompletionSupport.GetNodeImage("method");
+					return iconIdWithProtectionAttr(n, "method", true);
 				}
-				else if (n is DEnumValue)
-					return DCodeCompletionSupport.GetNodeImage("literal");
 				else if (n is DVariable)
 				{
                     if (((DVariable)n).IsAlias)
                     {
-                        if (n.ContainsAttribute(DTokens.Package))
-                            return DCodeCompletionSupport.GetNodeImage("alias_internal");
-                        else if (n.ContainsAttribute(DTokens.Protected))
-                            return DCodeCompletionSupport.GetNodeImage("alias_protected");
-                        else if (n.ContainsAttribute(DTokens.Private))
-                            return DCodeCompletionSupport.GetNodeImage("alias_private");
-                        return DCodeCompletionSupport.GetNodeImage("alias");
+						return iconIdWithProtectionAttr(n, "alias");
                     }
 
 					if (n.ContainsPropertyAttribute())
 					{
-						if (n.ContainsAttribute(DTokens.Package))
-							return DCodeCompletionSupport.GetNodeImage("property_internal");
-						else if (n.ContainsAttribute(DTokens.Protected))
-							return DCodeCompletionSupport.GetNodeImage("property_protected");
-						else if (n.ContainsAttribute(DTokens.Private))
-							return DCodeCompletionSupport.GetNodeImage("property_private");
-						return DCodeCompletionSupport.GetNodeImage("property");
+						return iconIdWithProtectionAttr(n, "property");
 					}
 
 					if (n.Type is DelegateDeclaration)
 					{
-						if (n.ContainsAttribute(DTokens.Package))
-							return DCodeCompletionSupport.GetNodeImage("delegate_internal");
-						else if (n.ContainsAttribute(DTokens.Protected))
-							return DCodeCompletionSupport.GetNodeImage("delegate_protected");
-						else if (n.ContainsAttribute(DTokens.Private))
-							return DCodeCompletionSupport.GetNodeImage("delegate_private");
-						return DCodeCompletionSupport.GetNodeImage("delegate");
+						return iconIdWithProtectionAttr(n, "delegate");
 					}
 
 					if (n.ContainsAttribute(DTokens.Const))
 					{
-						if (n.ContainsAttribute(DTokens.Package))
-							return DCodeCompletionSupport.GetNodeImage("literal_internal");
-						else if (n.ContainsAttribute(DTokens.Protected))
-							return DCodeCompletionSupport.GetNodeImage("literal_protected");
-						else if (n.ContainsAttribute(DTokens.Private))
-							return DCodeCompletionSupport.GetNodeImage("literal_private");
-						return DCodeCompletionSupport.GetNodeImage("literal");
+						return iconIdWithProtectionAttr(n, "literal", true);
 					}
 
 					var realParent = n.Parent as DNode;
@@ -401,28 +374,63 @@ namespace MonoDevelop.D.Completion
 
                     if (realParent is DClassLike || n.Parent is IAbstractSyntaxTree)
 					{
-						if (n.ContainsAttribute(DTokens.Package))
-							return DCodeCompletionSupport.GetNodeImage("field_internal");
-						else if (n.ContainsAttribute(DTokens.Protected))
-							return DCodeCompletionSupport.GetNodeImage("field_protected");
-						else if (n.ContainsAttribute(DTokens.Private))
-							return DCodeCompletionSupport.GetNodeImage("field_private");
-						return DCodeCompletionSupport.GetNodeImage("field");
+						return iconIdWithProtectionAttr(n, "field", true);
 					}
 
 					if (realParent is DMethod)
 					{
 						if ((realParent as DMethod).Parameters.Contains(n))
-							return DCodeCompletionSupport.GetNodeImage("parameter");
+						{
+							if (n.ContainsAttribute(DTokens.Ref))
+							    return DCodeCompletionSupport.GetNodeImage("ref_parameter");
+							else if (n.ContainsAttribute(DTokens.Lazy))
+								return DCodeCompletionSupport.GetNodeImage("lazy_parameter");
+							else if (n.ContainsAttribute(DTokens.Out))
+							    return DCodeCompletionSupport.GetNodeImage("out_parameter");
+							else
+							    return DCodeCompletionSupport.GetNodeImage("parameter");
+							// TODO: immutable, scope?
+						}
 						return DCodeCompletionSupport.GetNodeImage("local");
 					}
 
+					// TODO: looks like this is supposed to handle template parameters, but
+					// it doesn't seem to work
 					if (realParent.ContainsTemplateParameter(n.Name))
 						return DCodeCompletionSupport.GetNodeImage("parameter");
 				}
 			}
 			catch (Exception ex) { LoggingService.LogError("Error while getting node icon", ex); }
 			return null;
+		}
+
+		/// <summary>
+		/// Returns node icon id looked up from the provided base string plus the protection
+		/// attribute (and, optionally, the staticness) of node.
+		/// </summary>
+		private static Core.IconId iconIdWithProtectionAttr ( DNode n, string image,
+		                                                     bool allow_static = false )
+		{
+			if ( allow_static && n.ContainsAttribute(DTokens.Static))
+			{
+				if (n.ContainsAttribute(DTokens.Package))
+					return DCodeCompletionSupport.GetNodeImage("static_" + image + "_internal");
+				else if (n.ContainsAttribute(DTokens.Protected))
+					return DCodeCompletionSupport.GetNodeImage("static_" + image + "_protected");
+				else if (n.ContainsAttribute(DTokens.Private))
+					return DCodeCompletionSupport.GetNodeImage("static_" + image + "_private");
+				return DCodeCompletionSupport.GetNodeImage("static_" + image);
+			}
+			else
+			{
+				if (n.ContainsAttribute(DTokens.Package))
+					return DCodeCompletionSupport.GetNodeImage(image + "_internal");
+				else if (n.ContainsAttribute(DTokens.Protected))
+					return DCodeCompletionSupport.GetNodeImage(image + "_protected");
+				else if (n.ContainsAttribute(DTokens.Private))
+					return DCodeCompletionSupport.GetNodeImage(image + "_private");
+				return DCodeCompletionSupport.GetNodeImage(image);
+			}
 		}
 
 		public string NodeString
