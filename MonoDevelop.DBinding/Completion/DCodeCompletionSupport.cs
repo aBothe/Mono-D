@@ -314,7 +314,7 @@ namespace MonoDevelop.D.Completion
 							return DCodeCompletionSupport.GetNodeImage("template");
 
 						case DTokens.Class:
-							if ( n.IsClassMember() ) // only nested classes can be static
+							if ( n.IsClassMember ) // only nested classes can be static
 								return iconIdWithProtectionAttr(n, "class", true);
 							else
 								return iconIdWithProtectionAttr(n, "class", false);
