@@ -61,12 +61,20 @@ namespace D_Parser.Resolver.TypeResolution
 				{
 					// http://www.d-programming-language.org/expression.html#NewExpression
 					var nex = ex as NewExpression;
+					ResolveResult[] possibleTypes = null;
 
 					/*
-					 * TODO: Determine argument types and select respective ctor method
+					 * TODO: Determine argument types
 					 */
 
-					return TypeDeclarationResolver.Resolve(nex.Type, ctxt);
+					if (nex.Type is IdentifierDeclaration)
+					{
+						possibleTypes = TypeDeclarationResolver.Resolve((IdentifierDeclaration)nex.Type, ctxt, filterForTemplateArgs: false);
+					}
+					else
+						possibleTypes = TypeDeclarationResolver.Resolve(nex.Type, ctxt);
+
+					return possibleTypes;
 				}
 
 
@@ -196,15 +204,16 @@ namespace D_Parser.Resolver.TypeResolution
 
 					if (classDef != null)
 					{
-						var baseClassDefs = DResolver.ResolveBaseClass(classDef as DClassLike, ctxt);
+						var tr = new TypeResult { Node=classDef };
+						DResolver.ResolveBaseClasses(tr, ctxt,true);
 
-						if (baseClassDefs != null)
+						if (tr.BaseClass != null && tr.BaseClass.Length!=0)
 						{
 							// Important: Overwrite type decl base with 'super' token
-							foreach (var bc in baseClassDefs)
+							foreach (var bc in tr.BaseClass)
 								bc.DeclarationOrExpressionBase = ex;
 
-							return baseClassDefs;
+							return tr.BaseClass;
 						}
 					}
 				}

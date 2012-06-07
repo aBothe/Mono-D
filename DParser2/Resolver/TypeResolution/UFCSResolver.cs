@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using D_Parser.Dom.Expressions;
-using D_Parser.Resolver.ASTScanner;
-using D_Parser.Dom;
 
 namespace D_Parser.Resolver.TypeResolution
 {
@@ -35,20 +30,26 @@ namespace D_Parser.Resolver.TypeResolution
 			else
 				return null;
 
-			var methodMatches = new List<DMethod>();
+			var methodMatches = new List<ResolveResult>();
 			if(ctxt.ParseCache!=null)
 				foreach (var pc in ctxt.ParseCache)
 				{
 					var tempResults=pc.UfcsCache.FindFitting(ctxt, acc.Location, firstArgument, name);
 
 					if (tempResults != null)
-						methodMatches.AddRange(tempResults);
+						foreach (var m in tempResults)
+						{
+							var r = TypeDeclarationResolver.HandleNodeMatch(m, ctxt, firstArgument, acc);
+
+							if (r is MemberResult)
+							{
+								((MemberResult)r).IsUFCSResult = true;
+								methodMatches.Add(r);
+							}
+						}
 				}
 
-			if (methodMatches.Count!=0)
-				return TypeDeclarationResolver.HandleNodeMatches(methodMatches, ctxt, null, acc);
-
-			return null;
+			return methodMatches.Count == 0 ? null : methodMatches.ToArray();
 		}
 	}
 }

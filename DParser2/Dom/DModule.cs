@@ -150,7 +150,7 @@ namespace D_Parser.Dom
 
 		public INode this[int i]
 		{
-			get { if (i>=0 && Count > i)return _Children[i]; else return null; }
+			get { if (i >= 0 && Count > i) return _Children[i]; else return null; }
 			set { if (i >= 0 && Count > i) _Children[i] = value; }
 		}
 
@@ -158,14 +158,14 @@ namespace D_Parser.Dom
 		{
 			get
 			{
-				if (Count > 1)
+				if (Count > 0)
 					foreach (var n in _Children)
 						if (n.Name == Name) return n;
 				return null;
 			}
 			set
 			{
-				if (Count > 1)
+				if (Count > 0)
 					for (int i = 0; i < Count; i++)
 						if (this[i].Name == Name) this[i] = value;
 			}
@@ -221,6 +221,13 @@ namespace D_Parser.Dom
         {
             return (IsAlias?"alias ":"")+base.ToString(Attributes,IncludePath)+(Initializer!=null?(" = "+Initializer.ToString()):"");
         }
+
+		public bool IsConst
+		{
+			get {
+				return ContainsAttribute(DTokens.Const, DTokens.Enum); // TODO: Are there more tokens that indicate a const value?
+			}
+		}
 
 		public override void AssignFrom(INode other)
 		{
@@ -443,6 +450,14 @@ namespace D_Parser.Dom
 		public void Clear()
 		{
 			additionalChildren.Clear();
+		}
+
+		public bool IsUFCSReady
+		{
+			get
+			{
+				return Parameters!=null && Parameters.Count != 0 && Parent is IAbstractSyntaxTree;
+			}
 		}
 	}
 

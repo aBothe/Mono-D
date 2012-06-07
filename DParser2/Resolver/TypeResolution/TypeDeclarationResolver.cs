@@ -27,34 +27,59 @@ namespace D_Parser.Resolver.TypeResolution
 		public static ResolveResult[] ResolveIdentifier(string id, ResolverContextStack ctxt, object idObject, bool ModuleScope = false)
 		{
 			var loc = idObject is ISyntaxRegion ? ((ISyntaxRegion)idObject).Location:CodeLocation.Empty;
+			ResolveResult[] res = null;
 
 			if (ModuleScope)
 				ctxt.PushNewScope(ctxt.ScopedBlock.NodeRoot as IAbstractSyntaxTree);
 
+			// If there are symbols that must be preferred, take them instead of scanning the ast
+			else
+			{
+				var tstk = new Stack<ResolverContext>();
+
+				while (!ctxt.CurrentContext.DeducedTemplateParameters.TryGetValue(id, out res))
+				{
+					if (ctxt.PrevContextIsInSameHierarchy)
+						tstk.Push(ctxt.Pop());
+					else
+						break;
+				}
+
+				while (tstk.Count > 0)
+					ctxt.Push(tstk.Pop());
+
+				if (res != null)
+					return res;
+			}
+
 			var matches = NameScan.SearchMatchesAlongNodeHierarchy(ctxt, loc, id);
 
-			var r= HandleNodeMatches(matches, ctxt, null, idObject);
+			res= HandleNodeMatches(matches, ctxt, null, idObject);
 
 			if (ModuleScope)
 				ctxt.Pop();
 
-			if (idObject is TemplateInstanceExpression)
-				return TemplateInstanceResolver.ResolveAndFilterTemplateResults(((TemplateInstanceExpression)idObject).Arguments, r, ctxt);
-
-			return TemplateInstanceResolver.ApplyDefaultTemplateParameters(r, ctxt);
+			return res;
 		}
-		
-		public static ResolveResult[] Resolve(IdentifierDeclaration id, ResolverContextStack ctxt, ResolveResult[] resultBases=null)
+
+		public static ResolveResult[] Resolve(IdentifierDeclaration id, ResolverContextStack ctxt, ResolveResult[] resultBases = null, bool filterForTemplateArgs = true)
 		{
-			if (id.InnerDeclaration == null && resultBases==null)
-				return ResolveIdentifier(id.Id, ctxt, id, id.ModuleScoped);
+			ResolveResult[] res = null;
 
-			var rbases = resultBases ?? Resolve(id.InnerDeclaration, ctxt);
+			if (id.InnerDeclaration == null && resultBases == null)
+				res= ResolveIdentifier(id.Id, ctxt, id, id.ModuleScoped);
+			else
+			{
+				var rbases = resultBases ?? Resolve(id.InnerDeclaration, ctxt);
 
-			if (rbases == null || rbases.Length == 0)
-				return null;
+				if (rbases == null || rbases.Length == 0)
+					return null;
 
-			return ResolveFurtherTypeIdentifier(id.Id,rbases,ctxt,id);
+				res= ResolveFurtherTypeIdentifier(id.Id, rbases, ctxt, id);
+			}
+
+			return (filterForTemplateArgs && !ctxt.Options.HasFlag(ResolutionOptions.NoTemplateParameterDeduction)) ? 
+				TemplateInstanceHandler.EvalAndFilterOverloads(res, null, false, ctxt) : res;
 		}
 
 		/// <summary>
@@ -141,10 +166,7 @@ namespace D_Parser.Resolver.TypeResolution
 				while (scanResults != null);
 			}
 
-			if (typeIdObject is TemplateInstanceExpression)
-				return TemplateInstanceResolver.ResolveAndFilterTemplateResults(((TemplateInstanceExpression)typeIdObject).Arguments, r, ctxt);
-
-			return TemplateInstanceResolver.ApplyDefaultTemplateParameters(r, ctxt);
+			return r.Count == 0 ? null : r.ToArray();
 		}
 
 		public static ResolveResult[] Resolve(TypeOfDeclaration typeOf, ResolverContextStack ctxt)
@@ -262,7 +284,8 @@ namespace D_Parser.Resolver.TypeResolution
 		{
 			var r = new DelegateResult { DeclarationOrExpressionBase=dg };
 
-			r.ReturnType = Resolve(dg.ReturnType, ctxt);
+			if(!ctxt.Options.HasFlag(ResolutionOptions.DontResolveBaseTypes))
+				r.ReturnType = Resolve(dg.ReturnType, ctxt);
 
 			return new[] { r };
 		}
@@ -335,10 +358,14 @@ namespace D_Parser.Resolver.TypeResolution
 		{
 			stackNum_HandleNodeMatch++;
 
+			bool popAfterwards = false;
+			if (popAfterwards = (m.Parent != ctxt.ScopedBlock && m.Parent is IBlockNode))
+				ctxt.PushNewScope((IBlockNode)m.Parent);
+
 			//HACK: Really dirty stack overflow prevention via manually counting call depth
 			var DoResolveBaseType = 
 				!(m is DClassLike && m.Name == "Object") && 
-				ctxt.CurrentContext.Options.HasFlag(ResolutionOptions.ResolveBaseClasses) &&
+				!ctxt.Options.HasFlag(ResolutionOptions.DontResolveBaseClasses) &&
 				stackNum_HandleNodeMatch <= 5;
 
 			// Prevent infinite recursion if the type accidently equals the node's name
@@ -348,37 +375,36 @@ namespace D_Parser.Resolver.TypeResolution
 			ResolveResult ret = null;
 			ResolveResult[] memberbaseTypes = null;
 
+			// To support resolving type parameters to concrete types if the context allows this, introduce all deduced parameters to the current context
+			if (DoResolveBaseType && resultBase is TemplateInstanceResult)
+				ctxt.CurrentContext.IntroduceTemplateParameterTypes((TemplateInstanceResult)resultBase);
+
 			// Only import symbol aliases are allowed to search in the parse cache
 			if (m is ImportSymbolAlias)
 			{
 				var isa = (ImportSymbolAlias)m;
 
-				if (isa.IsModuleAlias ? isa.Type == null : isa.Type.InnerDeclaration == null)
+				if (isa.IsModuleAlias ? isa.Type != null : isa.Type.InnerDeclaration != null)
 				{
-					stackNum_HandleNodeMatch--;
-					return null;
-				}
+					var alias = new AliasResult	{ Node = m };
 
-				var alias = new MemberResult { 
-					Node=m
-				};
-
-				var mods = new List<ResolveResult>();
-				foreach (var mod in ctxt.ParseCache.LookupModuleName(isa.IsModuleAlias ?
-					isa.Type.ToString() :
-					isa.Type.InnerDeclaration.ToString()))
+					var mods = new List<ResolveResult>();
+					foreach (var mod in ctxt.ParseCache.LookupModuleName(isa.IsModuleAlias ?
+						isa.Type.ToString() :
+						isa.Type.InnerDeclaration.ToString()))
 						mods.Add(new ModuleResult(mod));
 
-				if (isa.IsModuleAlias)
-					alias.MemberBaseTypes = mods.ToArray();
-				else
-					alias.MemberBaseTypes = ResolveFurtherTypeIdentifier(isa.Type.ToString(false), mods, ctxt, isa.Type);
+					if (isa.IsModuleAlias)
+						alias.MemberBaseTypes = mods.ToArray();
+					else
+						alias.MemberBaseTypes = ResolveFurtherTypeIdentifier(isa.Type.ToString(false), mods, ctxt, isa.Type);
 
-				ret = alias;
+					ret = alias;
+				}
 			}
 			else if (m is DVariable)
 			{
-				var v = m as DVariable;
+				var v = (DVariable)m;
 
 				if (DoResolveBaseType)
 				{
@@ -393,22 +419,19 @@ namespace D_Parser.Resolver.TypeResolution
 						memberbaseTypes = GetForeachIteratorType(v, ctxt);
 				}
 
-				memberbaseTypes = TemplateInstanceResolver.SubstituteTemplateParameters(memberbaseTypes, resultBase);
-
 				// Note: Also works for aliases! In this case, we simply try to resolve the aliased type, otherwise the variable's base type
-				ret = new MemberResult()
-				{
-					Node = m,
-					MemberBaseTypes = memberbaseTypes,
-					ResultBase = resultBase,
-					DeclarationOrExpressionBase = typeBase
-				};
+				var r=v.IsAlias ? new AliasResult() : new MemberResult();
+				ret = r;
+				
+				r.Node = m;
+				r.MemberBaseTypes = memberbaseTypes;
+				r.ResultBase = resultBase;
+				r.DeclarationOrExpressionBase = typeBase;
 			}
 			else if (m is DMethod)
 			{
-				memberbaseTypes = DoResolveBaseType ? GetMethodReturnType(m as DMethod, ctxt) : null;
-
-				memberbaseTypes = TemplateInstanceResolver.SubstituteTemplateParameters(memberbaseTypes, resultBase);
+				if (DoResolveBaseType)
+					memberbaseTypes = GetMethodReturnType(m as DMethod, ctxt);
 
 				ret = new MemberResult()
 				{
@@ -419,20 +442,21 @@ namespace D_Parser.Resolver.TypeResolution
 				};
 			}
 			else if (m is DClassLike)
-				ret = new TypeResult()
-				{
-					Node = (DClassLike)m,
-					BaseClass = DoResolveBaseType ? DResolver.ResolveBaseClass((DClassLike)m, ctxt) : null,
-					ResultBase = resultBase,
-					DeclarationOrExpressionBase = typeBase
+			{
+				var tr = new TypeResult() {
+					Node = m, ResultBase = resultBase, DeclarationOrExpressionBase = typeBase
 				};
+				DResolver.ResolveBaseClasses(tr, ctxt);
+
+				ret = tr;
+			}
 			else if (m is IAbstractSyntaxTree)
 			{
-				var mod=(IAbstractSyntaxTree)m;
+				var mod = (IAbstractSyntaxTree)m;
 				if (typeBase != null && typeBase.ToString() != mod.ModuleName)
 				{
 					var pack = ctxt.ParseCache.LookupPackage(typeBase.ToString()).First();
-					if(pack!=null)
+					if (pack != null)
 						ret = new ModulePackageResult(pack);
 				}
 				else
@@ -455,17 +479,23 @@ namespace D_Parser.Resolver.TypeResolution
 
 				//ResolveResult[] templateParameterType = null;
 
-				//FIXME: Resolve the specialization type correctly
-				var templateParameterType = TemplateInstanceResolver.ResolveTypeSpecialization(tmp, ctxt);
+				//TODO: Resolve the specialization type
+				//var templateParameterType = TemplateInstanceHandler.ResolveTypeSpecialization(tmp, ctxt);
 
 				ret = new MemberResult()
 				{
 					Node = m,
 					DeclarationOrExpressionBase = typeBase,
 					ResultBase = resultBase,
-					MemberBaseTypes = templateParameterType
+					//MemberBaseTypes = templateParameterType
 				};
 			}
+
+			if (DoResolveBaseType && resultBase is TemplateInstanceResult)
+				ctxt.CurrentContext.RemoveParamTypesFromPreferredLocas((TemplateInstanceResult)resultBase);
+
+			if (popAfterwards)
+				ctxt.Pop();
 
 			stackNum_HandleNodeMatch--;
 			return ret;
@@ -493,8 +523,37 @@ namespace D_Parser.Resolver.TypeResolution
 			return rl.ToArray();
 		}
 
+		public static void FillMethodReturnType(MemberResult mr, ResolverContextStack ctxt)
+		{
+			if (mr == null || ctxt == null)
+				return;
+
+			var dm = mr.Node as DMethod;
+
+			ctxt.CurrentContext.IntroduceTemplateParameterTypes(mr);
+
+			if (dm != null)
+				mr.MemberBaseTypes = GetMethodReturnType(dm, ctxt);
+
+			ctxt.CurrentContext.RemoveParamTypesFromPreferredLocas(mr);
+		}
+
+		public static void FillMethodReturnType(DelegateResult dg, ResolverContextStack ctxt)
+		{
+			if (dg == null || ctxt == null)
+				return;
+
+			if (dg.IsDelegateDeclaration)
+				dg.ReturnType = Resolve(((DelegateDeclaration)dg.DeclarationOrExpressionBase).ReturnType, ctxt);
+			else
+				dg.ReturnType = GetMethodReturnType(((FunctionLiteral)dg.DeclarationOrExpressionBase).AnonymousMethod,ctxt);
+		}
+
 		public static ResolveResult[] GetMethodReturnType(DMethod method, ResolverContextStack ctxt)
 		{
+			if (ctxt.Options.HasFlag(ResolutionOptions.DontResolveBaseTypes))
+				return null;
+			
 			ResolveResult[] returnType = null;
 
 			/*

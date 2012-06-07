@@ -2,11 +2,9 @@
 
 namespace D_Parser.Dom
 {
-	public interface ITemplateParameter
+	public interface ITemplateParameter : ISyntaxRegion
 	{
 		string Name { get; }
-		CodeLocation Location { get; }
-		CodeLocation EndLocation { get; }
 	}
 
 	/// <summary>
@@ -70,6 +68,7 @@ namespace D_Parser.Dom
 
 	public class TemplateParameterNode : AbstractNode
 	{
+		public DNode Owner;
 		public readonly ITemplateParameter TemplateParameter;
 
 		public TemplateParameterNode(ITemplateParameter param)

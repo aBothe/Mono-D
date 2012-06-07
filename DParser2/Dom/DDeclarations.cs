@@ -310,7 +310,7 @@ namespace D_Parser.Dom
 	}
 
 	/// <summary>
-	/// template myTemplate(T...)
+	/// void foo(int i,...) {} -> foo(1,2,3,4); = legal
 	/// </summary>
     public class VarArgDecl : AbstractTypeDeclaration
     {

@@ -26,7 +26,7 @@ namespace D_Parser.Resolver.ASTScanner
             {
                 Matches.Add(n);
 
-                if (Context.CurrentContext.Options.HasFlag(ResolutionOptions.StopAfterFirstMatch))
+                if (Context.Options.HasFlag(ResolutionOptions.StopAfterFirstMatch))
                     return true;
             }
 
@@ -55,7 +55,7 @@ namespace D_Parser.Resolver.ASTScanner
                     {
                         Matches.Add(n);
 
-                        if (Context.CurrentContext.Options.HasFlag(ResolutionOptions.StopAfterFirstMatch))
+                        if (Context.Options.HasFlag(ResolutionOptions.StopAfterFirstMatch))
                             return true;
                     }
                 }
@@ -90,15 +90,15 @@ namespace D_Parser.Resolver.ASTScanner
 			// If our current Level node is a class-like, also attempt to search in its baseclass!
 			if (curScope is DClassLike)
 			{
-				var baseClasses = DResolver.ResolveBaseClass(curScope as DClassLike, ctxt);
-				if (baseClasses != null)
-					foreach (var i in baseClasses)
+				var tr = new TypeResult { Node=(DClassLike)curScope };
+				DResolver.ResolveBaseClasses(tr, ctxt, true);
+				if (tr.BaseClass != null)
+					foreach (var i in tr.BaseClass)
 					{
-						var baseClass = i as TypeResult;
-						if (baseClass == null)
+						if (i == null)
 							continue;
 						// Search for items called name in the base class(es)
-						var r = ScanNodeForIdentifier((IBlockNode)baseClass.Node, name, ctxt);
+						var r = ScanNodeForIdentifier((IBlockNode)i.Node, name, ctxt);
 
 						if (r != null)
 							matches.AddRange(r);
@@ -117,11 +117,11 @@ namespace D_Parser.Resolver.ASTScanner
 			}
 
 			// and template parameters
-			if (curScope is DNode && (curScope as DNode).TemplateParameters != null)
-				foreach (var ch in (curScope as DNode).TemplateParameters)
+			if (curScope is DNode && ((DNode)curScope).TemplateParameters != null)
+				foreach (var ch in ((DNode)curScope).TemplateParameters)
 				{
 					if (name == ch.Name)
-						matches.Add(new TemplateParameterNode(ch));
+						matches.Add(new TemplateParameterNode(ch) { Owner = (DNode)curScope });
 				}
 
 			return matches.Count > 0 ? matches.ToArray() : null;

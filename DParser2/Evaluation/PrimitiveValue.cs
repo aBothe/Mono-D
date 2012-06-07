@@ -1,5 +1,6 @@
 ﻿using System;
 using D_Parser.Dom.Expressions;
+using D_Parser.Dom;
 
 namespace D_Parser.Evaluation
 {
@@ -9,6 +10,19 @@ namespace D_Parser.Evaluation
 		{
 			get;
 			private set;
+		}
+
+		public ITypeDeclaration RepresentedType
+		{
+			get
+			{
+
+				return null;
+			}
+			set
+			{
+				
+			}
 		}
 
 		public object Value

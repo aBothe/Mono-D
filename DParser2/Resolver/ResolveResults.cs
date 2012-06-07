@@ -6,7 +6,7 @@ using System;
 
 namespace D_Parser.Resolver
 {
-	public abstract class ResolveResult
+	public class ResolveResult
 	{
 		/// <summary>
 		/// If the entire resolution took more than one level of type searching, this field represents the resolution base that was used to find the current items.
@@ -18,7 +18,7 @@ namespace D_Parser.Resolver
 		/// </summary>
 		public object DeclarationOrExpressionBase;
 
-		public abstract string ResultPath {get;}
+		public virtual string ResultPath { get { return string.Empty; } }
 
 		public override bool Equals(object obj)
 		{
@@ -39,13 +39,14 @@ namespace D_Parser.Resolver
 		public INode Node;
 
 		/// <summary>
-		/// T!int t;
-		/// 
-		/// t. -- will be resolved to:
-		///		1) TypeResult T; TemplateParameter[0]= StaticType int
-		///		2) MemberResult t; MemberDefinition= 1)
+		/// Key: Type name
+		/// Value: Corresponding type
 		/// </summary>
-		public Dictionary<ITemplateParameter, ResolveResult[]> TemplateParameters;
+		public Dictionary<string, ResolveResult[]> DeducedTypes;
+	}
+
+	public class AliasResult : MemberResult
+	{
 	}
 
 	public class MemberResult : TemplateInstanceResult
@@ -59,9 +60,15 @@ namespace D_Parser.Resolver
 		public bool IsAlias
 		{
 			get {
-				return Node is DVariable && ((DVariable)Node).IsAlias;
+				return this is AliasResult || (Node is DVariable && ((DVariable)Node).IsAlias);
 			}
 		}
+
+		/// <summary>
+		/// True if ucfs resolution was used to build up this result object.
+		/// Used for better semantic analysis.
+		/// </summary>
+		public bool IsUFCSResult;
 
 		public override string ToString()
 		{
@@ -102,7 +109,7 @@ namespace D_Parser.Resolver
 		/// theoretically, this should be marked as a precompile error then.
 		/// </summary>
 		public TypeResult[] BaseClass;
-		public TypeResult[] ImplementedInterfaces;
+		public TypeResult[][] ImplementedInterfaces;
 
 		public override string ToString()
 		{
@@ -171,8 +178,6 @@ namespace D_Parser.Resolver
 
 
 
-
-
 	/// <summary>
 	/// Will be returned if not an entire module name but an existing module package was mentioned in the code
 	/// </summary>
@@ -219,6 +224,44 @@ namespace D_Parser.Resolver
 			{
 				return Module == null ? "" : Module.ModuleName;
 			}
+		}
+	}
+
+
+
+
+	/// <summary>
+	/// Contains an array of zero or more type definitions.
+	/// Used for template parameter - argument deduction.
+	/// </summary>
+	public class TypeTupleResult : ResolveResult
+	{
+		public TemplateTupleParameter TupleParameter;
+		public ResolveResult[][] TupleItems;
+
+		public bool ContainsItems
+		{
+			get { return TupleItems != null && TupleItems.Length != 0; }
+		}
+	}
+
+	/// <summary>
+	/// Contains an array of zero or more resolved expressions.
+	/// Used in template parameter situations.
+	/// </summary>
+	public class ExpressionTupleResult : ResolveResult
+	{
+		public DVariable ParameterVariable;
+		public ExpressionValueResult[] TupleItems;
+	}
+
+	public class ExpressionValueResult : ResolveResult
+	{
+		public Evaluation.IExpressionValue Value;
+
+		public override string ToString()
+		{
+			return Value!=null ? Value.ToString() : string.Empty;
 		}
 	}
 

@@ -24,7 +24,7 @@ namespace D_Parser.Dom
 			get {
 				if (TemplateParameters != null)
 					foreach (var p in TemplateParameters)
-						yield return new TemplateParameterNode(p);
+						yield return new TemplateParameterNode(p) { Owner=this };
 			}
 		}
 		

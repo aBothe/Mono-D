@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using D_Parser.Dom;
+using D_Parser.Resolver;
 
 namespace D_Parser.Misc
 {
@@ -33,6 +34,33 @@ namespace D_Parser.Misc
 
 				if (r != null)
 					yield return r;
+			}
+		}
+
+		public DClassLike[] ObjectClass
+		{
+			get
+			{
+				var l = new List<DClassLike>();
+				foreach (var pc in this)
+					if (pc.IsObjectClassDefined)
+						l.Add(pc.ObjectClass);
+				return l.ToArray();
+			}
+		}
+
+		/// <summary>
+		/// Will always return a non-null value!
+		/// </summary>
+		public TypeResult[] ObjectClassResult
+		{
+			get
+			{
+				var l = new List<TypeResult>();
+				foreach (var pc in this)
+					if (pc.IsObjectClassDefined)
+						l.Add(pc.ObjectClassResult);
+				return l.ToArray();
 			}
 		}
 	}

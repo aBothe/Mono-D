@@ -406,6 +406,8 @@ namespace D_Parser.Parser
 			int nextChar;
 			char ch;
 			bool hadLineEnd = false;
+			int x = Col - 1;
+			int y = Line;
 			if (Line == 1 && Col == 1) hadLineEnd = true; // beginning of document
 
 			while ((nextChar = ReaderRead()) != -1)
@@ -456,6 +458,16 @@ namespace D_Parser.Parser
 					case '"':
 						token = ReadString(nextChar);
 						break;
+					case '\\':
+						// http://digitalmars.com/d/1.0/lex.html#EscapeSequence
+						// - It's actually deprecated, but parse such literals anyway
+						string surr = "";
+						x=Col-1;
+						y=Line;
+						var lit=ReadEscapeSequence(out ch, out surr);
+						token = new DToken(DTokens.Literal, x,y, lit, ch.ToString(), LiteralFormat.StringLiteral);
+						OnError(y, x, "Escape sequence strings are deprecated!");
+						break;
 					case '\'':
 						token = ReadChar();
 						break;
@@ -468,8 +480,8 @@ namespace D_Parser.Parser
 						}
 						else
 						{
-							int x = Col - 1;
-							int y = Line;
+							x = Col - 1;
+							y = Line;
 							ch = (char)next;
 							if (Char.IsLetterOrDigit(ch) || ch == '_')
 							{
@@ -515,8 +527,8 @@ namespace D_Parser.Parser
 							peek = ReaderPeek();
 							if (peek == '{'/*q{ ... }*/ || peek == '"'/* q"{{ ...}}   }}"*/)
 							{
-								int x = Col - 1;
-								int y = Line;
+								x = Col - 1;
+								y = Line;
 								string initDelim = "";
 								string endDelim = "";
 								string tokenString = "";
@@ -601,8 +613,8 @@ namespace D_Parser.Parser
 
 						if (Char.IsLetter(ch) || ch == '_' || ch == '\\')
 						{
-							int x = Col - 1; // Col was incremented above, but we want the start of the identifier
-							int y = Line;
+							x = Col - 1; // Col was incremented above, but we want the start of the identifier
+							y = Line;
 							bool canBeKeyword;
 							string s = ReadIdent(ch, out canBeKeyword);
 							if (canBeKeyword)
@@ -660,6 +672,12 @@ namespace D_Parser.Parser
 				{
 					//token.prev = base.curToken;
 					return token;
+				}
+				else
+				{
+					OnError(Line, Col, "Invalid character");
+					StopLexing();
+					break;
 				}
 			}
 

@@ -4,6 +4,7 @@ using System.IO;
 using D_Parser.Dom;
 using D_Parser.Resolver.ASTScanner;
 using System.Threading;
+using D_Parser.Resolver;
 
 namespace D_Parser.Misc
 {
@@ -30,6 +31,29 @@ namespace D_Parser.Misc
 		public List<string> ParsedDirectories = new List<string> ();
 
 		public Exception LastParseException { get; private set; }
+
+		public bool IsObjectClassDefined
+		{
+			get { return ObjectClass != null; }
+		}
+
+		/// <summary>
+		/// To improve resolution performance, the object class that can be defined only once will be stored over here.
+		/// </summary>
+		public DClassLike ObjectClass
+		{
+			get;
+			private set;
+		}
+
+		/// <summary>
+		/// See <see cref="ObjectClass"/>
+		/// </summary>
+		public TypeResult ObjectClassResult
+		{
+			get;
+			set;
+		}
 		#endregion
 
 		#region Parsing management
@@ -68,6 +92,12 @@ namespace D_Parser.Misc
 			parseThread.Start(new Tuple<IEnumerable<string>,List<ParsePerformanceData>>(directoriesToParse, performanceLogs));
 		}
 
+		public void WaitForParserFinish()
+		{
+			if (parseThread != null && parseThread.IsAlive)
+				parseThread.Join();
+		}
+
 		public void AbortParsing()
 		{
 			if (parseThread != null && parseThread.IsAlive)
@@ -97,6 +127,9 @@ namespace D_Parser.Misc
 			UfcsCache.Clear();
 			ParsedDirectories = parsedDirs;
 			Root = newRoot;
+
+			// For performance boost, pre-resolve the object class
+			HandleObjectModule(GetModule("object"));			
 
 			if (FinishedParsing!=null)
 				FinishedParsing(tup.Item2.ToArray());
@@ -142,6 +175,23 @@ namespace D_Parser.Misc
 
 			Root = new RootPackage ();
 		}
+
+		void HandleObjectModule(IAbstractSyntaxTree objModule)
+		{
+			if (objModule != null)
+				foreach (var m in objModule)
+					if (m is DClassLike && m.Name == "Object")
+					{
+						ObjectClass = (DClassLike)m;
+
+						ObjectClassResult = new TypeResult
+						{
+							DeclarationOrExpressionBase = new IdentifierDeclaration("Object"),
+							Node = m
+						};
+						break;
+					}
+		}
 		#endregion
 
 		#region Tree management
@@ -158,6 +208,9 @@ namespace D_Parser.Misc
 
 			if (string.IsNullOrEmpty (packName)) {
 				Root.Modules [ast.ModuleName] = ast;
+
+				if (ast.ModuleName == "object")
+					HandleObjectModule(ast);
 				return;
 			}
 
@@ -187,6 +240,14 @@ namespace D_Parser.Misc
 		public IAbstractSyntaxTree GetModuleByFileName (string file, string baseDirectory)
 		{
 			return GetModule (DModule.GetModuleName (baseDirectory, file));
+		}
+
+		public IAbstractSyntaxTree this[string ModuleName]
+		{
+			get
+			{
+				return GetModule(ModuleName);
+			}
 		}
 		#endregion
 

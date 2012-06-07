@@ -62,15 +62,15 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
             return false;
 		}
 
-		bool breakImmediately { get { return ctxt.CurrentContext.Options == ResolutionOptions.StopAfterFirstMatch; } }
+		bool breakImmediately { get { return ctxt.Options == ResolutionOptions.StopAfterFirstMatch; } }
 
 		public virtual void IterateThroughScopeLayers(CodeLocation Caret, MemberFilter VisibleMembers= MemberFilter.All)
 		{
 			// 1)
 			if (ctxt.ScopedStatement != null && 
 				IterateThroughItemHierarchy(ctxt.ScopedStatement, Caret, VisibleMembers) &&
-					(ctxt.CurrentContext.Options.HasFlag(ResolutionOptions.StopAfterFirstOverloads) || 
-					ctxt.CurrentContext.Options.HasFlag(ResolutionOptions.StopAfterFirstMatch)))
+					(ctxt.Options.HasFlag(ResolutionOptions.StopAfterFirstOverloads) || 
+					ctxt.Options.HasFlag(ResolutionOptions.StopAfterFirstMatch)))
 					return;
 
 			var curScope = ctxt.ScopedBlock;
@@ -160,7 +160,7 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
                     if ((breakOnNextScope = HandleDBlockNode((DBlockNode)curScope, VisibleMembers)) && breakImmediately)
                         return;
 
-				if (breakOnNextScope && ctxt.CurrentContext.Options.HasFlag(ResolutionOptions.StopAfterFirstOverloads))
+				if (breakOnNextScope && ctxt.Options.HasFlag(ResolutionOptions.StopAfterFirstOverloads))
 					return;
 
 				curScope = curScope.Parent as IBlockNode;
@@ -198,17 +198,14 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 						return true;
 				}
 
-				// Stop adding if Object class level got reached
-				if (!string.IsNullOrEmpty(curWatchedClass.Name) && curWatchedClass.Name.ToLower() == "object")
-					return false;
-
 				// 3)
-				var baseclassDefs = DResolver.ResolveBaseClass(curWatchedClass, ctxt);
+				var tr = new TypeResult { Node = curWatchedClass };
+				DResolver.ResolveBaseClasses(tr, ctxt, true);
 
-				if (baseclassDefs == null || baseclassDefs.Length < 0 || curWatchedClass == baseclassDefs[0].Node)
+				if (tr.BaseClass==null || tr.BaseClass.Length == 0)
 					return false;
 
-				curWatchedClass = baseclassDefs[0].Node as DClassLike;
+				curWatchedClass = tr.BaseClass[0].Node as DClassLike;
 			}
 			return false;
 		}
@@ -472,7 +469,7 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 			if(ctxt.ParseCache!=null)
 				foreach (var module in ctxt.ParseCache.LookupModuleName(moduleName))
 				{
-					if (module == null || module.FileName == (ctxt.ScopedBlock.NodeRoot as IAbstractSyntaxTree).FileName)
+					if (module == null || (module.FileName == (ctxt.ScopedBlock.NodeRoot as IAbstractSyntaxTree).FileName && module.FileName!=null))
 						continue;
 
 					if (HandleItem(module))

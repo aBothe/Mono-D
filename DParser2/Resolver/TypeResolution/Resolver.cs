@@ -133,71 +133,136 @@ namespace D_Parser.Resolver.TypeResolution
 		}
 
 		static int bcStack = 0;
-		public static TypeResult[] ResolveBaseClass(DClassLike ActualClass, ResolverContextStack ctxt)
+		/// <summary>
+		/// Takes the class passed via the tr, and resolves its base class and/or implemented interfaces
+		/// </summary>
+		public static void ResolveBaseClasses(TypeResult tr, ResolverContextStack ctxt, bool ResolveFirstBaseIdOnly=false)
 		{
 			if (bcStack > 8)
 			{
 				bcStack--;
-				return null;
+				return;
 			}
 
-			if (ActualClass == null || ((ActualClass.BaseClasses == null || ActualClass.BaseClasses.Count < 1) && ActualClass.Name != null && ActualClass.Name.ToLower() == "object"))
-				return null;
+			var dc = tr.Node as DClassLike;
+			// Return immediately if searching base classes of the Object class
+			if (dc == null || ((dc.BaseClasses == null || dc.BaseClasses.Count < 1) && dc.Name == "Object"))
+				return;
 
-			var ret = new List<TypeResult>();
-			// Implicitly set the object class to the inherited class if no explicit one was done
-			var type = (ActualClass.BaseClasses == null || ActualClass.BaseClasses.Count < 1) ? new IdentifierDeclaration("Object") : ActualClass.BaseClasses[0];
+			// If no base class(es) specified, and if it's no interface that is handled, return the global Object reference
+			if(dc.BaseClasses == null || dc.BaseClasses.Count < 1)
+			{
+				if(dc.ClassType != DTokens.Interface) // Only Non-interfaces can inherit from non-interfaces
+					tr.BaseClass= ctxt.ParseCache.ObjectClassResult;
+				return;
+			}
 
-			// A class cannot inherit itself
-			if (type == null || type.ToString(false) == ActualClass.Name || ActualClass.NodeRoot == ActualClass)
-				return null;
+			var interfaces = new List<TypeResult[]>();
+			for (int i = 0; i < (ResolveFirstBaseIdOnly ? 1 : dc.BaseClasses.Count); i++)
+			{
+				var type = dc.BaseClasses[i];
 
-			bcStack++;
+				// If there's an explicit 'Object' inheritance, also return the pre-resolved object class
+				if (type is IdentifierDeclaration && ((IdentifierDeclaration)type).Id == "Object")
+				{
+					if (tr.BaseClass != null)
+					{
+						// Error: Two base classes!
+						continue;
+					}
+					else if (i != 0)
+					{
+						// Error: Super class must be at first position!
+						continue;
+					}
 
-			/*
-			 * If the ActualClass is defined in an other module (so not in where the type resolution has been started),
-			 * we have to enable access to the ActualClass's module's imports!
-			 * 
-			 * module modA:
-			 * import modB;
-			 * 
-			 * class A:B{
-			 * 
-			 *		void bar()
-			 *		{
-			 *			fooC(); // Note that modC wasn't imported publically! Anyway, we're still able to access this method!
-			 *			// So, the resolver must know that there is a class C.
-			 *		}
-			 * }
-			 * 
-			 * -----------------
-			 * module modB:
-			 * import modC;
-			 * 
-			 * // --> When being about to resolve B's base class C, we have to use the imports of modB(!), not modA
-			 * class B:C{}
-			 * -----------------
-			 * module modC:
-			 * 
-			 * class C{
-			 * 
-			 * void fooC();
-			 * 
-			 * }
-			 */
-			ctxt.PushNewScope(ActualClass.Parent as IBlockNode);
+					tr.BaseClass = ctxt.ParseCache.ObjectClassResult;
+					continue;
+				}
 
-			var results = TypeDeclarationResolver.Resolve(type, ctxt);
+				if (type == null || type.ToString(false) == dc.Name || dc.NodeRoot == dc)
+				{
+					// Error: A class cannot inherit itself
+					continue;
+				}
 
-			ctxt.Pop();
+				ctxt.PushNewScope(dc.Parent as IBlockNode);
 
-			if (results != null)
-				foreach (var i in results)
-					if (i is TypeResult)
-						ret.Add(i as TypeResult);
-			bcStack--;
+				bcStack++;
 
-			return ret.Count > 0 ? ret.ToArray() : null;
+				var res=TypeDeclarationResolver.Resolve(type, ctxt);
+
+				if (res == null)
+				{
+					// Error: Couldn't resolve 'type'
+				}
+				else
+				{
+					var curInterface = new List<TypeResult>();
+					bool isClass = false;
+					foreach (var r in res)
+					{
+						var ttr = r as TypeResult;
+
+						if (ttr == null)
+						{
+							// Error: Invalid base type
+							continue;
+						}
+
+						var dc_ = ttr.Node as DClassLike;
+
+						if (dc_ == null)
+						{
+							// Error: Invalid base type
+							continue;
+						}
+
+						switch (dc_.ClassType)
+						{
+							case DTokens.Class:
+								if (i == 0)
+								{
+									isClass = true;
+									curInterface.Add(ttr);
+
+									if (curInterface.Count > 1)
+									{
+										// Error: Ambiguous declaration!
+									}
+								}
+								else
+								{
+									// Error: Base class can only be supplied in the first position
+								}
+								break;
+							case DTokens.Interface:
+								curInterface.Add(ttr);
+								
+								if (isClass || curInterface.Count > 1)
+								{
+									// Error: Ambiguous declaration
+								}
+								
+								break;
+							default:
+								// Error: Cannot inherit from other types than 'class' and interface!
+								break;
+						}
+					}
+
+					if (isClass)
+						tr.BaseClass = curInterface.ToArray();
+					else
+						interfaces.Add(curInterface.ToArray());
+				}
+
+				bcStack--;
+
+				ctxt.Pop();
+			}
+
+			tr.ImplementedInterfaces = interfaces.ToArray();
 		}
 
 		public static IBlockNode SearchBlockAt(IBlockNode Parent, CodeLocation Where, out IStatement ScopedStatement)

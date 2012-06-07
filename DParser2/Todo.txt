@@ -1,0 +1,29 @@
+﻿
+Everything that still needs to be handled by D_Parser comes right in here:
+
+
+* Add Expression Value Resolution
+* Mixin support
+* UFCS -- assert("fdas" == "asdf".reverse()); and stuff -- very complex & time-intensive!
+* CTFE
+* Implement declaration condition checks
+	- omit debug/versioned declarations 
+	  if not fitting to environment dependencies
+	  ([debug/release] or [Windows/Mac/Unix/BSD] etc.)
+* Interface/Abstract class implementation
+
+Resolver:
+	-	Implement single-element aliasing on templates(only !)
+		(when a template contains only one item that is called like the template, 
+		the template's name will be resolved to that member element instead of the template)
+	-	when typing new Foo(..., show up the ctors instead of the class definition
+	- .tupleof for structs
+	- .offsetof for struct fields
+	- new MyClass() should return the ctor member instead - that has the actual class as its return type
+	- Handle argument-parameter match
+
+Template parameter deduction:
+ - Handle __FILE__ and __LINE__ correctly concerning template values
+
+ Tests:
+  - Find out what features did change after it added the first expression as ResultBase to UFCS results

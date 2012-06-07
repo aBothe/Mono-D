@@ -349,7 +349,7 @@ namespace D_Parser.Parser
 
         bool IsEOF
         {
-            get { return la == null || laKind == EOF || laKind == __EOF__; }
+            get { return Lexer.IsEOF; }
         }
 
 		int laKind = 0;
@@ -394,6 +394,8 @@ namespace D_Parser.Parser
 				Lexer.StopLexing();
 				return;
 			}
+			else if (ParseErrors.Count == MaxParseErrorsBeforeFailure)
+				msg = "Too many errors - stop parsing";
 
 			ParseErrors.Add(new ParserError(false,msg,n,t==null?la.Location:t.EndLocation));
         }

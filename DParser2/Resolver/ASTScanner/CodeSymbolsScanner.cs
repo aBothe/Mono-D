@@ -100,28 +100,27 @@ namespace D_Parser.Resolver.ASTScanner
 
 							if (t is DClassLike)
 							{
-								var dc = t as DClassLike;
+								var tr = new TypeResult { Node=t };
+								DResolver.ResolveBaseClasses(tr, lastResCtxt,true);
 
-								var baseClasses = DResolver.ResolveBaseClass(dc, lastResCtxt);
-
-								if (baseClasses != null)
+								if (tr.BaseClass!=null && tr.BaseClass.Length != 0)
 								{
-									var l1 = new List<TypeResult>(baseClasses);
+									var l1 = new List<TypeResult>(tr.BaseClass);
 									var l2 = new List<TypeResult>();
 
 									while (l1.Count > 0)
 									{
-										foreach (var tr in l1)
+										foreach (var tr_ in l1)
 										{
-											foreach (var m in tr.Node as IBlockNode)
+											foreach (var m in tr_.Node as IBlockNode)
 												if (m.Name == cmpName && (m is DEnum || m is DClassLike))
 												{
 													csr.ResolvedIdentifiers.Add(typeId as IdentifierDeclaration, m);
 													return new[] { m as IBlockNode };
 												}
 
-											if (tr.BaseClass != null)
-												l2.AddRange(tr.BaseClass);
+											if (tr_.BaseClass != null)
+												l2.AddRange(tr_.BaseClass);
 										}
 
 										l1.Clear();

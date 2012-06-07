@@ -1308,9 +1308,8 @@ namespace D_Parser.Parser
 			{
 				var ttd = Declarator2();
 				if (ttd != null)
-					ttd.InnerDeclaration = td;
-					td = ttd;
-				
+					ttd.InnerMost.InnerDeclaration = td;
+				td = ttd;
 			}
 
 			return td;
@@ -4380,8 +4379,7 @@ namespace D_Parser.Parser
 			if (laKind == (If))
 				dc.TemplateConstraint=Constraint();
 
-			if (laKind == (Colon))
-				dc.BaseClasses = BaseClassList();
+			// [Must not contain a base class list]
 
 			ClassBody(dc);
 
@@ -4572,13 +4570,13 @@ namespace D_Parser.Parser
 
 				tt.Name = t.Value;
 
-				if (laKind == (Colon))
+				if (laKind == Colon)
 				{
 					Step();
 					tt.Specialization = Type();
 				}
 
-				if (laKind == (Assign))
+				if (laKind == Assign)
 				{
 					Step();
 					tt.Default = Type();

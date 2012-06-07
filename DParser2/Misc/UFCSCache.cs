@@ -32,12 +32,7 @@ namespace D_Parser.Resolver.ASTScanner
 			var sw = new Stopwatch();
 			sw.Start();
 
-			var ctxt = new ResolverContextStack(pcList, new ResolverContext { 
-				Options = 
-					ResolutionOptions.StopAfterFirstOverloads | 
-					ResolutionOptions.ResolveAliases | 
-					ResolutionOptions.ResolveBaseClasses 
-			});
+			var ctxt = new ResolverContextStack(pcList, new ResolverContext()) { ContextIndependentOptions = ResolutionOptions.StopAfterFirstOverloads };
 
 			// Enum through all modules of the parse cache
 			if (subCacheToUpdate != null)
@@ -54,13 +49,7 @@ namespace D_Parser.Resolver.ASTScanner
 
 		public void CacheModuleMethods(IAbstractSyntaxTree module, IEditorData ed)
 		{
-			var ctxt = new ResolverContextStack(ed.ParseCache, new ResolverContext
-			{
-				Options =
-					ResolutionOptions.StopAfterFirstOverloads |
-					ResolutionOptions.ResolveAliases |
-					ResolutionOptions.ResolveBaseClasses
-			});
+			var ctxt = new ResolverContextStack(ed.ParseCache, new ResolverContext()) { ContextIndependentOptions = ResolutionOptions.StopAfterFirstOverloads };
 
 			CacheModuleMethods(module,ctxt);
 		}
@@ -111,7 +100,8 @@ namespace D_Parser.Resolver.ASTScanner
 			foreach (var kv in CachedMethods)
 			{
 				// First test if arg is matching the parameter
-				if (kv.Value.Equals(firstArgument) && (dontUseNameFilter || kv.Key.Name==nameFilter))
+				if ((dontUseNameFilter || kv.Key.Name == nameFilter) &&
+					ResultComparer.IsImplicitlyConvertible(firstArgument, kv.Value, ctxt))
 					preMatchList.Add(kv.Key);
 			}
 
