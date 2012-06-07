@@ -10,6 +10,6 @@ namespace D_Parser.Evaluation
 	{
 		ResolverContextStack ResolutionContext { get; }
 		bool IsSet(string name);
-		public object this[string Name] { get;set; }
+		object this[string Name] { get;set; }
 	}
 }
