@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Diagnostics;
 using Mono.Debugging.Client;
 using Mono.Debugging.Backend;
 using MonoDevelop.Core.Execution;
@@ -90,19 +91,12 @@ namespace MonoDevelop.Debugger.DDebugger
 		
 		public ProcessInfo[] GetAttachableProcesses ()
 		{
+			Process[] processlist = Process.GetProcesses();
+
 			List<ProcessInfo> procs = new List<ProcessInfo> ();
-			foreach (string dir in Directory.GetDirectories ("/proc")) {
-				int id;
-				if (!int.TryParse (Path.GetFileName (dir), out id))
-					continue;
-				try {
-					File.ReadAllText (Path.Combine (dir, "sessionid"));
-				} catch {
-					continue;
-				}
-				string cmdline = File.ReadAllText (Path.Combine (dir, "cmdline"));
-				cmdline = cmdline.Replace ('\0',' ');
-				ProcessInfo pi = new ProcessInfo (id, cmdline);
+			foreach (Process process in  processlist) {
+				
+				ProcessInfo pi = new ProcessInfo(process.Id, process.ProcessName);
 				procs.Add (pi);
 			}
 			return procs.ToArray ();

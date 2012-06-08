@@ -38,7 +38,7 @@ namespace MonoDevelop.Debugger.DDebugger
 		long currentThread = -1;
 		long activeThread = -1;
 
-		string currentProcessName;
+		long targetProcessId = 0;
 		List<string> tempVariableObjects = new List<string> ();
 		Dictionary<ulong,BreakPointWrapper> breakpoints = new Dictionary<ulong,BreakPointWrapper> ();
 		List<BreakEventInfo> breakpointsWithHitCount = new List<BreakEventInfo> ();
@@ -82,7 +82,7 @@ namespace MonoDevelop.Debugger.DDebugger
 
 				Engine.OnCreateProcess += delegate(ulong BaseOffset, uint ModuleSize, string ModuleName, uint Checksum, uint TimeStamp)
 				{
-					//debugeeProcessId =  Process.GetProcessesByName(ModuleName)[0].Id;					
+					targetProcessId = Engine.GetTargetProcessId();
 					debugeeOffSet = BaseOffset;
 				
 					return DebugStatus.NoChange;				
@@ -105,9 +105,7 @@ namespace MonoDevelop.Debugger.DDebugger
 
 				Engine.OnExitProcess += delegate(uint code)
 				{
-					/*Log("Debugger Process exited with code " + code.ToString(),
-						code<1?ErrorType.Information:ErrorType.Error);
-					StopExecution();*/
+					Exit();
 					return DebugStatus.NoChange;
 				};
             
@@ -118,14 +116,10 @@ namespace MonoDevelop.Debugger.DDebugger
 		
 		protected override void OnRun (DebuggerStartInfo startInfo)
 		{
-            //StopExecution();		
-
-			StartDebuggerSession (startInfo, 0);
-			
-			//currentProcessName = startInfo.Command + " " + startInfo.Arguments;
-			currentProcessName = startInfo.Command + ".exe" + " " + startInfo.Arguments;
-			//currentProcessName = "console1.exe";
-
+            targetProcessId = 0;
+            RunCv2Pdb(startInfo.Command);
+            
+            StartDebuggerSession(startInfo, 0);
 
 			OnStarted ();
 				
@@ -135,10 +129,24 @@ namespace MonoDevelop.Debugger.DDebugger
 		
 		protected override void OnAttachToProcess (long processId)
 		{
-			//ULONG64 server, String ^commandLine, DebugCreateProcessOptions options, String ^initialDirectory, String ^environment, ULONG processId, AttachFlags flags			
-			
+            //ToDo implement:
+            targetProcessId = processId;
 		}
 		
+        private void RunCv2Pdb(string target)
+        {
+            try
+            {
+                Process.Start("cv2pdb.exe", target).WaitForExit(30000);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error running cv2pdb.exe on target: " + target + 
+                                    "\r\nPlease ensure that path to cv2pdb is registered in the 'PATH' environment variable" + 
+                                    "\r\nDetails:\r\n" + ex.Message);
+            }
+        }
+
         void StartDebuggerSession(DebuggerStartInfo startInfo, long attachToProcessId)
 		{
 			IsDebugging = true;
@@ -147,15 +155,20 @@ namespace MonoDevelop.Debugger.DDebugger
             bool showConsole = false;
 
 			DebugCreateProcessOptions opt = new DebugCreateProcessOptions();
-			opt.CreateFlags = CreateFlags.DebugOnlyThisProcess | (showConsole ? CreateFlags.CreateNewConsole : 0);
-			opt.EngCreateFlags = EngCreateFlags.Default;
+            if (attachToProcessId == 0)
+            {
+                opt.CreateFlags = CreateFlags.DebugOnlyThisProcess | (showConsole ? CreateFlags.CreateNewConsole : 0);
+                opt.EngCreateFlags = EngCreateFlags.Default;
+            }
+
 			
 			if (attachToProcessId != 0)
 				Engine.CreateProcessAndAttach(0, "", opt, Path.GetDirectoryName(startInfo.Command), "", (uint)attachToProcessId, 0);
 			else			
-				Engine.CreateProcessAndAttach(0, startInfo.Command + (string.IsNullOrWhiteSpace(startInfo.Arguments) ? "" : (" " + startInfo.Arguments)), opt, Path.GetDirectoryName(startInfo.Command), "", 0, 0);
+				Engine.CreateProcessAndAttach(0, startInfo.Command + (string.IsNullOrWhiteSpace(startInfo.Arguments) ? "" : (" " + startInfo.Arguments)), opt, Path.GetDirectoryName(startInfo.Command), "", 0, 0);           
 
-            Engine.Symbols.SourcePath = (string.IsNullOrWhiteSpace(startInfo.WorkingDirectory)) ? @"C:\Users\michaelc\Desktop\Temp\mono-d-tests\console1" : Path.GetDirectoryName(startInfo.Command);
+            //ToDo: figure out how to pass the symbol path
+            Engine.Symbols.SourcePath = (string.IsNullOrWhiteSpace(startInfo.WorkingDirectory)) ? Path.GetDirectoryName(startInfo.Command) : startInfo.WorkingDirectory;
 			Engine.IsSourceCodeOrientedStepping = true;
 			
 			Engine.WaitForEvent();					
@@ -509,18 +522,8 @@ namespace MonoDevelop.Debugger.DDebugger
 		
 		protected override ProcessInfo[] OnGetProcesses ()
 		{				
-
-            //ToDo: figure out a way to get the pid from the EngineWrapper and use that instead of processName
-
-
-
-            Process[] processes = Process.GetProcessesByName(Path.GetFileNameWithoutExtension(currentProcessName));
-            ProcessInfo[] processesInfo = new ProcessInfo[processes.Length];
-            for (int i = 0; i < processes.Length; i++)
-            {
-                processesInfo[i] = new ProcessInfo(processes[i].Id, processes[i].ProcessName);
-            }
-            return processesInfo;           
+            Process process = Process.GetProcessById((int)targetProcessId);
+            return new ProcessInfo[] {new ProcessInfo(process.Id, process.ProcessName)} ;
 		}
 		
 		ThreadInfo GetThread (long id)
