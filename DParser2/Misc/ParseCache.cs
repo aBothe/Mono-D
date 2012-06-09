@@ -17,7 +17,7 @@ namespace D_Parser.Misc
 		public bool IsParsing { get { return parseThread != null && parseThread.IsAlive; } }
 		Thread parseThread;
 
-		public RootPackage Root = new RootPackage ();
+		public RootPackage Root = new RootPackage();
 
 		public bool EnableUfcsCaching = true;
 		/// <summary>
@@ -28,7 +28,7 @@ namespace D_Parser.Misc
 		/// If a parse directory is relative, like ../ or similar, use this path as base path
 		/// </summary>
 		public string FallbackPath;
-		public List<string> ParsedDirectories = new List<string> ();
+		public List<string> ParsedDirectories = new List<string>();
 
 		public Exception LastParseException { get; private set; }
 
@@ -61,27 +61,31 @@ namespace D_Parser.Misc
 		public event ParseFinishedHandler FinishedParsing;
 		public event Action FinishedUfcsCaching;
 
-		public void BeginParse ()
+		public void BeginParse()
 		{
-			BeginParse (ParsedDirectories,FallbackPath);
+			BeginParse(ParsedDirectories, FallbackPath);
 		}
 
 		/// <summary>
 		/// Parses all directories and updates the cache contents
 		/// </summary>
-		public void BeginParse (IEnumerable<string> directoriesToParse,string fallbackAbsolutePath)
+		public void BeginParse(IEnumerable<string> directoriesToParse, string fallbackAbsolutePath)
 		{
-			var performanceLogs = new List<ParsePerformanceData> ();
+			var performanceLogs = new List<ParsePerformanceData>();
 
 			AbortParsing();
+
+			// Clear all kinds of caches to free memory as soon as possible!
+			UfcsCache.Clear();
+			Clear(directoriesToParse == null);
+			GC.Collect(); // Run a collection cycle to entirely free previously free'd memory
+
 
 			FallbackPath = fallbackAbsolutePath;
 
 			if (directoriesToParse == null)
 			{
-				ParsedDirectories.Clear();
-
-				if(FinishedParsing!=null)
+				if (FinishedParsing != null)
 					FinishedParsing(null);
 				return;
 			}
@@ -89,7 +93,7 @@ namespace D_Parser.Misc
 			parseThread = new Thread(parseDg);
 
 			parseThread.IsBackground = true;
-			parseThread.Start(new Tuple<IEnumerable<string>,List<ParsePerformanceData>>(directoriesToParse, performanceLogs));
+			parseThread.Start(new Tuple<IEnumerable<string>, List<ParsePerformanceData>>(directoriesToParse, performanceLogs));
 		}
 
 		public void WaitForParserFinish()
@@ -129,9 +133,9 @@ namespace D_Parser.Misc
 			Root = newRoot;
 
 			// For performance boost, pre-resolve the object class
-			HandleObjectModule(GetModule("object"));			
+			HandleObjectModule(GetModule("object"));
 
-			if (FinishedParsing!=null)
+			if (FinishedParsing != null)
 				FinishedParsing(tup.Item2.ToArray());
 
 			if (EnableUfcsCaching)
@@ -142,38 +146,39 @@ namespace D_Parser.Misc
 					FinishedUfcsCaching();
 			}
 		}
-		
-		public bool UpdateRequired (string[] paths)
+
+		public bool UpdateRequired(string[] paths)
 		{
 			if (paths == null)
 				return false;
-			
+
 			// If current dir count != the new dir count
 			bool cacheUpdateRequired = paths.Length != ParsedDirectories.Count;
 
 			// If there's a new directory in it
 			if (!cacheUpdateRequired)
 				foreach (var path in paths)
-					if (!ParsedDirectories.Contains (path)) {
+					if (!ParsedDirectories.Contains(path))
+					{
 						cacheUpdateRequired = true;
 						break;
 					}
 
 			if (!cacheUpdateRequired && paths.Length != 0)
-				cacheUpdateRequired = 
-                    Root.Modules.Count == 0 && 
-                    Root.Packages.Count == 0;
-			
+				cacheUpdateRequired =
+					Root.Modules.Count == 0 &&
+					Root.Packages.Count == 0;
+
 			return cacheUpdateRequired;
 		}
-		
-		public void Clear (bool parseDirectories=false)
+
+		public void Clear(bool parseDirectories = false)
 		{
 			Root = null;
 			if (parseDirectories)
 				ParsedDirectories = null;
 
-			Root = new RootPackage ();
+			Root = new RootPackage();
 		}
 
 		void HandleObjectModule(IAbstractSyntaxTree objModule)
@@ -199,15 +204,16 @@ namespace D_Parser.Misc
 		/// Use this method to add a syntax tree to the parse cache.
 		/// Equally-named trees will be overwritten. 
 		/// </summary>
-		public void AddOrUpdate (IAbstractSyntaxTree ast)
+		public void AddOrUpdate(IAbstractSyntaxTree ast)
 		{
 			if (ast == null)
 				return;
 
-			var packName = ModuleNameHelper.ExtractPackageName (ast.ModuleName);
+			var packName = ModuleNameHelper.ExtractPackageName(ast.ModuleName);
 
-			if (string.IsNullOrEmpty (packName)) {
-				Root.Modules [ast.ModuleName] = ast;
+			if (string.IsNullOrEmpty(packName))
+			{
+				Root.Modules[ast.ModuleName] = ast;
 
 				if (ast.ModuleName == "object")
 					HandleObjectModule(ast);
@@ -222,24 +228,25 @@ namespace D_Parser.Misc
 		/// <summary>
 		/// Returns null if no module was found.
 		/// </summary>
-		public IAbstractSyntaxTree GetModule (string moduleName)
+		public IAbstractSyntaxTree GetModule(string moduleName)
 		{
-			var packName = ModuleNameHelper.ExtractPackageName (moduleName);
+			var packName = ModuleNameHelper.ExtractPackageName(moduleName);
 
-			var pack = Root.GetOrCreateSubPackage (packName, false);
+			var pack = Root.GetOrCreateSubPackage(packName, false);
 
-			if (pack != null) {
+			if (pack != null)
+			{
 				IAbstractSyntaxTree ret = null;
-				if (pack.Modules.TryGetValue (ModuleNameHelper.ExtractModuleName (moduleName), out ret))
+				if (pack.Modules.TryGetValue(ModuleNameHelper.ExtractModuleName(moduleName), out ret))
 					return ret;
 			}
 
 			return null;
 		}
 
-		public IAbstractSyntaxTree GetModuleByFileName (string file, string baseDirectory)
+		public IAbstractSyntaxTree GetModuleByFileName(string file, string baseDirectory)
 		{
-			return GetModule (DModule.GetModuleName (baseDirectory, file));
+			return GetModule(DModule.GetModuleName(baseDirectory, file));
 		}
 
 		public IAbstractSyntaxTree this[string ModuleName]
@@ -277,8 +284,10 @@ namespace D_Parser.Misc
 		/// </summary>
 		public double TotalDuration = 0.0;
 
-		public double FileDuration {
-			get {
+		public double FileDuration
+		{
+			get
+			{
 				if (AmountFiles > 0)
 					return TotalDuration / AmountFiles;
 				return 0;

@@ -12,6 +12,9 @@ Everything that still needs to be handled by D_Parser comes right in here:
 	  ([debug/release] or [Windows/Mac/Unix/BSD] etc.)
 * Interface/Abstract class implementation
 
+* Make Mixin analysis etc. multi-threaded!
+
+
 Resolver:
 	-	Implement single-element aliasing on templates(only !)
 		(when a template contains only one item that is called like the template, 

@@ -6,6 +6,7 @@ using D_Parser.Misc;
 using D_Parser.Resolver.TypeResolution;
 using System.Linq;
 using D_Parser.Completion;
+using System.Threading;
 
 namespace D_Parser.Resolver.ASTScanner
 {
@@ -15,46 +16,77 @@ namespace D_Parser.Resolver.ASTScanner
 	public class UFCSCache
 	{
 		#region Properties
+		public bool IsProcessing { get; private set; }
+
+		Stack<DMethod> queue = new Stack<DMethod>();
 		public readonly Dictionary<DMethod, ResolveResult> CachedMethods = new Dictionary<DMethod, ResolveResult>();
 		/// <summary>
-		/// Returns time span needed to resolve all first parameters. Seconds.
+		/// Returns time span needed to resolve all first parameters.
 		/// </summary>
 		public TimeSpan CachingDuration { get; private set; }
 		#endregion
 
 		public void Clear()
 		{
-			CachedMethods.Clear();
+			if (!IsProcessing)
+				CachedMethods.Clear();
 		}
 
-		public void Update(ParseCacheList pcList, ParseCache subCacheToUpdate=null)
+		/// <summary>
+		/// Returns false if cache is already updating.
+		/// </summary>
+		public bool Update(ParseCacheList pcList, ParseCache subCacheToUpdate = null)
 		{
-			var sw = new Stopwatch();
-			sw.Start();
+			if (IsProcessing)
+				return false;
 
-			var ctxt = new ResolverContextStack(pcList, new ResolverContext()) { ContextIndependentOptions = ResolutionOptions.StopAfterFirstOverloads };
+			try
+			{
+				IsProcessing = true;
 
-			// Enum through all modules of the parse cache
-			if (subCacheToUpdate != null)
-				foreach (var module in subCacheToUpdate)
-					CacheModuleMethods(module, ctxt);
-			else
-				foreach (var pc in pcList)
-					foreach (var module in pc)
-						CacheModuleMethods(module,ctxt);
+				var ctxt = new ResolverContextStack(pcList, new ResolverContext()) { ContextIndependentOptions = ResolutionOptions.StopAfterFirstOverloads };
 
-			sw.Stop();
-			CachingDuration = sw.Elapsed;
+				queue.Clear();
+
+				// Prepare queue
+				if (subCacheToUpdate != null)
+					foreach (var module in subCacheToUpdate)
+						PrepareQueue(module);
+				else
+					foreach (var pc in pcList)
+						foreach (var module in pc)
+							PrepareQueue(module);
+
+				var sw = new Stopwatch();
+				sw.Start();
+
+				var threads = new Thread[ThreadedDirectoryParser.numThreads];
+				for (int i = 0; i < ThreadedDirectoryParser.numThreads; i++)
+				{
+					var th = threads[i] = new Thread(parseThread)
+					{
+						IsBackground = true,
+						Priority = ThreadPriority.Lowest,
+						Name = "UFCS Analysis thread #" + i
+					};
+					th.Start(pcList);
+				}
+
+				for (int i = 0; i < ThreadedDirectoryParser.numThreads; i++)
+					if (threads[i].IsAlive)
+						threads[i].Join(10000);
+
+				sw.Stop();
+				CachingDuration = sw.Elapsed;
+			}
+			finally
+			{
+				IsProcessing = false;
+			}
+			return true;
 		}
 
-		public void CacheModuleMethods(IAbstractSyntaxTree module, IEditorData ed)
-		{
-			var ctxt = new ResolverContextStack(ed.ParseCache, new ResolverContext()) { ContextIndependentOptions = ResolutionOptions.StopAfterFirstOverloads };
-
-			CacheModuleMethods(module,ctxt);
-		}
-
-		public void CacheModuleMethods(IAbstractSyntaxTree module,ResolverContextStack ctxt)
+		void PrepareQueue(IAbstractSyntaxTree module)
 		{
 			if (module != null)
 				foreach (var n in module)
@@ -65,14 +97,35 @@ namespace D_Parser.Resolver.ASTScanner
 					if (dm == null || dm.Parameters.Count == 0 || dm.Parameters[0].Type == null)
 						continue;
 
-					ctxt.ScopedBlock = dm;
-					ctxt.ScopedStatement = null;
-
-					var firstParam = TypeDeclarationResolver.Resolve(dm.Parameters[0].Type, ctxt);
-
-					if (firstParam != null && firstParam.Length != 0)
-						CachedMethods[dm] = firstParam[0];
+					queue.Push(dm);
 				}
+		}
+
+		void parseThread(object pcl_shared)
+		{
+			DMethod dm = null;
+			var pcl = (ParseCacheList)pcl_shared;
+			var ctxt = new ResolverContextStack(pcl, new ResolverContext());
+			ctxt.ContextIndependentOptions |= ResolutionOptions.StopAfterFirstOverloads;
+
+			while (queue.Count != 0)
+			{
+				lock (queue)
+				{
+					if (queue.Count == 0)
+						return;
+
+					dm = queue.Pop();
+				}
+
+				ctxt.CurrentContext.ScopedBlock = dm.Parent as IBlockNode;
+
+				var firstArg_result = TypeDeclarationResolver.Resolve(dm.Parameters[0].Type, ctxt);
+
+				if (firstArg_result != null && firstArg_result.Length != 0)
+					lock (CachedMethods)
+						CachedMethods[dm] = firstArg_result[0];
+			}
 		}
 
 		/// <summary>
@@ -81,6 +134,9 @@ namespace D_Parser.Resolver.ASTScanner
 		/// </summary>
 		public void RemoveModuleItems(IAbstractSyntaxTree ast)
 		{
+			if (IsProcessing)
+				return;
+
 			var remList = new List<DMethod>();
 
 			foreach (var kv in CachedMethods)
@@ -88,11 +144,33 @@ namespace D_Parser.Resolver.ASTScanner
 					remList.Add(kv.Key);
 
 			foreach (var i in remList)
-				CachedMethods.Remove(i);
+				lock (CachedMethods)
+					CachedMethods.Remove(i);
 		}
 
-		public IEnumerable<DMethod> FindFitting(ResolverContextStack ctxt, CodeLocation currentLocation,ResolveResult firstArgument,string nameFilter=null)
+		public void CacheModuleMethods(IAbstractSyntaxTree ast, ResolverContextStack ctxt)
 		{
+			foreach (var m in ast)
+				if (m is DMethod)
+				{
+					var dm = (DMethod)m;
+
+					if (dm.Parameters == null || dm.Parameters.Count == 0 || dm.Parameters[0].Type == null)
+						continue;
+
+					var firstArg_result = TypeDeclarationResolver.Resolve(dm.Parameters[0].Type, ctxt);
+
+					if (firstArg_result != null && firstArg_result.Length != 0)
+						lock (CachedMethods)
+							CachedMethods[dm] = firstArg_result[0];
+				}
+		}
+
+		public IEnumerable<DMethod> FindFitting(ResolverContextStack ctxt, CodeLocation currentLocation, ResolveResult firstArgument, string nameFilter = null)
+		{
+			if (IsProcessing)
+				return null;
+
 			var preMatchList = new List<DMethod>();
 
 			bool dontUseNameFilter = nameFilter == null;
@@ -107,8 +185,9 @@ namespace D_Parser.Resolver.ASTScanner
 
 			// Then filter out methods which cannot be accessed in the current context 
 			// (like when the method is defined in a module that has not been imported)
-			var mv = new MatchFilterVisitor<DMethod>(ctxt) {
-				rawList=preMatchList
+			var mv = new MatchFilterVisitor<DMethod>(ctxt)
+			{
+				rawList = preMatchList
 			};
 
 			mv.IterateThroughScopeLayers(currentLocation);
