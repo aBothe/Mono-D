@@ -162,17 +162,22 @@ namespace D_Parser.Dom
 				return;
 			IsNegated=true;
 
-			if(!(Condition is SurroundingParenthesesExpression) && IsStaticIfCondition)
-				Condition = new SurroundingParenthesesExpression { 
-					Expression=Condition, 
-					Location= Condition==null? CodeLocation.Empty : Condition.Location,
-					EndLocation= Condition==null? CodeLocation.Empty : Condition.EndLocation
-				};
+			if (Condition != null)
+			{
+				if (!(Condition is SurroundingParenthesesExpression) && IsStaticIfCondition)
+					Condition = new SurroundingParenthesesExpression
+					{
+						Expression = Condition,
+						Location = Condition.Location,
+						EndLocation = Condition.EndLocation
+					};
 
-			Condition = new UnaryExpression_Not { 
-				UnaryExpression=Condition, 
-				Location= Condition.Location
-			};
+				Condition = new UnaryExpression_Not
+				{
+					UnaryExpression = Condition,
+					Location = Condition.Location
+				};
+			}
 		}
 
 		public DeclarationCondition(int Token)
