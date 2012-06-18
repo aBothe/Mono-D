@@ -52,11 +52,11 @@
 		<IncludePathPattern>-I"{0}"</IncludePathPattern>
 		<DebugArgs>
 			<CompilerArg>-c "$src" -of "$obj" $includes -g</CompilerArg>
-			<LinkerArgs>-lib "$target" $objs</LinkerArgs>
+			<LinkerArgs>-lib -of "$target" $objs</LinkerArgs>
 		</DebugArgs>
 		<ReleaseArgs>
 			<CompilerArg>-c "$src" -of "$obj" $includes -O3 -release</CompilerArg>
-			<LinkerArgs>-lib "$target" $objs</LinkerArgs>
+			<LinkerArgs>-lib -of "$target" $objs</LinkerArgs>
 		</ReleaseArgs>
 	</TargetConfiguration>
 </Compiler>
