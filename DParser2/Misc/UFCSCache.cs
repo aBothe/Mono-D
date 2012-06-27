@@ -175,13 +175,14 @@ namespace D_Parser.Resolver.ASTScanner
 
 			bool dontUseNameFilter = nameFilter == null;
 
-			foreach (var kv in CachedMethods)
-			{
-				// First test if arg is matching the parameter
-				if ((dontUseNameFilter || kv.Key.Name == nameFilter) &&
-					ResultComparer.IsImplicitlyConvertible(firstArgument, kv.Value, ctxt))
-					preMatchList.Add(kv.Key);
-			}
+			lock(CachedMethods)
+				foreach (var kv in CachedMethods)
+				{
+					// First test if arg is matching the parameter
+					if ((dontUseNameFilter || kv.Key.Name == nameFilter) &&
+						ResultComparer.IsImplicitlyConvertible(firstArgument, kv.Value, ctxt))
+						preMatchList.Add(kv.Key);
+				}
 
 			// Then filter out methods which cannot be accessed in the current context 
 			// (like when the method is defined in a module that has not been imported)
