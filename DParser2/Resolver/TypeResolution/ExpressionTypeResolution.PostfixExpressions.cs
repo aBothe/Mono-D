@@ -276,6 +276,9 @@ namespace D_Parser.Resolver.TypeResolution
 			ResolveResult[] resultBases = null,
 			IExpression supExpression=null)
 		{
+			if (acc == null)
+				return null;
+
 			var baseExpression = resultBases ?? Resolve(acc.PostfixForeExpression, ctxt);
 
 			if (acc.AccessExpression is TemplateInstanceExpression)
@@ -312,22 +315,23 @@ namespace D_Parser.Resolver.TypeResolution
 				 * Handle cases which can occur in an expression context only
 				 */
 
-				foreach (var b in baseExpression)
-				{
-					/*
-					 * 1) UFCS
-					 * 2) Static properties 
-					 */
-					var ufcsResult = UFCSResolver.TryResolveUFCS(b, acc, ctxt);
+				if(baseExpression!=null)
+					foreach (var b in baseExpression)
+					{
+						/*
+						 * 1) UFCS
+						 * 2) Static properties 
+						 */
+						var ufcsResult = UFCSResolver.TryResolveUFCS(b, acc, ctxt);
 
-					if (ufcsResult != null)
-						return ufcsResult;
+						if (ufcsResult != null)
+							return ufcsResult;
 
-					var staticTypeProperty = StaticPropertyResolver.TryResolveStaticProperties(b, id, ctxt);
+						var staticTypeProperty = StaticPropertyResolver.TryResolveStaticProperties(b, id, ctxt);
 
-					if (staticTypeProperty != null)
-						return new[] { staticTypeProperty };
-				}
+						if (staticTypeProperty != null)
+							return new[] { staticTypeProperty };
+					}
 			}
 			else
 				return baseExpression;
