@@ -1,8 +1,4 @@
-﻿/// <summary>
-/// The following code was taken from SharpDevelop
-/// </summary>
-
-using System;
+﻿using System;
 using D_Parser.Dom;
 
 namespace D_Parser.Parser
@@ -16,6 +12,25 @@ namespace D_Parser.Parser
 		StringLiteral = 4,
 		VerbatimStringLiteral = 8,
 		CharLiteral = 16,
+	}
+
+	[Flags]
+	public enum LiteralSubformat
+	{
+		None = 0,
+
+		Integer = 1,
+		Unsigned = 2,
+		Long = 4,
+
+		Double = 8,
+		Float = 16,
+		Real = 32,
+		Imaginary = 64,
+
+		Utf8=128,
+		Utf16=256,
+		Utf32=512,
 	}
 
     public class DToken
@@ -35,6 +50,16 @@ namespace D_Parser.Parser
         {
             get { return literalFormat; }
         }
+
+		/// <summary>
+		/// Used for scalar, floating and string literals.
+		/// Marks special formats such as explicit unsigned-ness, wide char or dchar-based strings etc.
+		/// </summary>
+		public LiteralSubformat Subformat
+		{
+			get;
+			internal set;
+		}
 
         public object LiteralValue
         {
@@ -105,12 +130,14 @@ namespace D_Parser.Parser
 			this.val = literalValue is string ? literalValue as string : literalValue.ToString();
 		}
 
-        public DToken(int kind, int x, int y, string val, object literalValue, LiteralFormat literalFormat)
-            : this(kind, new CodeLocation(x, y), new CodeLocation(x + val.Length, y), val, literalValue, literalFormat)
+        public DToken(int kind, int x, int y, string val, object literalValue, LiteralFormat literalFormat, LiteralSubformat Subformat=0)
+            : this(kind, new CodeLocation(x, y), new CodeLocation(x + val.Length, y), val, literalValue, literalFormat, Subformat)
         {
         }
 
-        public DToken(int kind, CodeLocation startLocation, CodeLocation endLocation, string val, object literalValue, LiteralFormat literalFormat)
+        public DToken(int kind, CodeLocation startLocation, CodeLocation endLocation, string val, object literalValue, 
+			LiteralFormat literalFormat,
+			LiteralSubformat Subformat=0)
         {
             this.Kind = kind;
             this.col = startLocation.Column;
@@ -119,6 +146,7 @@ namespace D_Parser.Parser
             this.val = val;
             this.literalValue = literalValue;
             this.literalFormat = literalFormat;
+			this.Subformat = Subformat;
         }
     }
 

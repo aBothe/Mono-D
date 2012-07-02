@@ -5,8 +5,6 @@ using D_Parser.Dom.Statements;
 
 namespace D_Parser.Dom.Expressions
 {
-	public delegate INode[] ResolveTypeHandler(string identifier);
-
 	public interface IExpression : ISyntaxRegion
 	{
 	}
@@ -869,10 +867,11 @@ namespace D_Parser.Dom.Expressions
 
 		public readonly object Value;
 		public readonly LiteralFormat Format;
+		public readonly LiteralSubformat Subformat;
 
 		//public IdentifierExpression() { }
 		public IdentifierExpression(object Val) { Value = Val; Format = LiteralFormat.None; }
-		public IdentifierExpression(object Val, LiteralFormat LiteralFormat) { Value = Val; this.Format = LiteralFormat; }
+		public IdentifierExpression(object Val, LiteralFormat LiteralFormat, LiteralSubformat Subformat = 0) { Value = Val; this.Format = LiteralFormat; this.Subformat = Subformat; }
 
 		public override string ToString()
 		{
@@ -1221,9 +1220,26 @@ namespace D_Parser.Dom.Expressions
 
 	public class IsExpression : PrimaryExpression,ContainerExpression
 	{
-		public IExpression TestedExpression;
 		public ITypeDeclaration TestedType;
 		public string TypeAliasIdentifier;
+
+		private TemplateTypeParameter ptp;
+		/// <summary>
+		/// Persistent parameter object that keeps information about the first specialization 
+		/// </summary>
+		public TemplateTypeParameter ArtificialFirstSpecParam
+		{
+			get {
+				if (ptp == null)
+				{
+					return ptp = new TemplateTypeParameter { 
+						Specialization = TypeSpecialization,
+						Name=TypeAliasIdentifier
+					};
+				}
+				return ptp;
+			}
+		}
 
 		/// <summary>
 		/// True if Type == TypeSpecialization instead of Type : TypeSpecialization
@@ -1241,8 +1257,6 @@ namespace D_Parser.Dom.Expressions
 
 			if (TestedType != null)
 				ret += TestedType.ToString();
-			else if (TestedExpression != null)
-				ret += TestedExpression.ToString();
 
 			if (TypeAliasIdentifier != null)
 				ret += ' ' + TypeAliasIdentifier;
@@ -1277,9 +1291,6 @@ namespace D_Parser.Dom.Expressions
 		public IExpression[] SubExpressions
 		{
 			get { 
-				if(TestedExpression!=null)
-				return new[]{TestedExpression};
-
 				if (TestedType != null)
 					return new[] { new TypeDeclarationExpression(TestedType)};
 

@@ -55,6 +55,13 @@ namespace D_Parser.Parser
             return p.Expression();
         }
 
+		public static IExpression ParseAssignExpression(string Code)
+		{
+			var p = Create(new StringReader(Code));
+			p.Step();
+			return p.AssignExpression();
+		}
+
         public static ITypeDeclaration ParseBasicType(string Code,out DToken OptionalToken)
         {
             OptionalToken = null;

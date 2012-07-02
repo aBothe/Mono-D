@@ -1644,13 +1644,23 @@ namespace D_Parser.Parser
 
 		bool IsAttributeSpecifier()
 		{
-			return (laKind == (Extern) || laKind == (Export) || laKind == (Align) || laKind == Pragma || laKind == (Deprecated) || IsProtectionAttribute()
+			return IsAttributeSpecifier(laKind, Lexer.CurrentPeekToken.Kind);
+		}
+
+		public static bool IsAttributeSpecifier(int laKind, int peekTokenKind=0)
+		{
+			return (laKind == (Extern) || laKind == (Export) || laKind == (Align) || laKind == Pragma || laKind == (Deprecated) || IsProtectionAttribute(laKind)
 				|| laKind == (Static) || laKind == (Final) || laKind == (Override) || laKind == (Abstract) || laKind == (Scope) || laKind == (__gshared) || laKind==Synchronized
-				|| ((laKind == (Auto) || MemberFunctionAttribute[laKind]) && (Lexer.CurrentPeekToken.Kind != (OpenParenthesis) && Lexer.CurrentPeekToken.Kind != (Identifier)))
+				|| ((laKind == (Auto) || MemberFunctionAttribute[laKind]) && (peekTokenKind != OpenParenthesis && peekTokenKind != Identifier))
 				|| laKind==PropertyAttribute);
 		}
 
 		bool IsProtectionAttribute()
+		{
+			return IsProtectionAttribute(laKind);
+		}
+
+		public static bool IsProtectionAttribute(int laKind)
 		{
 			return laKind == (Public) || laKind == (Private) || laKind == (Protected) || laKind == (Extern) || laKind == (Package);
 		}
@@ -2537,10 +2547,10 @@ namespace D_Parser.Parser
 						Step();
 						a += t.LiteralValue as string;
 					}
-					return new IdentifierExpression(a, t.LiteralFormat) { Location = startLoc, EndLocation = t.EndLocation };
+					return new IdentifierExpression(a, t.LiteralFormat, t.Subformat) { Location = startLoc, EndLocation = t.EndLocation };
 				}
 				//else if (t.LiteralFormat == LiteralFormat.CharLiteral)return new IdentifierExpression(t.LiteralValue) { LiteralFormat=t.LiteralFormat,Location = startLoc, EndLocation = t.EndLocation };
-				return new IdentifierExpression(t.LiteralValue, t.LiteralFormat) { Location = startLoc, EndLocation = t.EndLocation };
+				return new IdentifierExpression(t.LiteralValue, t.LiteralFormat, t.Subformat) { Location = startLoc, EndLocation = t.EndLocation };
 			}
 			#endregion
 
@@ -2762,11 +2772,8 @@ namespace D_Parser.Parser
 				LastParsedObject = ce;
 				Expect(OpenParenthesis);
 
-				var LookAheadBackup = la;
-
-				AllowWeakTypeParsing = true;
-				ce.TestedType = Type();
-				AllowWeakTypeParsing = false;
+				if((ce.TestedType = Type())==null)
+					SynErr(laKind, "In an IsExpression, either a type or an expression is required!");
 
 				if (ce.TestedType!=null && laKind == Identifier && (Lexer.CurrentPeekToken.Kind == CloseParenthesis || Lexer.CurrentPeekToken.Kind == Equal
 					|| Lexer.CurrentPeekToken.Kind == Colon))
@@ -2774,20 +2781,7 @@ namespace D_Parser.Parser
 					Step();
 					ce.TypeAliasIdentifier = strVal;
 				}
-				else 
-				// D Language specs mistake: In an IsExpression there also can be expressions!
-				if(ce.TestedType==null || !(laKind==CloseParenthesis || laKind==Equal||laKind==Colon))
-				{
-					// Reset lookahead token to prior position
-					la = LookAheadBackup;
-					// Reset wrongly parsed type declaration
-					ce.TestedType = null;
-					ce.TestedExpression = ConditionalExpression();
-				}
 
-				if(ce.TestedExpression==null && ce.TestedType==null)
-					SynErr(laKind,"In an IsExpression, either a type or an expression is required!");
-				
 				if (laKind == CloseParenthesis)
 				{
 					Step();
@@ -2825,8 +2819,10 @@ namespace D_Parser.Parser
 						return
 				*/
 
-				if (ClassLike[laKind] || laKind==Typedef || // typedef is possible although it's not yet documented in the syntax docs
-					laKind==Enum || laKind==Delegate || laKind==Function || laKind==Super || laKind==Return)
+				if (ce.EqualityTest && (ClassLike[laKind] || laKind==Typedef || // typedef is possible although it's not yet documented in the syntax docs
+					laKind==Enum || laKind==Delegate || laKind==Function || laKind==Super || laKind==Return ||
+					((laKind==Const || laKind == Immutable || laKind == InOut || laKind == Shared) && 
+					(Peek(1).Kind==CloseParenthesis || Lexer.CurrentPeekToken.Kind==Comma))))
 				{
 					Step();
 					ce.TypeSpecializationToken = t.Kind;

@@ -215,7 +215,7 @@ namespace D_Parser.Formatting
 					}
 				}
 
-				else if (t.Kind == DTokens.Case || t.Kind==DTokens.Default)
+				else if ((DParser.IsAttributeSpecifier(t.Kind, la.Kind) && la.Kind==DTokens.Colon) || t.Kind == DTokens.Case || t.Kind==DTokens.Default)
 				{
 					while (block != null && block.BlockStartToken!=DTokens.OpenCurlyBrace)
 						PopBlock();

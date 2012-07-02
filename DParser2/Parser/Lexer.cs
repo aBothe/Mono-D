@@ -775,9 +775,7 @@ namespace D_Parser.Parser
 				int exponent = 1;
 
 				bool HasDot = false;
-				bool isunsigned = false;
-				bool isfloat = false;
-				bool islong = false;
+				LiteralSubformat subFmt = 0;
 				int NumBase = 0; // Set it to 0 initially - it'll be set to another value later for sure
 
 				char peek = (char)ReaderPeek();
@@ -924,18 +922,18 @@ namespace D_Parser.Parser
 					{
 						ReaderRead();
 						suffix += "u";
-						isunsigned = true;
+						subFmt |= LiteralSubformat.Unsigned;
 						peek = (char)ReaderPeek();
 					}
 
 					if (peek == 'L')
 					{
-						islong = true;
+						subFmt |= LiteralSubformat.Long;
 						ReaderRead();
 						suffix += "L";
 						//islong = true;
 						peek = (char)ReaderPeek();
-						if (!isunsigned && (peek == 'u' || peek == 'U'))
+						if (!subFmt.HasFlag(LiteralSubformat.Unsigned) && (peek == 'u' || peek == 'U'))
 							goto unsigned;
 					}
 				}
@@ -946,15 +944,14 @@ namespace D_Parser.Parser
 					{ // float value
 						ReaderRead();
 						suffix += "f";
-						isfloat = true;
+						subFmt |= LiteralSubformat.Float;
 						peek = (char)ReaderPeek();
 					}
 					else if (peek == 'L')
 					{ // real value
 						ReaderRead();
 						suffix += 'L';
-						//isreal = true;
-						islong = true;
+						subFmt |= LiteralSubformat.Real;
 						peek = (char)ReaderPeek();
 					}
 				}
@@ -963,8 +960,8 @@ namespace D_Parser.Parser
 				{ // imaginary value
 					ReaderRead();
 					suffix += "i";
-					isfloat = true;
-					//isimaginary = true;
+
+					subFmt |= LiteralSubformat.Imaginary;
 				}
 				#endregion
 
@@ -984,23 +981,23 @@ namespace D_Parser.Parser
 
 				if (HasDot)
 				{
-					if (isfloat)
+					if (subFmt.HasFlag(LiteralSubformat.Float))
 						val = (float)num;
 					else
 						val = (double)num;
 				}
 				else
 				{
-					if (isunsigned)
+					if (subFmt.HasFlag(LiteralSubformat.Unsigned))
 					{
-						if (islong)
+						if (subFmt.HasFlag(LiteralSubformat.Long))
 							val = (ulong)num;
 						else
 							val = (uint)num;
 					}
 					else
 					{
-						if (islong)
+						if (subFmt.HasFlag(LiteralSubformat.Long))
 							val = (long)num;
 						else
 							val = (int)num;
@@ -1009,9 +1006,14 @@ namespace D_Parser.Parser
 
 				#endregion
 
-				token = new DToken(DTokens.Literal, new CodeLocation(x, y), new CodeLocation(x + stringValue.Length, y), stringValue, val, isfloat || HasDot ? (LiteralFormat.FloatingPoint | LiteralFormat.Scalar) : LiteralFormat.Scalar);
+				token = new DToken(DTokens.Literal, new CodeLocation(x, y), new CodeLocation(x + stringValue.Length, y), stringValue, val, 
+					subFmt.HasFlag(LiteralSubformat.Float) || subFmt.HasFlag(LiteralSubformat.Imaginary) || HasDot ? 
+						(LiteralFormat.FloatingPoint | LiteralFormat.Scalar) : LiteralFormat.Scalar,
+					subFmt);
 
-				if (token != null) token.next = nextToken;
+				if (token != null) 
+					token.next = nextToken;
+
 				return token;
 			}
 		}
@@ -1026,6 +1028,7 @@ namespace D_Parser.Parser
 			originalValue.Append((char)initialChar);
 			bool doneNormally = false;
 			int nextChar;
+			var subFmt = LiteralSubformat.Utf8;
 			while ((nextChar = ReaderRead()) != -1)
 			{
 				char ch = (char)nextChar;
@@ -1036,7 +1039,14 @@ namespace D_Parser.Parser
 					originalValue.Append((char)nextChar);
 					// Skip string literals
 					ch = (char)this.ReaderPeek();
-					if (ch == 'c' || ch == 'w' || ch == 'd') ReaderRead();
+					if (ch == 'c' || ch == 'w' || ch == 'd')
+					{
+						if (ch == 'w')
+							subFmt = LiteralSubformat.Utf16;
+						else if (ch == 'd')
+							subFmt = LiteralSubformat.Utf32;
+						ReaderRead();
+					}
 					break;
 				}
 				HandleLineEnd(ch);
@@ -1067,7 +1077,7 @@ namespace D_Parser.Parser
 				OnError(y, x, String.Format("End of file reached inside string literal"));
 			}
 
-			return new DToken(DTokens.Literal, new CodeLocation(x, y), new CodeLocation(x + originalValue.Length, y), originalValue.ToString(), sb.ToString(), LiteralFormat.StringLiteral);
+			return new DToken(DTokens.Literal, new CodeLocation(x, y), new CodeLocation(x + originalValue.Length, y), originalValue.ToString(), sb.ToString(), LiteralFormat.StringLiteral, subFmt);
 		}
 
 		DToken ReadVerbatimString(int EndingChar)

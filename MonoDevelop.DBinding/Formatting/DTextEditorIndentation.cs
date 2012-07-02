@@ -93,24 +93,25 @@ namespace MonoDevelop.D.Formatting
 					return false;
 				}
 
-				if (keyChar == '{' || keyChar == '}') {
-					ed.DeleteSelectedText (true);
+				else if (keyChar == '{' || keyChar == '}' || keyChar == ':')
+				{
+					ed.DeleteSelectedText(true);
 
-					ed.InsertAtCaret (keyChar.ToString ());
+					ed.InsertAtCaret(keyChar.ToString());
 
-					var origInd = ed.GetLineIndent (ed.Caret.Line);
+					var origInd = ed.GetLineIndent(ed.Caret.Line);
 					int originalIndentation = origInd.Length;
 
-					var tr = ed.Document.CreateReader ();
-					var cb = DCodeFormatter.NativeFormatterInstance.CalculateIndentation (tr, ed.Caret.Line);
-					tr.Close ();
+					var tr = ed.Document.CreateReader();
+					var cb = DCodeFormatter.NativeFormatterInstance.CalculateIndentation(tr, ed.Caret.Line);
+					tr.Close();
 
-					newIndentation = cb == null ? 0 : cb.GetLineIndentation (ed.Caret.Line);
-					var newInd = CalculateIndentationString (newIndentation);
+					newIndentation = cb == null ? 0 : cb.GetLineIndentation(ed.Caret.Line);
+					var newInd = CalculateIndentationString(newIndentation);
 
 					if (origInd != newInd)
-						ed.Replace (
-							Document.Editor.GetLine (ed.Caret.Line).Offset,
+						ed.Replace(
+							Document.Editor.GetLine(ed.Caret.Line).Offset,
 							originalIndentation,
 							newInd);
 
