@@ -71,6 +71,9 @@ namespace D_Parser.Misc
 
 		void PrepareQueue(RootPackage root)
 		{
+			if (!Directory.Exists(baseDirectory))
+				return;
+
 			//ISSUE: wild card character ? seems to behave differently across platforms
 			// msdn: -> Exactly zero or one character.
 			// monodocs: -> Exactly one character.
