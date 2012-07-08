@@ -168,7 +168,15 @@ namespace D_Parser.Parser
 		public virtual DToken NextToken()
 		{
 			if (stopLexing)
-				return null;
+			{
+				if (lookaheadToken != null && lookaheadToken.next!=null &&
+					(lookaheadToken.next.Kind == DTokens.EOF || lookaheadToken.next.Kind==DTokens.__EOF__))
+				{
+					curToken = lookaheadToken;
+					lookaheadToken = lookaheadToken.next;
+				}
+				return lookaheadToken;
+			}
 
 			if (lookaheadToken == null)
 			{
