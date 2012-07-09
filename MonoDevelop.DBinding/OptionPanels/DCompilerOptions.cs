@@ -310,6 +310,10 @@ namespace MonoDevelop.D.OptionPanels
 			#region Store new include paths
 			var paths = text_Includes.Buffer.Text.Split (new[]{'\n'}, StringSplitOptions.RemoveEmptyEntries);
 
+			// Remove trailing / and \
+			for (int i = 0; i < paths.Length; i++)
+				paths[i] = paths[i].TrimEnd('\\', '/');
+
 			if (configuration.ParseCache.UpdateRequired (paths)) {
 				configuration.ParseCache.ParsedDirectories.Clear ();
 				configuration.ParseCache.ParsedDirectories.AddRange (paths);
