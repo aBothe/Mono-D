@@ -90,7 +90,7 @@ namespace MonoDevelop.D.OptionPanels
 				var cb = new Gtk.CheckButton(prj.Name){
 					CanFocus=true,
 					DrawIndicator=true,
-					UseUnderline=true,
+					UseUnderline=false,
 					Active = proj.ProjectDependencies.Contains(prj.ItemId)
 				};
 
