@@ -6,3 +6,4 @@ build/index.html
 build/*.m*
 *.pidb
 *.userprefs
+*.orig

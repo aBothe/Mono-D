@@ -10,7 +10,7 @@ namespace D_Parser.Misc
 	{
 		public readonly static CompletionOptions Default = new CompletionOptions
 		{
-			ShowUFCSItems = false
+			ShowUFCSItems = true
 		};
 
 
