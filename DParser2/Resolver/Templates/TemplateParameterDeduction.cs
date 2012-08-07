@@ -10,21 +10,32 @@ namespace D_Parser.Resolver.Templates
 		/// <summary>
 		/// The dictionary which stores all deduced results + their names
 		/// </summary>
-		Dictionary<string, ResolveResult[]> TargetDictionary;
+		DeducedTypeDictionary TargetDictionary;
+
+		/// <summary>
+		/// If true and deducing a type parameter,
+		/// the equality of the given and expected type is required instead of their simple convertibility.
+		/// Used when evaluating IsExpressions.
+		/// </summary>
+		public bool EnforceTypeEqualityWhenDeducing
+		{
+			get;
+			set;
+		}
 
 		/// <summary>
 		/// Needed for resolving default types
 		/// </summary>
 		ResolverContextStack ctxt;
 
-		public TemplateParameterDeduction(Dictionary<string, ResolveResult[]> DeducedParameters, ResolverContextStack ctxt)
+		public TemplateParameterDeduction(DeducedTypeDictionary DeducedParameters, ResolverContextStack ctxt)
 		{
 			this.ctxt = ctxt;
 			this.TargetDictionary = DeducedParameters;
 		}
 		#endregion
 
-		public bool Handle(ITemplateParameter parameter, ResolveResult argumentToAnalyze)
+		public bool Handle(ITemplateParameter parameter, ISemantic argumentToAnalyze)
 		{
 			//TODO: Handle __FILE__ and __LINE__ correctly - so don't evaluate them at the template declaration but at the point of instantiation
 
@@ -32,24 +43,24 @@ namespace D_Parser.Resolver.Templates
 			 * Introduce previously deduced parameters into current resolution context
 			 * to allow value parameter to be of e.g. type T whereas T is already set somewhere before 
 			 */
-			Dictionary<string, ResolveResult[]> _prefLocalsBackup = null;
+			DeducedTypeDictionary _prefLocalsBackup = null;
 			if (ctxt != null && ctxt.CurrentContext != null)
 			{
 				_prefLocalsBackup = ctxt.CurrentContext.DeducedTemplateParameters;
 
-				var d = new Dictionary<string, ResolveResult[]>();
+				var d = new DeducedTypeDictionary();
 				foreach (var kv in TargetDictionary)
-					if (kv.Value != null && kv.Value.Length != 0)
+					if (kv.Value != null)
 						d[kv.Key] = kv.Value;
 				ctxt.CurrentContext.DeducedTemplateParameters = d;
 			}
 
 			// Packages aren't allowed at all
-			if(argumentToAnalyze is ModulePackageResult)
+			if(argumentToAnalyze is PackageSymbol)
 				return false;
 
 			// Module symbols can be used as alias only
-			if (argumentToAnalyze is ModuleResult &&
+			if (argumentToAnalyze is ModuleSymbol &&
 				!(parameter is TemplateAliasParameter))
 				return false;
 
@@ -64,7 +75,7 @@ namespace D_Parser.Resolver.Templates
 			else if (parameter is TemplateValueParameter)
 				res = Handle((TemplateValueParameter)parameter, argumentToAnalyze);
 			else if (parameter is TemplateTupleParameter)
-				res = Handle((TemplateTupleParameter)parameter, new[] { new[] { argumentToAnalyze } });
+				res = Handle((TemplateTupleParameter)parameter, new[] { argumentToAnalyze });
 
 			if (ctxt != null && ctxt.CurrentContext != null)
 				ctxt.CurrentContext.DeducedTemplateParameters = _prefLocalsBackup;
@@ -72,13 +83,13 @@ namespace D_Parser.Resolver.Templates
 			return res;
 		}
 
-		bool Handle(TemplateThisParameter p, ResolveResult arg)
+		bool Handle(TemplateThisParameter p, ISemantic arg)
 		{
 			// Only special handling required for method calls
 			return Handle(p.FollowParameter,arg);
 		}
 
-		public bool Handle(TemplateTupleParameter p, IEnumerable<ResolveResult[]> arguments)
+		public bool Handle(TemplateTupleParameter p, IEnumerable<ISemantic> arguments)
 		{
 			if (arguments == null)
 				return false;
@@ -88,10 +99,18 @@ namespace D_Parser.Resolver.Templates
 			if (args.Length < 1)
 				return false;
 
-			return Set(p.Name, new TypeTupleResult { 
-				TupleParameter=p,
-				TupleItems=args 
-			});
+			var l = new List<AbstractType>();
+
+			foreach (var arg in arguments)
+				if (arg is AbstractType)
+					l.Add((AbstractType)arg);
+				else
+				{
+					// Error: Argument must be a type
+					break;
+				}					
+
+			return Set(p, new TypeTuple(p, l));
 		}
 
 		/// <summary>
@@ -109,24 +128,29 @@ namespace D_Parser.Resolver.Templates
 		/// Returns false if the item has already been set before and if the already set item is not equal to 'r'.
 		/// Inserts 'r' into the target dictionary and returns true otherwise.
 		/// </summary>
-		bool Set(string parameterName, ResolveResult r)
+		bool Set(ITemplateParameter p, ISemantic r, string name=null)
 		{
-			ResolveResult[] rl=null;
-			if (!TargetDictionary.TryGetValue(parameterName, out rl) || rl == null)
+			if (string.IsNullOrEmpty(name))
+				name = p.Name;
+
+			TemplateParameterSymbol rl=null;
+			if (!TargetDictionary.TryGetValue(name, out rl) || rl == null)
 			{
-				TargetDictionary[parameterName] = new[] { r };
+				TargetDictionary[name] = new TemplateParameterSymbol(p, r);
 				return true;
 			}
 			else
 			{
-				if (rl.Length == 1 && ResultComparer.IsEqual(rl[0], r))
+				if (rl!=null)
+					if (ResultComparer.IsEqual(rl.Base, r))
 						return true;
+					else
+					{
+						// Error: Ambiguous assignment
+					}
 
-				var newArr = new ResolveResult[rl.Length + 1];
-				rl.CopyTo(newArr, 0);
-				newArr[rl.Length] = r;
+				TargetDictionary[name] = new TemplateParameterSymbol(p, r);
 
-				TargetDictionary[parameterName] = newArr;
 				return false;
 			}
 		}

@@ -10,8 +10,8 @@ namespace D_Parser.Resolver.Templates
 	{
 		ResolverContextStack ctxt;
 
-		public static ResolveResult[] FilterFromMostToLeastSpecialized(
-			List<ResolveResult> templateOverloads,
+		public static AbstractType[] FilterFromMostToLeastSpecialized(
+			List<AbstractType> templateOverloads,
 			ResolverContextStack ctxt)
 		{
 			if (templateOverloads == null)
@@ -19,34 +19,37 @@ namespace D_Parser.Resolver.Templates
 
 			var so = new SpecializationOrdering { ctxt = ctxt };
 
-			var currentlyMostSpecialized = templateOverloads[0] as TemplateInstanceResult;
+			/*
+			 * Note: If there are functions that are specialized equally, like
+			 * void foo(T) (T t) {} and
+			 * void foo(T) (T t, int a) {},
+			 * both functions have to be returned - because foo!string matches both overloads.
+			 * Later on, in the parameter-argument-comparison, these overloads will be filtered a second time - only then, 
+			 * two overloads would be illegal.
+			 */
+			var lastEquallySpecializedOverloads = new List<AbstractType>();
+			var currentlyMostSpecialized = templateOverloads[0];
+			lastEquallySpecializedOverloads.Add(currentlyMostSpecialized);
 
 			for (int i = 1; i < templateOverloads.Count; i++)
 			{
-				var evenMoreSpecialized = so.GetTheMoreSpecialized(currentlyMostSpecialized, templateOverloads[i] as TemplateInstanceResult);
+				var evenMoreSpecialized = so.GetTheMoreSpecialized(currentlyMostSpecialized, templateOverloads[i]);
 
-				if (evenMoreSpecialized != null)
+				if (evenMoreSpecialized == null)
+					lastEquallySpecializedOverloads.Add(templateOverloads[i]);
+				else
 				{
 					currentlyMostSpecialized = evenMoreSpecialized;
-				}
-				else if (i == templateOverloads.Count - 1)
-				{
-					/*
-					 * It might be the case that Type 1 is equally specialized as Type 2 is, but:
-					 * If comparing Type 2 with Type 3 turns out that Type 3 is more specialized, return Type 3!
-					 * (There probably will be a global resolution error cache  required to warn the user that
-					 * all template parameters of Type 1 are equal to those of Type 2)
-					 */
 
-					// Ambiguous result -- ERROR!
-					return new[] { currentlyMostSpecialized, templateOverloads[i] };
+					lastEquallySpecializedOverloads.Clear();
+					lastEquallySpecializedOverloads.Add(currentlyMostSpecialized);
 				}
 			}
 
-			return new[]{ currentlyMostSpecialized };
+			return lastEquallySpecializedOverloads.ToArray();
 		}
 
-		TemplateInstanceResult GetTheMoreSpecialized(TemplateInstanceResult r1, TemplateInstanceResult r2)
+		AbstractType GetTheMoreSpecialized(AbstractType r1, AbstractType r2)
 		{
 			if (r1 == null || r2 == null)
 				return null;
@@ -67,15 +70,21 @@ namespace D_Parser.Resolver.Templates
 			}
 		}
 
-		bool IsMoreSpecialized(TemplateInstanceResult r1, TemplateInstanceResult r2)
+		bool IsMoreSpecialized(AbstractType r1, AbstractType r2)
 		{
-			var dn1 = r1.Node as DNode;
-			var dn2 = r2.Node as DNode;
+			// Probably an issue: Assume a type to be more specialized if it's a symbol
+			if (r1 is DSymbol && !(r2 is DSymbol))
+				return true;
+			else if (r2 is DSymbol && !(r1 is DSymbol))
+				return false;
+
+			var dn1 = ((DSymbol)r1).Definition;
+			var dn2 = ((DSymbol)r2).Definition;
 
 			if (dn1 == null || dn1.TemplateParameters == null || dn2 == null || dn2.TemplateParameters == null)
 				return false;
 
-			var dummyList = new Dictionary<string, ResolveResult[]>();
+			var dummyList = new Dictionary<string, ISemantic>();
 			foreach (var t in dn1.TemplateParameters)
 				dummyList.Add(t.Name, null);
 
@@ -89,7 +98,7 @@ namespace D_Parser.Resolver.Templates
 			return true;
 		}
 
-		bool IsMoreSpecialized(ITemplateParameter t1, ITemplateParameter t2, Dictionary<string, ResolveResult[]> t1_dummyParameterList)
+		bool IsMoreSpecialized(ITemplateParameter t1, ITemplateParameter t2, Dictionary<string, ISemantic> t1_dummyParameterList)
 		{
 			if (t1 is TemplateTypeParameter && t2 is TemplateTypeParameter &&
 				!IsMoreSpecialized((TemplateTypeParameter)t1, (TemplateTypeParameter)t2, t1_dummyParameterList))
@@ -107,7 +116,7 @@ namespace D_Parser.Resolver.Templates
 			return false;
 		}
 
-		bool IsMoreSpecialized(TemplateAliasParameter t1, TemplateAliasParameter t2, Dictionary<string,ResolveResult[]> t1_DummyParamList)
+		bool IsMoreSpecialized(TemplateAliasParameter t1, TemplateAliasParameter t2, Dictionary<string,ISemantic> t1_DummyParamList)
 		{
 			if (t1.SpecializationExpression != null)
 			{
@@ -137,7 +146,7 @@ namespace D_Parser.Resolver.Templates
 		/// <summary>
 		/// Tests if t1 is more specialized than t2
 		/// </summary>
-		bool IsMoreSpecialized(TemplateTypeParameter t1, TemplateTypeParameter t2, Dictionary<string,ResolveResult[]> t1_DummyParamList)
+		bool IsMoreSpecialized(TemplateTypeParameter t1, TemplateTypeParameter t2, Dictionary<string,ISemantic> t1_DummyParamList)
 		{
 			// If one parameter is not specialized it should be clear
 			if (t1.Specialization != null && t2.Specialization == null)
@@ -148,16 +157,16 @@ namespace D_Parser.Resolver.Templates
 			return IsMoreSpecialized(t1.Specialization, t2, t1_DummyParamList);
 		}
 
-		bool IsMoreSpecialized(ITypeDeclaration Spec, ITemplateParameter t2, Dictionary<string, ResolveResult[]> t1_DummyParamList)
+		bool IsMoreSpecialized(ITypeDeclaration Spec, ITemplateParameter t2, Dictionary<string, ISemantic> t1_DummyParamList)
 		{
 			// Make a type out of t1's specialization
 			var frame = ctxt.PushNewScope(ctxt.ScopedBlock.Parent as IBlockNode);
 
 			// Make the T in e.g. T[] a virtual type so T will be replaced by it
 			// T** will be X** then - so a theoretically valid type instead of a template param
-			var dummyType = new[] { new TypeResult { Node = new DClassLike { Name = "X" } } };
+			var dummyType = new ClassType(new DClassLike { Name = "X" }, null, null);
 			foreach (var kv in t1_DummyParamList)
-				frame.DeducedTemplateParameters[kv.Key] = dummyType;
+				frame.DeducedTemplateParameters[kv.Key] = new TemplateParameterSymbol(t2,dummyType);
 
 			var t1_TypeResults = Resolver.TypeResolution.TypeDeclarationResolver.Resolve(Spec, ctxt);
 			if (t1_TypeResults == null || t1_TypeResults.Length == 0)
@@ -166,8 +175,7 @@ namespace D_Parser.Resolver.Templates
 			ctxt.Pop();
 
 			// Now try to fit the virtual Type t2 into t1 - and return true if it's possible
-			return new TemplateParameterDeduction(new Dictionary<string, ResolveResult[]>(), ctxt)
-				.Handle(t2, t1_TypeResults[0]);
+			return new TemplateParameterDeduction(new DeducedTypeDictionary(), ctxt).Handle(t2, t1_TypeResults[0]);
 		}
 	}
 }

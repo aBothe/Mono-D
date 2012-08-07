@@ -130,11 +130,19 @@ namespace D_Parser.Dom.Expressions
 		}
 	}
 
+	/// <summary>
+	/// a = b;
+	/// a += b;
+	/// a *= b; etc.
+	/// </summary>
 	public class AssignExpression : OperatorBasedExpression
 	{
 		public AssignExpression(int opToken) { OperatorToken = opToken; }
 	}
 
+	/// <summary>
+	/// a ? b : b;
+	/// </summary>
 	public class ConditionalExpression : IExpression, ContainerExpression
 	{
 		public IExpression OrOrExpression { get; set; }
@@ -163,36 +171,57 @@ namespace D_Parser.Dom.Expressions
 		}
 	}
 
+	/// <summary>
+	/// a || b;
+	/// </summary>
 	public class OrOrExpression : OperatorBasedExpression
 	{
 		public OrOrExpression() { OperatorToken = DTokens.LogicalOr; }
 	}
 
+	/// <summary>
+	/// a && b;
+	/// </summary>
 	public class AndAndExpression : OperatorBasedExpression
 	{
 		public AndAndExpression() { OperatorToken = DTokens.LogicalAnd; }
 	}
 
+	/// <summary>
+	/// a ^ b;
+	/// </summary>
 	public class XorExpression : OperatorBasedExpression
 	{
 		public XorExpression() { OperatorToken = DTokens.Xor; }
 	}
 
+	/// <summary>
+	/// a | b;
+	/// </summary>
 	public class OrExpression : OperatorBasedExpression
 	{
 		public OrExpression() { OperatorToken = DTokens.BitwiseOr; }
 	}
 
+	/// <summary>
+	/// a & b;
+	/// </summary>
 	public class AndExpression : OperatorBasedExpression
 	{
 		public AndExpression() { OperatorToken = DTokens.BitwiseAnd; }
 	}
 
+	/// <summary>
+	/// a == b; a != b;
+	/// </summary>
 	public class EqualExpression : OperatorBasedExpression
 	{
 		public EqualExpression(bool isUnEqual) { OperatorToken = isUnEqual ? DTokens.NotEqual : DTokens.Equal; }
 	}
 
+	/// <summary>
+	/// a is b; a !is b;
+	/// </summary>
 	public class IdendityExpression : OperatorBasedExpression
 	{
 		public bool Not;
@@ -205,11 +234,17 @@ namespace D_Parser.Dom.Expressions
 		}
 	}
 
+	/// <summary>
+	/// a &lt;&gt;= b etc.
+	/// </summary>
 	public class RelExpression : OperatorBasedExpression
 	{
 		public RelExpression(int relationalOperator) { OperatorToken = relationalOperator; }
 	}
 
+	/// <summary>
+	/// a in b; a !in b
+	/// </summary>
 	public class InExpression : OperatorBasedExpression
 	{
 		public bool Not;
@@ -222,21 +257,33 @@ namespace D_Parser.Dom.Expressions
 		}
 	}
 
+	/// <summary>
+	/// a >> b; a &lt;&lt; b; a >>> b;
+	/// </summary>
 	public class ShiftExpression : OperatorBasedExpression
 	{
 		public ShiftExpression(int shiftOperator) { OperatorToken = shiftOperator; }
 	}
 
+	/// <summary>
+	/// a + b; a - b;
+	/// </summary>
 	public class AddExpression : OperatorBasedExpression
 	{
 		public AddExpression(bool isMinus) { OperatorToken = isMinus ? DTokens.Minus : DTokens.Plus; }
 	}
 
+	/// <summary>
+	/// a * b; a / b; a % b;
+	/// </summary>
 	public class MulExpression : OperatorBasedExpression
 	{
 		public MulExpression(int mulOperator) { OperatorToken = mulOperator; }
 	}
 
+	/// <summary>
+	/// a ~ b
+	/// </summary>
 	public class CatExpression : OperatorBasedExpression
 	{
 		public CatExpression() { OperatorToken = DTokens.Tilde; }

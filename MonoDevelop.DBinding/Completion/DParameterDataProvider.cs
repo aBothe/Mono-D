@@ -15,7 +15,7 @@ namespace MonoDevelop.D.Completion
 		ArgumentsResolutionResult args;
 		int selIndex = 0;
 
-		public ResolveResult CurrentResult { get {
+		public AbstractType CurrentResult { get {
 			return args.ResolvedTypesOrMethods[selIndex];
 		} }
 
@@ -27,15 +27,14 @@ namespace MonoDevelop.D.Completion
 			if (paramIndex < 0)
 				return null;
 
-			if (CurrentResult is TemplateInstanceResult)
+			if (CurrentResult is DSymbol)
 			{
-				var tir = (TemplateInstanceResult)CurrentResult;
+				var tir = (DSymbol)CurrentResult;
 
-				if (tir.Node is DClassLike)
-					return ((DClassLike)tir.Node).TemplateParameters[paramIndex];
+				if (tir.Definition is DClassLike && ((DClassLike)tir.Definition).TemplateParameters!=null)
+					return ((DClassLike)tir.Definition).TemplateParameters[paramIndex];
 
-				var dm = tir.Node as DMethod;
-
+				var dm = tir.Definition as DMethod;
 				if (dm != null)
 				{
 					if (args.IsTemplateInstanceArguments)
@@ -43,14 +42,14 @@ namespace MonoDevelop.D.Completion
 					return dm.Parameters[paramIndex];
 				}
 			}
-			else if (CurrentResult is DelegateResult)
+			else if (CurrentResult is DelegateType)
 			{
-				var dr = (DelegateResult)CurrentResult;
+				var dr = (DelegateType)CurrentResult;
 
-				if (dr.IsDelegateDeclaration)
-					return ((DelegateDeclaration)dr.DeclarationOrExpressionBase).Parameters[paramIndex];
-				else
+				if (dr.IsFunctionLiteral)
 					return ((FunctionLiteral)dr.DeclarationOrExpressionBase).AnonymousMethod.Parameters[paramIndex];
+				else
+					return ((DelegateDeclaration)dr.DeclarationOrExpressionBase).Parameters[paramIndex];
 			}
 
 			return null;
@@ -157,39 +156,36 @@ namespace MonoDevelop.D.Completion
 		{
 			selIndex = overload;
 
-			if (CurrentResult is TemplateInstanceResult)
+			if (CurrentResult is DSymbol)
 			{
 				var s = "";
-				var tir = (TemplateInstanceResult)CurrentResult;
+				var tir = (DSymbol)CurrentResult;
 
-				var dm = tir.Node as DMethod;
+				var dm = tir.Definition as DMethod;
 				if (dm != null)
 				{
 					s = GetMethodMarkup(dm, parameterMarkup, currentParameter);
 				}
-				else if (tir.Node is DClassLike)
+				else if (tir.Definition is DClassLike)
 				{
-					s = tir.Node.Name + "(" + string.Join(",", parameterMarkup) + ")";
+					s = tir.Definition.Name + "(" + string.Join(",", parameterMarkup) + ")";
 				}
 
 				// Optional: description
-				if (!string.IsNullOrWhiteSpace(tir.Node.Description))
-					s += "\n\n " + tir.Node.Description;
+				if (!string.IsNullOrWhiteSpace(tir.Definition.Description))
+					s += "\n\n " + tir.Definition.Description;
 
 				return s;
 			}
-			else if (CurrentResult is DelegateResult)
+			else if (CurrentResult is DelegateType)
 			{
-				var dr = (DelegateResult)CurrentResult;
+				var dr = (DelegateType)CurrentResult;
 
-				if (dr.IsDelegateDeclaration)
-				{
-					var dg = (DelegateDeclaration)dr.DeclarationOrExpressionBase;
-
-					return dg.ReturnType.ToString() + " " + (dg.IsFunction?"function":"delegate") + "(" + string.Join(",", parameterMarkup) + ")";
-				}
-				else
+				if (dr.IsFunctionLiteral)
 					return GetMethodMarkup(((FunctionLiteral)dr.DeclarationOrExpressionBase).AnonymousMethod, parameterMarkup, currentParameter);
+
+				var dg = (DelegateDeclaration)dr.DeclarationOrExpressionBase;
+				return dg.ReturnType.ToString() + " " + (dg.IsFunction?"function":"delegate") + "(" + string.Join(",", parameterMarkup) + ")";
 			}
 
 			return "";
@@ -261,20 +257,20 @@ namespace MonoDevelop.D.Completion
 		{			
 			selIndex = overload;
 
-			if (CurrentResult is TemplateInstanceResult)
+			if (CurrentResult is DSymbol)
 			{
-				var tir = (TemplateInstanceResult)CurrentResult;
+				var tir = (DSymbol)CurrentResult;
 
-				if (tir.Node is DClassLike)
+				if (tir.Definition is DClassLike)
 				{
-					var dc=(DClassLike)tir.Node;
+					var dc=(DClassLike)tir.Definition;
 
 					if(dc.TemplateParameters!=null)
 						return dc.TemplateParameters.Length;
 					return 0;
 				}
 				
-				var dm = tir.Node as DMethod;
+				var dm = tir.Definition as DMethod;
 
 				if (dm != null)
 				{
@@ -283,14 +279,14 @@ namespace MonoDevelop.D.Completion
 					return dm.Parameters.Count;
 				}
 			}
-			else if (CurrentResult is DelegateResult)
+			else if (CurrentResult is DelegateType)
 			{
-				var dr = (DelegateResult)CurrentResult;
+				var dr = (DelegateType)CurrentResult;
 
-				if (dr.IsDelegateDeclaration)
-					return ((DelegateDeclaration)dr.DeclarationOrExpressionBase).Parameters.Count;
-				else
+				if (dr.IsFunctionLiteral)
 					return ((FunctionLiteral)dr.DeclarationOrExpressionBase).AnonymousMethod.Parameters.Count;
+				
+				return ((DelegateDeclaration)dr.DeclarationOrExpressionBase).Parameters.Count;
 			}
 
 			return 0;

@@ -71,7 +71,7 @@ namespace MonoDevelop.D.Gui
 				return;
 
 			foreach (var n in currentblock)
-				if (caretLocationD >= n.StartLocation && caretLocationD <= n.EndLocation)
+				if (caretLocationD >= n.Location && caretLocationD <= n.EndLocation)
 				{
 					selectedASTNode = n;
 					break;
@@ -312,7 +312,7 @@ namespace MonoDevelop.D.Gui
 			if (openedDoc == null)
 				return;
 
-			openedDoc.Editor.SetCaretTo(n.StartLocation.Line, n.StartLocation.Column);
+			openedDoc.Editor.SetCaretTo(n.Location.Line, n.Location.Column);
 			openedDoc.Editor.ScrollToCaret();
 
 			if (focusEditor)
@@ -322,8 +322,8 @@ namespace MonoDevelop.D.Gui
 
 			openedDoc.Editor.Document.EnsureOffsetIsUnfolded(
 				openedDoc.Editor.LocationToOffset(
-					n.StartLocation.Line,
-					n.StartLocation.Column
+					n.Location.Line,
+					n.Location.Column
 			));
 		}
 
@@ -350,7 +350,7 @@ namespace MonoDevelop.D.Gui
 							else
 								childIter = TreeStore.AppendValues(p);
 
-							if (editorSelectionLocation >= p.StartLocation && 
+							if (editorSelectionLocation >= p.Location && 
 								editorSelectionLocation < p.EndLocation)
 								TreeView.Selection.SelectIter(childIter);
 						}
@@ -370,7 +370,7 @@ namespace MonoDevelop.D.Gui
 				else
 					childIter = TreeStore.AppendValues(n);
 
-				if (editorSelectionLocation >= n.StartLocation && 
+				if (editorSelectionLocation >= n.Location && 
 					editorSelectionLocation < n.EndLocation)
 					TreeView.Selection.SelectIter(childIter);
 				

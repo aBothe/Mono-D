@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Text;
 using D_Parser.Dom.Expressions;
 
-namespace D_Parser.Resolver.TypeResolution
+namespace D_Parser.Resolver.ExpressionSemantics
 {
-	public class TraitsResolver
+	public partial class Evaluation
 	{
-		public static ResolveResult[] Resolve(TraitsExpression te, ResolverContextStack ctxt)
+		ISemantic E(TraitsExpression te)
 		{
 			// TODO: Return either bools, strings, array (pointers) to members or stuff
 			return null;

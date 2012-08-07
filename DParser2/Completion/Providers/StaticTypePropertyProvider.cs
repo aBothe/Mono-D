@@ -77,7 +77,7 @@ namespace D_Parser.Resolver
 		/// <summary>
 		/// Adds init, sizeof, alignof, mangleof, stringof to the completion list
 		/// </summary>
-		public static void AddGenericProperties(ResolveResult rr, ICompletionDataGenerator cdg, INode relatedNode = null, bool DontAddInitProperty = false)
+		public static void AddGenericProperties(ISemantic rr, ICompletionDataGenerator cdg, INode relatedNode = null, bool DontAddInitProperty = false)
 		{
 			if (!DontAddInitProperty)
 			{
@@ -99,7 +99,7 @@ namespace D_Parser.Resolver
 		/// <summary>
 		/// Adds init, max, min to the completion list
 		/// </summary>
-		public static void AddIntegralTypeProperties(int TypeToken, ResolveResult rr, ICompletionDataGenerator cdg, INode relatedNode = null, bool DontAddInitProperty = false)
+		public static void AddIntegralTypeProperties(int TypeToken, ISemantic rr, ICompletionDataGenerator cdg, INode relatedNode = null, bool DontAddInitProperty = false)
 		{
 			var intType = new DTokenDeclaration(TypeToken);
 
@@ -120,7 +120,7 @@ namespace D_Parser.Resolver
 			CreateArtificialProperties(IntegralProps, cdg, intType);
 		}
 
-		public static void AddFloatingTypeProperties(int TypeToken, ResolveResult rr, ICompletionDataGenerator cdg, INode relatedNode = null, bool DontAddInitProperty = false)
+		public static void AddFloatingTypeProperties(int TypeToken, ISemantic rr, ICompletionDataGenerator cdg, INode relatedNode = null, bool DontAddInitProperty = false)
 		{
 			var intType = new DTokenDeclaration(TypeToken);
 
@@ -152,7 +152,7 @@ namespace D_Parser.Resolver
 			CreateArtificialProperties(ClassTypeProps, cdg);
 		}
 
-		public static void AddArrayProperties(ResolveResult rr, ICompletionDataGenerator cdg, ArrayDecl ArrayDecl = null)
+		public static void AddArrayProperties(ISemantic rr, ICompletionDataGenerator cdg, ArrayDecl ArrayDecl = null)
 		{
 			CreateArtificialProperties(ArrayProps, cdg, ArrayDecl);
 
@@ -164,7 +164,7 @@ namespace D_Parser.Resolver
 			});
 		}
 
-		public static void AddAssocArrayProperties(ResolveResult rr, ICompletionDataGenerator cdg, ArrayDecl ad)
+		public static void AddAssocArrayProperties(ISemantic rr, ICompletionDataGenerator cdg, ArrayDecl ad)
 		{
 			var ll = new List<INode>();
 

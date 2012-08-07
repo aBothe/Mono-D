@@ -4,6 +4,7 @@ using D_Parser.Dom.Expressions;
 using D_Parser.Dom.Statements;
 using D_Parser.Parser;
 using D_Parser.Resolver.TypeResolution;
+using D_Parser.Resolver.ExpressionSemantics;
 
 namespace D_Parser.Resolver.ASTScanner
 {
@@ -98,7 +99,7 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
                                 NameLocation = dm.OutResultVariable.Location,
                                 Type = dm.Type, // TODO: What to do on auto functions?
                                 Parent = dm,
-                                StartLocation = dm.OutResultVariable.Location,
+                                Location = dm.OutResultVariable.Location,
                                 EndLocation = dm.OutResultVariable.EndLocation,
                             })) && 
 							breakImmediately)
@@ -192,20 +193,24 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 
 					// Add static and non-private members of all base classes; 
 					// Add everything if we're still handling the currently scoped class
-					if ((curWatchedClass == cls || dm2.IsStatic || !dm2.ContainsAttribute(DTokens.Private)) &&
+					if ((curWatchedClass == cls || dm2.IsStatic || (!(m is DVariable) || ((DVariable)dm2).IsConst) || !dm2.ContainsAttribute(DTokens.Private)) &&
 						(breakOnNextScope = HandleItem(m)) &&
 						breakImmediately)
 						return true;
 				}
 
 				// 3)
-				var tr = new TypeResult { Node = curWatchedClass };
-				DResolver.ResolveBaseClasses(tr, ctxt, true);
+				if (cls.ClassType == DTokens.Class)
+				{
+					var tr = DResolver.ResolveBaseClasses(new ClassType(curWatchedClass, curWatchedClass, null), ctxt, true);
 
-				if (tr.BaseClass==null || tr.BaseClass.Length == 0)
-					return false;
-
-				curWatchedClass = tr.BaseClass[0].Node as DClassLike;
+					if (tr.Base is TemplateIntermediateType)
+						curWatchedClass = ((TemplateIntermediateType)tr.Base).Definition;
+					else
+						break;
+				}
+				else
+					break;
 			}
 			return false;
 		}
@@ -266,7 +271,7 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 						{
 							if (Caret != CodeLocation.Empty)
 							{
-								if (Caret < decl.StartLocation)
+								if (Caret < decl.Location)
 									continue;
 
 								var dv = decl as DVariable;
@@ -286,38 +291,34 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 				{
 					var ws = (WithStatement)Statement;
 
-					if (ws.ScopedStatement == null || Caret < ws.ScopedStatement.StartLocation)
+					if (ws.ScopedStatement == null || Caret < ws.ScopedStatement.Location)
 					{
 						Statement = Statement.Parent;
 						continue;
 					}
 
-					ResolveResult[] r = null;
+					AbstractType r = null;
 
 					var back = ctxt.ScopedStatement;
 					ctxt.ScopedStatement = ws.Parent;
 
 					// Must be an expression that returns an object reference
 					if (ws.WithExpression != null)
-						r = ExpressionTypeResolver.Resolve(ws.WithExpression, ctxt);
+						r = Evaluation.EvaluateType(ws.WithExpression, ctxt);
 					else if (ws.WithSymbol != null) // This symbol will be used as default
-						r = TypeDeclarationResolver.Resolve(ws.WithSymbol, ctxt);
+						r = TypeDeclarationResolver.ResolveSingle(ws.WithSymbol, ctxt);
 
 					ctxt.ScopedStatement = back;
 
-					bool resolvedMember=false;
-					if ((r = DResolver.ResolveMembersFromResult(r,out resolvedMember)) != null)
-						foreach (var rr in r)
+					if ((r = DResolver.StripMemberSymbols(r)) != null)
+						if (r is TemplateIntermediateType)
 						{
-							if (rr is TypeResult)
-							{
-								var tr = (TypeResult)rr;
-								var dc = tr.Node as DClassLike;
+							var tr = (TemplateIntermediateType)r;
+							var dc = tr.Definition as DClassLike;
 
-								bool brk = false;
-								if (IterateThrough(dc, VisibleMembers, ref brk) || brk)
-									return true;
-							}
+							bool brk = false;
+							if (IterateThrough(dc, VisibleMembers, ref brk) || brk)
+								return true;
 						}
 				}
 
@@ -338,7 +339,7 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 							 * 
 							 * }
 							 */
-							if (Caret < s.StartLocation && Caret != CodeLocation.Empty)
+							if (Caret < s.Location && Caret != CodeLocation.Empty)
 								continue;
 
 							// Selective imports were handled in the upper section already!

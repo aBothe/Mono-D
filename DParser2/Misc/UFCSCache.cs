@@ -19,7 +19,7 @@ namespace D_Parser.Resolver.ASTScanner
 		public bool IsProcessing { get; private set; }
 
 		Stack<DMethod> queue = new Stack<DMethod>();
-		public readonly Dictionary<DMethod, ResolveResult> CachedMethods = new Dictionary<DMethod, ResolveResult>();
+		public readonly Dictionary<DMethod, AbstractType> CachedMethods = new Dictionary<DMethod, AbstractType>();
 		/// <summary>
 		/// Returns time span needed to resolve all first parameters.
 		/// </summary>
@@ -118,7 +118,7 @@ namespace D_Parser.Resolver.ASTScanner
 					dm = queue.Pop();
 				}
 
-				ctxt.CurrentContext.ScopedBlock = dm.Parent as IBlockNode;
+				ctxt.CurrentContext.ScopedBlock = dm;
 
 				var firstArg_result = TypeDeclarationResolver.Resolve(dm.Parameters[0].Type, ctxt);
 
@@ -166,7 +166,7 @@ namespace D_Parser.Resolver.ASTScanner
 				}
 		}
 
-		public IEnumerable<DMethod> FindFitting(ResolverContextStack ctxt, CodeLocation currentLocation, ResolveResult firstArgument, string nameFilter = null)
+		public IEnumerable<DMethod> FindFitting(ResolverContextStack ctxt, CodeLocation currentLocation, ISemantic firstArgument, string nameFilter = null)
 		{
 			if (IsProcessing)
 				return null;

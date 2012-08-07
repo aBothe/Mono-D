@@ -1,25 +1,25 @@
 ﻿using System.Linq;
 using D_Parser.Dom;
 using D_Parser.Resolver.TypeResolution;
-using D_Parser.Evaluation;
+using D_Parser.Resolver.ExpressionSemantics;
 
 namespace D_Parser.Resolver.Templates
 {
 	partial class TemplateParameterDeduction
 	{
-		bool Handle(TemplateAliasParameter p, ResolveResult arg)
+		bool Handle(TemplateAliasParameter p, ISemantic arg)
 		{
 			#region Handle parameter defaults
 			if (arg == null)
 			{
 				if (p.DefaultExpression != null)
 				{
-					var eval = ExpressionEvaluator.Resolve(p.DefaultExpression, ctxt);
+					var eval = Evaluation.EvaluateValue(p.DefaultExpression, ctxt);
 
 					if (eval == null)
 						return false;
 
-					return Set(p.Name, eval);
+					return Set(p, eval);
 				}
 				else if (p.DefaultType != null)
 				{
@@ -30,7 +30,7 @@ namespace D_Parser.Resolver.Templates
 
 					bool ret = false;
 					foreach(var r in res)
-						if (!Set(p.Name, r))
+						if (!Set(p, r))
 						{
 							ret = true;
 						}
@@ -43,18 +43,20 @@ namespace D_Parser.Resolver.Templates
 			#endregion
 
 			#region Given argument must be a symbol - so no built-in type but a reference to a node or an expression
-			var _t=DResolver.TryRemoveAliasesFromResult(new[]{arg});
+			var t=TypeDeclarationResolver.Convert(arg);
 
-			if (_t == null)
+			if (t == null)
 				return false;
-			var arg_NoAlias = _t.First();
 
-			while (arg_NoAlias != null)
+			while (t != null)
 			{
-				if (arg_NoAlias is StaticTypeResult)
+				if (t is PrimitiveType) // arg must not base on a primitive type.
 					return false;
 
-				arg_NoAlias = arg_NoAlias.ResultBase;
+				if (t is DerivedDataType)
+					t = ((DerivedDataType)t).Base;
+				else
+					break;
 			}
 			#endregion
 
@@ -71,7 +73,7 @@ namespace D_Parser.Resolver.Templates
 			}
 			#endregion
 
-			return Set(p.Name,arg);
+			return Set(p,arg);
 		}
 	}
 }

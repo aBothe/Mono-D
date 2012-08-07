@@ -2,17 +2,18 @@
 using System.Linq;
 using D_Parser.Dom;
 using D_Parser.Dom.Expressions;
-using D_Parser.Evaluation;
 using D_Parser.Resolver.Templates;
+using System.Collections.ObjectModel;
+using D_Parser.Resolver.ExpressionSemantics;
 
 namespace D_Parser.Resolver.TypeResolution
 {
 	public class TemplateInstanceHandler
 	{
-		public static List<ResolveResult[]> PreResolveTemplateArgs(TemplateInstanceExpression tix, ResolverContextStack ctxt)
+		public static List<ISemantic> PreResolveTemplateArgs(TemplateInstanceExpression tix, ResolverContextStack ctxt)
 		{
 			// Resolve given argument expressions
-			var templateArguments = new List<ResolveResult[]>();
+			var templateArguments = new List<ISemantic>();
 
 			if (tix != null && tix.Arguments!=null)
 				foreach (var arg in tix.Arguments)
@@ -21,26 +22,29 @@ namespace D_Parser.Resolver.TypeResolution
 					{
 						var tde = (TypeDeclarationExpression)arg;
 
-						var r = TypeDeclarationResolver.Resolve(tde.Declaration, ctxt);
+						var res = TypeDeclarationResolver.Resolve(tde.Declaration, ctxt);
 
-						var eval = ExpressionEvaluator.TryToEvaluateConstInitializer(r, ctxt);
+						if (ctxt.CheckForSingleResult(res, tde.Declaration) || res != null)
+						{
+							var mr = res[0] as MemberSymbol;
+							if (mr != null && mr.Definition is DVariable)
+							{
+								var eval = new StandardValueProvider(ctxt)[(DVariable)mr.Definition];
 
-						if (eval == null)
-							templateArguments.Add(r);
-						else
-							templateArguments.Add(new[] { new ExpressionValueResult{
-								DeclarationOrExpressionBase=eval.BaseExpression,
-								Value=eval
-							} });
+								templateArguments.Add(eval==null ? (ISemantic)mr : eval);
+							}
+							else
+								templateArguments.Add(res[0]);
+						}
 					}
 					else
-						templateArguments.Add(new[] { ExpressionEvaluator.Resolve(arg, ctxt) });
+						templateArguments.Add(Evaluation.EvaluateValue(arg, ctxt));
 				}
 
 			return templateArguments;
 		}
 
-		public static ResolveResult[] EvalAndFilterOverloads(IEnumerable<ResolveResult> rawOverloadList,
+		public static AbstractType[] EvalAndFilterOverloads(IEnumerable<AbstractType> rawOverloadList,
 			TemplateInstanceExpression templateInstanceExpr,
 			ResolverContextStack ctxt)
 		{
@@ -61,8 +65,8 @@ namespace D_Parser.Resolver.TypeResolution
 		/// <returns>A filtered list of overloads which mostly fit to the specified arguments.
 		/// Usually contains only 1 element.
 		/// The 'TemplateParameters' property of the results will be also filled for further usage regarding smart completion etc.</returns>
-		public static ResolveResult[] EvalAndFilterOverloads(IEnumerable<ResolveResult> rawOverloadList,
-			IEnumerable<ResolveResult[]> givenTemplateArguments,
+		public static AbstractType[] EvalAndFilterOverloads(IEnumerable<AbstractType> rawOverloadList,
+			IEnumerable<ISemantic> givenTemplateArguments,
 			bool isMethodCall,
 			ResolverContextStack ctxt)
 		{
@@ -73,17 +77,16 @@ namespace D_Parser.Resolver.TypeResolution
 
 			// If there are >1 overloads, filter from most to least specialized template param
 			if (filteredOverloads.Count > 1)
-			{
-				var specFiltered = SpecializationOrdering.FilterFromMostToLeastSpecialized(filteredOverloads, ctxt);
-				return specFiltered == null ? null : specFiltered.ToArray();
-			}
-			else
-				return filteredOverloads.Count == 0 ? null : filteredOverloads.ToArray();
+				return SpecializationOrdering.FilterFromMostToLeastSpecialized(filteredOverloads, ctxt);
+			else if (filteredOverloads.Count == 1)
+				return filteredOverloads.ToArray();
+			
+			return null;
 		}
 
-		private static List<ResolveResult> DeduceOverloads(
-			IEnumerable<ResolveResult> rawOverloadList, 
-			IEnumerable<ResolveResult[]> givenTemplateArguments, 
+		private static List<AbstractType> DeduceOverloads(
+			IEnumerable<AbstractType> rawOverloadList, 
+			IEnumerable<ISemantic> givenTemplateArguments, 
 			bool isMethodCall, 
 			ResolverContextStack ctxt)
 		{
@@ -95,21 +98,19 @@ namespace D_Parser.Resolver.TypeResolution
 				enumm.Dispose();
 			}
 
-			var filteredOverloads = new List<ResolveResult>();
+			var filteredOverloads = new List<AbstractType>();
 
-			foreach (var overload in rawOverloadList)
+			foreach (var o in rawOverloadList)
 			{
-				var tplResult = overload as TemplateInstanceResult;
-
-				// If result is not a node-related result (like Arrayresult or StaticType), add it if no arguments were passed
-				if (tplResult == null)
+				if (!(o is DSymbol))
 				{
-					if (!hasTemplateArgsPassed)
-						filteredOverloads.Add(overload);
+					if(!hasTemplateArgsPassed)
+						filteredOverloads.Add(o);
 					continue;
 				}
 
-				var tplNode = tplResult.Node as DNode;
+				var overload = (DSymbol)o;
+				var tplNode = overload.Definition;
 
 				// Generically, the node should never be null -- except for TemplateParameterNodes that encapsule such params
 				if (tplNode == null)
@@ -126,36 +127,40 @@ namespace D_Parser.Resolver.TypeResolution
 					continue;
 				}
 
-				var deducedTypes = new Dictionary<string, ResolveResult[]>();
+				var deducedTypes = new DeducedTypeDictionary();
 				foreach (var param in tplNode.TemplateParameters)
 					deducedTypes[param.Name] = null; // Init all params to null to let deduction functions know what params there are
 
 				if (DeduceParams(givenTemplateArguments, isMethodCall, ctxt, overload, tplNode, deducedTypes))
 				{
-					tplResult.DeducedTypes = deducedTypes; // Assign calculated types to final result
+					overload.DeducedTypes = deducedTypes.ToReadonly(); // Assign calculated types to final result
 					filteredOverloads.Add(overload);
 				}
 				else
-					tplResult.DeducedTypes = null;
+					overload.DeducedTypes = null;
 			}
 			return filteredOverloads;
 		}
 
-		private static bool DeduceParams(IEnumerable<ResolveResult[]> givenTemplateArguments, 
+		private static bool DeduceParams(IEnumerable<ISemantic> givenTemplateArguments, 
 			bool isMethodCall, 
 			ResolverContextStack ctxt, 
-			ResolveResult overload, 
+			DSymbol overload, 
 			DNode tplNode, 
-			Dictionary<string, ResolveResult[]> deducedTypes)
+			DeducedTypeDictionary deducedTypes)
 		{
 			bool isLegitOverload = true;
 
 			var paramEnum = tplNode.TemplateParameters.GetEnumerator();
 
-			var args= givenTemplateArguments == null ? new List<ResolveResult[]>() : givenTemplateArguments;
+			var args= givenTemplateArguments == null ? new List<ISemantic>() : givenTemplateArguments;
 
-			if (overload is MemberResult && ((MemberResult)overload).IsUFCSResult)
-				args = args.Union(new[] { new[]{ overload.ResultBase} });
+			if (overload is MemberSymbol && ((MemberSymbol)overload).IsUFCSResult){
+				var l = new List<ISemantic>();
+				l.Add(overload.Base); // The base stores the first argument('s type)
+				l.AddRange(args);
+				args = l;
+			}
 
 			var argEnum = args.GetEnumerator();
 			foreach (var expectedParam in tplNode.TemplateParameters)
@@ -174,27 +179,25 @@ namespace D_Parser.Resolver.TypeResolution
 		}
 
 		private static bool DeduceParam(ResolverContextStack ctxt, 
-			ResolveResult overload, 
-			Dictionary<string, ResolveResult[]> deducedTypes,
-			IEnumerator<ResolveResult[]> argEnum, 
+			DSymbol overload, 
+			DeducedTypeDictionary deducedTypes,
+			IEnumerator<ISemantic> argEnum, 
 			ITemplateParameter expectedParam)
 		{
-			if (expectedParam is TemplateThisParameter && overload.ResultBase != null)
+			if (expectedParam is TemplateThisParameter && overload.Base != null)
 			{
 				var ttp = (TemplateThisParameter)expectedParam;
 
 				// Get the type of the type of 'this' - so of the result that is the overload's base
-				bool m = false;
-				var t = DResolver.ResolveMembersFromResult(new[] { overload.ResultBase }, out m);
+				var t = DResolver.StripMemberSymbols(overload.Base);
 
-				if (t == null || t.Length == 0 || t[0].DeclarationOrExpressionBase == null)
+				if (t == null || t.DeclarationOrExpressionBase == null)
 					return false;
 
 				//TODO: Still not sure if it's ok to pass a type result to it 
 				// - looking at things like typeof(T) that shall return e.g. const(A) instead of A only.
 
-				if (!CheckAndDeduceTypeAgainstTplParameter(ttp, t[0],
-					deducedTypes, ctxt))
+				if (!CheckAndDeduceTypeAgainstTplParameter(ttp, t, deducedTypes, ctxt))
 					return false;
 
 				return true;
@@ -207,7 +210,7 @@ namespace D_Parser.Resolver.TypeResolution
 				// On tuples, take all following arguments and pass them to the check function
 				if (expectedParam is TemplateTupleParameter)
 				{
-					var tupleItems = new List<ResolveResult[]>();
+					var tupleItems = new List<ISemantic>();
 					// A tuple must at least contain one item!
 					tupleItems.Add(argEnum.Current);
 					while (argEnum.MoveNext())
@@ -218,10 +221,8 @@ namespace D_Parser.Resolver.TypeResolution
 				}
 				else if (argEnum.Current != null)
 				{
-					// Should contain one result usually
-					foreach (var templateInstanceArg in argEnum.Current)
-						if (!CheckAndDeduceTypeAgainstTplParameter(expectedParam, templateInstanceArg, deducedTypes, ctxt))
-							return false;
+					if (!CheckAndDeduceTypeAgainstTplParameter(expectedParam, argEnum.Current, deducedTypes, ctxt))
+						return false;
 				}
 				else if (useDefaultType && CheckAndDeduceTypeAgainstTplParameter(expectedParam, null, deducedTypes, ctxt))
 				{
@@ -237,16 +238,16 @@ namespace D_Parser.Resolver.TypeResolution
 			return true;
 		}
 
-		static bool AllParamatersSatisfied(Dictionary<string, ResolveResult[]> deductions)
+		public static bool AllParamatersSatisfied(DeducedTypeDictionary deductions)
 		{
 			foreach (var kv in deductions)
-				if (kv.Value == null || kv.Value==null || kv.Value.Length == 0)
+				if (kv.Value == null || kv.Value==null)
 					return false;
 
 			return true;
 		}
 
-		static bool HasDefaultType(ITemplateParameter p)
+		public static bool HasDefaultType(ITemplateParameter p)
 		{
 			if (p is TemplateTypeParameter)
 				return ((TemplateTypeParameter)p).Default != null;
@@ -263,16 +264,16 @@ namespace D_Parser.Resolver.TypeResolution
 		}
 
 		static bool CheckAndDeduceTypeAgainstTplParameter(ITemplateParameter handledParameter, 
-			ResolveResult argumentToCheck, 
-			Dictionary<string,ResolveResult[]> deducedTypes,
+			ISemantic argumentToCheck,
+			DeducedTypeDictionary deducedTypes,
 			ResolverContextStack ctxt)
 		{
 			return new Templates.TemplateParameterDeduction(deducedTypes, ctxt).Handle(handledParameter, argumentToCheck);
 		}
 
 		static bool CheckAndDeduceTypeTuple(TemplateTupleParameter tupleParameter, 
-			IEnumerable<ResolveResult[]> typeChain, 
-			Dictionary<string,ResolveResult[]> deducedTypes,
+			IEnumerable<ISemantic> typeChain,
+			DeducedTypeDictionary deducedTypes,
 			ResolverContextStack ctxt)
 		{
 			return new Templates.TemplateParameterDeduction(deducedTypes,ctxt).Handle(tupleParameter,typeChain);

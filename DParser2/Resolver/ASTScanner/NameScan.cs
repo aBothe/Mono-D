@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using D_Parser.Dom;
 using D_Parser.Resolver.TypeResolution;
+using D_Parser.Parser;
 
 namespace D_Parser.Resolver.ASTScanner
 {
@@ -90,19 +91,33 @@ namespace D_Parser.Resolver.ASTScanner
 			// If our current Level node is a class-like, also attempt to search in its baseclass!
 			if (curScope is DClassLike)
 			{
-				var tr = new TypeResult { Node=(DClassLike)curScope };
-				DResolver.ResolveBaseClasses(tr, ctxt, true);
-				if (tr.BaseClass != null)
-					foreach (var i in tr.BaseClass)
-					{
-						if (i == null)
-							continue;
-						// Search for items called name in the base class(es)
-						var r = ScanNodeForIdentifier((IBlockNode)i.Node, name, ctxt);
+				var dc = (DClassLike)curScope;
 
-						if (r != null)
-							matches.AddRange(r);
-					}
+				if (dc.ClassType == DTokens.Class)
+				{
+					var tr=DResolver.ResolveBaseClasses(new ClassType(dc, dc, null), ctxt, true);
+					if (tr.Base is TemplateIntermediateType)
+						{
+							// Search for items called name in the base class(es)
+							var r = ScanNodeForIdentifier(((TemplateIntermediateType)tr.Base).Definition, name, ctxt);
+
+							if (r != null)
+								matches.AddRange(r);
+						}
+				}
+				else if (dc.ClassType == DTokens.Interface)
+				{
+					var tr = DResolver.ResolveBaseClasses(new InterfaceType(dc, dc), ctxt) as InterfaceType;
+					if (tr != null && tr.BaseInterfaces != null && tr.BaseInterfaces.Length != 0)
+						foreach (var I in tr.BaseInterfaces)
+						{
+							// Search for items called name in the base class(es)
+							var r = ScanNodeForIdentifier(I.Definition, name, ctxt);
+
+							if (r != null)
+								matches.AddRange(r);
+						}
+				}
 			}
 
 			// Check parameters
@@ -121,7 +136,7 @@ namespace D_Parser.Resolver.ASTScanner
 				foreach (var ch in ((DNode)curScope).TemplateParameters)
 				{
 					if (name == ch.Name)
-						matches.Add(new TemplateParameterNode(ch) { Owner = (DNode)curScope });
+						matches.Add(new TemplateParameterNode(ch) { Parent = curScope });
 				}
 
 			return matches.Count > 0 ? matches.ToArray() : null;

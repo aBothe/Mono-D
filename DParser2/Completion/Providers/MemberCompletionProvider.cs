@@ -6,6 +6,7 @@ using D_Parser.Dom.Statements;
 using D_Parser.Parser;
 using D_Parser.Resolver;
 using D_Parser.Resolver.TypeResolution;
+using D_Parser.Resolver.ExpressionSemantics;
 
 namespace D_Parser.Completion
 {
@@ -14,8 +15,6 @@ namespace D_Parser.Completion
 		public PostfixExpression_Access AccessExpression;
 		public IStatement ScopedStatement;
 		public IBlockNode ScopedBlock;
-
-		public string lastResultPath;
 
 		public MemberCompletionProvider(ICompletionDataGenerator cdg) : base(cdg) { }
 
@@ -32,26 +31,22 @@ namespace D_Parser.Completion
 		protected override void BuildCompletionDataInternal(IEditorData Editor, string EnteredText)
 		{
 			var ctxt=ResolverContextStack.Create(Editor);
-			var resolveResults = ExpressionTypeResolver.Resolve(AccessExpression, ctxt);
+			var r = Evaluation.EvaluateType(AccessExpression, ctxt);
 
-			if (resolveResults == null) //TODO: Add after-space list creation when an unbound . (Dot) was entered which means to access the global scope
+			if (r == null) //TODO: Add after-space list creation when an unbound . (Dot) was entered which means to access the global scope
 				return;
 
-			foreach (var rr in resolveResults)
-			{
-				lastResultPath = rr.ResultPath;
-				BuildCompletionData(rr, ScopedBlock);
+			BuildCompletionData(r, ScopedBlock);
 
-				if(Editor.Options.ShowUFCSItems)
-					UFCSCompletionProvider.Generate(rr, ctxt, Editor, CompletionDataGenerator);
-			}
+			if(Editor.Options.ShowUFCSItems)
+				UFCSCompletionProvider.Generate(r, ctxt, Editor, CompletionDataGenerator);
 		}
 
 		void BuildCompletionData(
-			ResolveResult rr,
+			AbstractType rr,
 			IBlockNode currentlyScopedBlock,
 			bool isVariableInstance = false,
-			ResolveResult resultParent = null)
+			AbstractType resultParent = null)
 		{
 			if (rr == null)
 				return;
@@ -59,23 +54,31 @@ namespace D_Parser.Completion
 			if(rr.DeclarationOrExpressionBase is ITypeDeclaration)
 				isVariableInstance |= (rr.DeclarationOrExpressionBase as ITypeDeclaration).ExpressesVariableAccess;
 
-			if (rr is MemberResult)
-				BuildCompletionData((MemberResult)rr, currentlyScopedBlock, isVariableInstance);
+			if (rr is MemberSymbol)
+				BuildCompletionData((MemberSymbol)rr, currentlyScopedBlock, isVariableInstance);
 
 			// A module path has been typed
-			else if (!isVariableInstance && rr is ModuleResult)
-				BuildCompletionData((ModuleResult)rr);
+			else if (!isVariableInstance && rr is ModuleSymbol)
+				BuildCompletionData((ModuleSymbol)rr);
 
-			else if (rr is ModulePackageResult)
-				BuildCompletionData((ModulePackageResult)rr);
+			else if (rr is PackageSymbol)
+				BuildCompletionData((PackageSymbol)rr);
 
 			#region A type was referenced directly
-			else if (rr is TypeResult)
+			else if (rr is EnumType)
 			{
-				var tr = rr as TypeResult;
+				var en = (EnumType)rr;
+
+				foreach (var e in en.Definition)
+					CompletionDataGenerator.Add(e);
+			}
+
+			else if (rr is TemplateIntermediateType)
+			{
+				var tr = (TemplateIntermediateType)rr;
 				var vis = ItemVisibility.All;
 
-				bool HasSameAncestor = HaveSameAncestors(currentlyScopedBlock, tr.Node);
+				bool HasSameAncestor = HaveSameAncestors(currentlyScopedBlock, tr.Definition);
 				bool IsThis = false, IsSuper = false;
 
 				if (tr.DeclarationOrExpressionBase is TokenExpression)
@@ -109,127 +112,67 @@ namespace D_Parser.Completion
 					vis = ItemVisibility.StaticMembers;
 
 				BuildCompletionData(tr, vis);
-				if (resultParent == null)
-					StaticTypePropertyProvider.AddGenericProperties(rr, CompletionDataGenerator, tr.Node);
 
-				if (tr.Node is DClassLike)
-					StaticTypePropertyProvider.AddClassTypeProperties(CompletionDataGenerator, tr.Node);
+				if (resultParent == null)
+					StaticTypePropertyProvider.AddGenericProperties(rr, CompletionDataGenerator, tr.Definition);
+
+				StaticTypePropertyProvider.AddClassTypeProperties(CompletionDataGenerator, tr.Definition);
 			}
 			#endregion
 
 			#region Things like int. or char.
-			else if (rr is StaticTypeResult)
+			else if (rr is PrimitiveType)
 			{
-				var srr = rr as StaticTypeResult;
+				var primType = (PrimitiveType)rr;
 
 				if (resultParent == null)
 					StaticTypePropertyProvider.AddGenericProperties(rr, CompletionDataGenerator, null);
 
-				var type = srr.DeclarationOrExpressionBase;
-
-				// on things like immutable(char), pass by the surrounding attribute..
-				while (type is MemberFunctionAttributeDecl)
-					type = (type as MemberFunctionAttributeDecl).InnerType;
-
-				if (type is PointerDecl)
+				if (primType.TypeToken > 0)
 				{
-					if (!(rr.ResultBase is StaticTypeResult && rr.ResultBase.DeclarationOrExpressionBase is PointerDecl))
-						BuildCompletionData(rr.ResultBase, currentlyScopedBlock, true, rr);
-				}
-				else
-				{
-					int TypeToken = srr.BaseTypeToken;
+					// Determine whether float by the var's base type
+					bool isFloat = DTokens.BasicTypes_FloatingPoint[primType.TypeToken];
 
-					if (TypeToken <= 0 && type is DTokenDeclaration)
-						TypeToken = (type as DTokenDeclaration).Token;
+					// Float implies integral props
+					if (DTokens.BasicTypes_Integral[primType.TypeToken] || isFloat)
+						StaticTypePropertyProvider.AddIntegralTypeProperties(primType.TypeToken, rr, CompletionDataGenerator, null, isFloat);
 
-					if (TypeToken > 0)
-					{
-						// Determine whether float by the var's base type
-						bool isFloat = DTokens.BasicTypes_FloatingPoint[srr.BaseTypeToken];
-
-						// Float implies integral props
-						if (DTokens.BasicTypes_Integral[srr.BaseTypeToken] || isFloat)
-							StaticTypePropertyProvider.AddIntegralTypeProperties(srr.BaseTypeToken, rr, CompletionDataGenerator, null, isFloat);
-
-						if (isFloat)
-							StaticTypePropertyProvider.AddFloatingTypeProperties(srr.BaseTypeToken, rr, CompletionDataGenerator, null);
-					}
+					if (isFloat)
+						StaticTypePropertyProvider.AddFloatingTypeProperties(primType.TypeToken, rr, CompletionDataGenerator, null);
 				}
 			}
 			#endregion
 
-			else if (rr is ArrayResult)
+			else if (rr is PointerType)
 			{
-				var ar = rr as ArrayResult;
+				var pt = (PointerType)rr;
+				if (!(pt.Base is PrimitiveType && pt.Base.DeclarationOrExpressionBase is PointerDecl))
+					BuildCompletionData(pt.Base, currentlyScopedBlock, true, pt);
+			}
 
-				if (ar.ArrayDeclaration!=null && ar.ArrayDeclaration.IsAssociative)
-					StaticTypePropertyProvider.AddAssocArrayProperties(rr, CompletionDataGenerator, ar.ArrayDeclaration);
+			else if (rr is AssocArrayType)
+			{
+				var ar = (AssocArrayType)rr;
+
+				if (ar is ArrayType)
+					StaticTypePropertyProvider.AddArrayProperties(rr, CompletionDataGenerator, ar.DeclarationOrExpressionBase as ArrayDecl);
 				else
-					StaticTypePropertyProvider.AddArrayProperties(rr, CompletionDataGenerator, ar.ArrayDeclaration);
+					StaticTypePropertyProvider.AddAssocArrayProperties(rr, CompletionDataGenerator, ar.DeclarationOrExpressionBase as ArrayDecl);
 			}
-
-			/*
-			else if (rr is ExpressionResult)
-			{
-				var err = rr as ExpressionResult;
-				var expr = err.Expression;
-
-				// 'Skip' surrounding parentheses
-				while (expr is SurroundingParenthesesExpression)
-					expr = (expr as SurroundingParenthesesExpression).Expression;
-
-				var idExpr = expr as IdentifierExpression;
-				if (idExpr != null)
-				{
-					// Char literals, Integrals types & Floats
-					if (idExpr.Format.HasFlag(LiteralFormat.Scalar) || idExpr.Format == LiteralFormat.CharLiteral)
-					{
-						StaticTypePropertyProvider.AddGenericProperties(rr, CompletionDataGenerator, null, true);
-						bool isFloat = (idExpr.Format & LiteralFormat.FloatingPoint) == LiteralFormat.FloatingPoint;
-						// Floats also imply integral properties
-						StaticTypePropertyProvider.AddIntegralTypeProperties(DTokens.Int, rr, CompletionDataGenerator, null, resultParent == null && isFloat);
-
-						// Float-exclusive props
-						if (isFloat)
-							StaticTypePropertyProvider.AddFloatingTypeProperties(DTokens.Float, rr, CompletionDataGenerator, null, resultParent==null);
-					}
-					// String literals
-					else if (idExpr.Format == LiteralFormat.StringLiteral || idExpr.Format == LiteralFormat.VerbatimStringLiteral)
-					{
-						StaticTypePropertyProvider.AddGenericProperties(rr, CompletionDataGenerator, null, resultParent==null);
-						StaticTypePropertyProvider.AddArrayProperties(rr, CompletionDataGenerator, new ArrayDecl()
-						{
-							ValueType =
-								new MemberFunctionAttributeDecl(DTokens.Immutable)
-								{
-									InnerType =
-										new DTokenDeclaration(DTokens.Char)
-								}
-						});
-					}
-				}
-				// Pointer conversions (e.g. (myInt*).sizeof)
-			}
-			*/
-			
 		}
 
-		void BuildCompletionData(MemberResult mrr, IBlockNode currentlyScopedBlock, bool isVariableInstance = false)
+		void BuildCompletionData(MemberSymbol mrr, IBlockNode currentlyScopedBlock, bool isVariableInstance = false)
 		{
-			if (mrr.MemberBaseTypes != null)
-				foreach (var i in mrr.MemberBaseTypes)
-				{
-					BuildCompletionData(i, currentlyScopedBlock,
-						(mrr.Node is DVariable && (mrr.Node as DVariable).IsAlias) ?
-							isVariableInstance : true, mrr); // True if we obviously have a variable handled here. Otherwise depends on the samely-named parameter..
-				}
-
-			if (mrr.ResultBase == null)
-				StaticTypePropertyProvider.AddGenericProperties(mrr, CompletionDataGenerator, mrr.Node, false);
+			if (mrr.Base != null)
+					BuildCompletionData(mrr.Base, 
+						currentlyScopedBlock,
+						mrr is AliasedType ? isVariableInstance : true, // True if we obviously have a variable handled here. Otherwise depends on the samely-named parameter..
+						mrr); 
+			else
+				StaticTypePropertyProvider.AddGenericProperties(mrr, CompletionDataGenerator, mrr.Definition, false);
 		}
 
-		void BuildCompletionData(ModulePackageResult mpr)
+		void BuildCompletionData(PackageSymbol mpr)
 		{
 			foreach (var kv in mpr.Package.Packages)
 				CompletionDataGenerator.Add(kv.Key);
@@ -238,9 +181,9 @@ namespace D_Parser.Completion
 				CompletionDataGenerator.Add(kv.Key, kv.Value);
 		}
 
-		void BuildCompletionData(ModuleResult tr)
+		void BuildCompletionData(ModuleSymbol tr)
 		{
-			foreach (var i in tr.Module)
+			foreach (var i in tr.Definition)
 			{
 				var di = i as DNode;
 				if (di == null)
@@ -255,9 +198,9 @@ namespace D_Parser.Completion
 			}
 		}
 
-		void BuildCompletionData(TypeResult tr, ItemVisibility visMod)
+		void BuildCompletionData(UserDefinedType tr, ItemVisibility visMod)
 		{
-			var n = tr.Node;
+			var n = tr.Definition;
 			if (n is DClassLike) // Add public static members of the class and including all base classes
 			{
 				var propertyMethodsToIgnore = new List<string>();
@@ -266,7 +209,7 @@ namespace D_Parser.Completion
 				var tvisMod = visMod;
 				while (curlevel != null)
 				{
-					foreach (var i in curlevel.Node as IBlockNode)
+					foreach (var i in curlevel.Definition as IBlockNode)
 					{
 						var dn = i as DNode;
 
@@ -330,7 +273,7 @@ namespace D_Parser.Completion
 							}
 						}
 					}
-					curlevel = (curlevel.BaseClass != null && curlevel.BaseClass.Length!=0) ? curlevel.BaseClass[0] : null;
+					curlevel = curlevel.Base as UserDefinedType;
 
 					// After having shown all items on the current node level,
 					// allow showing public (static) and/or protected items in the more basic levels then

@@ -173,17 +173,35 @@ namespace D_Parser.Parser
         public const int __vector = 158;
 
         // Additional operators
-        public const int PowAssign = 159; // ^^=
-        public const int NotUnequalAssign = 160; // !<>=
-        public const int NotUnequal = 161; // !<>
-        public const int Unequal = 162; // <>
-        public const int UnequalAssign = 163; // <>=
-        public const int NotGreaterThan = 164; // !>
-        public const int NotGreaterThanAssign = 165; // !>=
-        public const int NotLessThan = 166; // !<
-        public const int NotLessThanAssign = 167; // !<=
+		/// <summary>
+		/// ^^=
+		/// </summary>
+        public const int PowAssign = 159;
+		/// <summary>
+		/// !&lt;&gt;=
+		/// </summary>
+        public const int Unordered = 160;
+		/// <summary>
+		/// !&lt;&gt;
+		/// </summary>
+        public const int UnorderedOrEqual = 161;
+        public const int LessOrGreater = 162; // <>
+        public const int LessEqualOrGreater = 163; // <>=
+        public const int UnorderedGreaterOrEqual = 164; // !<
+        public const int UnorderedOrLess = 165; // !>=
+		/// <summary>
+		/// !&gt;
+		/// </summary>
+        public const int UnorderedLessOrEqual = 166; // !>
+        public const int UnorderedOrGreater = 167; // !<=
+		/// <summary>
+		/// &gt;&gt;
+		/// </summary>
         public const int ShiftRight = 168; // >>
-        public const int ShiftRightUnsigned = 169; // >>>
+		/// <summary>
+		/// &gt;&gt;&gt;
+		/// </summary>
+        public const int ShiftRightUnsigned = 169;
         public const int Pow = 170; // ^^
 
         public const int TripleDot = 171; // ...
@@ -374,13 +392,7 @@ namespace D_Parser.Parser
             ShiftLeftAssign, // <<=
             ShiftRightAssign, // >>=
             TripleRightShiftAssign,// >>>=
-            PowAssign,
-            LessEqual,
-            GreaterEqual,
-            NotUnequalAssign,
-            UnequalAssign,
-            NotGreaterThanAssign,
-            NotLessThanAssign
+            PowAssign // ^^=
             );
         public static BitArray TypeDeclarationKW = NewSet(Class, Interface, Struct, Template, Enum, Delegate, Function);
         public static BitArray RelationalOperators = NewSet(
@@ -388,14 +400,15 @@ namespace D_Parser.Parser
             LessEqual,
             GreaterThan,
             GreaterEqual,
-            //NotUnequalAssign, // !<>=
-            NotUnequal, // !<>
-            Unequal,
-            UnequalAssign,
-            NotGreaterThan,
-            //NotGreaterThanAssign,
-            NotLessThan
-            //NotLessThanAssign
+
+            Unordered,
+			LessOrGreater,
+			LessEqualOrGreater,
+			UnorderedOrGreater,
+			UnorderedGreaterOrEqual,
+			UnorderedOrLess,
+			UnorderedLessOrEqual,
+			UnorderedOrEqual
             );
         public static BitArray VisModifiers = NewSet(Public, Protected, Private, Package);
         public static BitArray Modifiers = NewSet(
@@ -516,12 +529,12 @@ namespace D_Parser.Parser
 
 			// Relational
 			{GreaterThan,">"},
-			{NotGreaterThan,"!>"},
+			{UnorderedGreaterOrEqual,"!<"},
 			{LessThan,"<"},
-			{NotLessThan,"!<"},
+			{UnorderedLessOrEqual,"!>"},
 			{Not,"!"},
-			{Unequal,"<>"},
-			{NotUnequal,"!<>"},
+			{LessOrGreater,"<>"},
+			{UnorderedOrEqual,"!<>"},
 			{LogicalAnd,"&&"},
 			{LogicalOr,"||"},
 			{Tilde,"~"},
@@ -557,10 +570,10 @@ namespace D_Parser.Parser
 			{TripleRightShiftAssign,">>>="},
 			
 			{PowAssign,"^^="},
-			{UnequalAssign,"<>="},
-			{NotUnequalAssign,"!<>="},
-			{NotGreaterThanAssign,"!>="},
-			{NotLessThanAssign,"!<="},
+			{LessEqualOrGreater,"<>="},
+			{Unordered,"!<>="},
+			{UnorderedOrLess,"!>="},
+			{UnorderedOrGreater,"!<="},
 
 			{GoesTo,"=>"}
 		};

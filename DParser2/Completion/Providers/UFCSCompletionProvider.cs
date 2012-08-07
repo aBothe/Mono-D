@@ -7,7 +7,7 @@ namespace D_Parser.Completion.Providers
 	/// </summary>
 	public class UFCSCompletionProvider
 	{
-		public static void Generate(ResolveResult rr, ResolverContextStack ctxt, IEditorData ed, ICompletionDataGenerator gen)
+		public static void Generate(ISemantic rr, ResolverContextStack ctxt, IEditorData ed, ICompletionDataGenerator gen)
 		{
 			foreach (var pc in ed.ParseCache)
 			{

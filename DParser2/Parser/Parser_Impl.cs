@@ -23,7 +23,7 @@ namespace D_Parser.Parser
 
 			var module = new DModule();
 			LastParsedObject = module;
-			module.StartLocation = la.Location;
+			module.Location = la.Location;
 			doc = module;
 
 			// Only one module declaration possible!
@@ -170,7 +170,7 @@ namespace D_Parser.Parser
 				Step();
 				var dbs = new DMethod(DMethod.MethodType.Unittest);
 				LastParsedObject = dbs;
-				dbs.StartLocation = t.Location;
+				dbs.Location = t.Location;
 				FunctionBody(dbs);
 				dbs.EndLocation = t.EndLocation;
 				module.Add(dbs);
@@ -192,7 +192,7 @@ namespace D_Parser.Parser
 				var ass = new VersionDebugSpecification
 				{
 					Token = t.Kind,
-					StartLocation = t.Location
+					Location = t.Location
 				};
 				LastParsedObject = ass;
 
@@ -420,7 +420,7 @@ namespace D_Parser.Parser
 			{
 				Step();
 
-                var dm = new DMethod(DMethod.MethodType.Allocator) { StartLocation=t.Location };
+                var dm = new DMethod(DMethod.MethodType.Allocator) { Location=t.Location };
 				ApplyAttributes(dm);
 
 				dm.Parameters = Parameters(dm);
@@ -434,7 +434,7 @@ namespace D_Parser.Parser
 			{
 				Step();
 
-                var dm = new DMethod(DMethod.MethodType.Deallocator) { StartLocation=t.Location };
+                var dm = new DMethod(DMethod.MethodType.Deallocator) { Location=t.Location };
 				dm.Name = "delete";
 				ApplyAttributes(dm);
 
@@ -452,7 +452,7 @@ namespace D_Parser.Parser
 		ModuleStatement ModuleDeclaration()
 		{
 			Expect(Module);
-			var ret = new ModuleStatement { StartLocation=t.Location };
+			var ret = new ModuleStatement { Location=t.Location };
 			LastParsedObject = ret;
 			ret.ModuleName = ModuleFullyQualifiedName();
 			if (Expect(Semicolon))
@@ -485,7 +485,7 @@ namespace D_Parser.Parser
 		{
 			Expect(Import);
 
-			var importStatement = new ImportStatement { StartLocation=t.Location };
+			var importStatement = new ImportStatement { Location=t.Location };
 
 			ApplyAttributes(importStatement);
 			
@@ -584,7 +584,7 @@ namespace D_Parser.Parser
             if (mx == null)
                 return null;
 
-            return new ExpressionStatement { StartLocation=mx.Location, Expression=mx, EndLocation=t.EndLocation };
+            return new ExpressionStatement { Location=mx.Location, Expression=mx, EndLocation=t.EndLocation };
 		}
 		#endregion
 
@@ -634,7 +634,7 @@ namespace D_Parser.Parser
 				{
                     var dv = new DVariable { 
                         Description = GetComments(),
-                        StartLocation=t.Location, 
+                        Location=t.Location, 
                         IsAlias=true, 
                         Name="this"
                     };
@@ -741,7 +741,7 @@ namespace D_Parser.Parser
 			// Declarators
 			var firstNode = Declarator(ttd,false);
 			firstNode.Description = initialComment;
-			firstNode.StartLocation = startLocation;
+			firstNode.Location = startLocation;
 
 			ApplyAttributes(firstNode as DNode);
 
@@ -777,7 +777,7 @@ namespace D_Parser.Parser
 					otherNode.Description = initialComment;
 
 					otherNode.AssignFrom(firstNode);
-					otherNode.StartLocation = t.Location;
+					otherNode.Location = t.Location;
 					otherNode.Name = t.Value;
 					otherNode.NameLocation = t.Location;
 
@@ -1022,7 +1022,7 @@ namespace D_Parser.Parser
 		/// <returns>A dummy node that contains the return type, the variable name and possible parameters of a function declaration</returns>
 		DNode Declarator(ITypeDeclaration basicType,bool IsParam)
 		{
-			DNode ret = new DVariable() { Type=basicType, StartLocation = la.Location };
+			DNode ret = new DVariable() { Type=basicType, Location = la.Location };
 			LastParsedObject = ret;
 			ITypeDeclaration ttd = null;
 
@@ -1448,7 +1448,7 @@ namespace D_Parser.Parser
 			td = BasicType();
 
 			var ret = Declarator(td,true);
-			ret.StartLocation = startLocation;
+			ret.Location = startLocation;
 
 			if (attr.Count > 0) 
 				(ret as DNode).Attributes.AddRange(attr);
@@ -1605,7 +1605,7 @@ namespace D_Parser.Parser
 			LastParsedObject = inv;
 
 			Expect(Invariant);
-			inv.StartLocation = t.Location;
+			inv.Location = t.Location;
 			if (laKind == OpenParenthesis)
 			{
 				Step();
@@ -2637,7 +2637,7 @@ namespace D_Parser.Parser
 			{
 				var fl = new FunctionLiteral() { Location=la.Location};
 				LastParsedObject = fl;
-				fl.AnonymousMethod.StartLocation = la.Location;
+				fl.AnonymousMethod.Location = la.Location;
 
 				if (laKind == Delegate || laKind == Function)
 				{
@@ -2921,7 +2921,7 @@ namespace D_Parser.Parser
 		{
 			var fl = new FunctionLiteral { IsLambda=true };
 
-			fl.Location = fl.AnonymousMethod.StartLocation = la.Location;
+			fl.Location = fl.AnonymousMethod.Location = la.Location;
 
 			if (laKind == Identifier)
 			{
@@ -2929,7 +2929,7 @@ namespace D_Parser.Parser
 
 				var p = new DVariable { 
 					Name = t.Value, 
-					StartLocation = t.Location, 
+					Location = t.Location, 
 					EndLocation = t.EndLocation };
 
 				p.Attributes.Add(new DAttribute(Auto));
@@ -2943,13 +2943,13 @@ namespace D_Parser.Parser
 
 			if (Expect(GoesTo))
 			{
-				fl.AnonymousMethod.Body = new BlockStatement { StartLocation= la.Location };
+				fl.AnonymousMethod.Body = new BlockStatement { Location= la.Location };
 
 				var ae = AssignExpression(fl.AnonymousMethod);
 
 				fl.AnonymousMethod.Body.Add(new ReturnStatement
 				{
-					StartLocation = ae.Location,
+					Location = ae.Location,
 					EndLocation = ae.EndLocation,
 					ReturnExpression=ae
 				});
@@ -2999,7 +2999,7 @@ namespace D_Parser.Parser
 
 					var n = Declarator(tp, false);
 
-					n.StartLocation = tp.Location;
+					n.Location = tp.Location;
 
 					// Initializer is optional
 					if (laKind == Assign)
@@ -3071,7 +3071,7 @@ namespace D_Parser.Parser
 			{
 				Step();
 
-				var ret = new LabeledStatement() { StartLocation = t.Location, Identifier = t.Value, Parent = Parent };
+				var ret = new LabeledStatement() { Location = t.Location, Identifier = t.Value, Parent = Parent };
 				LastParsedObject = ret;
 				Step();
 				ret.EndLocation = t.EndLocation;
@@ -3089,7 +3089,7 @@ namespace D_Parser.Parser
 
 				Step();
 
-				var dbs = new IfStatement() { StartLocation = t.Location, IsStatic = isStatic, Parent = Parent };
+				var dbs = new IfStatement() { Location = t.Location, IsStatic = isStatic, Parent = Parent };
 				LastParsedObject = dbs;
 				Expect(OpenParenthesis);
 
@@ -3118,7 +3118,7 @@ namespace D_Parser.Parser
 			{
 				Step();
 
-				var dbs = new WhileStatement() { StartLocation = t.Location, Parent = Parent };
+				var dbs = new WhileStatement() { Location = t.Location, Parent = Parent };
 				LastParsedObject = dbs;
 				Expect(OpenParenthesis);
 				dbs.Condition = Expression(Scope);
@@ -3136,7 +3136,7 @@ namespace D_Parser.Parser
 			{
 				Step();
 
-				var dbs = new WhileStatement() { StartLocation = t.Location, Parent = Parent };
+				var dbs = new WhileStatement() { Location = t.Location, Parent = Parent };
 				LastParsedObject = dbs;
 				dbs.ScopedStatement = Statement(Scope: Scope, Parent: dbs);
 
@@ -3156,7 +3156,7 @@ namespace D_Parser.Parser
 			{
 				Step();
 
-				var dbs = new ForStatement { StartLocation = t.Location, Parent = Parent };
+				var dbs = new ForStatement { Location = t.Location, Parent = Parent };
 				LastParsedObject = dbs;
 				Expect(OpenParenthesis);
 
@@ -3195,7 +3195,7 @@ namespace D_Parser.Parser
 			#region [Final] SwitchStatement
 			else if ((laKind == (Final) && Lexer.CurrentPeekToken.Kind == (Switch)) || laKind == (Switch))
 			{
-				var dbs = new SwitchStatement { StartLocation = la.Location, Parent = Parent };
+				var dbs = new SwitchStatement { Location = la.Location, Parent = Parent };
 				LastParsedObject = dbs;
 				if (laKind == (Final))
 				{
@@ -3219,7 +3219,7 @@ namespace D_Parser.Parser
 			{
 				Step();
 
-				var dbs = new SwitchStatement.CaseStatement() { StartLocation = la.Location, Parent = Parent };
+				var dbs = new SwitchStatement.CaseStatement() { Location = la.Location, Parent = Parent };
 				LastParsedObject = dbs;
 				dbs.ArgumentList = Expression(Scope);
 
@@ -3261,7 +3261,7 @@ namespace D_Parser.Parser
 
 				var dbs = new SwitchStatement.DefaultStatement()
 				{
-					StartLocation = la.Location,
+					Location = la.Location,
 					Parent = Parent
 				};
 				LastParsedObject = dbs;
@@ -3292,7 +3292,7 @@ namespace D_Parser.Parser
 			else if (laKind == (Continue))
 			{
 				Step();
-				var s = new ContinueStatement() { StartLocation = t.Location, Parent = Parent };
+				var s = new ContinueStatement() { Location = t.Location, Parent = Parent };
 				LastParsedObject = s;
 				if (laKind == (Identifier))
 				{
@@ -3308,7 +3308,7 @@ namespace D_Parser.Parser
 			else if (laKind == (Break))
 			{
 				Step();
-				var s = new BreakStatement() { StartLocation = t.Location, Parent = Parent };
+				var s = new BreakStatement() { Location = t.Location, Parent = Parent };
 				LastParsedObject = s;
 				if (laKind == (Identifier))
 				{
@@ -3326,7 +3326,7 @@ namespace D_Parser.Parser
 			else if (laKind == (Return))
 			{
 				Step();
-				var s = new ReturnStatement() { StartLocation = t.Location, Parent = Parent };
+				var s = new ReturnStatement() { Location = t.Location, Parent = Parent };
 				LastParsedObject = s;
 				if (laKind != (Semicolon))
 					s.ReturnExpression = Expression(Scope);
@@ -3342,7 +3342,7 @@ namespace D_Parser.Parser
 			else if (laKind == (Goto))
 			{
 				Step();
-				var s = new GotoStatement() { StartLocation = t.Location, Parent = Parent };
+				var s = new GotoStatement() { Location = t.Location, Parent = Parent };
 				LastParsedObject = s;
 
 				if (laKind == (Identifier))
@@ -3377,7 +3377,7 @@ namespace D_Parser.Parser
 			{
 				Step();
 
-				var dbs = new WithStatement() { StartLocation = t.Location, Parent = Parent };
+				var dbs = new WithStatement() { Location = t.Location, Parent = Parent };
 				LastParsedObject = dbs;
 				Expect(OpenParenthesis);
 
@@ -3397,7 +3397,7 @@ namespace D_Parser.Parser
 			else if (laKind == (Synchronized))
 			{
 				Step();
-				var dbs = new SynchronizedStatement() { StartLocation = t.Location, Parent = Parent };
+				var dbs = new SynchronizedStatement() { Location = t.Location, Parent = Parent };
 				LastParsedObject = dbs;
 
 				if (laKind == (OpenParenthesis))
@@ -3419,7 +3419,7 @@ namespace D_Parser.Parser
 			{
 				Step();
 
-				var s = new TryStatement() { StartLocation = t.Location, Parent = Parent };
+				var s = new TryStatement() { Location = t.Location, Parent = Parent };
 				LastParsedObject = s;
 
 				s.ScopedStatement = Statement(Scope: Scope, Parent: s);
@@ -3433,7 +3433,7 @@ namespace D_Parser.Parser
 				{
 					Step();
 
-					var c = new TryStatement.CatchStatement() { StartLocation = t.Location, Parent = s };
+					var c = new TryStatement.CatchStatement() { Location = t.Location, Parent = s };
 					LastParsedObject = c;
 
 					// CatchParameter
@@ -3478,7 +3478,7 @@ namespace D_Parser.Parser
 				{
 					Step();
 
-					var f = new TryStatement.FinallyStatement() { StartLocation = t.Location, Parent = Parent };
+					var f = new TryStatement.FinallyStatement() { Location = t.Location, Parent = Parent };
 					LastParsedObject = f;
 
 					f.ScopedStatement = Statement();
@@ -3496,7 +3496,7 @@ namespace D_Parser.Parser
 			else if (laKind == (Throw))
 			{
 				Step();
-				var s = new ThrowStatement() { StartLocation = t.Location, Parent = Parent };
+				var s = new ThrowStatement() { Location = t.Location, Parent = Parent };
 				LastParsedObject = s;
 
 				s.ThrowExpression = Expression(Scope);
@@ -3514,7 +3514,7 @@ namespace D_Parser.Parser
 
 				if (laKind == OpenParenthesis)
 				{
-					var s = new ScopeGuardStatement() { StartLocation = t.Location, Parent = Parent };
+					var s = new ScopeGuardStatement() { Location = t.Location, Parent = Parent };
 					LastParsedObject = s;
 
 					Step();
@@ -3544,7 +3544,7 @@ namespace D_Parser.Parser
 			#region PragmaStatement
 			else if (laKind == (Pragma))
 			{
-				var s = new PragmaStatement { StartLocation = la.Location };
+				var s = new PragmaStatement { Location = la.Location };
 
 				s.Pragma = _Pragma();
 				s.Parent = Parent;
@@ -3577,7 +3577,7 @@ namespace D_Parser.Parser
 			#region (Static) AssertExpression
 			else if (laKind == Assert || (laKind == Static && PK(Assert)))
 			{
-				var s = new AssertStatement() { StartLocation = la.Location, IsStatic = laKind == Static, Parent = Parent };
+				var s = new AssertStatement() { Location = la.Location, IsStatic = laKind == Static, Parent = Parent };
 				LastParsedObject = s;
 
 				if (s.IsStatic)
@@ -3601,7 +3601,7 @@ namespace D_Parser.Parser
 			else if (laKind == Volatile)
 			{
 				Step();
-				var s = new VolatileStatement() { StartLocation = t.Location, Parent = Parent };
+				var s = new VolatileStatement() { Location = t.Location, Parent = Parent };
 				LastParsedObject = s;
 				s.ScopedStatement = Statement(Scope: Scope, Parent: s);
 				s.EndLocation = t.EndLocation;
@@ -3616,7 +3616,7 @@ namespace D_Parser.Parser
 
 			else if (!(ClassLike[laKind] || BasicTypes[laKind] || laKind == Enum || Modifiers[laKind] || laKind == PropertyAttribute || laKind == Alias || laKind == Typedef) && IsAssignExpression())
 			{
-				var s = new ExpressionStatement() { StartLocation = la.Location, Parent = Parent };
+				var s = new ExpressionStatement() { Location = la.Location, Parent = Parent };
 
 				if (!IsEOF)
 					LastParsedObject = s;
@@ -3631,7 +3631,7 @@ namespace D_Parser.Parser
 			}
 			else
 			{
-				var s = new DeclarationStatement() { StartLocation = la.Location, Parent = Parent };
+				var s = new DeclarationStatement() { Location = la.Location, Parent = Parent };
 				LastParsedObject = s;
 				s.Declarations = Declaration(Scope);
 
@@ -3649,7 +3649,7 @@ namespace D_Parser.Parser
 			Step();
 
 			var dbs = new ForeachStatement() { 
-				StartLocation = t.Location, 
+				Location = t.Location, 
 				IsReverse = t.Kind == Foreach_Reverse, 
 				Parent = Parent 
 			};
@@ -3667,7 +3667,7 @@ namespace D_Parser.Parser
 
 				var forEachVar = new DVariable();
 				LastParsedObject = forEachVar;
-				forEachVar.StartLocation = la.Location;
+				forEachVar.Location = la.Location;
 
 				if (laKind == (Ref))
 				{
@@ -3715,7 +3715,7 @@ namespace D_Parser.Parser
 		AsmStatement AsmStatement(IStatement Parent)
 		{
 			Step();
-			var s = new AsmStatement() { StartLocation = t.Location, Parent = Parent };
+			var s = new AsmStatement() { Location = t.Location, Parent = Parent };
 			LastParsedObject = s;
 
 			Expect(OpenCurlyBrace);
@@ -3743,7 +3743,7 @@ namespace D_Parser.Parser
 		ConditionStatement.DebugStatement DebugStatement(IBlockNode Scope, IStatement Parent)
 		{
 			Step();
-			var s = new ConditionStatement.DebugStatement() { StartLocation = t.Location, Parent = Parent };
+			var s = new ConditionStatement.DebugStatement() { Location = t.Location, Parent = Parent };
 			LastParsedObject = s;
 
 			if (laKind == OpenParenthesis)
@@ -3778,7 +3778,7 @@ namespace D_Parser.Parser
 		ConditionStatement.VersionStatement VersionStatement(IBlockNode Scope, IStatement Parent)
 		{
 			Step();
-			var s = new ConditionStatement.VersionStatement() { StartLocation = t.Location, Parent = Parent };
+			var s = new ConditionStatement.VersionStatement() { Location = t.Location, Parent = Parent };
 
 			if (laKind == OpenParenthesis)
 			{
@@ -3816,7 +3816,7 @@ namespace D_Parser.Parser
 			var OldPreviousCommentString = PreviousComment;
 			PreviousComment = "";
 
-			var bs = new BlockStatement() { StartLocation=la.Location, ParentNode=ParentNode, Parent=Parent};
+			var bs = new BlockStatement() { Location=la.Location, ParentNode=ParentNode, Parent=Parent};
 			LastParsedObject = bs;
 
 			if (Expect(OpenCurlyBrace))
@@ -3865,7 +3865,7 @@ namespace D_Parser.Parser
 			Step();
 
 			var ret = new DClassLike(t.Kind) { 
-				StartLocation = t.Location, 
+				Location = t.Location, 
 				Description = GetComments(),
                 ClassType=DTokens.Struct,
 			};
@@ -3909,7 +3909,7 @@ namespace D_Parser.Parser
 			Expect(Class);
 
 			var dc = new DClassLike(Class) { 
-				StartLocation = t.Location,
+				Location = t.Location,
 				Description=GetComments() 
 			};
 			LastParsedObject = dc;
@@ -4014,7 +4014,7 @@ namespace D_Parser.Parser
 			Expect(This);
 			var dm = new DMethod(){
 				SpecialType = DMethod.MethodType.Constructor,
-				StartLocation = t.Location,
+				Location = t.Location,
 				Name = "this"
 			};
 			dm.Description = GetComments();
@@ -4061,7 +4061,7 @@ namespace D_Parser.Parser
 			LastParsedObject = dm;
 
 			dm.SpecialType = DMethod.MethodType.Destructor;
-			dm.StartLocation = Lexer.LastToken.Location;
+			dm.Location = Lexer.LastToken.Location;
 			dm.Name = "~this";
 
 			if (IsTemplateParameterList())
@@ -4082,7 +4082,7 @@ namespace D_Parser.Parser
 		{
 			Expect(Interface);
 			var dc = new DClassLike() { 
-				StartLocation = t.Location, 
+				Location = t.Location, 
 				Description = GetComments(),
                 ClassType= DTokens.Interface
 			};
@@ -4130,7 +4130,7 @@ namespace D_Parser.Parser
 			Expect(Enum);
 			var ret = new List<INode>();
 
-			var mye = new DEnum() { StartLocation = t.Location, Description = GetComments() };
+			var mye = new DEnum() { Location = t.Location, Description = GetComments() };
 			LastParsedObject = mye;
 
 			ApplyAttributes(mye);
@@ -4241,7 +4241,7 @@ namespace D_Parser.Parser
 
 					if (laKind == CloseCurlyBrace) break;
 
-					var ev = new DEnumValue() { StartLocation = la.Location, Description = GetComments() };
+					var ev = new DEnumValue() { Location = la.Location, Description = GetComments() };
 					LastParsedObject = ev;
 
 					if (laKind == Identifier && (
@@ -4355,7 +4355,7 @@ namespace D_Parser.Parser
 				Step();
 			Expect(Template);
 			var dc = new DClassLike(Template) { Description=GetComments(),
-				StartLocation=startLoc
+				Location=startLoc
 			};
 			LastParsedObject = dc;
 
@@ -4391,7 +4391,7 @@ namespace D_Parser.Parser
 			ITypeDeclaration preQualifier = null;
 
 			Expect(Mixin);
-			r.StartLocation = t.Location;
+			r.Location = t.Location;
 			
 			if (laKind == Dot)
 			{

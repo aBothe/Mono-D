@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using D_Parser.Dom;
 using D_Parser.Dom.Statements;
+using D_Parser.Resolver.Templates;
 
 namespace D_Parser.Resolver
 {
@@ -9,21 +10,23 @@ namespace D_Parser.Resolver
 		public IBlockNode ScopedBlock;
 		public IStatement ScopedStatement;
 
-		public void IntroduceTemplateParameterTypes(TemplateInstanceResult tir)
+		public void IntroduceTemplateParameterTypes(DSymbol tir)
 		{
 			if(tir!=null && tir.DeducedTypes != null)
 				foreach (var dt in tir.DeducedTypes)
 					DeducedTemplateParameters[dt.Key] = dt.Value;
 		}
 
-		public void RemoveParamTypesFromPreferredLocas(TemplateInstanceResult tir)
+		public void RemoveParamTypesFromPreferredLocals(DSymbol tir)
 		{
 			if (tir != null && tir.DeducedTypes != null)
 				foreach (var dt in tir.DeducedTypes)
 					DeducedTemplateParameters.Remove(dt.Key);
 		}
 
-		public Dictionary<string, ResolveResult[]> DeducedTemplateParameters = new Dictionary<string,ResolveResult[]>();
+		public DeducedTypeDictionary DeducedTemplateParameters = new DeducedTypeDictionary();
+
+		//TODO: Cache expression results to increase static if() performance if multiple items are affected by them
 
 		public ResolutionOptions ContextDependentOptions = 0;
 

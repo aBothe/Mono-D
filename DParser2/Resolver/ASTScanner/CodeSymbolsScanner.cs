@@ -91,6 +91,7 @@ namespace D_Parser.Resolver.ASTScanner
 
 						foreach (var t in res)
 						{
+							// If cmpName represents a type/enum in the current scope, it's handled as a found type
 							foreach (var m in t)
 								if (m.Name == cmpName && (m is DEnum || m is DClassLike))
 								{
@@ -98,34 +99,26 @@ namespace D_Parser.Resolver.ASTScanner
 									return new[] { m as IBlockNode };
 								}
 
+							// Furthermore, if it's a class, check out types/enums that were declared inside base classes
 							if (t is DClassLike)
 							{
-								var tr = new TypeResult { Node=t };
-								DResolver.ResolveBaseClasses(tr, lastResCtxt,true);
+								var dc=(DClassLike)t;
 
-								if (tr.BaseClass!=null && tr.BaseClass.Length != 0)
+								if(dc.ClassType == DTokens.Class)
 								{
-									var l1 = new List<TypeResult>(tr.BaseClass);
-									var l2 = new List<TypeResult>();
+									var tr=DResolver.ResolveBaseClasses(new ClassType(dc, dc,null), lastResCtxt,true);
 
-									while (l1.Count > 0)
+									tr = tr.Base as UserDefinedType;
+									while (tr != null)
 									{
-										foreach (var tr_ in l1)
-										{
-											foreach (var m in tr_.Node as IBlockNode)
-												if (m.Name == cmpName && (m is DEnum || m is DClassLike))
-												{
-													csr.ResolvedIdentifiers.Add(typeId as IdentifierDeclaration, m);
-													return new[] { m as IBlockNode };
-												}
+										foreach (var m in tr.Definition as IBlockNode)
+											if (m.Name == cmpName && (m is DEnum || m is DClassLike))
+											{
+												csr.ResolvedIdentifiers.Add(typeId as IdentifierDeclaration, m);
+												return new[] { m as IBlockNode };
+											}
 
-											if (tr_.BaseClass != null)
-												l2.AddRange(tr_.BaseClass);
-										}
-
-										l1.Clear();
-										l1.AddRange(l2);
-										l2.Clear();
+										tr = tr.Base as UserDefinedType;
 									}
 								}
 							}

@@ -7,6 +7,7 @@ using D_Parser.Misc;
 using D_Parser.Resolver;
 using D_Parser.Resolver.ASTScanner;
 using D_Parser.Resolver.TypeResolution;
+using D_Parser.Resolver.ExpressionSemantics;
 
 namespace D_Parser.Refactoring
 {
@@ -143,15 +144,12 @@ namespace D_Parser.Refactoring
 
 			UpdateOrCreateIdentifierContext(o);
 
-			var resolveResults = o is ITypeDeclaration ?
-				TypeDeclarationResolver.Resolve(o as ITypeDeclaration, ctxt) :
-				(o is IExpression ? ExpressionTypeResolver.Resolve((IExpression)o, ctxt) : null);
+			var r = o is ITypeDeclaration ?
+				TypeDeclarationResolver.ResolveSingle(o as ITypeDeclaration, ctxt) :
+				(o is IExpression ? Evaluation.EvaluateType((IExpression)o, ctxt) : null);
 
-			if (resolveResults != null)
-				foreach (var targetSymbol in resolveResults)
-				{
-					HandleResolveResult(targetSymbol, o, idObject);
-				}
+			if (r != null)
+				HandleResolveResult(r, o, idObject);
 		}
 
 		/// <summary>
@@ -172,13 +170,13 @@ namespace D_Parser.Refactoring
 				ctxt.ScopedBlock = DResolver.SearchBlockAt(ast, o.Location, out ctxt.CurrentContext.ScopedStatement);
 		}
 
-		void HandleResolveResult(ResolveResult rr, ISyntaxRegion o, ISyntaxRegion idObject)
+		void HandleResolveResult(AbstractType rr, ISyntaxRegion o, ISyntaxRegion idObject)
 		{
 			var tsym = rr;
 
 			// Track down result bases until one associated to 'o' has been found - and finally mark it as a reference
-			while (tsym != null && tsym.DeclarationOrExpressionBase != o)
-				tsym = tsym.ResultBase;
+			while (tsym is DerivedDataType && tsym.DeclarationOrExpressionBase != o)
+				tsym = ((DerivedDataType)tsym).Base;
 
 			// Get the associated declaration node
 			var targetSymbolNode = DResolver.GetResultMember(tsym);

@@ -12,6 +12,7 @@ namespace D_Parser.Resolver
 		#region Properties
 		protected Stack<ResolverContext> stack = new Stack<ResolverContext>();
 		public ResolutionOptions ContextIndependentOptions = ResolutionOptions.Default;
+		public readonly List<ResolutionError> ResolutionErrors = new List<ResolutionError>();
 
 		public ResolutionOptions Options
 		{
@@ -51,12 +52,12 @@ namespace D_Parser.Resolver
 			}
 		}
 
-		Dictionary<object, Dictionary<string, ResolveResult[]>> resolvedTypes = new Dictionary<object, Dictionary<string, ResolveResult[]>>();
+		Dictionary<object, Dictionary<string, ISemantic[]>> resolvedTypes = new Dictionary<object, Dictionary<string, ISemantic[]>>();
 
 		/// <summary>
 		/// Stores scoped-block dependent type dictionaries, which store all types that were already resolved once
 		/// </summary>
-		public Dictionary<object, Dictionary<string, ResolveResult[]>> ResolvedTypes
+		public Dictionary<object, Dictionary<string, ISemantic[]>> ResolvedTypes
 		{
 			get { return resolvedTypes; }
 		}
@@ -132,24 +133,24 @@ namespace D_Parser.Resolver
 			return CurrentContext.ScopedBlock;
 		}
 
-		public void TryAddResults(string TypeDeclarationString, ResolveResult[] NodeMatches)
+		public void TryAddResults(string TypeDeclarationString, ISemantic[] NodeMatches)
 		{
 			var ScopedType = GetMostFittingBlock();
 
-			Dictionary<string, ResolveResult[]> subDict = null;
+			Dictionary<string, ISemantic[]> subDict = null;
 
 			if (!resolvedTypes.TryGetValue(ScopedType, out subDict))
-				resolvedTypes.Add(ScopedType, subDict = new Dictionary<string, ResolveResult[]>());
+				resolvedTypes.Add(ScopedType, subDict = new Dictionary<string, ISemantic[]>());
 
 			if (!subDict.ContainsKey(TypeDeclarationString))
 				subDict.Add(TypeDeclarationString, NodeMatches);
 		}
 
-		public bool TryGetAlreadyResolvedType(string TypeDeclarationString, out ResolveResult[] NodeMatches)
+		public bool TryGetAlreadyResolvedType(string TypeDeclarationString, out ISemantic[] NodeMatches)
 		{
 			var ScopedType = GetMostFittingBlock();
 
-			Dictionary<string, ResolveResult[]> subDict = null;
+			Dictionary<string, ISemantic[]> subDict = null;
 
 			if (ScopedType != null && !resolvedTypes.TryGetValue(ScopedType, out subDict))
 			{
@@ -193,6 +194,39 @@ namespace D_Parser.Resolver
 				return IsParent;
 
 			}
+		}
+
+		/// <summary>
+		/// Returns true if 'results' only contains one valid item
+		/// </summary>
+		public bool CheckForSingleResult<T>(T[] results, ISyntaxRegion td) where T : ISemantic
+		{
+			if (results == null || results.Length == 0)
+			{
+				LogError(new NothingFoundError(td));
+				return false;
+			}
+			else if (results.Length > 1)
+			{
+				var r = new List<ISemantic>();
+				foreach (var res in results)
+					r.Add(res);
+
+				LogError(new AmbiguityError(td, r));
+				return false;
+			}
+
+			return results[0] != null;
+		}
+
+		public void LogError(ResolutionError err)
+		{
+			ResolutionErrors.Add(err);
+		}
+
+		public void LogError(ISyntaxRegion syntaxObj, string msg)
+		{
+			ResolutionErrors.Add(new ResolutionError(syntaxObj,msg));
 		}
 	}
 }

@@ -95,7 +95,7 @@ namespace MonoDevelop.D.Parser
 			if (block == null)
 				return;
 
-			if (!(block is IAbstractSyntaxTree) && !block.StartLocation.IsEmpty && block.EndLocation > block.StartLocation)
+			if (!(block is IAbstractSyntaxTree) && !block.Location.IsEmpty && block.EndLocation > block.Location)
 			{
 				if (block is DMethod)
 				{
@@ -128,8 +128,8 @@ namespace MonoDevelop.D.Parser
 			if(statement is BlockStatement)
 				l.Add(new FoldingRegion(
 					new DomRegion(
-						statement.StartLocation.Line,
-						statement.StartLocation.Column,
+						statement.Location.Line,
+						statement.Location.Column,
 						statement.EndLocation.Line,
 						statement.EndLocation.Column+1),
 					FoldType.Undefined));

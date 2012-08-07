@@ -18,7 +18,7 @@ namespace MonoDevelop.D.Refactoring
 
 	public class ContextMenuRefactoringCommandHandler : CommandHandler
 	{
-		ResolveResult res;
+		AbstractType res;
 		INode n;
 
 		protected override void Run(object dataItem)

@@ -3,6 +3,7 @@ using D_Parser.Dom;
 using D_Parser.Parser;
 using D_Parser.Resolver.Templates;
 using D_Parser.Resolver.TypeResolution;
+using D_Parser.Resolver.ExpressionSemantics;
 
 namespace D_Parser.Resolver
 {
@@ -15,30 +16,33 @@ namespace D_Parser.Resolver
 		/// <summary>
 		/// Checks given results for type equality
 		/// </summary>
-		public static bool IsEqual(ResolveResult r1, ResolveResult r2)
+		public static bool IsEqual(ISemantic r1, ISemantic r2)
 		{
-			if (r1 is TemplateInstanceResult && r2 is TemplateInstanceResult)
-			{
-				var tr1 = (TemplateInstanceResult)r1;
-				var tr2 = (TemplateInstanceResult)r2;
+			if (r1 is ISymbolValue && r2 is ISymbolValue)
+				return SymbolValueComparer.IsEqual((ISymbolValue)r1, (ISymbolValue)r2);
 
-				if (tr1.Node != tr2.Node)
+			else if (r1 is TemplateIntermediateType && r2 is TemplateIntermediateType)
+			{
+				var tr1 = (TemplateIntermediateType)r1;
+				var tr2 = (TemplateIntermediateType)r2;
+
+				if (tr1.Definition != tr2.Definition)
 					return false;
 
 				//TODO: Compare deduced types
 				return true;
 			}
-			else if (r1 is StaticTypeResult && r2 is StaticTypeResult)
-				return ((StaticTypeResult)r1).BaseTypeToken == ((StaticTypeResult)r2).BaseTypeToken;
-			else if (r1 is ArrayResult && r2 is ArrayResult)
+			else if (r1 is PrimitiveType && r2 is PrimitiveType)
+				return ((PrimitiveType)r1).TypeToken == ((PrimitiveType)r2).TypeToken;
+			else if (r1 is ArrayType && r2 is ArrayType)
 			{
-				var ar1 = (ArrayResult)r1;
-				var ar2 = (ArrayResult)r2;
+				var ar1 = (ArrayType)r1;
+				var ar2 = (ArrayType)r2;
 
-				if (!IsEqual(ar1.KeyType[0], ar2.KeyType[0]))
+				if (!IsEqual(ar1.KeyType, ar2.KeyType))
 					return false;
 
-				return IsEqual(ar1.ResultBase, ar2.ResultBase);
+				return IsEqual(ar1.Base, ar2.Base);
 			}
 
 			//TODO: Handle other types
@@ -49,88 +53,96 @@ namespace D_Parser.Resolver
 		/// <summary>
 		/// Checks results for implicit type convertability 
 		/// </summary>
-		public static bool IsImplicitlyConvertible(ResolveResult resultToCheck, ResolveResult targetType, ResolverContextStack ctxt=null)
+		public static bool IsImplicitlyConvertible(ISemantic resultToCheck, AbstractType targetType, ResolverContextStack ctxt=null)
 		{
+			var resToCheck = AbstractType.Get(resultToCheck);
+
+			if (resultToCheck is ISymbolValue)
+				resToCheck = ((ISymbolValue)resultToCheck).RepresentedType;
+
 			// Initially remove aliases from results
-			bool resMem = false;
-			var _r=DResolver.ResolveMembersFromResult(new[]{resultToCheck},out resMem);
-			if(_r==null || _r.Length==0)
-				return IsEqual(resultToCheck,targetType);
-			resultToCheck = _r[0];
+			var _r=DResolver.StripMemberSymbols(resToCheck);
+			if(_r==null)
+				return IsEqual(resToCheck,targetType);
+			resToCheck = _r;
 
-			_r=DResolver.ResolveMembersFromResult(new[]{targetType}, out resMem);
-			if(_r==null || _r.Length == 0)
-				return false;
-			targetType = _r[0];
+			targetType = DResolver.StripAliasSymbol(targetType);
 
-
-			if (targetType is MemberResult)
+			if (targetType is DSymbol)
 			{
-				var mr2 = (MemberResult)targetType;
+				var tpn = ((DSymbol)targetType).Definition as TemplateParameterNode;
 
-				if (mr2.Node is TemplateParameterNode)
+				if (tpn!=null)
 				{
-					var tpn = (TemplateParameterNode)mr2.Node;
+					var par = tpn.Parent as DNode;
 
-					var dedParam=new Dictionary<string, ResolveResult[]>();
-					foreach(var tp in tpn.Owner.TemplateParameters)
-						dedParam[tp.Name]=null;
+					if (par != null && par.TemplateParameters != null)
+					{
+						var dedParam = new DeducedTypeDictionary();
+						foreach (var tp in par.TemplateParameters)
+							dedParam[tp.Name] = null;
 
-					return new TemplateParameterDeduction(dedParam, ctxt).Handle(tpn.TemplateParameter, resultToCheck);
+						return new TemplateParameterDeduction(dedParam, ctxt).Handle(tpn.TemplateParameter, resToCheck);
+					}
 				}
 			}
 
-			if (resultToCheck is StaticTypeResult && targetType is StaticTypeResult)
-			{
-				var sr1 = (StaticTypeResult)resultToCheck;
-				var sr2 = (StaticTypeResult)targetType;
+			_r = DResolver.StripMemberSymbols(targetType);
+			if (_r == null)
+				return false;
+			targetType = _r;
 
-				if (sr1.BaseTypeToken == sr2.BaseTypeToken)
+			if (resToCheck is PrimitiveType && targetType is PrimitiveType)
+			{
+				var sr1 = (PrimitiveType)resToCheck;
+				var sr2 = (PrimitiveType)targetType;
+
+				if (sr1.TypeToken == sr2.TypeToken && sr1.Modifier == sr2.Modifier)
 					return true;
 
-				switch (sr2.BaseTypeToken)
+				switch (sr2.TypeToken)
 				{
 					case DTokens.Int:
-						return sr1.BaseTypeToken == DTokens.Uint;
+						return sr1.TypeToken == DTokens.Uint;
 					case DTokens.Uint:
-						return sr1.BaseTypeToken == DTokens.Int;
+						return sr1.TypeToken == DTokens.Int;
 					//TODO: Further types that can be converted into each other implicitly
 				}
 			}
-			else if (resultToCheck is TypeResult && targetType is TypeResult)
-				return IsImplicitlyConvertible((TypeResult)resultToCheck, (TypeResult)targetType);
-			else if (resultToCheck is DelegateResult && targetType is DelegateResult)
+			else if (resToCheck is UserDefinedType && targetType is UserDefinedType)
+				return IsImplicitlyConvertible((UserDefinedType)resToCheck, (UserDefinedType)targetType);
+			else if (resToCheck is DelegateType && targetType is DelegateType)
 			{
 				//TODO
 			}
-			else if (resultToCheck is ArrayResult && targetType is ArrayResult)
+			else if (resToCheck is ArrayType && targetType is ArrayType)
 			{
-				var ar1 = (ArrayResult)resultToCheck;
-				var ar2 = (ArrayResult)targetType;
+				var ar1 = (ArrayType)resToCheck;
+				var ar2 = (ArrayType)targetType;
 
 				// Key as well as value types must be matching!
-				var ar1_n= ar1.KeyType==null || ar1.KeyType.Length == 0;
-				var ar2_n=ar2.KeyType==null || ar2.KeyType.Length == 0;
+				var ar1_n= ar1.KeyType==null;
+				var ar2_n=ar2.KeyType==null;
 
 				if (ar1_n != ar2_n)
 					return false;
 
-				if(ar1_n || IsImplicitlyConvertible(ar1.KeyType[0], ar2.KeyType[0], ctxt))
-					return IsImplicitlyConvertible(ar1.ResultBase, ar2.ResultBase, ctxt);
+				if(ar1_n || IsImplicitlyConvertible(ar1.KeyType, ar2.KeyType, ctxt))
+					return IsImplicitlyConvertible(ar1.Base, ar2.Base, ctxt);
 			}
 
-			else if (resultToCheck is TypeTupleResult && targetType is TypeTupleResult)
+			else if (resToCheck is TypeTuple && targetType is TypeTuple)
 			{
 				return true;
 			}
-			else if (resultToCheck is ExpressionTupleResult && targetType is ExpressionTupleResult)
+			else if (resToCheck is ExpressionTuple && targetType is ExpressionTuple)
 			{
 				return true;
 			}
-			else if (resultToCheck is ExpressionValueResult && targetType is ExpressionValueResult)
+			/*else if (resultToCheck is ExpressionValueResult && targetType is ExpressionValue)
 			{
-				return Evaluation.ExpressionEvaluator.IsEqual(((ExpressionValueResult)resultToCheck).Value, ((ExpressionValueResult)targetType).Value);
-			}
+				return ((ExpressionValueResult)resultToCheck).Value.Equals(((ExpressionValueResult)targetType).Value);
+			}*/
 
 			// http://dlang.org/type.html
 			//TODO: Pointer to non-pointer / vice-versa checkability? -- Can it really be done implicitly?
@@ -138,25 +150,29 @@ namespace D_Parser.Resolver
 			return false;
 		}
 
-		public static bool IsImplicitlyConvertible(TypeResult r, TypeResult target)
+		public static bool IsImplicitlyConvertible(UserDefinedType r, UserDefinedType target)
 		{
-			if (r.Node == target.Node)
+			if (r == null || target == null)
+				return false;
+
+			if (r.Definition == target.Definition)
 				return true;
 
-			if (r.BaseClass != null && r.BaseClass.Length != 0)
-			{
-				if (IsImplicitlyConvertible(r.BaseClass[0], target))
-					return true;
-			}
+			if (r.Base != null && IsImplicitlyConvertible(r.Base, target))
+				return true;
 
-			if (r.ImplementedInterfaces != null && 
-				r.ImplementedInterfaces.Length != 0 &&
-				target.Node is DClassLike &&
-				((DClassLike)target.Node).ClassType == DTokens.Interface)
+			if (r is TemplateIntermediateType)
 			{
-				foreach(var I in r.ImplementedInterfaces)
-					if(IsImplicitlyConvertible(I[0], target))
-						return true;
+				var templateType = (TemplateIntermediateType)r;
+
+				if (templateType.BaseInterfaces != null &&
+					templateType.BaseInterfaces.Length != 0 &&
+					target is InterfaceType)
+				{
+					foreach (var I in templateType.BaseInterfaces)
+						if (IsImplicitlyConvertible(I, target))
+							return true;
+				}
 			}
 
 			return false;

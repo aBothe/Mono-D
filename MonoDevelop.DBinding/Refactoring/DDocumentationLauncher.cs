@@ -54,7 +54,7 @@ namespace MonoDevelop.D.Refactoring
 			return GetReferenceUrl (rr != null ? rr [0] : null, ctxt, new CodeLocation (caret.Column, caret.Line));
 		}
 
-		public static string GetReferenceUrl (ResolveResult result, ResolverContextStack ctxt, CodeLocation caret)
+		public static string GetReferenceUrl (AbstractType result, ResolverContextStack ctxt, CodeLocation caret)
 		{
 			if (result != null) {
 				var n = DResolver.GetResultMember (result);
@@ -68,7 +68,7 @@ namespace MonoDevelop.D.Refactoring
 
 						return phobos_url;
 					}
-				} else if (result is StaticTypeResult || result is DelegateResult || result is ArrayResult) {
+				} else if (result is PrimitiveType || result is DelegateType || result is AssocArrayType) {
 
 					if (result.DeclarationOrExpressionBase is ITypeDeclaration)
 						return GetRefUrlFor ((ITypeDeclaration)result.DeclarationOrExpressionBase);
@@ -126,12 +126,12 @@ namespace MonoDevelop.D.Refactoring
 				var ds = s as DeclarationStatement;
 
 				foreach (var decl in ds.Declarations) {
-					if (caret >= decl.StartLocation && caret <= decl.EndLocation) {
+					if (caret >= decl.Location && caret <= decl.EndLocation) {
 						if (decl is DVariable) {
 							var dv = decl as DVariable;
 
 							if (dv.Initializer != null &&
-								caret >= dv.StartLocation &&
+								caret >= dv.Location &&
 								caret <= dv.EndLocation)
 								return GetRefUrlFor (dv.Initializer);
 						}
@@ -144,8 +144,7 @@ namespace MonoDevelop.D.Refactoring
 
 				if (stmts != null)
 					foreach (var stmt in stmts) {
-						if (caret >= stmt.StartLocation &&
-							caret <= stmt.EndLocation) {
+						if (caret >= stmt.Location && caret <= stmt.EndLocation) {
 							var r = GetRefUrlFor (stmt, caret);
 
 							if (r != null)

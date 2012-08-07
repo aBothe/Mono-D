@@ -11,7 +11,7 @@ namespace D_Parser.Completion
 	/// </summary>
 	public class AbstractTooltipContent
 	{
-		public ResolveResult ResolveResult;
+		public ISemantic ResolveResult;
 		public string Title;
 		public string Description;
 	}
@@ -37,26 +37,15 @@ namespace D_Parser.Completion
 			return null;
 		}
 
-		static AbstractTooltipContent BuildTooltipContent(ResolveResult res)
+		static AbstractTooltipContent BuildTooltipContent(ISemantic res)
 		{
-			var modRes = res as ModuleResult;
-			var memRes = res as MemberResult;
-			var typRes = res as TypeResult;
-
 			// Only show one description for items sharing descriptions
-			string description = "";
-
-			if (modRes != null)
-				description = modRes.Module.Description;
-			else if (memRes != null)
-				description = memRes.Node.Description;
-			else if (typRes != null)
-				description = typRes.Node.Description;
+			string description = res is DSymbol ? ((DSymbol)res).Definition.Description : "";
 
 			return new AbstractTooltipContent
 			{
 				ResolveResult = res,
-				Title = (res is ModuleResult ? (res as ModuleResult).Module.FileName : res.ToString()),
+				Title = (res is ModuleSymbol ? ((ModuleSymbol)res).Definition.FileName : res.ToString()),
 				Description = description
 			};
 		}

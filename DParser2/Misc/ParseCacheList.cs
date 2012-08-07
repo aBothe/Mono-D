@@ -50,17 +50,16 @@ namespace D_Parser.Misc
 		}
 
 		/// <summary>
-		/// Will always return a non-null value!
+		/// Returns the first object class that is found in the parse caches
 		/// </summary>
-		public TypeResult[] ObjectClassResult
+		public ClassType ObjectClassResult
 		{
 			get
 			{
-				var l = new List<TypeResult>();
 				foreach (var pc in this)
 					if (pc.IsObjectClassDefined)
-						l.Add(pc.ObjectClassResult);
-				return l.ToArray();
+						return pc.ObjectClassResult;
+				return null;
 			}
 		}
 	}

@@ -14,7 +14,7 @@ namespace MonoDevelop.D.Refactoring
 {
 	public class RefactoringCommandsExtension : TextEditorExtension
 	{
-		ResolveResult[] lastResults;
+		AbstractType[] lastResults;
 		INode firstResultNode;
 		ResolverContextStack lastContext;
 
@@ -67,8 +67,8 @@ namespace MonoDevelop.D.Refactoring
 			if (n != null && n.NodeRoot is IAbstractSyntaxTree)
 				IdeApp.Workbench.OpenDocument(
 					((IAbstractSyntaxTree)n.NodeRoot).FileName,
-					n.StartLocation.Line,
-					n.StartLocation.Column);
+					n.Location.Line,
+					n.Location.Column);
 		}
 
 		[CommandHandler(EditCommands.Rename)]

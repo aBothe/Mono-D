@@ -1,34 +1,33 @@
 ﻿using D_Parser.Dom;
-using D_Parser.Evaluation;
+using D_Parser.Resolver.ExpressionSemantics;
 using D_Parser.Resolver.TypeResolution;
-using System.Collections.Generic;
 
 namespace D_Parser.Resolver.Templates
 {
 	partial class TemplateParameterDeduction
 	{
-		bool Handle(TemplateValueParameter p, ResolveResult arg)
+		bool Handle(TemplateValueParameter p, ISemantic arg)
 		{
 			// Handle default arg case
 			if (arg == null)
 			{
 				if (p.DefaultExpression != null)
 				{
-					var eval = ExpressionEvaluator.Resolve(p.DefaultExpression, ctxt);
+					var eval = Evaluation.EvaluateValue(p.DefaultExpression, ctxt);
 
 					if (eval == null)
 						return false;
 
-					return Set(p.Name, eval);
+					return Set(p, eval);
 				}
 				else
 					return false;
 			}
 
-			var valResult = arg as ExpressionValueResult;
+			var valueArgument = arg as ISymbolValue;
 
 			// There must be a constant expression given!
-			if (valResult == null || valResult.Value == null)
+			if (valueArgument == null)
 				return false;
 
 			// Check for param type <-> arg expression type match
@@ -37,24 +36,20 @@ namespace D_Parser.Resolver.Templates
 			if (paramType == null || paramType.Length == 0)
 				return false;
 
-			var argType = TypeDeclarationResolver.Resolve(valResult.Value.RepresentedType, ctxt);
-
-			if (argType == null ||
-				argType.Length == 0 ||
-				!ResultComparer.IsImplicitlyConvertible(paramType[0], argType[0]))
+			if (valueArgument.RepresentedType == null ||
+				!ResultComparer.IsImplicitlyConvertible(paramType[0], valueArgument.RepresentedType))
 				return false;
 
 			// If spec given, test for equality (only ?)
 			if (p.SpecializationExpression != null) 
 			{
-				var specVal = ExpressionEvaluator.Evaluate(p.SpecializationExpression, ctxt);
+				var specVal = Evaluation.EvaluateValue(p.SpecializationExpression, ctxt);
 
-				if (specVal == null || specVal.Value == null ||
-					!ExpressionEvaluator.IsEqual(specVal, valResult.Value))
+				if (specVal == null || !SymbolValueComparer.IsEqual(specVal, valueArgument))
 					return false;
 			}
 
-			return Set(p.Name, arg);
+			return Set(p, arg);
 		}
 	}
 }

@@ -17,7 +17,7 @@ namespace D_Parser.Dom
 			set { _EndLocation = value; }
 		}
 
-		public CodeLocation StartLocation
+		public CodeLocation Location
 		{
 			get { return _StartLocation; }
 			set { _StartLocation = value; }
@@ -106,7 +106,7 @@ namespace D_Parser.Dom
 
 			Parent = other.Parent;
 			Description = other.Description;
-			StartLocation = other.StartLocation;
+			Location = other.Location;
 			EndLocation = other.EndLocation;
 		}
 

@@ -73,12 +73,19 @@
     <Compile Include="Dom\ISyntaxRegion.cs" />
     <Compile Include="Dom\ModulePackage.cs" />
     <Compile Include="Dom\TemplateParameters.cs" />
-    <Compile Include="Evaluation\ExpressionEvaluator.cs" />
-    <Compile Include="Evaluation\ExpressionEvaluator.PrimaryExpression.cs" />
-    <Compile Include="Evaluation\IExpressionValue.cs" />
-    <Compile Include="Evaluation\ISymbolValueProvider.cs" />
-    <Compile Include="Evaluation\MathOperationEvaluation.cs" />
-    <Compile Include="Evaluation\PrimitiveValue.cs" />
+    <Compile Include="Resolver\ExpressionSemantics\CTFE\FunctionEvaluation.cs" />
+    <Compile Include="Resolver\ExpressionSemantics\Evaluation.Identifiers.cs" />
+    <Compile Include="Resolver\ExpressionSemantics\EvaluationException.cs" />
+    <Compile Include="Resolver\ExpressionSemantics\Evaluation.TypeidExpression.cs" />
+    <Compile Include="Resolver\ExpressionSemantics\Evaluation.OperandExpressions.cs" />
+    <Compile Include="Resolver\ExpressionSemantics\Evaluation.UnaryExpressions.cs" />
+    <Compile Include="Resolver\ExpressionSemantics\ISymbolValue.cs" />
+    <Compile Include="Resolver\ExpressionSemantics\ISymbolValueProvider.cs" />
+    <Compile Include="Resolver\ExpressionSemantics\Evaluation.IsExpression.cs" />
+    <Compile Include="Resolver\ExpressionSemantics\LeftValues.cs" />
+    <Compile Include="Resolver\ExpressionSemantics\MathOperationEvaluation.cs" />
+    <Compile Include="Resolver\ExpressionSemantics\ExpressionValues.cs" />
+    <Compile Include="Resolver\ExpressionSemantics\SymbolValueComparer.cs" />
     <Compile Include="Misc\CompletionOptions.cs" />
     <Compile Include="Misc\ModuleNameHelper.cs" />
     <Compile Include="Misc\ParseCache.cs" />
@@ -91,18 +98,23 @@
     <Compile Include="Resolver\ASTScanner\MatchFilterVisitor.cs" />
     <Compile Include="Resolver\ASTScanner\NameScan.cs" />
     <Compile Include="Misc\UFCSCache.cs" />
+    <Compile Include="Resolver\DType.cs" />
+    <Compile Include="Resolver\ExpressionSemantics\Evaluation.PrimaryExpression.cs" />
+    <Compile Include="Resolver\ISemantic.cs" />
+    <Compile Include="Resolver\ResolutionError.cs" />
     <Compile Include="Resolver\ResolutionOptions.cs" />
     <Compile Include="Resolver\ResultComparer.cs" />
+    <Compile Include="Resolver\Templates\DeducedTypeDictionary.cs" />
     <Compile Include="Resolver\Templates\SpecializationOrdering.cs" />
     <Compile Include="Resolver\Templates\TemplateAliasParameterDeduction.cs" />
     <Compile Include="Resolver\Templates\TemplateParameterDeduction.cs" />
     <Compile Include="Resolver\Templates\TemplateTypeParameterDeduction.cs" />
     <Compile Include="Resolver\Templates\TemplateValueParameterDeduction.cs" />
-    <Compile Include="Resolver\TypeResolution\ExpressionTypeResolution.cs" />
+    <Compile Include="Resolver\ExpressionSemantics\Evaluation.cs" />
     <Compile Include="Resolver\ASTScanner\AbstractVisitor.cs" />
-    <Compile Include="Resolver\TypeResolution\ExpressionTypeResolution.PostfixExpressions.cs" />
+    <Compile Include="Resolver\ExpressionSemantics\Evaluation.PostfixExpressions.cs" />
     <Compile Include="Resolver\Templates\TemplateInstanceHandler.cs" />
-    <Compile Include="Resolver\TypeResolution\ExpressionTypeResolution.TraitsResolver.cs" />
+    <Compile Include="Resolver\ExpressionSemantics\Evaluation.Traits.cs" />
     <Compile Include="Resolver\TypeResolution\TypeDeclarationResolver.cs" />
     <Compile Include="Completion\Providers\StaticTypePropertyProvider.cs" />
     <Compile Include="Completion\ICompletionDataGenerator.cs" />
@@ -110,7 +122,7 @@
     <Compile Include="Completion\ParameterInsightResolution.cs" />
     <Compile Include="Resolver\ASTScanner\ResultCache.cs" />
     <Compile Include="Resolver\ResolverContextStack.cs" />
-    <Compile Include="Resolver\TypeResolution\StaticPropertiesResolver.cs" />
+    <Compile Include="Resolver\ExpressionSemantics\Evaluation.StaticProperties.cs" />
     <Compile Include="Completion\IEditorData.cs" />
     <Compile Include="Dom\AbstractNode.cs" />
     <Compile Include="Dom\CodeLocation.cs" />
@@ -133,12 +145,13 @@
     <Compile Include="Parser\DToken.cs" />
     <Compile Include="Dom\DDeclarations.cs" />
     <Compile Include="Resolver\ResolverContext.cs" />
-    <Compile Include="Resolver\ResolveResults.cs" />
     <Compile Include="Resolver\TypeResolution\UFCSResolver.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="readme.txt" />
     <Content Include="Todo.txt" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.

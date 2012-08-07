@@ -6,9 +6,9 @@ using D_Parser.Parser;
 namespace D_Parser.Dom.Statements
 {
 	#region Generics
-	public interface IStatement
+	public interface IStatement : ISyntaxRegion
 	{
-		CodeLocation StartLocation { get; set; }
+		CodeLocation Location { get; set; }
 		CodeLocation EndLocation { get; set; }
 		IStatement Parent { get; set; }
 		INode ParentNode { get; set; }
@@ -34,7 +34,7 @@ namespace D_Parser.Dom.Statements
 
 	public abstract class AbstractStatement:IStatement
 	{
-		public virtual CodeLocation StartLocation { get; set; }
+		public virtual CodeLocation Location { get; set; }
 		public virtual CodeLocation EndLocation { get; set; }
 		public IStatement Parent { get; set; }
 		public DAttribute[] Attributes { get; set; }
@@ -175,7 +175,7 @@ namespace D_Parser.Dom.Statements
 				{
 					bool foundMatch = false;
 					foreach(var s2 in (s as StatementContainingStatement).SubStatements)
-						if (s2 != null && Where >= s2.StartLocation && Where <= s2.EndLocation)
+						if (s2 != null && Where >= s2.Location && Where <= s2.EndLocation)
 						{
 							s = s2;
 							foundMatch = true;
@@ -196,11 +196,11 @@ namespace D_Parser.Dom.Statements
 		{
 			// First check if one sub-statement is located at the code location
 			foreach (var s in BlockStmt._Statements)
-				if (Where >= s.StartLocation && Where <= s.EndLocation)
+				if (Where >= s.Location && Where <= s.EndLocation)
 					return s;
 
 			// If nothing was found, check if this statement fits to the coordinates
-			if (Where >= BlockStmt.StartLocation && Where <= BlockStmt.EndLocation)
+			if (Where >= BlockStmt.Location && Where <= BlockStmt.EndLocation)
 				return BlockStmt;
 
 			// If not, return null

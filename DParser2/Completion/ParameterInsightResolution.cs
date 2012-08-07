@@ -4,6 +4,7 @@ using D_Parser.Dom.Expressions;
 using D_Parser.Dom.Statements;
 using D_Parser.Resolver;
 using D_Parser.Resolver.TypeResolution;
+using D_Parser.Resolver.ExpressionSemantics;
 
 namespace D_Parser.Completion
 {
@@ -20,14 +21,14 @@ namespace D_Parser.Completion
 		/// </summary>
 		public object MethodIdentifier;
 
-		public ResolveResult[] ResolvedTypesOrMethods;
+		public AbstractType[] ResolvedTypesOrMethods;
 
-		public readonly Dictionary<IExpression, ResolveResult[]> TemplateArguments = new Dictionary<IExpression, ResolveResult[]>();
+		public readonly Dictionary<IExpression, AbstractType> TemplateArguments = new Dictionary<IExpression, AbstractType>();
 		/// <summary>
 		/// Stores the already typed arguments (Expressions) + their resolved types.
 		/// The value part will be null if nothing could get returned.
 		/// </summary>
-		public readonly Dictionary<IExpression, ResolveResult[]> Arguments = new Dictionary<IExpression, ResolveResult[]>();
+		public readonly Dictionary<IExpression, AbstractType> Arguments = new Dictionary<IExpression, AbstractType>();
 
 		/// <summary>
 		///	Identifies the currently called method overload. Is an index related to <see cref="ResolvedTypesOrMethods"/>
@@ -86,7 +87,7 @@ namespace D_Parser.Completion
 				res.IsMethodArguments = true;
 				var call = (PostfixExpression_MethodCall) e;
 
-				res.ResolvedTypesOrMethods = ExpressionTypeResolver.Resolve(call.PostfixForeExpression, ctxt);
+				res.ResolvedTypesOrMethods = TryGetUnfilteredMethodOverloads(call.PostfixForeExpression, ctxt, call);
 
 				if (call.Arguments != null)
 				{
@@ -107,7 +108,7 @@ namespace D_Parser.Completion
 			{
 				var acc = e as PostfixExpression_Access;
 
-				res.ResolvedTypesOrMethods = ExpressionTypeResolver.Resolve(acc.PostfixForeExpression, ctxt);
+				res.ResolvedTypesOrMethods = TryGetUnfilteredMethodOverloads(acc.PostfixForeExpression, ctxt, acc);
 
 				if (res.ResolvedTypesOrMethods == null)
 					return res;
@@ -122,7 +123,7 @@ namespace D_Parser.Completion
 
 				res.IsTemplateInstanceArguments = true;
 
-				res.ResolvedTypesOrMethods = TypeDeclarationResolver.ResolveIdentifier(templ.TemplateIdentifier.Id, ctxt, e, templ.TemplateIdentifier.ModuleScoped);
+				res.ResolvedTypesOrMethods = Evaluation.GetOverloads(templ, ctxt, null, false);
 
 				if (templ.Arguments != null)
 				{
@@ -154,35 +155,31 @@ namespace D_Parser.Completion
 			 * myDeleg2( -- allowed neither!
 			 */
 			if (res.ResolvedTypesOrMethods != null)
-			{
-				var finalResults = new List<ResolveResult>();
-
-				foreach (var _r in res.ResolvedTypesOrMethods)
-				{
-					var r = _r;
-					while (r is MemberResult && !(((MemberResult)r).Node is DMethod))
-					{
-						var mr = (MemberResult)r;
-
-						if (mr.MemberBaseTypes == null || mr.MemberBaseTypes.Length == 0)
-							break;
-
-						r = mr.MemberBaseTypes[0];
-					}
-					finalResults.Add(r);
-				}
-
-				res.ResolvedTypesOrMethods = finalResults.ToArray();
-			}
+				res.ResolvedTypesOrMethods = DResolver.StripMemberSymbols(res.ResolvedTypesOrMethods);
 
 			return res;
+		}
+
+		public static AbstractType[] TryGetUnfilteredMethodOverloads(IExpression foreExpression, ResolverContextStack ctxt, IExpression supExpression=null)
+		{
+			if (foreExpression is TemplateInstanceExpression)
+				return Evaluation.GetOverloads((TemplateInstanceExpression)foreExpression, ctxt, null);
+			else if (foreExpression is IdentifierExpression)
+				return Evaluation.GetOverloads((IdentifierExpression)foreExpression, ctxt);
+			else if (foreExpression is PostfixExpression_Access)
+			{
+				bool ufcs=false; // TODO?
+				return Evaluation.GetAccessedOverloads((PostfixExpression_Access)foreExpression, ctxt, out ufcs, null, false);
+			}
+			else
+				return new[] { Evaluation.EvaluateType(foreExpression, ctxt) };
 		}
 
 		static void CalculateCurrentArgument(NewExpression nex, 
 			ArgumentsResolutionResult res, 
 			CodeLocation caretLocation, 
 			ResolverContextStack ctxt,
-			IEnumerable<ResolveResult> resultBases=null)
+			IEnumerable<AbstractType> resultBases=null)
 		{
 			if (nex.Arguments != null)
 			{
@@ -234,7 +231,7 @@ namespace D_Parser.Completion
 
 					if (decls != null && decls.Length > 0)
 						foreach (var decl in decls)
-							if (decl != null && Caret >= decl.StartLocation && Caret <= decl.EndLocation)
+							if (decl != null && Caret >= decl.Location && Caret <= decl.EndLocation)
 							{
 								curDeclaration = decl;
 								break;
@@ -249,7 +246,7 @@ namespace D_Parser.Completion
 
 					if (stmts != null && stmts.Length > 0)
 						foreach (var stmt in stmts)
-							if (stmt != null && Caret >= stmt.StartLocation && Caret <= stmt.EndLocation)
+							if (stmt != null && Caret >= stmt.Location && Caret <= stmt.EndLocation)
 							{
 								foundDeeperStmt = true;
 								Statement = stmt;

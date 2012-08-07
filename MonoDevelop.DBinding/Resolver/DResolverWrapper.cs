@@ -51,7 +51,7 @@ namespace MonoDevelop.D.Resolver
 			return ed;
 		}
 
-		public static ResolveResult[] ResolveHoveredCode(
+		public static AbstractType[] ResolveHoveredCode(
 			out ResolverContextStack ResolverContext, 
 			MonoDevelop.Ide.Gui.Document doc=null)
 		{

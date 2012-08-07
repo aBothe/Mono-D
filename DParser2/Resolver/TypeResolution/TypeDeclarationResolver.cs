@@ -5,29 +5,61 @@ using D_Parser.Dom.Expressions;
 using D_Parser.Dom.Statements;
 using D_Parser.Parser;
 using D_Parser.Resolver.ASTScanner;
+using D_Parser.Resolver.ExpressionSemantics;
 
 namespace D_Parser.Resolver.TypeResolution
 {
 	public partial class TypeDeclarationResolver
 	{
-		public static ResolveResult Resolve(DTokenDeclaration token)
+		public static PrimitiveType Resolve(DTokenDeclaration token)
 		{
 			var tk = (token as DTokenDeclaration).Token;
 
 			if (DTokens.BasicTypes[tk])
-				return new StaticTypeResult
-						{
-							BaseTypeToken = tk,
-							DeclarationOrExpressionBase = token
-						};
+				return new PrimitiveType(tk, 0, token);
 
 			return null;
 		}
 
-		public static ResolveResult[] ResolveIdentifier(string id, ResolverContextStack ctxt, object idObject, bool ModuleScope = false)
+		public static ISemantic[] Convert(IEnumerable<AbstractType> at)
+		{
+			var l = new List<ISemantic>();
+
+			if(at!=null)
+				foreach (var t in at)
+					l.Add(t);
+
+			return l.ToArray();
+		}
+
+		public static AbstractType[] Convert(IEnumerable<ISemantic> at)
+		{
+			var l = new List<AbstractType>();
+
+			if (at != null)
+				foreach (var t in at)
+				{
+					if (t is AbstractType)
+						l.Add((AbstractType)t);
+					else if (t is ISymbolValue)
+						l.Add(((ISymbolValue)t).RepresentedType);
+				}
+
+			return l.ToArray();
+		}
+
+		public static AbstractType Convert(ISemantic s)
+		{
+			if (s is AbstractType)
+				return (AbstractType)s;
+			else if(s is ISymbolValue)
+				return ((ISymbolValue)s).RepresentedType;
+			return null;
+		}
+
+		public static AbstractType[] ResolveIdentifier(string id, ResolverContextStack ctxt, object idObject, bool ModuleScope = false)
 		{
 			var loc = idObject is ISyntaxRegion ? ((ISyntaxRegion)idObject).Location:CodeLocation.Empty;
-			ResolveResult[] res = null;
 
 			if (ModuleScope)
 				ctxt.PushNewScope(ctxt.ScopedBlock.NodeRoot as IAbstractSyntaxTree);
@@ -36,8 +68,8 @@ namespace D_Parser.Resolver.TypeResolution
 			else
 			{
 				var tstk = new Stack<ResolverContext>();
-
-				while (!ctxt.CurrentContext.DeducedTemplateParameters.TryGetValue(id, out res))
+				D_Parser.Resolver.Templates.TemplateParameterSymbol dedTemplateParam = null;
+				while (!ctxt.CurrentContext.DeducedTemplateParameters.TryGetValue(id, out dedTemplateParam))
 				{
 					if (ctxt.PrevContextIsInSameHierarchy)
 						tstk.Push(ctxt.Pop());
@@ -48,13 +80,13 @@ namespace D_Parser.Resolver.TypeResolution
 				while (tstk.Count > 0)
 					ctxt.Push(tstk.Pop());
 
-				if (res != null)
-					return res;
+				if (dedTemplateParam!=null)
+					return new[]{ dedTemplateParam };
 			}
 
 			var matches = NameScan.SearchMatchesAlongNodeHierarchy(ctxt, loc, id);
 
-			res= HandleNodeMatches(matches, ctxt, null, idObject);
+			var res= HandleNodeMatches(matches, ctxt, null, idObject);
 
 			if (ModuleScope)
 				ctxt.Pop();
@@ -62,9 +94,28 @@ namespace D_Parser.Resolver.TypeResolution
 			return res;
 		}
 
-		public static ResolveResult[] Resolve(IdentifierDeclaration id, ResolverContextStack ctxt, ResolveResult[] resultBases = null, bool filterForTemplateArgs = true)
+		public static AbstractType ResolveSingle(string id, ResolverContextStack ctxt, object idObject, bool ModuleScope = false)
 		{
-			ResolveResult[] res = null;
+			var r = ResolveIdentifier(id, ctxt, idObject, ModuleScope);
+
+			ctxt.CheckForSingleResult(r, idObject as ISyntaxRegion);
+
+			return r != null && r.Length != 0 ? r[0] : null;
+		}
+
+
+		public static AbstractType ResolveSingle(IdentifierDeclaration id, ResolverContextStack ctxt, AbstractType[] resultBases = null, bool filterForTemplateArgs = true)
+		{
+			var r = Resolve(id, ctxt, resultBases, filterForTemplateArgs);
+
+			ctxt.CheckForSingleResult(r, id);
+
+			return r != null && r.Length != 0 ? r[0] : null;
+		}
+
+		public static AbstractType[] Resolve(IdentifierDeclaration id, ResolverContextStack ctxt, AbstractType[] resultBases = null, bool filterForTemplateArgs = true)
+		{
+			AbstractType[] res = null;
 
 			if (id.InnerDeclaration == null && resultBases == null)
 				res= ResolveIdentifier(id.Id, ctxt, id, id.ModuleScoped);
@@ -78,8 +129,18 @@ namespace D_Parser.Resolver.TypeResolution
 				res= ResolveFurtherTypeIdentifier(id.Id, rbases, ctxt, id);
 			}
 
-			return (filterForTemplateArgs && !ctxt.Options.HasFlag(ResolutionOptions.NoTemplateParameterDeduction)) ? 
-				TemplateInstanceHandler.EvalAndFilterOverloads(res, null, false, ctxt) : res;
+			if(filterForTemplateArgs && !ctxt.Options.HasFlag(ResolutionOptions.NoTemplateParameterDeduction))
+			{
+				var l_=new List<AbstractType>();
+
+				if(res!=null)
+					foreach(var s in res)
+						l_.Add(s);
+
+				return TemplateInstanceHandler.EvalAndFilterOverloads(l_, null, false, ctxt);
+			}
+			else
+				return res;
 		}
 
 		/// <summary>
@@ -87,81 +148,78 @@ namespace D_Parser.Resolver.TypeResolution
 		/// 
 		/// a.b -- nextIdentifier would be 'b' whereas <param name="resultBases">resultBases</param> contained the resolution result for 'a'
 		/// </summary>
-		public static ResolveResult[] ResolveFurtherTypeIdentifier(string nextIdentifier,
-			IEnumerable<ResolveResult> resultBases,
+		public static AbstractType[] ResolveFurtherTypeIdentifier(string nextIdentifier,
+			IEnumerable<AbstractType> resultBases,
 			ResolverContextStack ctxt,
 			object typeIdObject=null)
 		{
-			if((resultBases = DResolver.TryRemoveAliasesFromResult(resultBases))==null)
+			if((resultBases = DResolver.StripAliasSymbols(resultBases))==null)
 				return null;
 
-			var r = new List<ResolveResult>();
+			var r = new List<AbstractType>();
 
-			var nextResults = new List<ResolveResult>();
+			var nextResults = new List<AbstractType>();
 			foreach (var b in resultBases)
 			{
-				IEnumerable<ResolveResult> scanResults = new[]{ b };
+				IEnumerable<AbstractType> scanResults = new[]{ b };
 
 				do
 				{
 					foreach (var scanResult in scanResults)
 					{
 						// First filter out all alias and member results..so that there will be only (Static-)Type or Module results left..
-						if (scanResult is MemberResult)
+						if (scanResult is MemberSymbol)
 						{
-							var mr = scanResult as MemberResult;
+							var mr = (MemberSymbol)scanResult;
 
-							if (mr.MemberBaseTypes != null)
-								nextResults.AddRange(mr.MemberBaseTypes);
+							if (mr.Base != null)
+								nextResults.Add(mr.Base);
 						}
 
-						else if (scanResult is TypeResult)
+						else if (scanResult is UserDefinedType)
 						{
-							var bn = ((TypeResult)scanResult).Node as IBlockNode;
+							var udt = (UserDefinedType)scanResult;
+							var bn=udt.Definition as IBlockNode;
 							var nodeMatches = NameScan.ScanNodeForIdentifier(bn, nextIdentifier, ctxt);
 
 							ctxt.PushNewScope(bn);
+							ctxt.CurrentContext.IntroduceTemplateParameterTypes(udt);
 
 							var results = HandleNodeMatches(nodeMatches, ctxt, b, typeIdObject);
 
 							if (results != null)
-								r.AddRange(results);
+								foreach (var res in results)
+									r.Add(AbstractType.Get(res));
 
+							ctxt.CurrentContext.RemoveParamTypesFromPreferredLocals(udt);
 							ctxt.Pop();
 						}
-						else if (scanResult is ModulePackageResult)
+						else if (scanResult is PackageSymbol)
 						{
-							var pack=((ModulePackageResult)scanResult).Package;
+							var pack=((PackageSymbol)scanResult).Package;
 
 							IAbstractSyntaxTree accessedModule=null;
 							if (pack.Modules.TryGetValue(nextIdentifier, out accessedModule))
-								r.Add(new ModuleResult(accessedModule)
-								{
-									ResultBase = scanResult,
-									DeclarationOrExpressionBase = typeIdObject
-								});
+								r.Add(new ModuleSymbol(accessedModule as DModule, typeIdObject as ISyntaxRegion, (PackageSymbol)scanResult));
 							else if (pack.Packages.TryGetValue(nextIdentifier, out pack))
-								r.Add(new ModulePackageResult(pack)
-								{
-									ResultBase=scanResult,
-									DeclarationOrExpressionBase=typeIdObject
-								});
+								r.Add(new PackageSymbol(pack, typeIdObject as ISyntaxRegion));
 						}
-						else if (scanResult is ModuleResult)
+						else if (scanResult is ModuleSymbol)
 						{
-							var modRes = (ModuleResult)scanResult;
+							var modRes = (ModuleSymbol)scanResult;
 
-							var matches = NameScan.ScanNodeForIdentifier(modRes.Module, nextIdentifier, ctxt);
+							var matches = NameScan.ScanNodeForIdentifier(modRes.Definition, nextIdentifier, ctxt);
 
 							var results = HandleNodeMatches(matches, ctxt, b, typeIdObject);
 
 							if (results != null)
-								r.AddRange(results);
+								foreach (var res in results)
+									r.Add(AbstractType.Get(res));
 						}
 					}
 
 					scanResults = DResolver.FilterOutByResultPriority(ctxt, nextResults);
-					nextResults = new List<ResolveResult>();
+					nextResults = new List<AbstractType>();
 				}
 				while (scanResults != null);
 			}
@@ -169,151 +227,120 @@ namespace D_Parser.Resolver.TypeResolution
 			return r.Count == 0 ? null : r.ToArray();
 		}
 
-		public static ResolveResult[] Resolve(TypeOfDeclaration typeOf, ResolverContextStack ctxt)
+		public static AbstractType Resolve(TypeOfDeclaration typeOf, ResolverContextStack ctxt)
 		{
 			// typeof(return)
 			if (typeOf.InstanceId is TokenExpression && (typeOf.InstanceId as TokenExpression).Token == DTokens.Return)
 			{
 				var m = HandleNodeMatch(ctxt.ScopedBlock, ctxt, null, typeOf);
 				if (m != null)
-					return new[] { m };
+					return m;
 			}
 			// typeOf(myInt)  =>  int
 			else if (typeOf.InstanceId != null)
 			{
-				var wantedTypes = ExpressionTypeResolver.Resolve(typeOf.InstanceId, ctxt);
-
-				if (wantedTypes == null)
-					return null;
-
-				// Scan down for variable's base types
-				var c1 = new List<ResolveResult>(wantedTypes);
-				var c2 = new List<ResolveResult>();
-
-				var ret = new List<ResolveResult>();
-
-				while (c1.Count > 0)
-				{
-					foreach (var t in c1)
-					{
-						if (t is MemberResult)
-						{
-							if ((t as MemberResult).MemberBaseTypes != null)
-								c2.AddRange((t as MemberResult).MemberBaseTypes);
-						}
-						else
-						{
-							t.DeclarationOrExpressionBase = typeOf;
-							ret.Add(t);
-						}
-					}
-
-					c1.Clear();
-					c1.AddRange(c2);
-					c2.Clear();
-				}
-
-				return ret.ToArray();
+				var wantedTypes = Evaluation.EvaluateType(typeOf.InstanceId, ctxt);
+				return DResolver.StripMemberSymbols(wantedTypes);
 			}
 
 			return null;
 		}
 
-		public static ResolveResult[] Resolve(MemberFunctionAttributeDecl attrDecl, ResolverContextStack ctxt)
+		public static AbstractType Resolve(MemberFunctionAttributeDecl attrDecl, ResolverContextStack ctxt)
 		{
 			var ret = Resolve(attrDecl.InnerType, ctxt);
 
-			if (ret != null)
-				foreach (var r in ret)
-					if(r!=null)
-						r.DeclarationOrExpressionBase = attrDecl;
+			ctxt.CheckForSingleResult(ret, attrDecl.InnerType);
 
-			return ret;
+			if (ret != null && ret.Length != 0)
+			{
+				ret[0].Modifier = attrDecl.Modifier;
+				return ret[0];
+			}
+
+			return null;
 		}
 
-		public static ResolveResult[] Resolve(ArrayDecl ad, ResolverContextStack ctxt)
+		public static AssocArrayType Resolve(ArrayDecl ad, ResolverContextStack ctxt)
 		{
 			var valueTypes = Resolve(ad.ValueType, ctxt);
 
-			ResolveResult[] keyTypes = null;
+			ctxt.CheckForSingleResult(valueTypes, ad);
+
+			AbstractType valueType = null;
+			AbstractType keyType=null;
+
+			if (valueTypes == null || valueTypes.Length == 0)
+				return null;
+			valueType = valueTypes[0];
 
 			if (ad.KeyExpression != null)
-				keyTypes = ExpressionTypeResolver.Resolve(ad.KeyExpression, ctxt);
+				keyType = Evaluation.EvaluateType(ad.KeyExpression, ctxt);
 			else
-				keyTypes = Resolve(ad.KeyType, ctxt);
+			{
+				var t = Resolve(ad.KeyType, ctxt);
+				ctxt.CheckForSingleResult(t, ad.KeyType);
 
-			if (valueTypes == null)
-				return new[] { new ArrayResult { 
-					ArrayDeclaration = ad,
-					KeyType=keyTypes
-				}};
+				if (t != null && t.Length != 0)
+					keyType = t[0];
+			}
 
-			var r = new List<ResolveResult>(valueTypes.Length);
 
-			foreach (var valType in valueTypes)
-				r.Add(new ArrayResult { 
-					ArrayDeclaration = ad,
-					ResultBase=valType,
-					KeyType=keyTypes
-				});
+			if (keyType== null || (keyType is PrimitiveType && ((PrimitiveType)keyType).TypeToken == DTokens.Int))
+				return new ArrayType(valueType, ad);
 
-			return r.ToArray();
+			return new AssocArrayType(valueType, keyType, ad);
 		}
 
-		public static ResolveResult[] Resolve(PointerDecl pd, ResolverContextStack ctxt)
+		public static PointerType Resolve(PointerDecl pd, ResolverContextStack ctxt)
 		{
 			var ptrBaseTypes = Resolve(pd.InnerDeclaration, ctxt);
 
-			if (ptrBaseTypes == null)
-				return new[] { 
-					new StaticTypeResult{ DeclarationOrExpressionBase=pd}
-				};
+			ctxt.CheckForSingleResult(ptrBaseTypes, pd);
 
-			var r = new List<ResolveResult>();
+			if (ptrBaseTypes == null || ptrBaseTypes.Length == 0)
+				return null;
 
-			foreach (var t in ptrBaseTypes)
-				r.Add(new StaticTypeResult { 
-					DeclarationOrExpressionBase=pd,
-					ResultBase=t
-				});
-
-			return r.ToArray();
+			return new PointerType(ptrBaseTypes[0], pd);
 		}
 
-		public static ResolveResult[] Resolve(DelegateDeclaration dg, ResolverContextStack ctxt)
+		public static DelegateType Resolve(DelegateDeclaration dg, ResolverContextStack ctxt)
 		{
-			var r = new DelegateResult { DeclarationOrExpressionBase=dg };
+			var returnTypes = Resolve(dg.ReturnType, ctxt);
 
-			if(!ctxt.Options.HasFlag(ResolutionOptions.DontResolveBaseTypes))
-				r.ReturnType = Resolve(dg.ReturnType, ctxt);
+			ctxt.CheckForSingleResult(returnTypes, dg.ReturnType);
 
-			return new[] { r };
+			if (returnTypes != null && returnTypes.Length != 0)
+				return new DelegateType(returnTypes[0], dg); // Parameter types will be resolved later on
+			return null;
 		}
 
-		public static ResolveResult[] Resolve(ITypeDeclaration declaration, ResolverContextStack ctxt)
+		public static AbstractType ResolveSingle(ITypeDeclaration declaration, ResolverContextStack ctxt)
 		{
-			if (declaration is DTokenDeclaration)
-			{
-				var r = Resolve(declaration as DTokenDeclaration);
-
-				if (r != null)
-					return new[] { r };
-			}
-			else if (declaration is IdentifierDeclaration)
-				return Resolve(declaration as IdentifierDeclaration, ctxt);
+			if (declaration is IdentifierDeclaration)
+				return ResolveSingle(declaration as IdentifierDeclaration, ctxt);
 			else if (declaration is TemplateInstanceExpression)
-				return ExpressionTypeResolver.Resolve(declaration as TemplateInstanceExpression, ctxt);
+			{
+				var a = Evaluation.GetOverloads(declaration as TemplateInstanceExpression, ctxt);
+				ctxt.CheckForSingleResult(a, declaration);
+				return a != null && a.Length != 0 ? a[0] : null;
+			}
+
+			AbstractType t = null;
+
+			if (declaration is DTokenDeclaration)
+				t = Resolve(declaration as DTokenDeclaration);
 			else if (declaration is TypeOfDeclaration)
-				return Resolve(declaration as TypeOfDeclaration, ctxt);
+				t = Resolve(declaration as TypeOfDeclaration, ctxt);
 			else if (declaration is MemberFunctionAttributeDecl)
-				return Resolve(declaration as MemberFunctionAttributeDecl, ctxt);
+				t = Resolve(declaration as MemberFunctionAttributeDecl, ctxt);
 			else if (declaration is ArrayDecl)
-				return Resolve(declaration as ArrayDecl, ctxt);
+				t = Resolve(declaration as ArrayDecl, ctxt);
 			else if (declaration is PointerDecl)
-				return Resolve(declaration as PointerDecl, ctxt);
+				t = Resolve(declaration as PointerDecl, ctxt);
 			else if (declaration is DelegateDeclaration)
-				return Resolve(declaration as DelegateDeclaration, ctxt);
-			
+				t = Resolve(declaration as DelegateDeclaration, ctxt);
+
 			//TODO: VarArgDeclaration
 			else if (declaration is ITemplateParameterDeclaration)
 			{
@@ -335,7 +362,19 @@ namespace D_Parser.Resolver.TypeResolution
 				}
 			}
 
-			return null;
+			return t;
+		}
+
+		public static AbstractType[] Resolve(ITypeDeclaration declaration, ResolverContextStack ctxt)
+		{
+			if (declaration is IdentifierDeclaration)
+				return Resolve(declaration as IdentifierDeclaration, ctxt);
+			else if (declaration is TemplateInstanceExpression)
+				return Evaluation.GetOverloads(declaration as TemplateInstanceExpression, ctxt);
+
+			var t= ResolveSingle(declaration, ctxt);
+
+			return t==null ? null : new[]{t};
 		}
 
 
@@ -350,10 +389,10 @@ namespace D_Parser.Resolver.TypeResolution
 		/// A class' base class will be searched.
 		/// etc..
 		/// </summary>
-		public static ResolveResult HandleNodeMatch(
+		public static AbstractType HandleNodeMatch(
 			INode m,
 			ResolverContextStack ctxt,
-			ResolveResult resultBase = null,
+			AbstractType resultBase = null,
 			object typeBase = null)
 		{
 			stackNum_HandleNodeMatch++;
@@ -372,12 +411,11 @@ namespace D_Parser.Resolver.TypeResolution
 			if (m.Type != null && m.Type.ToString(false) == m.Name)
 				DoResolveBaseType = false;
 
-			ResolveResult ret = null;
-			ResolveResult[] memberbaseTypes = null;
+			AbstractType ret = null;
 
 			// To support resolving type parameters to concrete types if the context allows this, introduce all deduced parameters to the current context
-			if (DoResolveBaseType && resultBase is TemplateInstanceResult)
-				ctxt.CurrentContext.IntroduceTemplateParameterTypes((TemplateInstanceResult)resultBase);
+			if (DoResolveBaseType && resultBase is DSymbol)
+				ctxt.CurrentContext.IntroduceTemplateParameterTypes((DSymbol)resultBase);
 
 			// Only import symbol aliases are allowed to search in the parse cache
 			if (m is ImportSymbolAlias)
@@ -386,69 +424,102 @@ namespace D_Parser.Resolver.TypeResolution
 
 				if (isa.IsModuleAlias ? isa.Type != null : isa.Type.InnerDeclaration != null)
 				{
-					var alias = new AliasResult	{ Node = m };
+					var mods = new List<DModule>();
+					var td=isa.IsModuleAlias ? isa.Type : isa.Type.InnerDeclaration;
+					foreach (var mod in ctxt.ParseCache.LookupModuleName(td.ToString()))
+						mods.Add(mod as DModule);
 
-					var mods = new List<ResolveResult>();
-					foreach (var mod in ctxt.ParseCache.LookupModuleName(isa.IsModuleAlias ?
-						isa.Type.ToString() :
-						isa.Type.InnerDeclaration.ToString()))
-						mods.Add(new ModuleResult(mod));
+					
 
-					if (isa.IsModuleAlias)
-						alias.MemberBaseTypes = mods.ToArray();
-					else
-						alias.MemberBaseTypes = ResolveFurtherTypeIdentifier(isa.Type.ToString(false), mods, ctxt, isa.Type);
+					if(mods.Count == 0)
+							ctxt.LogError(new NothingFoundError(isa.Type));
+					else if(mods.Count > 1)
+					{
+						var m__=new List<ISemantic>();
 
-					ret = alias;
+						foreach(var mod in mods)
+ 							m__.Add(new ModuleSymbol(mod, isa.Type));
+
+						ctxt.LogError(new AmbiguityError(isa.Type,m__));
+					}
+
+					var bt=mods.Count != 0 ? (AbstractType)new ModuleSymbol(mods[0], td) : null;
+
+					//TODO: Is this correct behaviour?
+					if (!isa.IsModuleAlias){
+						var furtherId = ResolveFurtherTypeIdentifier(isa.Type.ToString(false), new[]{ bt }, ctxt, isa.Type);
+
+						ctxt.CheckForSingleResult(furtherId, isa.Type);
+
+						if (furtherId != null && furtherId.Length != 0)
+							bt = furtherId[0];
+						else
+							bt = null;
+					}
+
+					ret = new AliasedType(isa, bt, isa.Type);
 				}
 			}
 			else if (m is DVariable)
 			{
 				var v = (DVariable)m;
+				AbstractType bt = null;
 
 				if (DoResolveBaseType)
 				{
-					memberbaseTypes = TypeDeclarationResolver.Resolve(v.Type, ctxt);
+					var bts = TypeDeclarationResolver.Resolve(v.Type, ctxt);
+
+					if (bts != null && bts.Length != 0 && ctxt.CheckForSingleResult(bts, v.Type))
+						bt = bts[0];
 
 					// For auto variables, use the initializer to get its type
-					if (memberbaseTypes == null && v.Initializer != null)
-						memberbaseTypes = ExpressionTypeResolver.Resolve(v.Initializer, ctxt);
+					else if (v.Initializer != null)
+						bt = ExpressionSemantics.Evaluation.EvaluateType(v.Initializer, ctxt);
 
 					// Check if inside an foreach statement header
-					if (memberbaseTypes == null && ctxt.ScopedStatement != null)
-						memberbaseTypes = GetForeachIteratorType(v, ctxt);
+					if (bt == null && ctxt.ScopedStatement != null)
+						bt = GetForeachIteratorType(v, ctxt);
 				}
 
 				// Note: Also works for aliases! In this case, we simply try to resolve the aliased type, otherwise the variable's base type
-				var r=v.IsAlias ? new AliasResult() : new MemberResult();
-				ret = r;
-				
-				r.Node = m;
-				r.MemberBaseTypes = memberbaseTypes;
-				r.ResultBase = resultBase;
-				r.DeclarationOrExpressionBase = typeBase;
+				ret=v.IsAlias ? 
+					(DSymbol)new AliasedType(v, bt, typeBase as ISyntaxRegion) : 
+					new MemberSymbol(v, bt, typeBase as ISyntaxRegion);
 			}
 			else if (m is DMethod)
 			{
-				if (DoResolveBaseType)
-					memberbaseTypes = GetMethodReturnType(m as DMethod, ctxt);
+				var bt=DoResolveBaseType ? GetMethodReturnType((DMethod)m, ctxt) : null;
 
-				ret = new MemberResult()
-				{
-					Node = m,
-					MemberBaseTypes = memberbaseTypes,
-					ResultBase = resultBase,
-					DeclarationOrExpressionBase = typeBase
-				};
+				ret = new MemberSymbol((DNode)m, bt, typeBase as ISyntaxRegion);
 			}
 			else if (m is DClassLike)
 			{
-				var tr = new TypeResult() {
-					Node = m, ResultBase = resultBase, DeclarationOrExpressionBase = typeBase
-				};
-				DResolver.ResolveBaseClasses(tr, ctxt);
+				UserDefinedType udt = null;
+				var dc=(DClassLike)m;
 
-				ret = tr;
+				switch (dc.ClassType)
+				{
+					case DTokens.Struct:
+						udt = new StructType(dc, typeBase as ISyntaxRegion);
+						break;
+					case DTokens.Union:
+						udt = new UnionType(dc, typeBase as ISyntaxRegion);
+						break;
+					case DTokens.Class:
+						udt = new ClassType(dc, typeBase as ISyntaxRegion, null);
+						break;
+					case DTokens.Template:
+						udt = new TemplateType(dc, typeBase as ISyntaxRegion);
+						break;
+					case DTokens.Interface:
+						udt = new InterfaceType(dc, typeBase as ISyntaxRegion);
+						break;
+					default:
+						ctxt.LogError(new ResolutionError(m, "Unknown type ("+DTokens.GetTokenString(dc.ClassType)+")"));
+						break;
+				}
+
+				ret=DResolver.ResolveBaseClasses(udt, ctxt);
 			}
 			else if (m is IAbstractSyntaxTree)
 			{
@@ -457,22 +528,13 @@ namespace D_Parser.Resolver.TypeResolution
 				{
 					var pack = ctxt.ParseCache.LookupPackage(typeBase.ToString()).First();
 					if (pack != null)
-						ret = new ModulePackageResult(pack);
+						ret = new PackageSymbol(pack, typeBase as ISyntaxRegion);
 				}
 				else
-					ret = new ModuleResult((IAbstractSyntaxTree)m)
-					{
-						ResultBase = resultBase,
-						DeclarationOrExpressionBase = typeBase
-					};
+					ret = new ModuleSymbol(m as DModule, typeBase as ISyntaxRegion);
 			}
 			else if (m is DEnum)
-				ret = new TypeResult()
-				{
-					Node = m as IBlockNode,
-					ResultBase = resultBase,
-					DeclarationOrExpressionBase = typeBase
-				};
+				ret = new EnumType((DEnum)m, typeBase as ISyntaxRegion);
 			else if (m is TemplateParameterNode)
 			{
 				var tmp = ((TemplateParameterNode)m).TemplateParameter;
@@ -482,17 +544,11 @@ namespace D_Parser.Resolver.TypeResolution
 				//TODO: Resolve the specialization type
 				//var templateParameterType = TemplateInstanceHandler.ResolveTypeSpecialization(tmp, ctxt);
 
-				ret = new MemberResult()
-				{
-					Node = m,
-					DeclarationOrExpressionBase = typeBase,
-					ResultBase = resultBase,
-					//MemberBaseTypes = templateParameterType
-				};
+				ret = new MemberSymbol((DNode)m, null, typeBase as ISyntaxRegion);
 			}
 
-			if (DoResolveBaseType && resultBase is TemplateInstanceResult)
-				ctxt.CurrentContext.RemoveParamTypesFromPreferredLocas((TemplateInstanceResult)resultBase);
+			if (DoResolveBaseType && resultBase is DSymbol)
+				ctxt.CurrentContext.RemoveParamTypesFromPreferredLocals((DSymbol)resultBase);
 
 			if (popAfterwards)
 				ctxt.Pop();
@@ -502,13 +558,13 @@ namespace D_Parser.Resolver.TypeResolution
 		}
 
 		static int stackNum_HandleNodeMatch = 0;
-		public static ResolveResult[] HandleNodeMatches(
+		public static AbstractType[] HandleNodeMatches(
 			IEnumerable<INode> matches,
 			ResolverContextStack ctxt,
-			ResolveResult resultBase = null,
+			AbstractType resultBase = null,
 			object TypeDeclaration = null)
 		{
-			var rl = new List<ResolveResult>();
+			var rl = new List<AbstractType>();
 
 			if (matches != null)
 				foreach (var m in matches)
@@ -523,39 +579,49 @@ namespace D_Parser.Resolver.TypeResolution
 			return rl.ToArray();
 		}
 
-		public static void FillMethodReturnType(MemberResult mr, ResolverContextStack ctxt)
+		public static MemberSymbol FillMethodReturnType(MemberSymbol mr, ResolverContextStack ctxt)
 		{
 			if (mr == null || ctxt == null)
-				return;
+				return mr;
 
-			var dm = mr.Node as DMethod;
+			var dm = mr.Definition as DMethod;
 
 			ctxt.CurrentContext.IntroduceTemplateParameterTypes(mr);
 
 			if (dm != null)
-				mr.MemberBaseTypes = GetMethodReturnType(dm, ctxt);
+			{
+				var returnType=GetMethodReturnType(dm, ctxt);
+				mr = new MemberSymbol(dm, returnType, mr.DeclarationOrExpressionBase);
+			}
 
-			ctxt.CurrentContext.RemoveParamTypesFromPreferredLocas(mr);
+			ctxt.CurrentContext.RemoveParamTypesFromPreferredLocals(mr);
+
+			return mr;
 		}
 
-		public static void FillMethodReturnType(DelegateResult dg, ResolverContextStack ctxt)
+		public static AbstractType GetMethodReturnType(DelegateType dg, ResolverContextStack ctxt)
 		{
 			if (dg == null || ctxt == null)
-				return;
+				return null;
 
-			if (dg.IsDelegateDeclaration)
-				dg.ReturnType = Resolve(((DelegateDeclaration)dg.DeclarationOrExpressionBase).ReturnType, ctxt);
+			if (dg.IsFunctionLiteral)
+				return GetMethodReturnType(((FunctionLiteral)dg.DeclarationOrExpressionBase).AnonymousMethod, ctxt);
 			else
-				dg.ReturnType = GetMethodReturnType(((FunctionLiteral)dg.DeclarationOrExpressionBase).AnonymousMethod,ctxt);
+			{
+				var rt=((DelegateDeclaration)dg.DeclarationOrExpressionBase).ReturnType;
+				var r = Resolve(rt, ctxt);
+
+				ctxt.CheckForSingleResult(r,rt);
+
+				return r[0];
+			}
 		}
 
-		public static ResolveResult[] GetMethodReturnType(DMethod method, ResolverContextStack ctxt)
+		public static AbstractType GetMethodReturnType(DMethod method, ResolverContextStack ctxt)
 		{
 			if (ctxt.Options.HasFlag(ResolutionOptions.DontResolveBaseTypes))
 				return null;
 			
-			ResolveResult[] returnType = null;
-
 			/*
 			 * If a method's type equals null, assume that it's an 'auto' function..
 			 * 1) Search for a return statement
@@ -564,7 +630,12 @@ namespace D_Parser.Resolver.TypeResolution
 			 */
 
 			if (method.Type != null)
-				returnType = TypeDeclarationResolver.Resolve(method.Type, ctxt);
+			{
+				var returnType = TypeDeclarationResolver.Resolve(method.Type, ctxt);
+
+				if (ctxt.CheckForSingleResult(returnType, method.Type))
+					return returnType[0];
+			}
 			else if (method.Body != null)
 			{
 				ReturnStatement returnStmt = null;
@@ -600,13 +671,15 @@ namespace D_Parser.Resolver.TypeResolution
 				{
 					ctxt.PushNewScope(method);
 
-					returnType = ExpressionTypeResolver.Resolve(returnStmt.ReturnExpression, ctxt);
+					var t= Evaluation.EvaluateType(returnStmt.ReturnExpression, ctxt);
 
 					ctxt.Pop();
+
+					return t;
 				}
 			}
 
-			return returnType;
+			return null;
 		}
 
 		/// <summary>
@@ -618,8 +691,9 @@ namespace D_Parser.Resolver.TypeResolution
 		///		writeln(i);
 		/// }
 		/// </summary>
-		public static ResolveResult[] GetForeachIteratorType(DVariable i, ResolverContextStack ctxt)
+		public static AbstractType GetForeachIteratorType(DVariable i, ResolverContextStack ctxt)
 		{
+			var r = new List<AbstractType>();
 			var curStmt = ctxt.ScopedStatement;
 
             bool init = true;
@@ -658,113 +732,105 @@ namespace D_Parser.Resolver.TypeResolution
 					if (keyIsSearched && fe.IsRangeStatement)
 					{
 						// -- it's static type int, of course(?)
-						return ResolveIdentifier("size_t", ctxt, null);
+						return new PrimitiveType(DTokens.Int);
 					}
 
-					var aggregateType = ExpressionTypeResolver.Resolve(fe.Aggregate, ctxt);
+					var aggregateType = Evaluation.EvaluateType(fe.Aggregate, ctxt);
 
-					bool remMember = false;
-					aggregateType = DResolver.ResolveMembersFromResult(aggregateType, out remMember);
+					aggregateType = DResolver.StripMemberSymbols(aggregateType);
 
 					if (aggregateType == null)
 						return null;
 
-					var r = new List<ResolveResult>();
-
-					foreach (var rr in aggregateType)
+					// The most common way to do a foreach
+					if (aggregateType is AssocArrayType)
 					{
-						// The most common way to do a foreach
-						if (rr is ArrayResult)
-						{
-							var ar = (ArrayResult)rr;
+						var ar = (AssocArrayType)aggregateType;
 
-							if (keyIsSearched)
+						if (keyIsSearched)
+							return ar.KeyType;
+						else
+							return ar.ValueType;
+					}
+					else if (aggregateType is UserDefinedType)
+					{
+						var tr = (UserDefinedType)aggregateType;
+
+						if (keyIsSearched || !(tr.Definition is IBlockNode))
+							continue;
+
+						bool foundIterPropertyMatch = false;
+						#region Foreach over Structs and Classes with Ranges
+
+						// Enlist all 'back'/'front' members
+						var t_l = new List<AbstractType>();
+
+						foreach(var n in (IBlockNode)tr.Definition)
+							if (fe.IsReverse ? n.Name == "back" : n.Name == "front")
+								t_l.Add(HandleNodeMatch(n, ctxt));
+
+						// Remove aliases
+						var iterPropertyTypes = DResolver.StripAliasSymbols(t_l);
+
+						foreach (var iterPropType in iterPropertyTypes)
+							if (iterPropType is MemberSymbol)
 							{
-								if(ar.KeyType!=null)
-									r.AddRange(ar.KeyType);
+								foundIterPropertyMatch = true;
+
+								var itp = (MemberSymbol)iterPropType;
+
+								// Only take non-parameterized methods
+								if (itp.Definition is DMethod && ((DMethod)itp.Definition).Parameters.Count != 0)
+									continue;
+
+								// Handle its base type [return type] as iterator type
+								if (itp.Base != null)
+									r.Add(itp.Base);
+
+								foundIterPropertyMatch = true;
 							}
-							else
-								r.Add(ar.ResultBase);
-						}
-						else if (rr is TypeResult)
-						{
-							var tr = (TypeResult)rr;
 
-							if (keyIsSearched || !(tr.Node is IBlockNode))
-								continue;
+						if (foundIterPropertyMatch)
+							continue;
+						#endregion
 
-							bool foundIterPropertyMatch = false;
-							#region Foreach over Structs and Classes with Ranges
-
-							// Enlist all 'back'/'front' members
-							var t_l = new List<ResolveResult>();
-
-							foreach(var n in (IBlockNode)tr.Node)
-								if (fe.IsReverse ? n.Name == "back" : n.Name == "front")
-									t_l.Add(HandleNodeMatch(n, ctxt));
-
-							// Remove aliases
-							var iterPropertyTypes = DResolver.TryRemoveAliasesFromResult(t_l);
-
-							foreach (var iterPropType in iterPropertyTypes)
-								if (iterPropType is MemberResult)
-								{
-									foundIterPropertyMatch = true;
-
-									var itp = (MemberResult)iterPropType;
-
-									// Only take non-parameterized methods
-									if (itp.Node is DMethod && ((DMethod)itp.Node).Parameters.Count != 0)
-										continue;
-
-									// Handle its base type [return type] as iterator type
-									if (itp.MemberBaseTypes != null)
-										r.AddRange(itp.MemberBaseTypes);
-
-									foundIterPropertyMatch = true;
-								}
-
-							if (foundIterPropertyMatch)
-								continue;
-							#endregion
-
-							#region Foreach over Structs and Classes with opApply
-							t_l.Clear();
-							r.Clear();
+						#region Foreach over Structs and Classes with opApply
+						t_l.Clear();
+						r.Clear();
 							
-							foreach (var n in (IBlockNode)tr.Node)
-								if (n is DMethod && 
-									(fe.IsReverse ? n.Name == "opApplyReverse" : n.Name == "opApply"))
-									t_l.Add(HandleNodeMatch(n, ctxt));
+						foreach (var n in (IBlockNode)tr.Definition)
+							if (n is DMethod && 
+								(fe.IsReverse ? n.Name == "opApplyReverse" : n.Name == "opApply"))
+								t_l.Add(HandleNodeMatch(n, ctxt));
 
-							iterPropertyTypes = DResolver.TryRemoveAliasesFromResult(t_l);
+						iterPropertyTypes = DResolver.StripAliasSymbols(t_l);
 
-							foreach (var iterPropertyType in iterPropertyTypes)
-								if (iterPropertyType is MemberResult)
-								{
-									var mr = (MemberResult)iterPropertyType;
-									var dm = mr.Node as DMethod;
+						foreach (var iterPropertyType in iterPropertyTypes)
+							if (iterPropertyType is MemberSymbol)
+							{
+								var mr = (MemberSymbol)iterPropertyType;
+								var dm = mr.Definition as DMethod;
 
-									if (dm == null || dm.Parameters.Count != 1)
-										continue;
+								if (dm == null || dm.Parameters.Count != 1)
+									continue;
 
-									var dg = dm.Parameters[0].Type as DelegateDeclaration;
+								var dg = dm.Parameters[0].Type as DelegateDeclaration;
 
-									if (dg == null || dg.Parameters.Count != fe.ForeachTypeList.Length)
-										continue;
+								if (dg == null || dg.Parameters.Count != fe.ForeachTypeList.Length)
+									continue;
 
-									var paramType = Resolve(dg.Parameters[iteratorIndex].Type, ctxt);
+								var paramType = Resolve(dg.Parameters[iteratorIndex].Type, ctxt);
 
-									if(paramType!=null && paramType.Length > 0)
-										r.Add(paramType[0]);
-
-									//TODO: Inform the user about multiple matches whereas there should be one allowed only..
-								}
-							#endregion
-						}
+								if(paramType!=null && paramType.Length > 0)
+									r.Add(paramType[0]);
+							}
+						#endregion
 					}
 
-					return r.Count == 0?null: r.ToArray();
+					if (r.Count > 1)
+						ctxt.LogError(new ResolutionError(curStmt, "Ambigous iterator type"));
+
+					return r.Count != 0 ? r[0] : null;
 				}
 			}
 

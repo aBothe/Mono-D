@@ -82,7 +82,7 @@ namespace MonoDevelop.D.Gui
 				foreach (INode nd in (currentblock as DEnum).Children)
 				{
 					if ((nd is DEnumValue)
-					&& ((nd.StartLocation <= loc) && (nd.EndLocation >= loc)))
+					&& ((nd.Location <= loc) && (nd.EndLocation >= loc)))
 					{
 						currentblock = nd as IBlockNode;
 						break;

@@ -14,6 +14,8 @@ Everything that still needs to be handled by D_Parser comes right in here:
 
 * Make Mixin analysis etc. multi-threaded!
 
+* Pre-resolve constant values (such as const/enum literals) from least to most dependent(?)
+* Handle semantic errors that occur during analysis/resolution/evaluation etc. -> Implement own Exceptions for that!
 
 Resolver:
 	-	Implement single-element aliasing on templates(only !)
@@ -30,3 +32,18 @@ Template parameter deduction:
 
  Tests:
   - Find out what features did change after it added the first expression as ResultBase to UFCS results
+
+
+  Expression evaluation:
+  - CTFE
+  - Assign expressions
+  - Identity expression
+  - Operator overloads
+  - Finish equal expressions (pointer/object comparison)
+  - Implement class/struct/pointer values
+  - Complex numbers (on at least shift operators)
+  - Handle >> and >>> correctly
+  - InExpressions
+  - NewExpressions in PostfixExpression_Access expressions
+  - Implement static property resolution/evaluation
+  - Pointer arrays in Index[/Slice] expressions

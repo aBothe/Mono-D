@@ -8,6 +8,7 @@ using D_Parser.Dom.Expressions;
 using D_Parser.Dom.Statements;
 using D_Parser.Parser;
 using System.Linq;
+using D_Parser.Resolver.ExpressionSemantics;
 
 namespace D_Parser.Resolver.TypeResolution
 {
@@ -106,12 +107,12 @@ namespace D_Parser.Resolver.TypeResolution
 				return parser.Type();
 		}
 
-		public static ResolveResult[] ResolveType(IEditorData editor,AstReparseOptions Options=0)
+		public static AbstractType[] ResolveType(IEditorData editor,AstReparseOptions Options=0)
 		{
 			return ResolveType(editor,ResolverContextStack.Create(editor),Options);
 		}
 
-		public static ResolveResult[] ResolveType(IEditorData editor, ResolverContextStack ctxt, AstReparseOptions Options=0)
+		public static AbstractType[] ResolveType(IEditorData editor, ResolverContextStack ctxt, AstReparseOptions Options=0)
 		{
 			if (ctxt == null)
 				return null;
@@ -124,7 +125,10 @@ namespace D_Parser.Resolver.TypeResolution
 				if (o is IdentifierExpression && ((IdentifierExpression)o).Format.HasFlag(LiteralFormat.Scalar))
 					return null;
 
-				return ExpressionTypeResolver.Resolve((IExpression)o, ctxt);
+				var t=Evaluation.EvaluateType((IExpression)o, ctxt);
+
+				if (t != null)
+					return new[] { t };
 			}
 			else if(o is ITypeDeclaration)
 				return TypeDeclarationResolver.Resolve((ITypeDeclaration)o, ctxt);
@@ -134,30 +138,66 @@ namespace D_Parser.Resolver.TypeResolution
 
 		static int bcStack = 0;
 		/// <summary>
-		/// Takes the class passed via the tr, and resolves its base class and/or implemented interfaces
+		/// Takes the class passed via the tr, and resolves its base class and/or implemented interfaces.
+		/// Also usable for enums.
+		/// 
+		/// Never returns null. Instead, the original 'tr' object will be returned if no base class was resolved.
+		/// Will clone 'tr', whereas the new object will contain the base class.
 		/// </summary>
-		public static void ResolveBaseClasses(TypeResult tr, ResolverContextStack ctxt, bool ResolveFirstBaseIdOnly=false)
+		public static UserDefinedType ResolveBaseClasses(UserDefinedType tr, ResolverContextStack ctxt, bool ResolveFirstBaseIdOnly=false)
 		{
 			if (bcStack > 8)
 			{
 				bcStack--;
-				return;
+				return tr;
 			}
 
-			var dc = tr.Node as DClassLike;
+			if (tr is EnumType)
+			{
+				var et = tr as EnumType;
+
+				AbstractType bt = null;
+
+				if(et.Definition.Type == null)
+					bt = new PrimitiveType(DTokens.Int);
+				else
+				{
+					var bts=TypeDeclarationResolver.Resolve(et.Definition.Type, ctxt);
+
+					ctxt.CheckForSingleResult(bts, et.Definition.Type);
+
+					if(bts!=null && bts.Length!=0)
+						bt=bts[0];
+				}
+
+				return new EnumType(et.Definition, bt, et.DeclarationOrExpressionBase);
+			}
+
+			var dc = tr.Definition as DClassLike;
 			// Return immediately if searching base classes of the Object class
 			if (dc == null || ((dc.BaseClasses == null || dc.BaseClasses.Count < 1) && dc.Name == "Object"))
-				return;
+				return tr;
 
 			// If no base class(es) specified, and if it's no interface that is handled, return the global Object reference
+			// -- and do not throw any error message, it's ok
 			if(dc.BaseClasses == null || dc.BaseClasses.Count < 1)
 			{
-				if(dc.ClassType != DTokens.Interface) // Only Non-interfaces can inherit from non-interfaces
-					tr.BaseClass= ctxt.ParseCache.ObjectClassResult;
-				return;
+				if(tr is ClassType) // Only Classes can inherit from non-interfaces
+					return new ClassType(dc, tr.DeclarationOrExpressionBase, ctxt.ParseCache.ObjectClassResult);
+				return tr;
 			}
 
-			var interfaces = new List<TypeResult[]>();
+			#region Base class & interface resolution
+			TemplateIntermediateType baseClass=null;
+			var interfaces = new List<InterfaceType>();
+
+			if (!(tr is ClassType || tr is InterfaceType))
+			{
+				if (dc.BaseClasses.Count != 0)
+					ctxt.LogError(dc,"Only classes and interfaces may inherit from other classes/interfaces");
+				return tr;
+			}
+
 			for (int i = 0; i < (ResolveFirstBaseIdOnly ? 1 : dc.BaseClasses.Count); i++)
 			{
 				var type = dc.BaseClasses[i];
@@ -165,24 +205,24 @@ namespace D_Parser.Resolver.TypeResolution
 				// If there's an explicit 'Object' inheritance, also return the pre-resolved object class
 				if (type is IdentifierDeclaration && ((IdentifierDeclaration)type).Id == "Object")
 				{
-					if (tr.BaseClass != null)
+					if (baseClass!=null)
 					{
-						// Error: Two base classes!
+						ctxt.LogError(new ResolutionError(dc, "Class must not have two base classes"));
 						continue;
 					}
 					else if (i != 0)
 					{
-						// Error: Super class must be at first position!
+						ctxt.LogError(new ResolutionError(dc, "The base class name must preceed base interfaces"));
 						continue;
 					}
 
-					tr.BaseClass = ctxt.ParseCache.ObjectClassResult;
+					baseClass = ctxt.ParseCache.ObjectClassResult;
 					continue;
 				}
 
 				if (type == null || type.ToString(false) == dc.Name || dc.NodeRoot == dc)
 				{
-					// Error: A class cannot inherit itself
+					ctxt.LogError(new ResolutionError(dc, "A class cannot inherit from itself"));
 					continue;
 				}
 
@@ -192,77 +232,49 @@ namespace D_Parser.Resolver.TypeResolution
 
 				var res=TypeDeclarationResolver.Resolve(type, ctxt);
 
-				if (res == null)
+				ctxt.CheckForSingleResult(res, type);
+
+				if(res!=null && res.Length != 0)
 				{
-					// Error: Couldn't resolve 'type'
-				}
-				else
-				{
-					var curInterface = new List<TypeResult>();
-					bool isClass = false;
-					foreach (var r in res)
+					var r = res[0];
+					if (r is ClassType || r is TemplateType)
 					{
-						var ttr = r as TypeResult;
-
-						if (ttr == null)
+						if (tr is InterfaceType)
+							ctxt.LogError(new ResolutionError(type, "An interface cannot inherit from non-interfaces"));
+						else if (i == 0)
 						{
-							// Error: Invalid base type
-							continue;
+							baseClass = (TemplateIntermediateType)res[0];
 						}
-
-						var dc_ = ttr.Node as DClassLike;
-
-						if (dc_ == null)
-						{
-							// Error: Invalid base type
-							continue;
-						}
-
-						switch (dc_.ClassType)
-						{
-							case DTokens.Class:
-								if (i == 0)
-								{
-									isClass = true;
-									curInterface.Add(ttr);
-
-									if (curInterface.Count > 1)
-									{
-										// Error: Ambiguous declaration!
-									}
-								}
-								else
-								{
-									// Error: Base class can only be supplied in the first position
-								}
-								break;
-							case DTokens.Interface:
-								curInterface.Add(ttr);
-								
-								if (isClass || curInterface.Count > 1)
-								{
-									// Error: Ambiguous declaration
-								}
-								
-								break;
-							default:
-								// Error: Cannot inherit from other types than 'class' and interface!
-								break;
-						}
+						else
+							ctxt.LogError(new ResolutionError(dc, "The base "+(r is ClassType ?  "class" : "template")+" name must preceed base interfaces"));
 					}
-
-					if (isClass)
-						tr.BaseClass = curInterface.ToArray();
+					else if (r is InterfaceType)
+					{
+						interfaces.Add((InterfaceType)r);
+					}
 					else
-						interfaces.Add(curInterface.ToArray());
+					{
+						ctxt.LogError(new ResolutionError(type, "Resolved class is neither a class nor an interface"));
+						continue;
+					}
 				}
 
 				bcStack--;
 
 				ctxt.Pop();
 			}
+			#endregion
 
-			tr.ImplementedInterfaces = interfaces.ToArray();
+			if (baseClass == null && interfaces.Count == 0)
+				return tr;
+
+			if (tr is ClassType)
+				return new ClassType(dc, tr.DeclarationOrExpressionBase, baseClass, interfaces.Count == 0 ? null : interfaces.ToArray(), tr.DeducedTypes);
+			else if (tr is InterfaceType)
+				return new InterfaceType(dc, tr.DeclarationOrExpressionBase, interfaces.Count == 0 ? null : interfaces.ToArray(), tr.DeducedTypes);
+			
+			// Method should end here
+			return tr;
 		}
 
 		public static IBlockNode SearchBlockAt(IBlockNode Parent, CodeLocation Where, out IStatement ScopedStatement)
@@ -273,7 +285,7 @@ namespace D_Parser.Resolver.TypeResolution
 			{
 				var pi = Parent.Children;
 				foreach (var n in pi)
-					if (n is IBlockNode && Where >= n.StartLocation && Where <= n.EndLocation)
+					if (n is IBlockNode && Where >= n.Location && Where <= n.EndLocation)
 						return SearchBlockAt(n as IBlockNode, Where, out ScopedStatement);
 			}
 
@@ -306,14 +318,14 @@ namespace D_Parser.Resolver.TypeResolution
 			return Parent;
 		}
 
-		public static IEnumerable<ResolveResult> FilterOutByResultPriority(
+		public static IEnumerable<T> FilterOutByResultPriority<T>(
 			ResolverContextStack ctxt,
-			IEnumerable<ResolveResult> results)
+			IEnumerable<T> results) where T : ISemantic
 		{
 			if (results == null)
 				return null;
 
-			var newRes = new List<ResolveResult>();
+			var newRes = new List<T>();
 
 			foreach (var rb in results)
 			{
@@ -327,20 +339,21 @@ namespace D_Parser.Resolver.TypeResolution
 
 					// If member/type etc. is part of the actual module, omit external symbols
 					if (n.NodeRoot != ctxt.CurrentContext.ScopedBlock.NodeRoot)
+					{
+						bool omit = false;
 						foreach (var r in newRes)
 						{
-							bool omit = false;
-
 							var k = GetResultMember(r);
 							if (k != null && k.NodeRoot == ctxt.CurrentContext.ScopedBlock.NodeRoot)
 							{
 								omit = true;
 								break;
 							}
-
-							if (omit)
-								continue;
 						}
+
+						if (omit)
+							continue;
+					}
 					else
 						foreach (var r in newRes.ToArray())
 						{
@@ -356,14 +369,10 @@ namespace D_Parser.Resolver.TypeResolution
 			return newRes.Count > 0 ? newRes.ToArray():null;
 		}
 
-		public static INode GetResultMember(ResolveResult res)
+		public static DNode GetResultMember(ISemantic res)
 		{
-			if (res is MemberResult)
-				return ((MemberResult)res).Node;
-			else if (res is TypeResult)
-				return ((TypeResult)res).Node;
-			else if (res is ModuleResult)
-				return ((ModuleResult)res).Module;
+			if(res is DSymbol)
+				return ((DSymbol)res).Definition;
 
 			return null;
 		}
@@ -379,78 +388,48 @@ namespace D_Parser.Resolver.TypeResolution
 		/// --> resolvedType will be StaticTypeResult from char[]
 		/// 
 		/// </summary>
-		public static ResolveResult[] TryRemoveAliasesFromResult(IEnumerable<ResolveResult> initialResults)
+		public static AbstractType StripAliasSymbol(AbstractType r)
 		{
-			if (initialResults == null)
-				return null;
+			while(r is AliasedType)
+				r = (r as DerivedDataType).Base;
 
-			var ret = new List<ResolveResult>(initialResults);
-			var l2 = new List<ResolveResult>();
+			return r;
+		}
 
-			while (ret.Count > 0)
-			{
-				foreach (var res in ret)
-				{
-					var mr = res as MemberResult;
-					if (mr != null &&
+		public static AbstractType[] StripAliasSymbols(IEnumerable<AbstractType> symbols)
+		{
+			var l = new List<AbstractType>();
 
-						// Alias check
-						mr.Node is DVariable &&	((DVariable)mr.Node).IsAlias &&
+			foreach (var r in symbols)
+				l.Add(StripAliasSymbol(r));
 
-						// Check if it has resolved base types
-						mr.MemberBaseTypes != null &&
-						mr.MemberBaseTypes.Length > 0)
-						l2.AddRange(mr.MemberBaseTypes);
-				}
-
-				if (l2.Count < 1)
-					break;
-
-				ret.Clear();
-				ret.AddRange(l2);
-				l2.Clear();
-			}
-
-			return ret.ToArray();
+			return l.ToArray();
 		}
 
 		/// <summary>
 		/// Removes all kinds of members from the given results.
 		/// </summary>
 		/// <param name="resolvedMember">True if a member (not an alias!) had to be bypassed</param>
-		public static ResolveResult[] ResolveMembersFromResult(IEnumerable<ResolveResult> initialResults, out bool resolvedMember)
+		public static AbstractType StripMemberSymbols(AbstractType r)
 		{
-			resolvedMember = false;
+			r = StripAliasSymbol(r);
 
-            if (initialResults == null)
-                return null;
+			if(r is MemberSymbol)
+				r = ((DSymbol)r).Base;
 
-			var ret = new List<ResolveResult>(initialResults);
-			var l2 = new List<ResolveResult>();
+			return StripAliasSymbol(r);
+		}
 
-			while (ret.Count > 0)
+		public static AbstractType[] StripMemberSymbols(IEnumerable<AbstractType> symbols)
+		{
+			var l = new List<AbstractType>();
+
+			foreach (var r in symbols)
 			{
-				foreach (var res in ret)
-				{
-					var mr = res as MemberResult;
-					if (mr != null && mr.MemberBaseTypes != null)
-					{
-						l2.AddRange(mr.MemberBaseTypes);
-
-						if(!(mr.Node is DVariable) || !((DVariable)mr.Node).IsAlias)
-							resolvedMember = true;
-					}
-				}
-
-				if (l2.Count < 1)
-					break;
-
-				ret.Clear();
-				ret.AddRange(l2);
-				l2.Clear();
+				l.Add(StripMemberSymbols(r));
 			}
 
-			return ret.Count == 0? null : ret.ToArray();
+			return l.ToArray();
 		}
 	}
 }

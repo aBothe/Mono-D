@@ -76,7 +76,7 @@ namespace MonoDevelop.D.Gui
 			var member = memberList[n];
 			MonoDevelop.Ide.Gui.Content.IExtensibleTextEditor extEditor = document.GetContent<MonoDevelop.Ide.Gui.Content.IExtensibleTextEditor> ();
 			if (extEditor != null)
-				extEditor.SetCaretTo (Math.Max (1, member.StartLocation.Line), member.StartLocation.Column);
+				extEditor.SetCaretTo (Math.Max (1, member.Location.Line), member.Location.Column);
 		}
 
 

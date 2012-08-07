@@ -148,6 +148,9 @@ namespace D_Parser.Dom
 		#endregion
 	}
 
+	/// <summary>
+	/// import io = std.stdio;
+	/// </summary>
 	public class ImportSymbolAlias : DVariable
 	{
 		public bool IsModuleAlias;
@@ -164,5 +167,10 @@ namespace D_Parser.Dom
 		}
 
 		public ImportSymbolAlias()	{}
+
+		public override string ToString()
+		{
+			return OriginalImportStatement.ToString();
+		}
 	}
 }

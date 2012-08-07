@@ -169,8 +169,8 @@ namespace D_Parser.Parser
 		{
 			if (stopLexing)
 			{
-				if (lookaheadToken != null && lookaheadToken.next!=null &&
-					(lookaheadToken.next.Kind == DTokens.EOF || lookaheadToken.next.Kind==DTokens.__EOF__))
+				if (lookaheadToken != null && lookaheadToken.next != null &&
+					(lookaheadToken.next.Kind == DTokens.EOF || lookaheadToken.next.Kind == DTokens.__EOF__))
 				{
 					curToken = lookaheadToken;
 					lookaheadToken = lookaheadToken.next;
@@ -899,7 +899,7 @@ namespace D_Parser.Parser
 				#region Exponents
 				if ((NumBase == 16) ? (peek == 'p' || peek == 'P') : (peek == 'e' || peek == 'E'))
 				{ // read exponent
-					string suff = "e";
+					string suff = peek.ToString();
 					ReaderRead();
 					peek = (char)ReaderPeek();
 
@@ -983,7 +983,7 @@ namespace D_Parser.Parser
 				var num = ParseFloatValue(digit, NumBase);
 
 				if (exponent != 1)
-					num = Math.Pow(num, exponent);
+					num *= Math.Pow(NumBase == 16 ? 2 : 10, exponent);
 
 				object val = null;
 
@@ -1380,6 +1380,10 @@ namespace D_Parser.Parser
 					// Although we'll pass back a string as literal value, it's originally handled as char literal!
 				}
 			}
+			else if (ch == '\'')
+			{
+				return new DToken(DTokens.Literal, new CodeLocation(x, y), new CodeLocation(x, y), "''", char.MinValue, LiteralFormat.CharLiteral);
+			}
 
 			unchecked
 			{
@@ -1491,7 +1495,7 @@ namespace D_Parser.Parser
 					{
 						case '=':
 							ReaderRead();
-							return new DToken(DTokens.NotEqual, x, y);
+							return new DToken(DTokens.NotEqual, x, y); // !=
 
 						case '<':
 							ReaderRead();
@@ -1499,18 +1503,18 @@ namespace D_Parser.Parser
 							{
 								case '=':
 									ReaderRead();
-									return new DToken(DTokens.NotLessThanAssign, x, y);
+									return new DToken(DTokens.UnorderedOrGreater, x, y); // !<=
 								case '>':
 									ReaderRead();
 									switch (ReaderPeek())
 									{
 										case '=':
 											ReaderRead();
-											return new DToken(DTokens.NotUnequalAssign, x, y); // !<>=
+											return new DToken(DTokens.Unordered, x, y); // !<>=
 									}
-									return new DToken(DTokens.NotUnequal, x, y); // !<>
+									return new DToken(DTokens.UnorderedOrEqual, x, y); // !<>
 							}
-							return new DToken(DTokens.NotLessThan, x, y);
+							return new DToken(DTokens.UnorderedGreaterOrEqual, x, y); // !<
 
 						case '>':
 							ReaderRead();
@@ -1518,11 +1522,11 @@ namespace D_Parser.Parser
 							{
 								case '=':
 									ReaderRead();
-									return new DToken(DTokens.NotGreaterThanAssign, x, y); // !>=
+									return new DToken(DTokens.UnorderedOrLess, x, y); // !>=
 								default:
 									break;
 							}
-							return new DToken(DTokens.NotGreaterThan, x, y); // !>
+							return new DToken(DTokens.UnorderedLessOrEqual, x, y); // !>
 
 					}
 					return new DToken(DTokens.Not, x, y);
@@ -1565,11 +1569,11 @@ namespace D_Parser.Parser
 							{
 								case '=':
 									ReaderRead();
-									return new DToken(DTokens.UnequalAssign, x, y);
+									return new DToken(DTokens.LessEqualOrGreater, x, y);
 								default:
 									break;
 							}
-							return new DToken(DTokens.Unequal, x, y);
+							return new DToken(DTokens.LessOrGreater, x, y);
 						case '=':
 							ReaderRead();
 							return new DToken(DTokens.LessEqual, x, y);
