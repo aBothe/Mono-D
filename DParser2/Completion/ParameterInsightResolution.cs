@@ -88,33 +88,7 @@ namespace D_Parser.Completion
 			// Search the returned statement block (i.e. function body) for the current statement
 			var exStmt = BlockStatement.SearchBlockStatement(parsedStmtBlock, Editor.CaretLocation) as IExpressionContainingStatement;
 
-			// Generally expect it to be an expression containing statement 
-			// - and search for the most fitting
-			if (exStmt != null && exStmt.SubExpressions != null)
-				foreach (var ex in exStmt.SubExpressions)
-					if (ex != null && ex.Location < Editor.CaretLocation && ex.EndLocation >= Editor.CaretLocation)
-					{
-						e = lastParamExpression = ex;
-						break;
-					}
-
-			// Go search deeper for the inner-most call/parametric expression
-			while (e is ContainerExpression)
-			{
-				var lastE = e;
-
-				foreach (var subEx in ((ContainerExpression)e).SubExpressions)
-					if (subEx.Location < Editor.CaretLocation && subEx.EndLocation >= Editor.CaretLocation)
-					{
-						e = subEx;
-						if (ExpressionHelper.IsParamRelatedExpression(subEx))
-							lastParamExpression = subEx;
-						break;
-					}
-
-				if (lastE == e) // Small deadlock prevention
-					break;
-			}
+			lastParamExpression = SearchForMethodCallsOrTemplateInstances(exStmt, Editor.CaretLocation);
 
 			if (lastParamExpression == null)
 			{
@@ -423,23 +397,7 @@ namespace D_Parser.Completion
 					if (!(curExpression.Location <= Caret || curExpression.EndLocation >= Caret))
 						break;
 
-					if (curExpression is PostfixExpression_MethodCall)
-						curMethodOrTemplateInstance = curExpression;
-
-					else if (curExpression is TemplateInstanceExpression)
-						curMethodOrTemplateInstance = curExpression;
-
-					else if (curExpression is PostfixExpression_Access)
-					{
-						var acc = curExpression as PostfixExpression_Access;
-
-						if (acc.AccessExpression is TemplateInstanceExpression)
-							curMethodOrTemplateInstance = (TemplateInstanceExpression)acc.AccessExpression;
-						else if (acc.AccessExpression is NewExpression)
-							curMethodOrTemplateInstance = (NewExpression)acc.AccessExpression;
-					}
-
-					else if (curExpression is NewExpression)
+					if (ExpressionHelper.IsParamRelatedExpression(curExpression))
 						curMethodOrTemplateInstance = curExpression;
 
 					if (curExpression is ContainerExpression)

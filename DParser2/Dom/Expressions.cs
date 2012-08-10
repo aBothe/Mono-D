@@ -24,7 +24,9 @@ namespace D_Parser.Dom.Expressions
 			return subEx is PostfixExpression_MethodCall ||
 							subEx is TemplateInstanceExpression ||
 							subEx is NewExpression ||
-							(subEx is PostfixExpression_Access && ((PostfixExpression_Access)subEx).AccessExpression is NewExpression);
+							(subEx is PostfixExpression_Access && 
+								(((PostfixExpression_Access)subEx).AccessExpression is NewExpression ||
+								((PostfixExpression_Access)subEx).AccessExpression is TemplateInstanceExpression));
 		}
 
 		/// <summary>
