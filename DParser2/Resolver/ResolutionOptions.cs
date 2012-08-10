@@ -25,6 +25,8 @@ namespace D_Parser.Resolver
 		/// </summary>
 		NoTemplateParameterDeduction= 32,
 
+		ReturnMethodReferencesOnly = 64,
+
 		Default = 0
 	}
 }

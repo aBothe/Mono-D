@@ -192,12 +192,15 @@ namespace D_Parser.Dom.Statements
 			return s;
 		}
 
-		public static IStatement SearchBlockStatement(BlockStatement BlockStmt, CodeLocation Where)
+		public static IStatement SearchBlockStatement(StatementContainingStatement BlockStmt, CodeLocation Where)
 		{
 			// First check if one sub-statement is located at the code location
-			foreach (var s in BlockStmt._Statements)
-				if (Where >= s.Location && Where <= s.EndLocation)
-					return s;
+			var ss = BlockStmt.SubStatements;
+
+			if(ss!=null)
+				foreach (var s in ss)
+					if (Where >= s.Location && Where <= s.EndLocation)
+						return s;
 
 			// If nothing was found, check if this statement fits to the coordinates
 			if (Where >= BlockStmt.Location && Where <= BlockStmt.EndLocation)

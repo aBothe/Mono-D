@@ -33,14 +33,17 @@ namespace D_Parser.Completion
 			var ctxt = ResolverContextStack.Create(Editor);
 			var ex = AccessExpression.AccessExpression == null ? AccessExpression.PostfixForeExpression : AccessExpression;
 
+			ctxt.PushNewScope(ScopedBlock).ScopedStatement = ScopedStatement;
 			var r = Evaluation.EvaluateType(ex, ctxt);
+			ctxt.Pop();
 
 			if (r == null) //TODO: Add after-space list creation when an unbound . (Dot) was entered which means to access the global scope
 				return;
 
 			BuildCompletionData(r, ScopedBlock);
 
-			if(Editor.Options.ShowUFCSItems)
+			if(Editor.Options.ShowUFCSItems && 
+				!(r is UserDefinedType || r is PackageSymbol || r is ModuleSymbol))
 				UFCSCompletionProvider.Generate(r, ctxt, Editor, CompletionDataGenerator);
 		}
 
@@ -211,7 +214,7 @@ namespace D_Parser.Completion
 				var tvisMod = visMod;
 				while (curlevel != null)
 				{
-					foreach (var i in curlevel.Definition as IBlockNode)
+					foreach (var i in curlevel.Definition as DBlockNode)
 					{
 						var dn = i as DNode;
 

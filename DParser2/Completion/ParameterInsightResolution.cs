@@ -5,6 +5,7 @@ using D_Parser.Dom.Statements;
 using D_Parser.Resolver;
 using D_Parser.Resolver.TypeResolution;
 using D_Parser.Resolver.ExpressionSemantics;
+using D_Parser.Parser;
 
 namespace D_Parser.Completion
 {
@@ -56,6 +57,7 @@ namespace D_Parser.Completion
 
 	public class ParameterInsightResolution
 	{
+		
 		/// <summary>
 		/// Reparses the given method's fucntion body until the cursor position,
 		/// searches the last occurring method call or template instantiation,
@@ -63,12 +65,67 @@ namespace D_Parser.Completion
 		/// and returns a wrapper containing all the information.
 		/// </summary>
 		public static ArgumentsResolutionResult ResolveArgumentContext(
-			IEditorData data,
+			IEditorData Editor,
 			ResolverContextStack ctxt)
 		{
-			var e = DResolver.GetScopedCodeObject(data, ctxt, DResolver.AstReparseOptions.ReturnRawParsedExpression);
-			
+			ParserTrackerVariables trackVars = null;
+			IStatement curStmt = null; 
+			IExpression e = null, lastParamExpression = null;
+
+			// Get the currently scoped block
+			var curBlock = DResolver.SearchBlockAt(Editor.SyntaxTree, Editor.CaretLocation, out curStmt);
+
+			if (curBlock == null)
+				return null;
+
+			// Get an updated abstract view on the module's code
+			var parsedStmtBlock = CtrlSpaceCompletionProvider.FindCurrentCaretContext(
+				Editor.ModuleCode, curBlock ,Editor.CaretOffset,	Editor.CaretLocation, out trackVars) as StatementContainingStatement;
+
+			if (parsedStmtBlock == null)
+				return null;
+
+			// Search the returned statement block (i.e. function body) for the current statement
+			var exStmt = BlockStatement.SearchBlockStatement(parsedStmtBlock, Editor.CaretLocation) as IExpressionContainingStatement;
+
+			// Generally expect it to be an expression containing statement 
+			// - and search for the most fitting
+			if (exStmt != null && exStmt.SubExpressions != null)
+				foreach (var ex in exStmt.SubExpressions)
+					if (ex != null && ex.Location < Editor.CaretLocation && ex.EndLocation >= Editor.CaretLocation)
+					{
+						e = lastParamExpression = ex;
+						break;
+					}
+
+			// Go search deeper for the inner-most call/parametric expression
+			while (e is ContainerExpression)
+			{
+				var lastE = e;
+
+				foreach (var subEx in ((ContainerExpression)e).SubExpressions)
+					if (subEx.Location < Editor.CaretLocation && subEx.EndLocation >= Editor.CaretLocation)
+					{
+						e = subEx;
+						if (ExpressionHelper.IsParamRelatedExpression(subEx))
+							lastParamExpression = subEx;
+						break;
+					}
+
+				if (lastE == e) // Small deadlock prevention
+					break;
+			}
+
+			if (lastParamExpression == null)
+			{
+				// Give it a last chance by handling the lastly parsed object 
+				// - which is a TemplateInstanceExpression in quite all cases
+				lastParamExpression = trackVars.LastParsedObject as IExpression;
+			}
+
 			/*
+			 * Then handle the lastly found expression regarding the following points:
+			 * 
 			 * 1) foo(			-- normal arguments only
 			 * 2) foo!(...)(	-- normal arguments + template args
 			 * 3) foo!(		-- template args only
@@ -77,16 +134,18 @@ namespace D_Parser.Completion
 			 * 6) new myclass!(...)(
 			 * 7) mystruct(		-- opCall call
 			 */
+
 			var res = new ArgumentsResolutionResult() { 
-				ParsedExpression = e as IExpression
+				ParsedExpression = lastParamExpression
 			};
 
 			// 1), 2)
-			if (e is PostfixExpression_MethodCall)
+			if (lastParamExpression is PostfixExpression_MethodCall)
 			{
 				res.IsMethodArguments = true;
-				var call = (PostfixExpression_MethodCall) e;
+				var call = (PostfixExpression_MethodCall) lastParamExpression;
 
+				res.MethodIdentifier = call.PostfixForeExpression;
 				res.ResolvedTypesOrMethods = TryGetUnfilteredMethodOverloads(call.PostfixForeExpression, ctxt, call);
 
 				if (call.Arguments != null)
@@ -94,7 +153,7 @@ namespace D_Parser.Completion
 					int i = 0;
 					foreach (var arg in call.Arguments)
 					{
-						if (data.CaretLocation >= arg.Location && data.CaretLocation <= arg.EndLocation)
+						if (Editor.CaretLocation >= arg.Location && Editor.CaretLocation <= arg.EndLocation)
 						{
 							res.CurrentlyTypedArgumentIndex = i;
 							break;
@@ -104,25 +163,14 @@ namespace D_Parser.Completion
 				}
 
 			}
-			else if (e is PostfixExpression_Access)
-			{
-				var acc = e as PostfixExpression_Access;
-
-				res.ResolvedTypesOrMethods = TryGetUnfilteredMethodOverloads(acc.PostfixForeExpression, ctxt, acc);
-
-				if (res.ResolvedTypesOrMethods == null)
-					return res;
-
-				if (acc.AccessExpression is NewExpression)
-					CalculateCurrentArgument(acc.AccessExpression as NewExpression, res, data.CaretLocation, ctxt, res.ResolvedTypesOrMethods);
-			}
 			// 3)
-			else if (e is TemplateInstanceExpression)
+			else if (lastParamExpression is TemplateInstanceExpression)
 			{
-				var templ = e as TemplateInstanceExpression;
+				var templ = (TemplateInstanceExpression)lastParamExpression;
 
 				res.IsTemplateInstanceArguments = true;
 
+				res.MethodIdentifier = templ;
 				res.ResolvedTypesOrMethods = Evaluation.GetOverloads(templ, ctxt, null, false);
 
 				if (templ.Arguments != null)
@@ -130,7 +178,7 @@ namespace D_Parser.Completion
 					int i = 0;
 					foreach (var arg in templ.Arguments)
 					{
-						if (data.CaretLocation >= arg.Location && data.CaretLocation <= arg.EndLocation)
+						if (Editor.CaretLocation >= arg.Location && Editor.CaretLocation <= arg.EndLocation)
 						{
 							res.CurrentlyTypedArgumentIndex = i;
 							break;
@@ -139,8 +187,21 @@ namespace D_Parser.Completion
 					}
 				}
 			}
-			else if (e is NewExpression)
-				CalculateCurrentArgument(e as NewExpression, res, data.CaretLocation, ctxt);
+			else if (lastParamExpression is PostfixExpression_Access)
+			{
+				var acc = (PostfixExpression_Access)lastParamExpression;
+
+				res.MethodIdentifier = acc.PostfixForeExpression;
+				res.ResolvedTypesOrMethods = TryGetUnfilteredMethodOverloads(acc.PostfixForeExpression, ctxt, acc);
+
+				if (res.ResolvedTypesOrMethods == null)
+					return res;
+
+				if (acc.AccessExpression is NewExpression)
+					CalculateCurrentArgument(acc.AccessExpression as NewExpression, res, Editor.CaretLocation, ctxt, res.ResolvedTypesOrMethods);
+			}
+			else if (lastParamExpression is NewExpression)
+				HandleNewExpression((NewExpression)lastParamExpression,res,Editor,ctxt,curBlock);
 
 			/*
 			 * alias int function(int a, bool b) myDeleg;
@@ -155,9 +216,82 @@ namespace D_Parser.Completion
 			 * myDeleg2( -- allowed neither!
 			 */
 			if (res.ResolvedTypesOrMethods != null)
-				res.ResolvedTypesOrMethods = DResolver.StripMemberSymbols(res.ResolvedTypesOrMethods);
+				res.ResolvedTypesOrMethods = DResolver.StripAliasSymbols(res.ResolvedTypesOrMethods);
 
 			return res;
+		}
+
+		static void HandleNewExpression(NewExpression nex, 
+			ArgumentsResolutionResult res, 
+			IEditorData Editor, 
+			ResolverContextStack ctxt,
+			IBlockNode curBlock)
+		{
+			res.MethodIdentifier = nex;
+			CalculateCurrentArgument(nex, res, Editor.CaretLocation, ctxt);
+
+			var type = TypeDeclarationResolver.ResolveSingle(nex.Type, ctxt) as ClassType;
+
+			//TODO: Inform the user that only classes can be instantiated
+			if (type != null)
+			{
+				var constructors = new List<DMethod>();
+				bool explicitCtorFound = false;
+
+				foreach (var member in type.Definition)
+				{
+					var dm = member as DMethod;
+
+					if (dm != null && dm.SpecialType == DMethod.MethodType.Constructor)
+					{
+						explicitCtorFound = true;
+						if (!dm.IsPublic)
+						{
+							var curNode = curBlock;
+							bool pass = false;
+							do
+							{
+								if (curNode == type.Definition)
+								{
+									pass = true;
+									break;
+								}
+							}
+							while ((curNode = curNode.Parent as IBlockNode) != curNode);
+
+							if (!pass)
+								continue;
+						}
+
+						constructors.Add(dm);
+					}
+				}
+
+				if (constructors.Count == 0)
+				{
+					if (explicitCtorFound)
+					{
+						// TODO: Somehow inform the user that the current class can't be instantiated
+					}
+					else
+					{
+						// Introduce default constructor
+						constructors.Add(new DMethod(DMethod.MethodType.Constructor)
+						{
+							Description = "Default constructor for " + type.Name,
+							Parent = type.Definition
+						});
+					}
+				}
+
+				// Wrapp all ctor members in MemberSymbols
+				var _ctors = new List<AbstractType>();
+				foreach (var ctor in constructors)
+					_ctors.Add(new MemberSymbol(ctor, type, nex.Type));
+				res.ResolvedTypesOrMethods = _ctors.ToArray();
+
+				//TODO: Probably pre-select the current ctor by handling previously typed arguments etc.
+			}
 		}
 
 		public static AbstractType[] TryGetUnfilteredMethodOverloads(IExpression foreExpression, ResolverContextStack ctxt, IExpression supExpression=null)

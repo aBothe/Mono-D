@@ -57,9 +57,6 @@ namespace D_Parser.Resolver
 		{
 			var resToCheck = AbstractType.Get(resultToCheck);
 
-			if (resultToCheck is ISymbolValue)
-				resToCheck = ((ISymbolValue)resultToCheck).RepresentedType;
-
 			// Initially remove aliases from results
 			var _r=DResolver.StripMemberSymbols(resToCheck);
 			if(_r==null)
@@ -78,7 +75,7 @@ namespace D_Parser.Resolver
 
 					if (par != null && par.TemplateParameters != null)
 					{
-						var dedParam = new DeducedTypeDictionary();
+						var dedParam = new DeducedTypeDictionary { ParameterOwner=par };
 						foreach (var tp in par.TemplateParameters)
 							dedParam[tp.Name] = null;
 

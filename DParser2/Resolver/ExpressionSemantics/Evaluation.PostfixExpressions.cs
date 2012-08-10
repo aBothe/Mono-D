@@ -12,7 +12,7 @@ namespace D_Parser.Resolver.ExpressionSemantics
 		ISemantic E(PostfixExpression ex)
 		{
 			if (ex is PostfixExpression_MethodCall)
-				return E((PostfixExpression_MethodCall)ex);
+				return E((PostfixExpression_MethodCall)ex, !ctxt.Options.HasFlag(ResolutionOptions.ReturnMethodReferencesOnly));
 
 			var foreExpr=E(ex.PostfixForeExpression);
 
@@ -168,16 +168,22 @@ namespace D_Parser.Resolver.ExpressionSemantics
 			#region Deduce template parameters and filter out unmatching overloads
 			// First add optionally given template params
 			// http://dlang.org/template.html#function-templates
-			var resolvedCallArguments = tix == null ?
+			var tplParamDeductionArguments = tix == null ?
 				new List<ISemantic>() :
 				TemplateInstanceHandler.PreResolveTemplateArgs(tix, ctxt);
 
-			// Then add the arguments' types
-			resolvedCallArguments.AddRange(callArguments);
+			// Then add the arguments[' member types]
+			foreach (var arg in callArguments)
+				if (arg is VariableValue)
+					tplParamDeductionArguments.Add(ValueProvider[((VariableValue)arg).Variable]);
+				else if(arg is AbstractType)
+					tplParamDeductionArguments.Add(DResolver.StripMemberSymbols((AbstractType)arg));
+				else
+					tplParamDeductionArguments.Add(arg);
 
 			var templateParamFilteredOverloads= TemplateInstanceHandler.EvalAndFilterOverloads(
 				methodOverloads,
-				resolvedCallArguments.Count > 0 ? resolvedCallArguments.ToArray() : null,
+				tplParamDeductionArguments.Count > 0 ? tplParamDeductionArguments.ToArray() : null,
 				true, ctxt);
 			#endregion
 

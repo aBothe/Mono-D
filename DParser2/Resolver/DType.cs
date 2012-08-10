@@ -107,12 +107,22 @@ namespace D_Parser.Resolver
 
 	public class ArrayType : AssocArrayType
 	{
+		public readonly int FixedLength;
+		public readonly bool IsStaticArray;
+
 		public ArrayType(AbstractType ValueType, ISyntaxRegion td)
 			: base(ValueType, new PrimitiveType(DTokens.Int, 0), td) { }
 
+		public ArrayType(AbstractType ValueType, int ArrayLength, ISyntaxRegion td)
+			: this(ValueType, td)
+		{
+			FixedLength = ArrayLength;
+			IsStaticArray = true;
+		}
+
 		public override string ToCode()
 		{
-			return (Base != null ? Base.ToCode() : "") + "[]";
+			return (Base != null ? Base.ToCode() : "") + (IsStaticArray ? string.Format("[{0}]",FixedLength) : "[]");
 		}
 	}
 

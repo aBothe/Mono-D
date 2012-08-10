@@ -9,6 +9,13 @@ using System.Collections.ObjectModel;
 namespace D_Parser.Resolver.Templates
 {
 	public class DeducedTypeDictionary : Dictionary<string, TemplateParameterSymbol>	{
+
+		/// <summary>
+		/// Used for final template parameter symbol creation.
+		/// Might be specified for better code completion because parameters can be identified with the owner node now.
+		/// </summary>
+		public DNode ParameterOwner;
+
 		public DeducedTypeDictionary() { }
 		public DeducedTypeDictionary(Dictionary<string, TemplateParameterSymbol> d) : base(d) { }
 		public DeducedTypeDictionary(IEnumerable<KeyValuePair<string, TemplateParameterSymbol>> l)

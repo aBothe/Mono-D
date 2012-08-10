@@ -127,7 +127,7 @@ namespace D_Parser.Resolver.TypeResolution
 					continue;
 				}
 
-				var deducedTypes = new DeducedTypeDictionary();
+				var deducedTypes = new DeducedTypeDictionary { ParameterOwner=tplNode };
 				foreach (var param in tplNode.TemplateParameters)
 					deducedTypes[param.Name] = null; // Init all params to null to let deduction functions know what params there are
 

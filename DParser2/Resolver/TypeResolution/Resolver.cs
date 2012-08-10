@@ -55,7 +55,7 @@ namespace D_Parser.Resolver.TypeResolution
 
 				if (exprs != null)
 					foreach (var ex in exprs)
-						if ((targetExpr = ExpressionHelper.SearchExpressionDeeply(ex, editor.CaretLocation))
+						if ((targetExpr = ExpressionHelper.SearchExpressionDeeply(ex, editor.CaretLocation, true))
 							!= ex)
 							break;
 
@@ -101,7 +101,7 @@ namespace D_Parser.Resolver.TypeResolution
 				if (Options.HasFlag(AstReparseOptions.ReturnRawParsedExpression))
 					return parser.AssignExpression();
 				else
-					return ExpressionHelper.SearchExpressionDeeply(parser.AssignExpression(), editor.CaretLocation);
+					return ExpressionHelper.SearchExpressionDeeply(parser.AssignExpression(), editor.CaretLocation, true);
 			}
 			else
 				return parser.Type();
@@ -109,7 +109,7 @@ namespace D_Parser.Resolver.TypeResolution
 
 		public static AbstractType[] ResolveType(IEditorData editor,AstReparseOptions Options=0)
 		{
-			return ResolveType(editor,ResolverContextStack.Create(editor),Options);
+			return ResolveType(editor, ResolverContextStack.Create(editor), Options);
 		}
 
 		public static AbstractType[] ResolveType(IEditorData editor, ResolverContextStack ctxt, AstReparseOptions Options=0)
@@ -320,7 +320,7 @@ namespace D_Parser.Resolver.TypeResolution
 
 		public static IEnumerable<T> FilterOutByResultPriority<T>(
 			ResolverContextStack ctxt,
-			IEnumerable<T> results) where T : ISemantic
+			IEnumerable<T> results) where T : AbstractType
 		{
 			if (results == null)
 				return null;

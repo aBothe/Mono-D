@@ -158,7 +158,9 @@ namespace D_Parser.Resolver.ASTScanner
 					if (dm.Parameters == null || dm.Parameters.Count == 0 || dm.Parameters[0].Type == null)
 						continue;
 
+					ctxt.PushNewScope(dm);
 					var firstArg_result = TypeDeclarationResolver.Resolve(dm.Parameters[0].Type, ctxt);
+					ctxt.Pop();
 
 					if (firstArg_result != null && firstArg_result.Length != 0)
 						lock (CachedMethods)

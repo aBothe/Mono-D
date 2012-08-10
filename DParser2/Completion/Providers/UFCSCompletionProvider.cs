@@ -9,11 +9,15 @@ namespace D_Parser.Completion.Providers
 	{
 		public static void Generate(ISemantic rr, ResolverContextStack ctxt, IEditorData ed, ICompletionDataGenerator gen)
 		{
-			foreach (var pc in ed.ParseCache)
-			{
-				foreach (var m in pc.UfcsCache.FindFitting(ctxt, ed.CaretLocation, rr))
-					gen.Add(m);
-			}
+			if(ed.ParseCache!=null)
+				foreach (var pc in ed.ParseCache)
+					if (pc != null && pc.UfcsCache != null && pc.UfcsCache.CachedMethods != null && pc.UfcsCache.CachedMethods.Count != 0)
+					{
+						var r=pc.UfcsCache.FindFitting(ctxt, ed.CaretLocation, rr);
+						if(r!=null)
+							foreach (var m in r)
+								gen.Add(m);
+					}
 		}
 	}
 }

@@ -4,6 +4,7 @@ using D_Parser.Dom.Expressions;
 using D_Parser.Parser;
 using D_Parser.Resolver.ExpressionSemantics.CTFE;
 using D_Parser.Resolver.TypeResolution;
+using System.Linq;
 using System;
 
 namespace D_Parser.Resolver.ExpressionSemantics
@@ -177,7 +178,9 @@ namespace D_Parser.Resolver.ExpressionSemantics
 
 		public static AbstractType[] GetOverloads(IdentifierExpression id, ResolverContextStack ctxt)
 		{
-			return TypeDeclarationResolver.ResolveIdentifier(id.Value as string, ctxt, id, id.ModuleScoped);
+			var raw=TypeDeclarationResolver.ResolveIdentifier(id.Value as string, ctxt, id, id.ModuleScoped);
+			var f = DResolver.FilterOutByResultPriority(ctxt, raw);
+			return f==null ? null : f.ToArray();
 		}
 	}
 }

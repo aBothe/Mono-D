@@ -39,7 +39,15 @@ namespace D_Parser.Resolver.ExpressionSemantics
 		/// </summary>
 		public static ISymbolValue EvaluateValue(IExpression x, ResolverContextStack ctxt)
 		{
-			return EvaluateValue(x, new StandardValueProvider(ctxt));
+			try
+			{
+				return EvaluateValue(x, new StandardValueProvider(ctxt));
+			}
+			catch
+			{
+				//TODO Redirect evaluation exception to some outer logging service
+			}
+			return null;
 		}
 
 		public static ISymbolValue EvaluateValue(IExpression x, AbstractSymbolValueProvider vp)
@@ -116,6 +124,18 @@ namespace D_Parser.Resolver.ExpressionSemantics
 				return v is NullValue;
 
 			return v != null;
+		}
+
+		/// <summary>
+		/// Removes all variable references by resolving them via the given value provider.
+		/// Useful when only the value is of interest, not its container or other things.
+		/// </summary>
+		public static ISymbolValue GetVariableContents(ISymbolValue v, AbstractSymbolValueProvider vp)
+		{
+			while (v is VariableValue)
+				v = vp[((VariableValue)v).Variable];
+
+			return v;
 		}
 	}
 }

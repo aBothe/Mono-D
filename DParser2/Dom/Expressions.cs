@@ -19,12 +19,22 @@ namespace D_Parser.Dom.Expressions
 
 	public class ExpressionHelper
 	{
+		public static bool IsParamRelatedExpression(IExpression subEx)
+		{
+			return subEx is PostfixExpression_MethodCall ||
+							subEx is TemplateInstanceExpression ||
+							subEx is NewExpression ||
+							(subEx is PostfixExpression_Access && ((PostfixExpression_Access)subEx).AccessExpression is NewExpression);
+		}
+
 		/// <summary>
 		/// Scans through all container expressions recursively and returns the one that's nearest to 'Where'.
 		/// Will return 'e' if nothing found or if there wasn't anything to scan
 		/// </summary>
-		public static IExpression SearchExpressionDeeply(IExpression e,CodeLocation Where)
+		public static IExpression SearchExpressionDeeply(IExpression e,CodeLocation Where, bool WatchForParamSensitiveExpressions=false)
 		{
+			IExpression lastParamSensExpr = e;
+
 			while (e is ContainerExpression)
 			{
 				var currentContainer = e as ContainerExpression;
@@ -47,6 +57,8 @@ namespace D_Parser.Dom.Expressions
 						if (pfa != null && pfa.AccessExpression == se && !(pfa.AccessExpression is ContainerExpression))
 							continue;
 
+						if (WatchForParamSensitiveExpressions && IsParamRelatedExpression(se))
+							lastParamSensExpr = se;
 						e = se;
 						foundOne = true;
 						break;
@@ -56,7 +68,7 @@ namespace D_Parser.Dom.Expressions
 					break;
 			}
 
-			return e;
+			return WatchForParamSensitiveExpressions ? lastParamSensExpr : e;
 		}
 	}
 

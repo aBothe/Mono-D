@@ -48,12 +48,15 @@ namespace D_Parser.Resolver.Templates
 
 		bool HandleDecl(TemplateTypeParameter p ,ITypeDeclaration td, ISemantic rr)
 		{
+			if (td is IdentifierDeclaration)
+				return HandleDecl(p,(IdentifierDeclaration)td, rr);
+
+			//HACK Ensure that no information gets lost by using this function 
+			// -- getting a value but requiring an abstract type and just extract it from the value - is this correct behaviour?
 			var at = AbstractType.Get(rr);
 
 			if (td is ArrayDecl)
 				return HandleDecl(p,(ArrayDecl)td, at as AssocArrayType);
-			else if (td is IdentifierDeclaration)
-				return HandleDecl(p,(IdentifierDeclaration)td, at);
 			else if (td is DTokenDeclaration)
 				return HandleDecl((DTokenDeclaration)td, at);
 			else if (td is DelegateDeclaration)
@@ -68,6 +71,7 @@ namespace D_Parser.Resolver.Templates
 				return HandleDecl((VectorDeclaration)td, at);
 			else if (td is TemplateInstanceExpression)
 				return HandleDecl(p,(TemplateInstanceExpression)td, at);
+
 			return false;
 		}
 
@@ -174,8 +178,17 @@ namespace D_Parser.Resolver.Templates
 				if (arrayDecl_Param.KeyExpression != null)
 					result = SymbolValueComparer.IsEqual(ad.KeyExpression, arrayDecl_Param.KeyExpression, new StandardValueProvider(ctxt));
 			}
-			else if(ad.KeyType!=null)
-				result = HandleDecl(p,ad.KeyType, ar.KeyType);
+			else if (ad.KeyType != null)
+			{
+				// If the array we're passing to the decl check that is static (i.e. has a constant number as key 'type'),
+				// pass that number instead of type 'int' to the check.
+				var at = ar as ArrayType;
+				if (ar != null && at.IsStaticArray)
+					result = HandleDecl(p, ad.KeyType,
+						new PrimitiveValue(D_Parser.Parser.DTokens.Int, (decimal)at.FixedLength, null)); 
+				else
+					result = HandleDecl(p, ad.KeyType, ar.KeyType);
+			}
 
 			// Handle inner type
 			return result && HandleDecl(p,ad.InnerDeclaration, ar.Base);
