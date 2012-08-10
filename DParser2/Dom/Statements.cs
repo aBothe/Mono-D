@@ -8,8 +8,8 @@ namespace D_Parser.Dom.Statements
 	#region Generics
 	public interface IStatement : ISyntaxRegion
 	{
-		CodeLocation Location { get; set; }
-		CodeLocation EndLocation { get; set; }
+		new CodeLocation Location { get; set; }
+		new CodeLocation EndLocation { get; set; }
 		IStatement Parent { get; set; }
 		INode ParentNode { get; set; }
 

@@ -25,7 +25,7 @@ namespace D_Parser.Resolver.ExpressionSemantics
 		public PrimitiveValue(bool Value, IExpression Expression)
 			: this(DTokens.Bool, Value ? 1 : 0, Expression) { }
 
-		public PrimitiveValue(int BaseTypeToken, decimal Value, IExpression Expression, decimal ImaginaryPart = 0)
+		public PrimitiveValue(int BaseTypeToken, decimal Value, IExpression Expression, decimal ImaginaryPart = 0M)
 			: base(ExpressionValueType.Primitive, new PrimitiveType(BaseTypeToken,0, Expression))
 		{
 			this.BaseTypeToken = BaseTypeToken;

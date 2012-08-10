@@ -66,7 +66,7 @@ namespace D_Parser.Resolver.ExpressionSemantics
 				}
 
 			}
-			catch (InvalidCastException exc)
+			catch (InvalidCastException)
 			{
 				return false;
 			}

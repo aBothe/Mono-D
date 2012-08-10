@@ -49,8 +49,8 @@ namespace D_Parser.Dom
 		string Description { get; set; }
 		ITypeDeclaration Type { get; set; }
 
-		CodeLocation Location { get; set; }
-		CodeLocation EndLocation { get; set; }
+		new CodeLocation Location { get; set; }
+		new CodeLocation EndLocation { get; set; }
 
 		/// <summary>
 		/// Assigns a node's properties

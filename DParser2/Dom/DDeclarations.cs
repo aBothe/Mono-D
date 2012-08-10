@@ -7,8 +7,8 @@ namespace D_Parser.Dom
 {
 	public interface ITypeDeclaration : ISyntaxRegion
 	{
-		CodeLocation Location { get; set; }
-		CodeLocation EndLocation { get; set; }
+		new CodeLocation Location { get; set; }
+		new CodeLocation EndLocation { get; set; }
 
 		ITypeDeclaration InnerDeclaration { get; set; }
 		ITypeDeclaration InnerMost { get; set; }
