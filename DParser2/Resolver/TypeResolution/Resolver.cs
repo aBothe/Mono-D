@@ -22,10 +22,15 @@ namespace D_Parser.Resolver.TypeResolution
 		{
 			AlsoParseBeyondCaret=1,
 			OnlyAssumeIdentifierList=2,
+
 			/// <summary>
 			/// Returns the expression without scanning it down depending on the caret location
 			/// </summary>
 			ReturnRawParsedExpression=4,
+			/// <summary>
+			/// If passed, the last call, template instance or new() expression will be returned
+			/// </summary>
+			WatchForParamExpressions=8,
 		}
 
 		/// <summary>
@@ -33,6 +38,7 @@ namespace D_Parser.Resolver.TypeResolution
 		/// that is beneath the caret location.
 		/// 
 		/// Used for code completion/symbol resolution.
+		/// Mind the extra options that might be passed via the Options parameter.
 		/// </summary>
 		/// <param name="ctxt">Can be null</param>
 		public static object GetScopedCodeObject(IEditorData editor,
@@ -101,7 +107,7 @@ namespace D_Parser.Resolver.TypeResolution
 				if (Options.HasFlag(AstReparseOptions.ReturnRawParsedExpression))
 					return parser.AssignExpression();
 				else
-					return ExpressionHelper.SearchExpressionDeeply(parser.AssignExpression(), editor.CaretLocation, true);
+					return ExpressionHelper.SearchExpressionDeeply(parser.AssignExpression(), editor.CaretLocation, Options.HasFlag(AstReparseOptions.WatchForParamExpressions));
 			}
 			else
 				return parser.Type();
