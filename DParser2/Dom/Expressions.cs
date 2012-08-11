@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using D_Parser.Parser;
 using D_Parser.Dom.Statements;
+using D_Parser.Parser;
 
 namespace D_Parser.Dom.Expressions
 {
@@ -15,63 +15,6 @@ namespace D_Parser.Dom.Expressions
 	public interface ContainerExpression:IExpression
 	{
 		IExpression[] SubExpressions { get; }
-	}
-
-	public class ExpressionHelper
-	{
-		public static bool IsParamRelatedExpression(IExpression subEx)
-		{
-			return subEx is PostfixExpression_MethodCall ||
-							subEx is TemplateInstanceExpression ||
-							subEx is NewExpression ||
-							(subEx is PostfixExpression_Access && 
-								(((PostfixExpression_Access)subEx).AccessExpression is NewExpression ||
-								((PostfixExpression_Access)subEx).AccessExpression is TemplateInstanceExpression));
-		}
-
-		/// <summary>
-		/// Scans through all container expressions recursively and returns the one that's nearest to 'Where'.
-		/// Will return 'e' if nothing found or if there wasn't anything to scan
-		/// </summary>
-		public static IExpression SearchExpressionDeeply(IExpression e,CodeLocation Where, bool WatchForParamSensitiveExpressions=false)
-		{
-			IExpression lastParamSensExpr = e;
-
-			while (e is ContainerExpression)
-			{
-				var currentContainer = e as ContainerExpression;
-
-				if (!(e.Location <= Where || e.EndLocation >= Where))
-					break;
-
-				var subExpressions = currentContainer.SubExpressions;
-
-				if (subExpressions == null || subExpressions.Length < 1)
-					break;
-				bool foundOne = false;
-				foreach (var se in subExpressions)
-					if (se != null && Where >= se.Location && Where <= se.EndLocation)
-					{
-						/*
-						 * a.b -- take the entire access expression instead of b only in order to be able to resolve it correctly
-						 */
-						var pfa = e as PostfixExpression_Access;
-						if (pfa != null && pfa.AccessExpression == se && !(pfa.AccessExpression is ContainerExpression))
-							continue;
-
-						if (WatchForParamSensitiveExpressions && IsParamRelatedExpression(se))
-							lastParamSensExpr = se;
-						e = se;
-						foundOne = true;
-						break;
-					}
-
-				if (!foundOne)
-					break;
-			}
-
-			return WatchForParamSensitiveExpressions ? lastParamSensExpr : e;
-		}
 	}
 
 	public abstract class OperatorBasedExpression : IExpression, ContainerExpression

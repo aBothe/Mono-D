@@ -11,6 +11,7 @@ using System.IO;
 using D_Parser.Resolver.TypeResolution;
 using MonoDevelop.D.Building;
 using MonoDevelop.Ide;
+using D_Parser.Resolver.ExpressionSemantics;
 
 namespace MonoDevelop.D.Refactoring
 {

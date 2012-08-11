@@ -83,25 +83,56 @@ namespace D_Parser.Resolver.ExpressionSemantics
 						if (mr.Definition is DMethod)
 						{
 							methodOverloads.Add(mr);
+							continue;
 						}
-
-						/*
-						 * If mr.Node is not a method, so e.g. if it's a variable
-						 * pointing to a delegate
-						 * 
-						 * class Foo
-						 * {
-						 *	string opCall() {  return "asdf";  }
-						 * }
-						 * 
-						 * Foo f=new Foo();
-						 * f(); -- calls opCall, opCall is not static
-						 */
-						else if (mr != null)
+						else if (mr.Definition is DVariable)
 						{
-							nextResults.Add(mr.Base);
+							// If we've got a variable here, get its base type/value reference
+							if (eval)
+							{
+								var dgVal = ValueProvider[(DVariable)mr.Definition] as DelegateValue;
 
-							requireStaticItems = false;
+								if (dgVal != null)
+								{
+									nextResults.Add(dgVal.Definition);
+									continue;
+								}
+								else
+									throw new EvaluationException(call, "Variable must be a delegate, not anything else", mr);
+							}
+							else
+							{
+								var bt = DResolver.StripAliasSymbol(mr.Base ?? TypeDeclarationResolver.ResolveSingle(mr.Definition.Type, ctxt));
+
+								// Must be of type delegate
+								if (bt is DelegateType)
+								{
+									//TODO: Ensure that there's no further overload - inform the user elsewise
+
+									if (returnBaseTypeOnly)
+										return bt;
+									else
+										return new MemberSymbol(mr.Definition, bt, mr.DeclarationOrExpressionBase);
+								}
+								else
+								{
+									/*
+									 * If mr.Node is not a method, so e.g. if it's a variable
+									 * pointing to a delegate
+									 * 
+									 * class Foo
+									 * {
+									 *	string opCall() {  return "asdf";  }
+									 * }
+									 * 
+									 * Foo f=new Foo();
+									 * f(); -- calls opCall, opCall is not static
+									 */
+									nextResults.Add(bt);
+									requireStaticItems = false;
+								}
+								//TODO: Can other types work as function/are callable?
+							}
 						}
 					}
 					else if (b is DelegateType)
@@ -116,6 +147,16 @@ namespace D_Parser.Resolver.ExpressionSemantics
 
 						if (dg.IsFunctionLiteral)
 							methodOverloads.Add(dg);
+						else
+						{
+							// If it's just wanted to pass back the delegate's return type, skip the remaining parts of this method.
+							if (eval) 
+								throw new EvaluationException(call, "TODO", dg);
+							//TODO
+							//if(returnBaseTypeOnly)
+							//TODO: Check for multiple definitions. Also, make a parameter-argument check to inform the user about wrong arguments.
+							return dg;
+						}
 					}
 					else if (b is ClassType)
 					{

@@ -1,11 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using D_Parser.Dom.Expressions;
-using D_Parser.Parser;
-using D_Parser.Dom;
-using D_Parser.Resolver.TypeResolution;
 
 namespace D_Parser.Resolver.ExpressionSemantics
 {
@@ -136,6 +130,21 @@ namespace D_Parser.Resolver.ExpressionSemantics
 				v = vp[((VariableValue)v).Variable];
 
 			return v;
+		}
+
+		public static AbstractType[] TryGetUnfilteredMethodOverloads(IExpression foreExpression, ResolverContextStack ctxt, IExpression supExpression = null)
+		{
+			if (foreExpression is TemplateInstanceExpression)
+				return Evaluation.GetOverloads((TemplateInstanceExpression)foreExpression, ctxt, null);
+			else if (foreExpression is IdentifierExpression)
+				return Evaluation.GetOverloads((IdentifierExpression)foreExpression, ctxt);
+			else if (foreExpression is PostfixExpression_Access)
+			{
+				bool ufcs = false; // TODO?
+				return Evaluation.GetAccessedOverloads((PostfixExpression_Access)foreExpression, ctxt, out ufcs, null, false);
+			}
+			else
+				return new[] { Evaluation.EvaluateType(foreExpression, ctxt) };
 		}
 	}
 }

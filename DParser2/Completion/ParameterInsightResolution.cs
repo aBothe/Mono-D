@@ -2,10 +2,10 @@ using System.Collections.Generic;
 using D_Parser.Dom;
 using D_Parser.Dom.Expressions;
 using D_Parser.Dom.Statements;
-using D_Parser.Resolver;
-using D_Parser.Resolver.TypeResolution;
-using D_Parser.Resolver.ExpressionSemantics;
 using D_Parser.Parser;
+using D_Parser.Resolver;
+using D_Parser.Resolver.ExpressionSemantics;
+using D_Parser.Resolver.TypeResolution;
 
 namespace D_Parser.Completion
 {
@@ -88,7 +88,7 @@ namespace D_Parser.Completion
 			// Search the returned statement block (i.e. function body) for the current statement
 			var exStmt = BlockStatement.SearchBlockStatement(parsedStmtBlock, Editor.CaretLocation) as IExpressionContainingStatement;
 
-			lastParamExpression = SearchForMethodCallsOrTemplateInstances(exStmt, Editor.CaretLocation);
+			lastParamExpression = ExpressionHelper.SearchForMethodCallsOrTemplateInstances(exStmt, Editor.CaretLocation);
 
 			if (lastParamExpression == null)
 			{
@@ -120,7 +120,7 @@ namespace D_Parser.Completion
 				var call = (PostfixExpression_MethodCall) lastParamExpression;
 
 				res.MethodIdentifier = call.PostfixForeExpression;
-				res.ResolvedTypesOrMethods = TryGetUnfilteredMethodOverloads(call.PostfixForeExpression, ctxt, call);
+				res.ResolvedTypesOrMethods = Evaluation.TryGetUnfilteredMethodOverloads(call.PostfixForeExpression, ctxt, call);
 
 				if (call.Arguments != null)
 				{
@@ -166,7 +166,7 @@ namespace D_Parser.Completion
 				var acc = (PostfixExpression_Access)lastParamExpression;
 
 				res.MethodIdentifier = acc.PostfixForeExpression;
-				res.ResolvedTypesOrMethods = TryGetUnfilteredMethodOverloads(acc.PostfixForeExpression, ctxt, acc);
+				res.ResolvedTypesOrMethods = Evaluation.TryGetUnfilteredMethodOverloads(acc.PostfixForeExpression, ctxt, acc);
 
 				if (res.ResolvedTypesOrMethods == null)
 					return res;
@@ -268,21 +268,6 @@ namespace D_Parser.Completion
 			}
 		}
 
-		public static AbstractType[] TryGetUnfilteredMethodOverloads(IExpression foreExpression, ResolverContextStack ctxt, IExpression supExpression=null)
-		{
-			if (foreExpression is TemplateInstanceExpression)
-				return Evaluation.GetOverloads((TemplateInstanceExpression)foreExpression, ctxt, null);
-			else if (foreExpression is IdentifierExpression)
-				return Evaluation.GetOverloads((IdentifierExpression)foreExpression, ctxt);
-			else if (foreExpression is PostfixExpression_Access)
-			{
-				bool ufcs=false; // TODO?
-				return Evaluation.GetAccessedOverloads((PostfixExpression_Access)foreExpression, ctxt, out ufcs, null, false);
-			}
-			else
-				return new[] { Evaluation.EvaluateType(foreExpression, ctxt) };
-		}
-
 		static void CalculateCurrentArgument(NewExpression nex, 
 			ArgumentsResolutionResult res, 
 			CodeLocation caretLocation, 
@@ -307,125 +292,6 @@ namespace D_Parser.Completion
 		public static ArgumentsResolutionResult ResolveArgumentContext(IEditorData editorData)
 		{
 			return ResolveArgumentContext(editorData, ResolverContextStack.Create(editorData));
-		}
-
-		static IExpression SearchForMethodCallsOrTemplateInstances(IStatement Statement, CodeLocation Caret)
-		{
-			IExpression curExpression = null;
-			INode curDeclaration = null;
-
-			/*
-			 * Step 1: Step down the statement hierarchy to find the stmt that's most next to Caret
-			 * Note: As long we haven't found any fitting elements, go on searching
-			 */
-			while (Statement != null && curExpression == null && curDeclaration == null)
-			{
-				if (Statement is IExpressionContainingStatement)
-				{
-					var exprs = (Statement as IExpressionContainingStatement).SubExpressions;
-
-					if (exprs != null && exprs.Length > 0)
-						foreach (var expr in exprs)
-							if (expr != null && Caret >= expr.Location && Caret <= expr.EndLocation)
-							{
-								curExpression = expr;
-								break;
-							}
-				}
-
-				if (Statement is IDeclarationContainingStatement)
-				{
-					var decls = (Statement as IDeclarationContainingStatement).Declarations;
-
-					if (decls != null && decls.Length > 0)
-						foreach (var decl in decls)
-							if (decl != null && Caret >= decl.Location && Caret <= decl.EndLocation)
-							{
-								curDeclaration = decl;
-								break;
-							}
-				}
-
-				if (Statement is StatementContainingStatement)
-				{
-					var stmts = (Statement as StatementContainingStatement).SubStatements;
-
-					bool foundDeeperStmt = false;
-
-					if (stmts != null && stmts.Length > 0)
-						foreach (var stmt in stmts)
-							if (stmt != null && Caret >= stmt.Location && Caret <= stmt.EndLocation)
-							{
-								foundDeeperStmt = true;
-								Statement = stmt;
-								break;
-							}
-
-					if (foundDeeperStmt)
-						continue;
-				}
-
-				break;
-			}
-
-			if (curDeclaration == null && curExpression == null)
-				return null;
-
-
-			/*
-			 * Step 2: If a declaration was found, check for its inner elements
-			 */
-			if (curDeclaration != null)
-			{
-				if (curDeclaration is DVariable)
-				{
-					var dv = curDeclaration as DVariable;
-
-					if (dv.Initializer != null && Caret >= dv.Initializer.Location && Caret <= dv.Initializer.EndLocation)
-						curExpression = dv.Initializer;
-				}
-
-				//TODO: Watch the node's type! Over there, there also can be template instances..
-			}
-
-			if (curExpression != null)
-			{
-				IExpression curMethodOrTemplateInstance = null;
-
-				while (curExpression != null)
-				{
-					if (!(curExpression.Location <= Caret || curExpression.EndLocation >= Caret))
-						break;
-
-					if (ExpressionHelper.IsParamRelatedExpression(curExpression))
-						curMethodOrTemplateInstance = curExpression;
-
-					if (curExpression is ContainerExpression)
-					{
-						var currentContainer = curExpression as ContainerExpression;
-
-						var subExpressions = currentContainer.SubExpressions;
-						bool foundMatch = false;
-						if (subExpressions != null && subExpressions.Length > 0)
-							foreach (var se in subExpressions)
-								if (se != null && Caret >= se.Location && Caret <= se.EndLocation)
-								{
-									curExpression = se;
-									foundMatch = true;
-									break;
-								}
-
-						if (foundMatch)
-							continue;
-					}
-					break;
-				}
-
-				return curMethodOrTemplateInstance;
-			}
-
-
-			return null;
 		}
 	}
 }

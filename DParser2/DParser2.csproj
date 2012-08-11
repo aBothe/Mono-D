@@ -79,6 +79,7 @@
     <Compile Include="Resolver\ExpressionSemantics\Evaluation.TypeidExpression.cs" />
     <Compile Include="Resolver\ExpressionSemantics\Evaluation.OperandExpressions.cs" />
     <Compile Include="Resolver\ExpressionSemantics\Evaluation.UnaryExpressions.cs" />
+    <Compile Include="Resolver\ExpressionSemantics\ExpressionHelper.cs" />
     <Compile Include="Resolver\ExpressionSemantics\ISymbolValue.cs" />
     <Compile Include="Resolver\ExpressionSemantics\ISymbolValueProvider.cs" />
     <Compile Include="Resolver\ExpressionSemantics\Evaluation.IsExpression.cs" />

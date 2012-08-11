@@ -641,7 +641,7 @@ namespace D_Parser.Resolver.TypeResolution
 
 		public static AbstractType GetMethodReturnType(DMethod method, ResolverContextStack ctxt)
 		{
-			if (ctxt.Options.HasFlag(ResolutionOptions.DontResolveBaseTypes))
+			if (ctxt!=null && ctxt.Options.HasFlag(ResolutionOptions.DontResolveBaseTypes))
 				return null;
 			
 			/*
