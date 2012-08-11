@@ -58,6 +58,7 @@ namespace MonoDevelop.D.Resolver
 			var edData = GetEditorData(doc);
 
 			ResolverContext = ResolverContextStack.Create(edData);
+			ResolverContext.ContextIndependentOptions |= ResolutionOptions.ReturnMethodReferencesOnly;
 
 			// Resolve the hovered piece of code
 			return DResolver.ResolveType(edData, ResolverContext, DResolver.AstReparseOptions.AlsoParseBeyondCaret | DResolver.AstReparseOptions.OnlyAssumeIdentifierList);
