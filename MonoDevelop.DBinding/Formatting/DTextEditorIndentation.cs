@@ -99,6 +99,14 @@ namespace MonoDevelop.D.Formatting
 
 					ed.InsertAtCaret(keyChar.ToString());
 
+					// Ensure that we aren't in a non-code area right now - automatically trying to format comments is awful
+					int lastBegin;
+					int lastEnd;
+					var caretCtxt = CaretContextAnalyzer.GetTokenContext (ed.Text, ed.Caret.Offset, out lastBegin, out lastEnd);
+
+					if (lastBegin >= 0 && caretCtxt != TokenContext.None)
+						return false;
+
 					var origInd = ed.GetLineIndent(ed.Caret.Line);
 					int originalIndentation = origInd.Length;
 
