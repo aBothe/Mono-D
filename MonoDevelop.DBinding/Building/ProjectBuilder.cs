@@ -3,6 +3,7 @@ using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Linq;
 using MonoDevelop.Core;
 using MonoDevelop.Core.ProgressMonitoring;
 using MonoDevelop.Projects;
@@ -27,6 +28,12 @@ namespace MonoDevelop.D.Building
 		string AbsoluteObjectDirectory;
 		IProgressMonitor monitor;
 		List<string> BuiltObjects = new List<string> ();
+
+		/// <summary>
+		/// In this list, all directories of files that are 'linked' to the project are put in.
+		/// Used for multiple-step building only.
+		/// </summary>
+		List<string> FileLinkDirectories = new List<string>();
 
 		public bool CanDoOneStepBuild {
 			get {
@@ -150,6 +157,15 @@ namespace MonoDevelop.D.Building
 			var br = new BuildResult ();
 			var modificationsDone = false;
 
+			FileLinkDirectories.Clear();
+			foreach (var f in Project.Files)
+			{
+				if (!f.IsLink || !f.IsExternalToProject || f.BuildAction != BuildAction.Compile)
+					continue;
+
+				FileLinkDirectories.Add(f.FilePath.ParentDirectory);
+			}
+
 			foreach (var f in Project.Files) {
 				if (monitor.IsCancelRequested)
 					return br;
@@ -201,9 +217,9 @@ namespace MonoDevelop.D.Building
 			var dmdArgs = FillInMacros (Arguments.CompilerArguments + " " + BuildConfig.ExtraCompilerArguments, new DCompilerMacroProvider
             {
                 IncludePathConcatPattern = Commands.IncludePathPattern,
-                SourceFile = f.ProjectVirtualPath,
+                SourceFile = f.FilePath.ToRelative(Project.BaseDirectory),
                 ObjectFile = obj,
-                Includes = Project.IncludePaths,
+                Includes = Project.IncludePaths.Union(FileLinkDirectories),
             });
 
 			// b.Execute compiler
@@ -246,7 +262,7 @@ namespace MonoDevelop.D.Building
 			var resCmpArgs = FillInMacros (Win32ResourceCompiler.Instance.Arguments,
                 new Win32ResourceCompiler.ArgProvider
                 {
-                    RcFile = f.FilePath,
+					RcFile = f.FilePath,
                     ResFile = res
                 });
 
