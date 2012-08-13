@@ -57,11 +57,18 @@ namespace D_Parser.Dom
 			return GetModuleName(baseDirectory, ast.FileName);
 		}
 
+		/// <summary>
+		/// Returns the relative module name including its packages based on the baseDirectory parameter.
+		/// If the file isn't located in the base directory, the file name minus the extension is returned only.
+		/// </summary>
 		public static string GetModuleName(string baseDirectory, string file)
 		{
-			return Path.ChangeExtension(
-					file.Substring(baseDirectory.Length), null).
-						Replace(Path.DirectorySeparatorChar, '.').Trim('.');
+			if (file!=null && baseDirectory != null && file.StartsWith(baseDirectory))
+				return Path.ChangeExtension(
+						file.Substring(baseDirectory.Length), null).
+							Replace(Path.DirectorySeparatorChar, '.').Trim('.');
+			else
+				return Path.GetFileNameWithoutExtension(file);
 		}
 
 		public System.Collections.ObjectModel.ReadOnlyCollection<ParserError> ParseErrors

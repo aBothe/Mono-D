@@ -150,6 +150,10 @@ namespace MonoDevelop.D.Parser
 
 		public static string BuildModuleName(ProjectFile pf)
 		{
+			// When handling an external link, keep it rooted though it might occur in a project's subfolder
+			if (pf.IsLink || pf.IsExternalToProject)
+				return pf.FilePath.FileNameWithoutExtension;
+
 			return pf.ProjectVirtualPath.ChangeExtension(null).ToString().Replace(Path.DirectorySeparatorChar, '.');
 		}
 

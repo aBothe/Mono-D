@@ -80,6 +80,7 @@ namespace MonoDevelop.D
 		/// Stores parse information from files inside the project's base directory
 		/// </summary>
 		public readonly ParseCache LocalFileCache = new ParseCache { EnableUfcsCaching = false };
+		readonly List<DModule> _filelinkModulesToInsert = new List<DModule>();
 
 		public ParseCacheList ParseCache {
 			get {
@@ -132,7 +133,7 @@ namespace MonoDevelop.D
 			DCompilerConfiguration.UpdateParseCacheAsync (LocalIncludeCache);
 		}
 
-		public void ReparseModule (ProjectFile pf)
+		public void ReparseModule (ProjectFile pf, bool doUfcsCache = true)
 		{
 			if (pf == null || !DLanguageBinding.IsDFile (pf.FilePath.FileName))
 				return;
@@ -145,9 +146,10 @@ namespace MonoDevelop.D
 
 				LocalFileCache.UfcsCache.RemoveModuleItems(LocalFileCache.GetModuleByFileName(pf.FilePath, BaseDirectory));
 				LocalFileCache.AddOrUpdate (ddom);
-				LocalFileCache.UfcsCache.CacheModuleMethods(ddom, new ResolverContextStack(ParseCache, new ResolverContext{
-					ScopedBlock= ddom
-					}));
+				if(doUfcsCache)
+					LocalFileCache.UfcsCache.CacheModuleMethods(ddom, new ResolverContextStack(ParseCache, new ResolverContext{
+						ScopedBlock= ddom
+						}));
 			} catch (Exception ex) {
 				LoggingService.LogError ("Error while parsing " + pf.FilePath.ToString (), ex);
 			}
@@ -163,11 +165,51 @@ namespace MonoDevelop.D
 		/// </summary>
 		public void UpdateParseCache ()
 		{
-			analysisFinished_LocalCache = false;
+			analysisFinished_LocalCache = analysisFinished_FileLinks = false;
+
+			var hasFileLinks = new List<ProjectFile>();
+			foreach (var f in Files)
+				if (f.IsLink || f.IsExternalToProject)
+					hasFileLinks.Add(f);
+
+			// To prevent race condition bugs, test if links exist _before_ the actual local file parse procedure starts.
+			if (hasFileLinks.Count == 0)
+				analysisFinished_FileLinks = true;
+
 			LocalFileCache.BeginParse (new[] { BaseDirectory.ToString () }, BaseDirectory);
+
+			/*
+			 * Since we don't want to include all link files' directories for performance reasons,
+			 * parse them separately and let the entire reparsing procedure wait for them to be successfully parsed.
+			 * Ufcs completion preparation will be done afterwards in the TryBuildUfcsCache() method.
+			 */
+			if (hasFileLinks.Count != 0)
+				new System.Threading.Thread((object o) =>
+				{
+					foreach (var f in (List<ProjectFile>)o)
+					{
+						_filelinkModulesToInsert.Add(DParser.ParseFile(f.FilePath) as DModule);
+					}
+
+					analysisFinished_FileLinks = true;
+					_InsertFileLinkModulesIntoLocalCache();
+					TryBuildUfcsCache();
+				}) { IsBackground = true }.Start(hasFileLinks);
 		}
 
-		bool analysisFinished_GlobalCache, analysisFinished_LocalIncludes, analysisFinished_LocalCache;
+		bool analysisFinished_GlobalCache, analysisFinished_LocalIncludes, analysisFinished_LocalCache, analysisFinished_FileLinks;
+
+		void _InsertFileLinkModulesIntoLocalCache()
+		{
+			if (analysisFinished_FileLinks && analysisFinished_LocalCache)
+			{
+				lock (_filelinkModulesToInsert)
+					foreach (var mod in _filelinkModulesToInsert)
+						LocalFileCache.AddOrUpdate(mod);
+
+				_filelinkModulesToInsert.Clear();
+			}
+		}
 
 		void LocalIncludeCache_FinishedParsing(ParsePerformanceData[] PerformanceData)
 		{
@@ -178,6 +220,7 @@ namespace MonoDevelop.D
 		void LocalFileCache_FinishedParsing(ParsePerformanceData[] PerformanceData)
 		{
 			analysisFinished_LocalCache = true;
+			_InsertFileLinkModulesIntoLocalCache();
 			TryBuildUfcsCache();
 		}
 
@@ -190,7 +233,8 @@ namespace MonoDevelop.D
 		void TryBuildUfcsCache()
 		{
 			if (analysisFinished_GlobalCache && !Compiler.ParseCache.IsParsing &&
-				analysisFinished_LocalCache && analysisFinished_LocalIncludes)
+				analysisFinished_LocalCache && analysisFinished_LocalIncludes &&
+				analysisFinished_FileLinks)
 			{
 				LocalIncludeCache.UfcsCache.Update(ParseCacheList.Create(Compiler.ParseCache, LocalIncludeCache), LocalIncludeCache);
 				LocalFileCache.UfcsCache.Update(ParseCache, LocalFileCache);
