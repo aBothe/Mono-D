@@ -222,13 +222,23 @@ namespace MonoDevelop.D.Highlighting
 						(Document.Project as DProject).ParseCache :
 						ParseCacheList.Create( DCompilerService.Instance.GetDefaultCompiler().ParseCache);
 
-				var referencedNode = DResolver.GetResultMember(rr[0]);
+				var mr = rr[0] as DSymbol;
 
-				if (referencedNode == null)
+				if (mr == null)
 					return false;
+
+				var referencedNode = mr.Definition;
+
+				// Slightly hacky: To keep highlighting the id of e.g. a NewExpression, take the ctor's parent node (i.e. the class node)
+				if (referencedNode is DMethod && ((DMethod)referencedNode).SpecialType == DMethod.MethodType.Constructor)
+				{
+					mr = mr.Base as DSymbol;
+					referencedNode = mr.Definition;
+				}
 
 				var references = ReferenceFinding.ScanNodeReferencesInModule(dom,parseCache,referencedNode);
 
+				// Highlight the node's definition location - only if the node is located in the current document
 				if (referencedNode.NodeRoot is IAbstractSyntaxTree &&
 					(referencedNode.NodeRoot as IAbstractSyntaxTree).FileName == dom.FileName)
 					references.Add(new IdentifierDeclaration(referencedNode.Name)

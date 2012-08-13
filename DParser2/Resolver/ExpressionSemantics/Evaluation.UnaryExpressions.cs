@@ -69,7 +69,7 @@ namespace D_Parser.Resolver.ExpressionSemantics
 						}
 
 					if (!foundExplicitCtor)
-						ctors.Add(new DMethod(DMethod.MethodType.Constructor) { Type = nex.Type }, ct);
+						ctors.Add(new DMethod(DMethod.MethodType.Constructor) { Type = nex.Type, Parent = ct.Definition, Description = "Default constructor for "+ct.Name }, ct);
 				}
 			}
 

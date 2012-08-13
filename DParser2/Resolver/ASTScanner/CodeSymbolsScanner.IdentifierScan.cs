@@ -155,11 +155,11 @@ namespace D_Parser.Resolver.ASTScanner
 
 							if (decls != null && decls.Length > 0)
 								foreach (var d in decls)
-									if (!(d is DVariable)) // Initializers are searched already
+									//if (!(d is DVariable)) // Initializers are searched already
 										SearchIn(d, l);
 						}
 
-						if (s is IExpressionContainingStatement)
+						else if (s is IExpressionContainingStatement)
 						{
 							var exprs = (s as IExpressionContainingStatement).SubExpressions;
 
@@ -194,16 +194,13 @@ namespace D_Parser.Resolver.ASTScanner
 					}
 					else if (type is TemplateInstanceExpression)
 					{
-						var tie = type as TemplateInstanceExpression;
+						var tix = (TemplateInstanceExpression)type;
+						
+						l.Add(type);
 
-						if (tie.TemplateIdentifier != null && !l.Contains(tie.TemplateIdentifier))
-							l.Add(tie.TemplateIdentifier);
-
-						var args = tie.Arguments;
-
-						if (args != null)
-							foreach (var arg in args)
-								SearchIn(arg, l);
+						if (tix.Arguments != null)
+							foreach (var x in tix.Arguments)
+								SearchIn(x, l);
 					}
 
 					if (type is IdentifierDeclaration && !(type is DTokenDeclaration))
@@ -238,12 +235,7 @@ namespace D_Parser.Resolver.ASTScanner
 						else if (e is IdentifierExpression && (e as IdentifierExpression).IsIdentifier)
 							l.Add(e);
 						else if (e is TemplateInstanceExpression)
-						{
-							var tie = e as TemplateInstanceExpression;
-							
-							if (tie.TemplateIdentifier != null && !l.Contains(tie.TemplateIdentifier))
-								l.Add(tie.TemplateIdentifier);
-						}
+							l.Add(e);
 						else if (e is ContainerExpression)
 						{
 							var ec = e as ContainerExpression;

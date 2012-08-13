@@ -160,6 +160,13 @@ namespace D_Parser.Resolver.ASTScanner
 
 			}
 
+			else if (typeId is TemplateInstanceExpression)
+			{
+				var tix = (TemplateInstanceExpression)typeId;
+
+				if(tix.TemplateIdentifier.Id == )
+			}
+
 			return null;
 		}
 
