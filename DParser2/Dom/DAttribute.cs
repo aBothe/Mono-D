@@ -50,14 +50,14 @@ namespace D_Parser.Dom
 		/// <summary>
 		/// Removes all public,private,protected or package attributes from the stack
 		/// </summary>
-		public static void CleanupAccessorAttributes(Stack<DAttribute> HayStack)
+		public static void CleanupAccessorAttributes(Stack<DAttribute> HayStack, int furtherAttrToRemove = -1)
 		{
 			var l=new List<DAttribute>();
 
 			while(HayStack.Count>0)
 			{
 				var attr=HayStack.Pop();
-				if (!DTokens.VisModifiers[attr.Token])
+				if (!DTokens.VisModifiers[attr.Token] && attr.Token != furtherAttrToRemove)
 					l.Add(attr);
 			}
 

@@ -165,7 +165,9 @@ namespace D_Parser.Parser
 
 			// If attr would change the accessability of an item, remove all previously found (so the most near attribute that's next to the item is significant)
 			if (DTokens.VisModifiers[attr.Token])
-				DAttribute.CleanupAccessorAttributes(stk);
+				DAttribute.CleanupAccessorAttributes(stk, attr.Token);
+			else
+				DAttribute.RemoveFromStack(stk, attr.Token);
 
 			LastParsedObject = attr;
 

@@ -29,7 +29,24 @@ namespace D_Parser.Resolver.TypeResolution
 							var mr = res[0] as MemberSymbol;
 							if (mr != null && mr.Definition is DVariable)
 							{
-								var eval = new StandardValueProvider(ctxt)[(DVariable)mr.Definition];
+								var dv = (DVariable)mr.Definition;
+
+								if (dv.IsAlias || dv.Initializer == null)
+								{
+									templateArguments.Add(mr);
+									continue;
+								}
+
+								ISemantic eval = null;
+
+								try
+								{
+									eval = new StandardValueProvider(ctxt)[dv];
+								}
+								catch(System.Exception ee) // Should be a non-const-expression error here only
+								{
+									ctxt.LogError(dv.Initializer, ee.Message);
+								}
 
 								templateArguments.Add(eval==null ? (ISemantic)mr : eval);
 							}
