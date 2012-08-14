@@ -117,7 +117,10 @@ namespace D_Parser.Resolver.TypeResolution
 
 			var filteredOverloads = new List<AbstractType>();
 
-			foreach (var o in rawOverloadList)
+			if (rawOverloadList == null)
+				return filteredOverloads;
+
+			foreach (var o in DResolver.StripAliasSymbols(rawOverloadList))
 			{
 				if (!(o is DSymbol))
 				{

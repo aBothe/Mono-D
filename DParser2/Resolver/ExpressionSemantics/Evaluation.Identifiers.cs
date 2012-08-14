@@ -61,7 +61,7 @@ namespace D_Parser.Resolver.ExpressionSemantics
 
 		ISemantic E(TemplateInstanceExpression tix, bool ImplicitlyExecute = true)
 		{
-			var o = GetOverloads(tix, ctxt);
+			var o = DResolver.StripAliasSymbols(GetOverloads(tix, ctxt));
 
 			if (eval)
 				return TryDoCTFEOrGetValueRefs(o, tix, ImplicitlyExecute);

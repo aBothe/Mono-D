@@ -61,9 +61,10 @@ namespace D_Parser.Dom.Statements
 			get
 			{
 				string s = "";
-				foreach (var attr in Attributes)
-					if (attr != null)
-						s += attr.ToString() + " ";
+				if(Attributes!=null && Attributes.Length != 0)
+					foreach (var attr in Attributes)
+						if (attr != null)
+							s += attr.ToString() + " ";
 				return s;
 			}
 		}

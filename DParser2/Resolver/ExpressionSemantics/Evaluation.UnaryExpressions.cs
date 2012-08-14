@@ -53,6 +53,9 @@ namespace D_Parser.Resolver.ExpressionSemantics
 
 			var ctors = new Dictionary<DMethod, ClassType>();
 
+			if (possibleTypes == null)
+				return null;
+
 			foreach (var t in possibleTypes)
 			{
 				if (t is ClassType)

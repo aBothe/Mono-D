@@ -77,6 +77,8 @@ namespace D_Parser.Resolver.Templates
 				return true;
 			else if (r2 is DSymbol && !(r1 is DSymbol))
 				return false;
+			else if (!(r1 is DSymbol && r2 is DSymbol))
+				return false;
 
 			var dn1 = ((DSymbol)r1).Definition;
 			var dn2 = ((DSymbol)r2).Definition;
