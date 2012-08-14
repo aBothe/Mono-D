@@ -164,7 +164,7 @@ namespace D_Parser.Resolver.ASTScanner
 			{
 				var tix = (TemplateInstanceExpression)typeId;
 
-				if(tix.TemplateIdentifier.Id == )
+				
 			}
 
 			return null;
