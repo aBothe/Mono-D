@@ -11,6 +11,7 @@ using D_Parser.Resolver;
 using MonoDevelop.D.Completion;
 using D_Parser.Resolver.ASTScanner;
 using MonoDevelop.Ide.Gui;
+using D_Parser.Refactoring;
 
 namespace MonoDevelop.D.Highlighting
 {
@@ -57,15 +58,12 @@ namespace MonoDevelop.D.Highlighting
 
 		void RefreshMarkers()
 		{
-			CodeSymbolsScanner.CodeScanResult res=null;
+			TypeReferencesResult res=null;
 			try
 			{
 				var ParseCache = DCodeCompletionSupport.EnumAvailableModules(Document);
 
-				res = CodeSymbolsScanner.ScanSymbols(new ResolverContextStack(ParseCache, new ResolverContext
-				{
-					ScopedBlock = SyntaxTree,
-				}));
+				res = TypeReferenceFinder.Scan(SyntaxTree, ParseCache);
 
 				RemoveMarkers(false);
 
@@ -73,17 +71,14 @@ namespace MonoDevelop.D.Highlighting
 
 				DocumentLine curLine=null;
 				int ln=-1;
-				foreach (var kv in res.ResolvedIdentifiers)
+				int len = 0;
+				foreach (var id in res.TypeMatches)
 				{
-					var id = kv.Key;
+					var loc = DeepASTVisitor.ExtractIdLocation(id, out len);
+					if(ln!=loc.Line)
+						curLine = Document.Editor.GetLine(ln = loc.Line);
 
-					if(ln!=id.Location.Line)
-					{
-						ln=id.Location.Line;
-						curLine=Document.Editor.GetLine(ln);
-					}
-
-					var m = new HighlightMarker(txtDoc, curLine, "keyword.semantic.type", id.Location.Column, id.Id);
+					var m = new HighlightMarker(txtDoc, curLine, "keyword.semantic.type", loc.Column, TypeReferenceFinder.ExtractId(id));
 					txtDoc.AddMarker(curLine, m);
 					markers.Add(m);
 				}

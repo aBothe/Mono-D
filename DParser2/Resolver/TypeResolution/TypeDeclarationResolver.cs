@@ -252,7 +252,7 @@ namespace D_Parser.Resolver.TypeResolution
 
 			ctxt.CheckForSingleResult(ret, attrDecl.InnerType);
 
-			if (ret != null && ret.Length != 0)
+			if (ret != null && ret.Length != 0 && ret[0] != null)
 			{
 				ret[0].Modifier = attrDecl.Modifier;
 				return ret[0];

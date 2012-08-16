@@ -9,10 +9,12 @@ using MonoDevelop.Core;
 using MonoDevelop.D.Building;
 using MonoDevelop.Ide;
 using MonoDevelop.Ide.FindInFiles;
+using D_Parser.Resolver;
+using D_Parser.Refactoring;
 
 namespace MonoDevelop.D.Refactoring
 {
-	public class ReferenceFinding : D_Parser.Refactoring.ReferenceFinder
+	public class ReferenceFinding
 	{
 		ISearchProgressMonitor monitor;
 
@@ -67,51 +69,55 @@ namespace MonoDevelop.D.Refactoring
 			if (monitor != null)
 				monitor.BeginStepTask("Scan for references", modules.Count(), 1);
 
+			List<ISyntaxRegion> references = null;
 			foreach (var mod in modules)
 			{
 				if (mod == null)
 					continue;
+				try
+				{
+					references = ReferencesFinder.Scan(mod, member, new ResolverContextStack(parseCache, new ResolverContext())).ToList();
 
-				var references = ScanNodeReferencesInModule(mod, parseCache, member);
+					if (member != null && member.NodeRoot != null &&
+						(member.NodeRoot as IAbstractSyntaxTree).FileName == mod.FileName)
+						references.Insert(0, new IdentifierDeclaration(member.Name)
+						{
+							Location = member.NameLocation,
+							EndLocation = new CodeLocation(member.NameLocation.Column + member.Name.Length,
+								member.NameLocation.Line)
+						});
 
-				if (member != null && member.NodeRoot != null &&
-					(member.NodeRoot as IAbstractSyntaxTree).FileName == mod.FileName)
-					references.Insert(0, new IdentifierDeclaration(member.Name)
+					if (references.Count < 1)
 					{
-						Location = member.NameLocation,
-						EndLocation = new CodeLocation(member.NameLocation.Column + member.Name.Length,
-							member.NameLocation.Line)
-					});
-
-				if (references.Count < 1)
-				{
-					if (monitor != null)
-						monitor.Step(1);
-					continue;
-				}
-
-				// Sort the references by code location
-				references.Sort(new IdLocationComparer());
-
-				// Get actual document code
-				var targetDoc = Ide.TextFileProvider.Instance.GetTextEditorData(new FilePath(mod.FileName));
-
-				foreach (var reference in references)
-				{
-					CodeLocation loc;
-
-					if (reference is AbstractTypeDeclaration)
-						loc = ((AbstractTypeDeclaration)reference).NonInnerTypeDependendLocation;
-					else if (reference is IExpression)
-						loc = ((IExpression)reference).Location;
-					else
+						if (monitor != null)
+							monitor.Step(1);
 						continue;
+					}
 
-					searchResults.Add(new SearchResult(new FileProvider(mod.FileName, project),
-						targetDoc.LocationToOffset(loc.Line,
-													loc.Column),
-						member.Name.Length));
+					// Sort the references by code location
+					references.Sort(new IdLocationComparer());
+
+					// Get actual document code
+					var targetDoc = Ide.TextFileProvider.Instance.GetTextEditorData(new FilePath(mod.FileName));
+
+					foreach (var reference in references)
+					{
+						CodeLocation loc;
+
+						if (reference is AbstractTypeDeclaration)
+							loc = ((AbstractTypeDeclaration)reference).NonInnerTypeDependendLocation;
+						else if (reference is IExpression)
+							loc = ((IExpression)reference).Location;
+						else
+							continue;
+
+						searchResults.Add(new SearchResult(new FileProvider(mod.FileName, project),
+							targetDoc.LocationToOffset(loc.Line,
+														loc.Column),
+							member.Name.Length));
+					}
 				}
+				catch (Exception ex) { LoggingService.LogWarning("Error during reference search", ex); }
 
 				if (monitor != null)
 					monitor.Step(1);
@@ -121,6 +127,20 @@ namespace MonoDevelop.D.Refactoring
 				monitor.EndTask();
 
 			return searchResults;
+		}
+
+		public class IdLocationComparer : IComparer<ISyntaxRegion>
+		{
+			bool asc;
+			public IdLocationComparer(bool asc = true)
+			{
+				this.asc = asc;
+			}
+
+			public int Compare(ISyntaxRegion x, ISyntaxRegion y)
+			{
+				return asc ? x.Location.CompareTo(y.Location) : y.Location.CompareTo(x.Location);
+			}
 		}
 	}
 }

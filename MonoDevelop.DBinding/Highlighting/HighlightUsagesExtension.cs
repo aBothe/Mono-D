@@ -235,20 +235,26 @@ namespace MonoDevelop.D.Highlighting
 					mr = mr.Base as DSymbol;
 					referencedNode = mr.Definition;
 				}
+				try
+				{
+					var references = D_Parser.Refactoring.ReferencesFinder.Scan(dom, referencedNode, ctxt).ToList();
 
-				var references = ReferenceFinding.ScanNodeReferencesInModule(dom,parseCache,referencedNode);
+					// Highlight the node's definition location - only if the node is located in the current document
+					if (referencedNode.NodeRoot is IAbstractSyntaxTree &&
+						(referencedNode.NodeRoot as IAbstractSyntaxTree).FileName == dom.FileName)
+						references.Add(new IdentifierDeclaration(referencedNode.Name)
+						{
+							Location = referencedNode.NameLocation,
+							EndLocation = new CodeLocation(referencedNode.NameLocation.Column + referencedNode.Name.Length, referencedNode.NameLocation.Line)
+						});
 
-				// Highlight the node's definition location - only if the node is located in the current document
-				if (referencedNode.NodeRoot is IAbstractSyntaxTree &&
-					(referencedNode.NodeRoot as IAbstractSyntaxTree).FileName == dom.FileName)
-					references.Add(new IdentifierDeclaration(referencedNode.Name)
-					{
-						Location = referencedNode.NameLocation,
-						EndLocation = new CodeLocation(referencedNode.NameLocation.Column + referencedNode.Name.Length, referencedNode.NameLocation.Line)
-					});
-
-				if (references.Count > 0)
-					ShowReferences(references);
+					if (references.Count > 0)
+						ShowReferences(references);
+				}
+				catch (Exception ex)
+				{
+					LoggingService.LogWarning("Error during usage highlighting analysis", ex);
+				}
 			}
 			catch (Exception ex)
 			{

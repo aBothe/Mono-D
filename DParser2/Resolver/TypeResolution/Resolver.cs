@@ -406,8 +406,9 @@ namespace D_Parser.Resolver.TypeResolution
 		{
 			var l = new List<AbstractType>();
 
-			foreach (var r in symbols)
-				l.Add(StripAliasSymbol(r));
+			if(symbols != null)
+				foreach (var r in symbols)
+					l.Add(StripAliasSymbol(r));
 
 			return l.ToArray();
 		}
@@ -430,10 +431,11 @@ namespace D_Parser.Resolver.TypeResolution
 		{
 			var l = new List<AbstractType>();
 
-			foreach (var r in symbols)
-			{
-				l.Add(StripMemberSymbols(r));
-			}
+			if(symbols != null)
+				foreach (var r in symbols)
+				{
+					l.Add(StripMemberSymbols(r));
+				}
 
 			return l.ToArray();
 		}
