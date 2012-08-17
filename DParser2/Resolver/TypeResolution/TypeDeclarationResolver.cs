@@ -248,16 +248,18 @@ namespace D_Parser.Resolver.TypeResolution
 
 		public static AbstractType Resolve(MemberFunctionAttributeDecl attrDecl, ResolverContextStack ctxt)
 		{
-			var ret = Resolve(attrDecl.InnerType, ctxt);
-
-			ctxt.CheckForSingleResult(ret, attrDecl.InnerType);
-
-			if (ret != null && ret.Length != 0 && ret[0] != null)
+			if (attrDecl != null)
 			{
-				ret[0].Modifier = attrDecl.Modifier;
-				return ret[0];
-			}
+				var ret = Resolve(attrDecl.InnerType, ctxt);
 
+				ctxt.CheckForSingleResult(ret, attrDecl.InnerType);
+
+				if (ret != null && ret.Length != 0 && ret[0] != null)
+				{
+					ret[0].Modifier = attrDecl.Modifier;
+					return ret[0];
+				}
+			}
 			return null;
 		}
 
