@@ -18,11 +18,6 @@ namespace D_Parser.Refactoring
 		readonly INode symbol;
 		readonly IAbstractSyntaxTree ast;
 		readonly string searchId;
-
-		/// <summary>
-		/// Used when searching references of a variable.
-		/// </summary>
-		readonly bool handleSingleIdentifiersOnly;
 		#endregion
 
 		#region Constructor / External
@@ -31,7 +26,6 @@ namespace D_Parser.Refactoring
 			this.ast = ast;
 			this.symbol = symbol;
 			searchId = symbol.Name;
-			this.handleSingleIdentifiersOnly = symbol is DVariable /* && ((DVariable)symbol).IsAlias */;
 			this.ctxt = ctxt;
 		}
 

@@ -19,7 +19,7 @@ namespace D_Parser.Refactoring
 	/// </summary>
 	public class TypeReferenceFinder : DeepASTVisitor
 	{
-		readonly Dictionary<IBlockNode, SortedDictionary<string, INode>> TypeCache = new Dictionary<IBlockNode, SortedDictionary<string, INode>>();
+		readonly Dictionary<IBlockNode, Dictionary<string, INode>> TypeCache = new Dictionary<IBlockNode, Dictionary<string, INode>>();
 
 		/// <summary>
 		/// Contains the current scope as well as the syntax region
@@ -29,29 +29,24 @@ namespace D_Parser.Refactoring
 		int curQueueOffset = 0;
 		object _lockObject = new Object();
 
-		/// <summary>
-		/// Stores the block and the count position how many syntax regions are related to that block.
-		/// Is kept synchronized with the q stack.
-		/// </summary>
-		readonly SortedDictionary<int, IBlockNode> scopes = new SortedDictionary<int, IBlockNode>();
-		readonly SortedDictionary<int, IStatement> scopes_Stmts = new SortedDictionary<int, IStatement>();
-
 		IBlockNode curScope = null;
+		IAbstractSyntaxTree ast = null;
 
 		readonly TypeReferencesResult result = new TypeReferencesResult();
 		readonly ParseCacheList sharedParseCache;
+		ResolverContextStack sharedCtxt;
 
 		private TypeReferenceFinder(ParseCacheList sharedCache)
 		{
 			this.sharedParseCache = sharedCache;
+			sharedCtxt = new ResolverContextStack(sharedCache, new ResolverContext { });
 		}
 
 		public static TypeReferencesResult Scan(IAbstractSyntaxTree ast, ParseCacheList pcl)
 		{
 			var typeRefFinder = new TypeReferenceFinder(pcl);
 
-			return typeRefFinder.result; // TODO: Implement the whole thing
-
+			typeRefFinder.ast = ast;
 			// Enum all identifiers
 			typeRefFinder.S(ast);
 
@@ -64,16 +59,14 @@ namespace D_Parser.Refactoring
 
 		void CreateDeeperLevelCache(IBlockNode bn)
 		{
-			SortedDictionary<string, INode> dd=null;
-
-			if(!TypeCache.TryGetValue(bn, out dd))
-				dd = TypeCache[bn] = new SortedDictionary<string,INode>();
+			var dd = TypeCache[bn] = new Dictionary<string,INode>();
 
 			// Set the parent to null to crawl through current level only. Imports/Mixins etc. will be handled though.
 			var parentBackup = bn.Parent;
 			bn.Parent = null;
 
-			var vis = ItemEnumeration.EnumAllAvailableMembers(bn, null, bn.EndLocation, sharedParseCache, MemberFilter.Types);
+			sharedCtxt.CurrentContext.ScopedBlock = bn;
+			var vis = ItemEnumeration.EnumAllAvailableMembers(sharedCtxt, bn.EndLocation, MemberFilter.Types);
 
 			if (vis != null)
 				foreach (var n in vis)
@@ -88,7 +81,7 @@ namespace D_Parser.Refactoring
 		#region Preparation list generation
 		protected override void OnScopeChanged(IBlockNode scopedBlock)
 		{
-			CreateDeeperLevelCache(curScope = scopes[q.Count] = scopedBlock);
+			CreateDeeperLevelCache(curScope = scopedBlock);
 		}
 
 		protected override void Handle(ISyntaxRegion o)
@@ -100,61 +93,11 @@ namespace D_Parser.Refactoring
 			}
 			/*else if (o is IdentifierExpression)
 			{
-				var id = (IdentifierExpression)o;
-
-				if ((string)id.Value != searchId)
-					return;
-
-				if (resolvedSymbol == null)
-					resolvedSymbol = Evaluation.EvaluateType(id, ctxt) as DSymbol;
+				if (DoPrimaryIdCheck((string)((IdentifierExpression)o).Value))
+					q.Add(o);
 			}
-
-			if (handleSingleIdentifiersOnly)
-				return;
-
-			if (o is PostfixExpression_Access)
-			{
-				var acc = (PostfixExpression_Access)o;
-
-				if ((acc.AccessExpression is IdentifierExpression &&
-				(string)((IdentifierExpression)acc.AccessExpression).Value != searchId) ||
-				(acc.AccessExpression is TemplateInstanceExpression &&
-				(string)((TemplateInstanceExpression)acc.AccessExpression).TemplateIdentifier.Id != searchId))
-				{
-					Handle(acc.PostfixForeExpression, null);
-					return;
-				}
-				else if (acc.AccessExpression is NewExpression)
-				{
-					var nex = (NewExpression)acc.AccessExpression;
-
-					if ((nex.Type is IdentifierDeclaration &&
-						((IdentifierDeclaration)nex.Type).Id != searchId) ||
-						(nex.Type is TemplateInstanceExpression &&
-						(string)((TemplateInstanceExpression)acc.AccessExpression).TemplateIdentifier.Id != searchId))
-					{
-						Handle(acc.PostfixForeExpression, null);
-						return;
-					}
-					// Are there other types to test for?
-				}
-
-				var s = resolvedSymbol ?? Evaluation.EvaluateType(acc, ctxt) as DerivedDataType;
-
-				if (s is DSymbol)
-				{
-					if (((DSymbol)s).Definition == symbol)
-						l.Add(acc.AccessExpression);
-				}
-				else if (s == null || !(s.Base is DSymbol))
-					return;
-
-				// Scan down for other possible symbols
-				Handle(acc.PostfixForeExpression, s.Base as DSymbol);
-				return;
-			}
-
-			q.Add(o);*/
+			else if (o is PostfixExpression_Access)
+				q.AddRange(DoPrimaryIdCheck((PostfixExpression_Access)o));*/
 		}
 		#endregion
 
@@ -163,19 +106,22 @@ namespace D_Parser.Refactoring
 		/// </summary>
 		bool DoPrimaryIdCheck(string id)
 		{
+			if (string.IsNullOrEmpty(id))
+				return false;
+
+			var tc = TypeCache[curScope];
 			var bn = curScope;
 
 			while (bn != null)
-				foreach (var m in bn)
-				{
-					if (m.Name == id)
-						return true;
+			{
+				if(tc.ContainsKey(id))
+					return true;
 
-					if (bn.Parent == null || bn.Parent == bn)
-						return bn.Name == id;
-
-					bn = bn.Parent as IBlockNode;
-				}
+				bn=bn.Parent as IBlockNode;
+				if (bn == null)
+					return false;
+				tc = TypeCache[bn];
+			}
 			
 			return false;
 		}
@@ -204,7 +150,7 @@ namespace D_Parser.Refactoring
 		{
 			if (o is IdentifierDeclaration)
 				return ((IdentifierDeclaration)o).Id;
-			else if (o is IdentifierExpression)
+			else if (o is IdentifierExpression && ((IdentifierExpression)o).IsIdentifier)
 				return (string)((IdentifierExpression)o).Value;
 			else if (o is PostfixExpression_Access)
 				return ExtractId(((PostfixExpression_Access)o).AccessExpression);
@@ -218,6 +164,15 @@ namespace D_Parser.Refactoring
 		#region Threaded id analysis
 		void ResolveAllIdentifiers()
 		{
+			if (q.Count == 0)
+				return;
+
+			if (System.Diagnostics.Debugger.IsAttached)
+			{
+				_th(sharedParseCache);
+				return;
+			}
+
 			var threads = new Thread[ThreadedDirectoryParser.numThreads];
 			for (int i = 0; i < ThreadedDirectoryParser.numThreads; i++)
 			{
@@ -238,22 +193,18 @@ namespace D_Parser.Refactoring
 		void _th(object pcl_shared)
 		{
 			var pcl = (ParseCacheList)pcl_shared;
-			var ctxt = new ResolverContextStack(pcl, new ResolverContext());
+			var ctxt = new ResolverContextStack(pcl, new ResolverContext { ScopedBlock= ast });
 
 			// Make it as most performing as possible by avoiding unnecessary base types. 
 			// Aliases should be analyzed deeper though.
 			ctxt.CurrentContext.ContextDependentOptions |= 
 				ResolutionOptions.StopAfterFirstOverloads | 
-				ResolutionOptions.DontResolveBaseClasses | 
 				ResolutionOptions.DontResolveBaseTypes | //TODO: Exactly find out which option can be enabled here. Resolving variables' types is needed sometimes - but only, when highlighting a variable reference is wanted explicitly.
 				ResolutionOptions.NoTemplateParameterDeduction | 
 				ResolutionOptions.ReturnMethodReferencesOnly;
 
-			IBlockNode bn = null;
-			IStatement stmt = null;
 			ISyntaxRegion sr = null;
 			int i = 0;
-			int k = 0;
 
 			while (curQueueOffset < queueCount)
 			{
@@ -264,22 +215,13 @@ namespace D_Parser.Refactoring
 					curQueueOffset++;
 				}
 
-				// Try to get an updated scope
-				for (k = i; k > 0; k--)
-					if (scopes.TryGetValue(k, out bn))
-					{
-						ctxt.CurrentContext.ScopedBlock = bn;
-						break;
-					}
-				for (k = i; k > 0; k--)
-					if (scopes_Stmts.TryGetValue(k, out stmt))
-					{
-						ctxt.CurrentContext.ScopedStatement = stmt;
-						break;
-					}
-
 				// Resolve gotten syntax object
 				sr = q[i];
+				var sb = ctxt.CurrentContext.ScopedBlock;
+				ctxt.CurrentContext.ScopedBlock = DResolver.SearchBlockAt(
+					sb==null || sr.Location < sb.BlockStartLocation || sr.EndLocation > sb.EndLocation ? ast : sb,
+					sr.Location, 
+					out ctxt.CurrentContext.ScopedStatement);
 
 				if (sr is PostfixExpression_Access)
 					HandleAccessExpressions((PostfixExpression_Access)sr, ctxt);
@@ -291,8 +233,8 @@ namespace D_Parser.Refactoring
 					else if (sr is ITypeDeclaration)
 						t = DResolver.StripAliasSymbol(TypeDeclarationResolver.ResolveSingle((ITypeDeclaration)sr, ctxt));
 
-					// Enter into the result lists
-					//HandleResult(t, sr);
+					// Enter into the result list
+					HandleResult(sr, t);
 				}
 			}
 		}
@@ -308,8 +250,8 @@ namespace D_Parser.Refactoring
 
 				if (acc.PostfixForeExpression is IdentifierExpression ||
 					acc.PostfixForeExpression is TemplateInstanceExpression ||
-					acc.PostfixForeExpression is PostfixExpression_Access) return null;
-				//HandleResult(pfType, acc.PostfixForeExpression);
+					acc.PostfixForeExpression is PostfixExpression_Access)
+					HandleResult(acc.PostfixForeExpression, pfType);
 			}
 			
 			bool ufcs=false;
@@ -318,13 +260,17 @@ namespace D_Parser.Refactoring
 
 			if (accessedMembers != null && accessedMembers.Length != 0)
 			{
-				//HandleResult(accessedMembers[0], acc);
+				HandleResult(acc, accessedMembers[0]);
 				return accessedMembers[0];
 			}
-			else
-				//HandleResult(null, acc);
 
 			return null;
+		}
+
+		void HandleResult(ISyntaxRegion sr, AbstractType t)
+		{
+			if (t is UserDefinedType)
+				result.TypeMatches.Add(sr);
 		}
 
 		#endregion

@@ -948,10 +948,8 @@ namespace D_Parser.Parser
 
 				AllowWeakTypeParsing = weaktype;
 
-				if (keyType != null && 
-					laKind == CloseSquareBracket && 
-					!(keyType is IdentifierDeclaration && keyType.InnerDeclaration!=null)) 
-					//HACK: If it's e.g. char[constProp.length], it rather is a expression than a declaration identifier
+				if (keyType != null && laKind == CloseSquareBracket && !(keyType is IdentifierDeclaration)) 
+					//HACK: Both new int[size_t] as well as new int[someConstNumber] are legal. So better treat them as expressions.
 					cd = new ArrayDecl() { KeyType = keyType, ClampsEmpty = false, Location = startLoc };
 				else
 				{

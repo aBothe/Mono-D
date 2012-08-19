@@ -456,7 +456,7 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 			if (imp == null || imp.ModuleIdentifier == null)
 				return false;
 
-			var thisModuleName = (ctxt.ScopedBlock.NodeRoot as IAbstractSyntaxTree).ModuleName;
+			var thisModuleName = ctxt.ScopedBlock.NodeRoot is IAbstractSyntaxTree ? (ctxt.ScopedBlock.NodeRoot as IAbstractSyntaxTree).ModuleName : string.Empty;
 			var moduleName = imp.ModuleIdentifier.ToString();
 
 			List<string> seenModules = null;
@@ -470,7 +470,8 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 			if(ctxt.ParseCache!=null)
 				foreach (var module in ctxt.ParseCache.LookupModuleName(moduleName))
 				{
-					if (module == null || (module.FileName == (ctxt.ScopedBlock.NodeRoot as IAbstractSyntaxTree).FileName && module.FileName!=null))
+					var scAst = ctxt.ScopedBlock.NodeRoot as IAbstractSyntaxTree;
+					if (module == null || (scAst!=null && module.FileName == scAst.FileName && module.FileName!=null))
 						continue;
 
 					if (HandleItem(module))
