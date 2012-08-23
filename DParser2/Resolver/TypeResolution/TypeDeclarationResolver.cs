@@ -392,9 +392,9 @@ namespace D_Parser.Resolver.TypeResolution
 		public static AbstractType[] Resolve(ITypeDeclaration declaration, ResolverContextStack ctxt)
 		{
 			if (declaration is IdentifierDeclaration)
-				return Resolve(declaration as IdentifierDeclaration, ctxt);
+				return Resolve((IdentifierDeclaration)declaration, ctxt);
 			else if (declaration is TemplateInstanceExpression)
-				return Evaluation.GetOverloads(declaration as TemplateInstanceExpression, ctxt);
+				return Evaluation.GetOverloads((TemplateInstanceExpression)declaration, ctxt);
 
 			var t= ResolveSingle(declaration, ctxt);
 
@@ -421,24 +421,21 @@ namespace D_Parser.Resolver.TypeResolution
 		{
 			stackNum_HandleNodeMatch++;
 
-			bool popAfterwards = false;
-			if (popAfterwards = (m.Parent != ctxt.ScopedBlock && m.Parent is IBlockNode))
+			bool popAfterwards = m.Parent != ctxt.ScopedBlock && m.Parent is IBlockNode;
+			if (popAfterwards)
 				ctxt.PushNewScope((IBlockNode)m.Parent);
 
 			//HACK: Really dirty stack overflow prevention via manually counting call depth
-			var DoResolveBaseType = 
-				!(m is DClassLike && m.Name == "Object") && 
-				!ctxt.Options.HasFlag(ResolutionOptions.DontResolveBaseClasses) &&
-				stackNum_HandleNodeMatch <= 5;
+			var canResolveBaseGenerally = stackNum_HandleNodeMatch < 6;
 
-			// Prevent infinite recursion if the type accidently equals the node's name
-			if (m.Type != null && m.Type.ToString(false) == m.Name)
-				DoResolveBaseType = false;
+			var DoResolveBaseType = canResolveBaseGenerally &&
+				!ctxt.Options.HasFlag(ResolutionOptions.DontResolveBaseClasses) &&
+				(m.Type == null || m.Type.ToString(false) != m.Name);
 
 			AbstractType ret = null;
 
 			// To support resolving type parameters to concrete types if the context allows this, introduce all deduced parameters to the current context
-			if (DoResolveBaseType && resultBase is DSymbol)
+			if (canResolveBaseGenerally && resultBase is DSymbol)
 				ctxt.CurrentContext.IntroduceTemplateParameterTypes((DSymbol)resultBase);
 
 			// Only import symbol aliases are allowed to search in the parse cache
@@ -452,8 +449,6 @@ namespace D_Parser.Resolver.TypeResolution
 					var td=isa.IsModuleAlias ? isa.Type : isa.Type.InnerDeclaration;
 					foreach (var mod in ctxt.ParseCache.LookupModuleName(td.ToString()))
 						mods.Add(mod as DModule);
-
-					
 
 					if(mods.Count == 0)
 							ctxt.LogError(new NothingFoundError(isa.Type));
@@ -512,9 +507,9 @@ namespace D_Parser.Resolver.TypeResolution
 			}
 			else if (m is DMethod)
 			{
-				var bt=DoResolveBaseType ? GetMethodReturnType((DMethod)m, ctxt) : null;
-
-				ret = new MemberSymbol((DNode)m, bt, typeBase as ISyntaxRegion);
+				ret = new MemberSymbol((DNode)m,
+					DoResolveBaseType ? GetMethodReturnType((DMethod)m, ctxt) : null
+					, typeBase as ISyntaxRegion);
 			}
 			else if (m is DClassLike)
 			{
@@ -543,7 +538,10 @@ namespace D_Parser.Resolver.TypeResolution
 						break;
 				}
 
-				ret=DResolver.ResolveBaseClasses(udt, ctxt);
+				if (canResolveBaseGenerally && !ctxt.Options.HasFlag(ResolutionOptions.DontResolveBaseClasses))
+					ret = DResolver.ResolveBaseClasses(udt, ctxt);
+				else
+					ret = udt;
 			}
 			else if (m is IAbstractSyntaxTree)
 			{
@@ -571,7 +569,7 @@ namespace D_Parser.Resolver.TypeResolution
 				ret = new MemberSymbol((DNode)m, null, typeBase as ISyntaxRegion);
 			}
 
-			if (DoResolveBaseType && resultBase is DSymbol)
+			if (canResolveBaseGenerally && resultBase is DSymbol)
 				ctxt.CurrentContext.RemoveParamTypesFromPreferredLocals((DSymbol)resultBase);
 
 			if (popAfterwards)

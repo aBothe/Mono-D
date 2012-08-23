@@ -56,7 +56,7 @@ namespace D_Parser.Resolver.TypeResolution
 
 			if (ctxt.CurrentContext.ScopedStatement is IExpressionContainingStatement)
 			{
-				var exprs = (ctxt.CurrentContext.ScopedStatement as IExpressionContainingStatement).SubExpressions;
+				var exprs = ((IExpressionContainingStatement)ctxt.CurrentContext.ScopedStatement).SubExpressions;
 				IExpression targetExpr = null;
 
 				if (exprs != null)
@@ -168,7 +168,13 @@ namespace D_Parser.Resolver.TypeResolution
 					bt = new PrimitiveType(DTokens.Int);
 				else
 				{
+					if(tr.Definition.Parent is IBlockNode)
+						ctxt.PushNewScope((IBlockNode)tr.Definition.Parent);
+
 					var bts=TypeDeclarationResolver.Resolve(et.Definition.Type, ctxt);
+
+					if (tr.Definition.Parent is IBlockNode)
+						ctxt.Pop();
 
 					ctxt.CheckForSingleResult(bts, et.Definition.Type);
 
@@ -249,7 +255,7 @@ namespace D_Parser.Resolver.TypeResolution
 							ctxt.LogError(new ResolutionError(type, "An interface cannot inherit from non-interfaces"));
 						else if (i == 0)
 						{
-							baseClass = (TemplateIntermediateType)res[0];
+							baseClass = (TemplateIntermediateType)r;
 						}
 						else
 							ctxt.LogError(new ResolutionError(dc, "The base "+(r is ClassType ?  "class" : "template")+" name must preceed base interfaces"));
@@ -289,10 +295,9 @@ namespace D_Parser.Resolver.TypeResolution
 
 			if (Parent != null && Parent.Count > 0)
 			{
-				var pi = Parent.Children;
-				foreach (var n in pi)
+				foreach (var n in (IEnumerable<INode>)Parent.Children)
 					if (n is IBlockNode && Where >= n.Location && Where <= n.EndLocation)
-						return SearchBlockAt(n as IBlockNode, Where, out ScopedStatement);
+						return SearchBlockAt((IBlockNode)n, Where, out ScopedStatement);
 			}
 
 			if (Parent is DMethod)

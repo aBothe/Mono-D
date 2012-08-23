@@ -31,15 +31,14 @@ namespace D_Parser.Dom
 	public interface IBlockNode: INode, IEnumerable<INode>
 	{
 		CodeLocation BlockStartLocation { get; set; }
-		INode[] Children { get; }
+		NodeDictionary Children { get; }
 
 		void Add(INode Node);
 		void AddRange(IEnumerable<INode> Nodes);
 		int Count { get; }
 		void Clear();
 
-		INode this[int i] { get; set; }
-		INode this[string Name] { get; set; }
+		ReadOnlyCollection<INode> this[string Name] { get; }
 	}
 
 	public interface INode : ISyntaxRegion

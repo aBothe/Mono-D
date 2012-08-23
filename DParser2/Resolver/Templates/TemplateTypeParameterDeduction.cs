@@ -4,6 +4,8 @@ using D_Parser.Dom.Expressions;
 using D_Parser.Dom.Statements;
 using D_Parser.Resolver.TypeResolution;
 using D_Parser.Resolver.ExpressionSemantics;
+using System.Collections.Generic;
+using D_Parser.Resolver.ASTScanner;
 
 namespace D_Parser.Resolver.Templates
 {
@@ -100,24 +102,48 @@ namespace D_Parser.Resolver.Templates
 		bool HandleDecl(TemplateTypeParameter parameter, TemplateInstanceExpression tix, AbstractType r)
 		{
 			/*
+			 * TODO: Scan down r for having at least one templateinstanceexpression as declaration base.
+			 * If a tix was found, check if the definition of the respective result base level 
+			 * and the un-aliased identifier of the 'tix' parameter match.
+			 * Attention: if the alias represents an undeduced type (i.e. a type bundle of equally named type nodes),
+			 * it is only important that the definition is inside this bundle.
+			 * Therefore, it's needed to manually resolve the identifier, and look out for aliases or such unprecise aliases..confusing as s**t!
+			 * 
+			 * If the param tix id is part of the template param list, the behaviour is currently undefined! - so instantly return false, I'll leave it as TODO/FIXME
+			 */
+			var paramTix_TemplateMatchPossibilities = ResolveTemplateInstanceId(tix);
+			TemplateIntermediateType tixBasedArgumentType = null;
+			var r_ = r as DSymbol;
+			while (r_ != null)
+			{
+				if (r_.DeclarationOrExpressionBase is TemplateInstanceExpression)
+				{
+					var tit = r_ as TemplateIntermediateType;
+					if (tit != null && CheckForTixIdentifierEquality(paramTix_TemplateMatchPossibilities, tit.Definition))
+					{
+						tixBasedArgumentType = tit;
+						break;
+					}
+				}
+
+				r_ = r_.Base as DSymbol;
+			}
+
+			/*
 			 * This part is very tricky:
 			 * I still dunno what is allowed over here--
 			 * 
 			 * class Foo(T:Bar!E[],E) {}
 			 * ...
 			 * Foo!(Bar!string[]) f; -- E will be 'string' then
+			 * 
+			 * class DerivateBar : Bar!string[] {} -- new Foo!DerivateBar() is also allowed, but now DerivateBar
+			 *		obviously is not a template instance expression - it's a normal identifier only. 
 			 */
-			if (r.DeclarationOrExpressionBase is TemplateInstanceExpression)
+			if (tixBasedArgumentType != null)
 			{
-				var tix_given = (TemplateInstanceExpression)r.DeclarationOrExpressionBase;
+				var argEnum_given = ((TemplateInstanceExpression)tixBasedArgumentType.DeclarationOrExpressionBase).Arguments.GetEnumerator();
 
-				// Template type Ids must be equal (?)
-				if (tix.TemplateIdentifier.ToString() != tix_given.TemplateIdentifier.ToString())
-					return false;
-
-				var thHandler = new TemplateParameterDeduction(TargetDictionary, ctxt);
-
-				var argEnum_given = tix_given.Arguments.GetEnumerator();
 				foreach (var p in tix.Arguments)
 				{
 					if (!argEnum_given.MoveNext() || argEnum_given.Current == null)
@@ -145,6 +171,83 @@ namespace D_Parser.Resolver.Templates
 			return false;
 		}
 
+		DNode[] ResolveTemplateInstanceId(TemplateInstanceExpression tix)
+		{
+			/*
+			 * Again a very unclear/buggy situation:
+			 * When having a cascaded tix as parameter, it uses the left-most part (i.e. the inner most) of the typedeclaration construct.
+			 * 
+			 * class C(A!X.SubClass, X) {} can be instantiated via C!(A!int), but not via C!(A!int.SubClass) - totally confusing
+			 * (dmd v2.060)
+			 */
+			if (tix.InnerDeclaration != null)
+			{
+				if (tix.InnerMost is TemplateInstanceExpression)
+					tix = (TemplateInstanceExpression)tix.InnerMost;
+				else
+					return new DNode[0];
+			}
+
+			var optBackup = ctxt.CurrentContext.ContextDependentOptions;
+			ctxt.CurrentContext.ContextDependentOptions = ResolutionOptions.DontResolveBaseClasses | ResolutionOptions.DontResolveBaseTypes | ResolutionOptions.StopAfterFirstOverloads;
+
+			var initialResults = TypeDeclarationResolver.ResolveIdentifier(tix.TemplateIdentifier.Id, ctxt, tix);
+			var l = _handleResStep(initialResults);
+
+			ctxt.CurrentContext.ContextDependentOptions = optBackup;
+
+			return l.ToArray();
+		}
+
+		List<DNode> _handleResStep(AbstractType[] res)
+		{
+			var l = new List<DNode>();
+
+			if(res!=null)
+				foreach (var r in res)
+				{
+					if (r is AliasedType)
+					{
+						var alias = (AliasedType)r;
+						AbstractType[] next=null;
+
+						ctxt.CurrentContext.ScopedBlock = alias.Definition.Parent as IBlockNode;
+						ctxt.CurrentContext.ScopedStatement = null;
+
+						if (alias.Definition.Type is IdentifierDeclaration)
+							next = TypeDeclarationResolver.Resolve((IdentifierDeclaration)alias.Definition.Type, ctxt, null, false);
+						else
+							next = TypeDeclarationResolver.Resolve(alias.Definition.Type, ctxt);
+
+						l.AddRange(_handleResStep(next));
+					}
+					else if (r is DSymbol)
+						l.Add(((DSymbol)r).Definition);
+				}
+
+			return l;
+		}
+
+		/// <summary>
+		/// Returns true if both template instance identifiers are matching each other or if the parameterSpeci
+		/// </summary>
+		bool CheckForTixIdentifierEquality(
+			DNode[] expectedTemplateTypes, 
+			INode controllee)
+		{
+			/*
+			 * Note: This implementation is not 100% correct or defined in the D spec:
+			 * class A(T){}
+			 * class A(S:string) {}
+			 * class C(U: A!W, W){ W item; }
+			 * 
+			 * C!(A!int) -- is possible
+			 * C!(A!string) -- is not allowed somehow - because there are probably two 'matching' template types.
+			 * (dmd version 2.060, August 2012)
+			 */
+			return expectedTemplateTypes != null && expectedTemplateTypes.Contains(controllee);
+		}
+
 		static ITypeDeclaration ConvertToTypeDeclarationRoughly(IExpression p)
 		{
 			if (p is IdentifierExpression)
@@ -162,36 +265,67 @@ namespace D_Parser.Resolver.Templates
 			return false;
 		}
 
-		bool HandleDecl(TemplateTypeParameter p,ArrayDecl ad, AssocArrayType ar)
+		bool HandleDecl(TemplateTypeParameter parameterRef,ArrayDecl arrayDeclToCheckAgainst, AssocArrayType argumentArrayType)
 		{
-			if (ar == null)
+			if (argumentArrayType == null)
 				return false;
 
 			// Handle key type
-			if((ad.KeyType != null || ad.KeyExpression!=null) && ar.KeyType == null)
+			if((arrayDeclToCheckAgainst.KeyType != null || arrayDeclToCheckAgainst.KeyExpression!=null) && argumentArrayType.KeyType == null)
 				return false;
 			bool result = false;
 
-			if (ad.KeyExpression != null)
+			if (arrayDeclToCheckAgainst.KeyExpression != null)
 			{
-				var arrayDecl_Param = ar.DeclarationOrExpressionBase as ArrayDecl;
-				if (arrayDecl_Param.KeyExpression != null)
-					result = SymbolValueComparer.IsEqual(ad.KeyExpression, arrayDecl_Param.KeyExpression, new StandardValueProvider(ctxt));
+				// Remove all surrounding parentheses from the expression
+				var x_param = arrayDeclToCheckAgainst.KeyExpression;
+
+				while(x_param is SurroundingParenthesesExpression)
+					x_param = ((SurroundingParenthesesExpression)x_param).Expression;
+
+				var ad_Argument = argumentArrayType.DeclarationOrExpressionBase as ArrayDecl;
+
+				/*
+				 * This might be critical:
+				 * the [n] part in class myClass(T:char[n], int n) {}
+				 * will be seen as an identifier expression, not as an identifier declaration.
+				 * So in the case the parameter expression is an identifier,
+				 * test if it's part of the parameter list
+				 */
+				var id = x_param as IdentifierExpression;
+				if(id!=null && id.IsIdentifier && Contains((string)id.Value))
+				{
+					// If an expression (the usual case) has been passed as argument, evaluate its value, otherwise is its type already resolved.
+					var finalArg = ad_Argument.KeyExpression != null ?
+						Evaluation.EvaluateValue(ad_Argument.KeyExpression, new StandardValueProvider(ctxt)) as ISemantic :
+						argumentArrayType.KeyType;
+
+					//TODO: Do a type convertability check between the param type and the given argument's type.
+					// The affected parameter must also be a value parameter then, if an expression was given.
+
+					// and handle it as if it was an identifier declaration..
+					result = Set(parameterRef, finalArg, (string)id.Value); 
+				}
+				else if (ad_Argument.KeyExpression != null)
+				{
+					// Just test for equality of the argument and parameter expression, e.g. if both param and arg are 123, the result will be true.
+					result = SymbolValueComparer.IsEqual(arrayDeclToCheckAgainst.KeyExpression, ad_Argument.KeyExpression, new StandardValueProvider(ctxt));
+				}
 			}
-			else if (ad.KeyType != null)
+			else if (arrayDeclToCheckAgainst.KeyType != null)
 			{
 				// If the array we're passing to the decl check that is static (i.e. has a constant number as key 'type'),
 				// pass that number instead of type 'int' to the check.
-				var at = ar as ArrayType;
-				if (ar != null && at.IsStaticArray)
-					result = HandleDecl(p, ad.KeyType,
+				var at = argumentArrayType as ArrayType;
+				if (argumentArrayType != null && at.IsStaticArray)
+					result = HandleDecl(parameterRef, arrayDeclToCheckAgainst.KeyType,
 						new PrimitiveValue(D_Parser.Parser.DTokens.Int, (decimal)at.FixedLength, null)); 
 				else
-					result = HandleDecl(p, ad.KeyType, ar.KeyType);
+					result = HandleDecl(parameterRef, arrayDeclToCheckAgainst.KeyType, argumentArrayType.KeyType);
 			}
 
 			// Handle inner type
-			return result && HandleDecl(p,ad.InnerDeclaration, ar.Base);
+			return result && HandleDecl(parameterRef,arrayDeclToCheckAgainst.InnerDeclaration, argumentArrayType.Base);
 		}
 
 		bool HandleDecl(TemplateTypeParameter par, DelegateDeclaration d, DelegateType dr)

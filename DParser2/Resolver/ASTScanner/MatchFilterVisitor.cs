@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using D_Parser.Dom;
+using System.Collections;
 
 namespace D_Parser.Resolver.ASTScanner
 {
@@ -13,13 +14,31 @@ namespace D_Parser.Resolver.ASTScanner
 		/// <summary>
 		/// Contains items that shall be tested for existence in the current scope tree.
 		/// </summary>
-		public IList<T> rawList;
+		IList<T> rawList;
+		HashSet<string> names;
 		/// <summary>
 		/// Contains items that passed the filter successfully.
 		/// </summary>
 		public List<T> filteredList=new List<T>();
 
-		public MatchFilterVisitor(ResolverContextStack ctxt) : base(ctxt) { }
+		public MatchFilterVisitor(ResolverContextStack ctxt, IList<T> rawList) : base(ctxt) {
+			this.rawList = rawList;
+
+			names = new HashSet<string>();
+			foreach (var i in rawList)
+				names.Add(i.Name);
+		}
+
+		public override IEnumerable<INode> PrefilterSubnodes(IBlockNode bn)
+		{
+			foreach (var n in names)
+			{
+				var ch = bn[n];
+				if (ch != null)
+					foreach (var c in ch)
+						yield return c;
+			}
+		}
 
 		protected override bool HandleItem(INode n)
 		{

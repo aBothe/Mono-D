@@ -25,8 +25,8 @@ namespace D_Parser.Resolver.ExpressionSemantics
 
 				var strNode = obj[strType];
 
-				if (strNode != null)
-					_t = DResolver.StripAliasSymbol(TypeDeclarationResolver.HandleNodeMatch(strNode, ctxt)) as ArrayType;
+				if(strNode!=null && strNode.Count != 0)
+					_t = DResolver.StripAliasSymbol(TypeDeclarationResolver.HandleNodeMatch(strNode[0], ctxt)) as ArrayType;
 			}
 
 			if (_t == null)

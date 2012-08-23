@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using D_Parser.Dom;
 using D_Parser.Dom.Expressions;
 using D_Parser.Parser;
 using D_Parser.Resolver.TypeResolution;
-using System;
 
 namespace D_Parser.Resolver.ExpressionSemantics
 {
@@ -321,7 +322,7 @@ namespace D_Parser.Resolver.ExpressionSemantics
 
 			// Explicitly don't resolve the methods' return types - it'll be done after filtering to e.g. resolve template types to the deduced one
 			var optBackup = ctxt.CurrentContext.ContextDependentOptions;
-			ctxt.CurrentContext.ContextDependentOptions = ResolutionOptions.DontResolveBaseTypes;
+			ctxt.CurrentContext.ContextDependentOptions  |= ResolutionOptions.DontResolveBaseTypes;
 
 			if (call.PostfixForeExpression is PostfixExpression_Access)
 			{
@@ -346,7 +347,9 @@ namespace D_Parser.Resolver.ExpressionSemantics
 			}
 			else
 			{
-				if (eval)
+				if (call.PostfixForeExpression is TokenExpression)
+					baseExpression = GetResolvedConstructorOverloads((TokenExpression)call.PostfixForeExpression, ctxt);
+				else if (eval)
 				{
 					if (call.PostfixForeExpression is TemplateInstanceExpression)
 					{
@@ -366,7 +369,7 @@ namespace D_Parser.Resolver.ExpressionSemantics
 				else
 				{
 					if (call.PostfixForeExpression is TemplateInstanceExpression)
-						baseExpression = GetOverloads(tix=(TemplateInstanceExpression)call.PostfixForeExpression, null, false);
+						baseExpression = GetOverloads(tix = (TemplateInstanceExpression)call.PostfixForeExpression, null, false);
 					else if (call.PostfixForeExpression is IdentifierExpression)
 						baseExpression = GetOverloads((IdentifierExpression)call.PostfixForeExpression);
 					else

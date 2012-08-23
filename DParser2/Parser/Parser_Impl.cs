@@ -385,7 +385,7 @@ namespace D_Parser.Parser
 			else if (laKind == Mixin)
 			{
 				if (Peek(1).Kind == Template)
-					module.Add(TemplateDeclaration());
+					module.Add(TemplateDeclaration(module));
 
 				//TemplateMixin
 				else if (Lexer.CurrentPeekToken.Kind == Identifier)
@@ -636,7 +636,8 @@ namespace D_Parser.Parser
                         Description = GetComments(),
                         Location=t.Location, 
                         IsAlias=true, 
-                        Name="this"
+                        Name="this",
+						Parent = Scope
                     };
 					LastParsedObject = dv;
 
@@ -672,15 +673,15 @@ namespace D_Parser.Parser
 				return decls;
 			}
 			else if (laKind == (Struct) || laKind == (Union))
-				return new[]{ AggregateDeclaration()};
+				return new[]{ AggregateDeclaration(Scope)};
 			else if (laKind == (Enum))
-				return EnumDeclaration();
+				return EnumDeclaration(Scope);
 			else if (laKind == (Class))
-				return new[]{ ClassDeclaration()};
+				return new[]{ ClassDeclaration(Scope)};
 			else if (laKind == (Template) || (laKind==Mixin && Peek(1).Kind==Template))
-				return new[]{ TemplateDeclaration()};
+				return new[]{ TemplateDeclaration(Scope)};
 			else if (laKind == (Interface))
-				return new[]{ InterfaceDeclaration()};
+				return new[]{ InterfaceDeclaration(Scope)};
 			else if (IsBasicType() || laKind==Ref)
 				return Decl(HasStorageClassModifiers,Scope);
 			else
@@ -1404,11 +1405,10 @@ namespace D_Parser.Parser
 
 				Step();
 
-				var bn = ret as IBlockNode;
-				if (!HadComma && ret.Count > 0 && bn!=null)
+				if (!HadComma && ret.Count > 0)
 				{
 					// Put a VarArgDecl around the type of the last parameter
-					bn[bn.Count - 1].Type = new VarArgDecl(bn[bn.Count - 1].Type);
+					ret[ret.Count - 1].Type = new VarArgDecl(ret[ret.Count - 1].Type);
 				}
 				else
 				{
@@ -3635,10 +3635,6 @@ namespace D_Parser.Parser
 				LastParsedObject = s;
 				s.Declarations = Declaration(Scope);
 
-				if (Scope != null && s.Declarations != null && s.Declarations.Length > 0)
-					foreach (var decl in s.Declarations)
-						decl.Parent = Scope;
-
 				s.EndLocation = t.EndLocation;
 				return s;
 			}
@@ -3858,7 +3854,7 @@ namespace D_Parser.Parser
 		#endregion
 
 		#region Structs & Unions
-		private INode AggregateDeclaration()
+		private INode AggregateDeclaration(INode Parent)
 		{
 			if (!(laKind == (Union) || laKind == (Struct)))
 				SynErr(t.Kind, "union or struct required");
@@ -3868,6 +3864,7 @@ namespace D_Parser.Parser
 				Location = t.Location, 
 				Description = GetComments(),
                 ClassType=DTokens.Struct,
+				Parent=Parent
 			};
 			LastParsedObject = ret;
 
@@ -3904,13 +3901,14 @@ namespace D_Parser.Parser
 		#endregion
 
 		#region Classes
-		private INode ClassDeclaration()
+		private INode ClassDeclaration(INode Parent)
 		{
 			Expect(Class);
 
 			var dc = new DClassLike(Class) { 
 				Location = t.Location,
-				Description=GetComments() 
+				Description=GetComments(),
+				Parent=Parent
 			};
 			LastParsedObject = dc;
 
@@ -3945,12 +3943,7 @@ namespace D_Parser.Parser
 			return dc;
 		}
 
-		private List<ITypeDeclaration> BaseClassList()
-		{
-			return BaseClassList(true);
-		}
-
-		private List<ITypeDeclaration> BaseClassList(bool ExpectColon)
+		private List<ITypeDeclaration> BaseClassList(bool ExpectColon=true)
 		{
 			if (ExpectColon) Expect(Colon);
 
@@ -4015,7 +4008,7 @@ namespace D_Parser.Parser
 			var dm = new DMethod(){
 				SpecialType = DMethod.MethodType.Constructor,
 				Location = t.Location,
-				Name = "this"
+				Name = DMethod.ConstructorIdentifier
 			};
 			dm.Description = GetComments();
 			LastParsedObject = dm;
@@ -4024,7 +4017,7 @@ namespace D_Parser.Parser
 			{
 				var dv = new DVariable();
 				LastParsedObject = dv;
-				dv.Name = "this";
+				dv.Name = DMethod.ConstructorIdentifier;
 				dm.Parameters.Add(dv);
 				Step();
 				Step();
@@ -4078,13 +4071,14 @@ namespace D_Parser.Parser
 		#endregion
 
 		#region Interfaces
-		private IBlockNode InterfaceDeclaration()
+		private IBlockNode InterfaceDeclaration(INode Parent)
 		{
 			Expect(Interface);
 			var dc = new DClassLike() { 
 				Location = t.Location, 
 				Description = GetComments(),
-                ClassType= DTokens.Interface
+                ClassType= DTokens.Interface,
+				Parent=Parent
 			};
 			LastParsedObject = dc;
 
@@ -4125,12 +4119,12 @@ namespace D_Parser.Parser
 		#endregion
 
 		#region Enums
-		private INode[] EnumDeclaration()
+		private INode[] EnumDeclaration(INode Parent)
 		{
 			Expect(Enum);
 			var ret = new List<INode>();
 
-			var mye = new DEnum() { Location = t.Location, Description = GetComments() };
+			var mye = new DEnum() { Location = t.Location, Description = GetComments(), Parent=Parent };
 			LastParsedObject = mye;
 
 			ApplyAttributes(mye);
@@ -4241,7 +4235,7 @@ namespace D_Parser.Parser
 
 					if (laKind == CloseCurlyBrace) break;
 
-					var ev = new DEnumValue() { Location = la.Location, Description = GetComments() };
+					var ev = new DEnumValue() { Location = la.Location, Description = GetComments(), Parent = mye };
 					LastParsedObject = ev;
 
 					if (laKind == Identifier && (
@@ -4346,7 +4340,7 @@ namespace D_Parser.Parser
          * American beer is like sex on a boat - Fucking close to water;)
          */
 
-		private INode TemplateDeclaration()
+		private INode TemplateDeclaration(INode Parent)
 		{
 			var startLoc = la.Location;
 			// TemplateMixinDeclaration
@@ -4354,8 +4348,10 @@ namespace D_Parser.Parser
 			if (isTemplateMixinDecl)
 				Step();
 			Expect(Template);
-			var dc = new DClassLike(Template) { Description=GetComments(),
-				Location=startLoc
+			var dc = new DClassLike(Template) {
+				Description=GetComments(),
+				Location=startLoc,
+				Parent=Parent
 			};
 			LastParsedObject = dc;
 

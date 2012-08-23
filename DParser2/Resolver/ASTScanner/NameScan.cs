@@ -21,6 +21,11 @@ namespace D_Parser.Resolver.ASTScanner
 			return scan.Matches;
 		}
 
+		public override IEnumerable<INode> PrefilterSubnodes(IBlockNode bn)
+		{
+			return bn.Children[filterId];
+		}
+
 		protected override bool HandleItem(INode n)
 		{
             if (n != null && n.Name == filterId)
@@ -73,20 +78,24 @@ namespace D_Parser.Resolver.ASTScanner
 		{
 			var matches = new List<INode>();
 
-			if (curScope.Count > 0)
-				foreach (var n in curScope)
-				{
-					// Scan anonymous enums
-					if (n is DEnum && string.IsNullOrEmpty(n.Name))
+			// Watch for anonymous enums
+			var children = curScope[string.Empty];
+
+			if(children!=null)
+				foreach(var n in children)
+					if (n is DEnum)
 					{
-						foreach (var k in n as DEnum)
-							if (k.Name == name)
-								matches.Add(k);
+						var de = (DEnum)n;
+
+						var enumChildren = de[name];
+
+						if (enumChildren != null)
+							matches.AddRange(enumChildren);
 					}
 
-					if (n.Name == name)
-						matches.Add(n);
-				}
+			// Scan for normal members called 'name'
+			if ((children = curScope[name]) != null)
+				matches.AddRange(children);
 
 			// If our current Level node is a class-like, also attempt to search in its baseclass!
 			if (curScope is DClassLike)
@@ -121,23 +130,22 @@ namespace D_Parser.Resolver.ASTScanner
 			}
 
 			// Check parameters
-			if (curScope is DMethod)
-			{
-				var dm = curScope as DMethod;
-				foreach (var ch in dm.Parameters)
-				{
-					if (name == ch.Name)
-						matches.Add(ch);
-				}
-			}
+			var dn = curScope as DNode;
 
-			// and template parameters
-			if (curScope is DNode && ((DNode)curScope).TemplateParameters != null)
-				foreach (var ch in ((DNode)curScope).TemplateParameters)
-				{
-					if (name == ch.Name)
-						matches.Add(new TemplateParameterNode(ch) { Parent = curScope });
-				}
+			if (dn != null)
+			{
+				var dm = dn as DMethod;
+				if (dm != null && dm.Parameters != null && dm.Parameters.Count != 0)
+					foreach (var ch in ((DMethod)curScope).Parameters)
+						if (name == ch.Name)
+							matches.Add(ch);
+
+				// and template parameters
+				if (dn.TemplateParameters != null)
+					foreach (var ch in dn.TemplateParameters)
+						if (name == ch.Name)
+							matches.Add(new TemplateParameterNode(ch) { Parent = curScope });
+			}
 
 			return matches.Count > 0 ? matches.ToArray() : null;
 		}

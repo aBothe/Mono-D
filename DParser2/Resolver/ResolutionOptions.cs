@@ -6,8 +6,14 @@ namespace D_Parser.Resolver
 	public enum ResolutionOptions
 	{
 		DontResolveAliases=1,
-		DontResolveBaseClasses=2,
-		DontResolveBaseTypes = DontResolveBaseClasses,
+		/// <summary>
+		/// If passed, base classes will not be resolved in any way.
+		/// </summary>
+		DontResolveBaseClasses= 2,
+		/// <summary>
+		/// If passed, variable/method return types will not be evaluated. 
+		/// </summary>
+		DontResolveBaseTypes = 4,
 
 		/// <summary>
 		/// Stops resolution if first match has been found

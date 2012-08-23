@@ -188,10 +188,7 @@ namespace D_Parser.Resolver.ASTScanner
 
 			// Then filter out methods which cannot be accessed in the current context 
 			// (like when the method is defined in a module that has not been imported)
-			var mv = new MatchFilterVisitor<DMethod>(ctxt)
-			{
-				rawList = preMatchList
-			};
+			var mv = new MatchFilterVisitor<DMethod>(ctxt, preMatchList);
 
 			mv.IterateThroughScopeLayers(currentLocation);
 

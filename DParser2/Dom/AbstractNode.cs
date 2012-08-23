@@ -116,13 +116,16 @@ namespace D_Parser.Dom
 			{
 				if (Parent == null)
 					return this;
-				else return Parent.NodeRoot;
+
+				lock (Parent)
+					return Parent.NodeRoot;
 			}
 			set
 			{
 				if (Parent == null)
 					Parent = value;
-				else Parent.NodeRoot = value;
+				else 
+					Parent.NodeRoot = value;
 			}
 		}
 	}

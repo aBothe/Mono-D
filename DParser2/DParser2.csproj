@@ -72,6 +72,7 @@
     <Compile Include="Completion\Providers\UFCSCompletionProvider.cs" />
     <Compile Include="Dom\ISyntaxRegion.cs" />
     <Compile Include="Dom\ModulePackage.cs" />
+    <Compile Include="Dom\NodeDictionary.cs" />
     <Compile Include="Dom\TemplateParameters.cs" />
     <Compile Include="Refactoring\DeepASTVisitor.cs" />
     <Compile Include="Refactoring\ReferencesFinder.cs" />

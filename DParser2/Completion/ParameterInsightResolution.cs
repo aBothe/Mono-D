@@ -70,7 +70,7 @@ namespace D_Parser.Completion
 		{
 			ParserTrackerVariables trackVars = null;
 			IStatement curStmt = null; 
-			IExpression e = null, lastParamExpression = null;
+			IExpression lastParamExpression = null;
 
 			// Get the currently scoped block
 			var curBlock = DResolver.SearchBlockAt(Editor.SyntaxTree, Editor.CaretLocation, out curStmt);

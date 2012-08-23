@@ -4,6 +4,7 @@ using D_Parser.Dom.Statements;
 using D_Parser.Parser;
 using System;
 using System.IO;
+using System.Collections.ObjectModel;
 
 namespace D_Parser.Dom
 {
@@ -96,29 +97,26 @@ namespace D_Parser.Dom
 
 	public class DBlockNode : DNode, IBlockNode
 	{
-		CodeLocation _BlockStart;
-		protected List<INode> _Children = new List<INode>();
+		protected readonly NodeDictionary _Children;
+
+		public DBlockNode()
+		{
+			_Children = new NodeDictionary(this);
+		}
 
 		/// <summary>
 		/// Used for storing import statement and similar stuff
 		/// </summary>
-		public List<IStatement> StaticStatements = new List<IStatement>();
+		public readonly List<IStatement> StaticStatements = new List<IStatement>();
 
 		public CodeLocation BlockStartLocation
 		{
-			get
-			{
-				return _BlockStart;
-			}
-			set
-			{
-				_BlockStart = value;
-			}
+			get; set;
 		}
 
-		public INode[] Children
+		public NodeDictionary Children
 		{
-			get { return _Children.ToArray(); }
+			get { return _Children; }
 		}
 
 		public IStatement[] Statements
@@ -133,16 +131,12 @@ namespace D_Parser.Dom
 
 		public void Add(INode Node)
 		{
-			Node.Parent = this;
-			if (!_Children.Contains(Node))
-				_Children.Add(Node);
+			_Children.Add(Node);
 		}
 
 		public void AddRange(IEnumerable<INode> Nodes)
 		{
-			if(Nodes!=null)
-				foreach (var Node in Nodes)
-					Add(Node);
+			_Children.AddRange(Nodes);
 		}
 
 		public int Count
@@ -155,26 +149,11 @@ namespace D_Parser.Dom
 			_Children.Clear();
 		}
 
-		public INode this[int i]
-		{
-			get { if (i >= 0 && Count > i) return _Children[i]; else return null; }
-			set { if (i >= 0 && Count > i) _Children[i] = value; }
-		}
-
-		public INode this[string Name]
+		public ReadOnlyCollection<INode> this[string Name]
 		{
 			get
 			{
-				if (Count > 0)
-					foreach (var n in _Children)
-						if (n.Name == Name) return n;
-				return null;
-			}
-			set
-			{
-				if (Count > 0)
-					for (int i = 0; i < Count; i++)
-						if (this[i].Name == Name) this[i] = value;
+				return _Children[Name];
 			}
 		}
 
@@ -185,7 +164,7 @@ namespace D_Parser.Dom
 
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
 		{
-			return _Children.GetEnumerator();
+			return this.GetEnumerator();
 		}
 
 		public override void AssignFrom(INode other)
@@ -259,6 +238,19 @@ namespace D_Parser.Dom
 		public IdentifierDeclaration OutResultVariable;
 		BlockStatement _Body;
 
+		readonly NodeDictionary children;
+		readonly List<INode> additionalChildren = new List<INode>();
+
+		/// <summary>
+		/// Used to identify constructor methods. Since it'd be a token otherwise it cannot be used as a regular method's name.
+		/// </summary>
+		public const string ConstructorIdentifier = "this";
+
+		public DMethod()
+		{
+			children = new NodeDictionary(this);
+		}
+
 		public BlockStatement GetSubBlockAt(CodeLocation Where)
 		{
 			if (_In != null && _In.Location <= Where && _In.EndLocation >= Where)
@@ -277,7 +269,7 @@ namespace D_Parser.Dom
 		{
 			if (other is DMethod)
 			{
-				var dm = other as DMethod;
+				var dm = (DMethod)other;
 
 				Parameters = dm.Parameters;
 				SpecialType = dm.SpecialType;
@@ -294,8 +286,10 @@ namespace D_Parser.Dom
 		public BlockStatement Out { get { return _Out; } set { _Out = value; UpdateChildrenArray(); } }
 		public BlockStatement Body { get { return _Body; } set { _Body = value; UpdateChildrenArray(); } }
 
-		INode[] children;
-		List<INode> additionalChildren = new List<INode>();
+		public NodeDictionary Children
+		{
+			get { return children; }
+		}
 
 		/// <summary>
 		/// Children which were added artifically via Add() or AddRange()
@@ -308,20 +302,22 @@ namespace D_Parser.Dom
 
 		void UpdateChildrenArray()
 		{
-			var l = new List<INode>();
+			lock (children)
+			{
+				children.Clear();
 
-			l.AddRange(additionalChildren);
+				if (additionalChildren.Count != 0)
+					children.AddRange(additionalChildren);
 
-			if (_In != null)
-				l.AddRange(_In.Declarations);
+				if (_In != null)
+					children.AddRange(_In.Declarations);
 
-			if (_Body != null)
-				l.AddRange(_Body.Declarations);
+				if (_Body != null)
+					children.AddRange(_Body.Declarations);
 
-			if (_Out != null)
-				l.AddRange(_Out.Declarations);
-
-			children = l.ToArray();
+				if (_Out != null)
+					children.AddRange(_Out.Declarations);
+			}
 		}
 
         public enum MethodType
@@ -337,8 +333,7 @@ namespace D_Parser.Dom
             ClassInvariant
         }
 
-        public DMethod() { }
-        public DMethod(MethodType Type) { SpecialType = Type; }
+        public DMethod(MethodType Type) : this() { SpecialType = Type; }
 
 		public override string ToString(bool Attributes, bool IncludePath)
         {
@@ -366,11 +361,6 @@ namespace D_Parser.Dom
 			set{}
 		}
 
-		public INode[] Children
-		{
-			get { return children; }
-		}
-
 		public void Add(INode Node)
 		{
 			Node.Parent = this;
@@ -395,45 +385,15 @@ namespace D_Parser.Dom
 			get { 
 				if (children == null) 
 					return 0;
-				return children.Length; 
+				return children.Count; 
 			}
 		}
 
-		public INode this[int i]
+		public System.Collections.ObjectModel.ReadOnlyCollection<INode> this[string Name]
 		{
 			get
 			{
-				if (children != null)
-					return children[i];
-				return null;
-			}
-			set
-			{
-				if (children != null)
-					children[i]=value;
-			}
-		}
-
-		public INode this[string Name]
-		{
-			get
-			{
-				if(children!=null)
-					foreach (var c in children)
-						if (c.Name == Name)
-							return c;
-
-				return null;
-			}
-			set
-			{
-				if (children != null)
-					for(int i=0;i<children.Length;i++)
-						if (children[i].Name == Name)
-						{
-							children[i] = value;
-							return;
-						}
+				return children[Name];
 			}
 		}
 
@@ -442,7 +402,7 @@ namespace D_Parser.Dom
 			if (children == null)
 				UpdateChildrenArray();
 
-			return (children as IEnumerable<INode>).GetEnumerator();
+			return children.GetEnumerator();
 		}
 
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
@@ -456,9 +416,14 @@ namespace D_Parser.Dom
 
 		public void Clear()
 		{
+			children.Clear();
 			additionalChildren.Clear();
+			UpdateChildrenArray();
 		}
 
+		/// <summary>
+		/// Returns true if the function has got at least one parameter and is a direct child of an abstract syntax tree.
+		/// </summary>
 		public bool IsUFCSReady
 		{
 			get

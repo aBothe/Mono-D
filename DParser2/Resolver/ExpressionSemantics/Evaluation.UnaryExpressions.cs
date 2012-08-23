@@ -58,22 +58,10 @@ namespace D_Parser.Resolver.ExpressionSemantics
 
 			foreach (var t in possibleTypes)
 			{
-				if (t is ClassType)
-				{
-					var ct = (ClassType)t;
-
-					bool foundExplicitCtor = false;
-
-					foreach (var m in ct.Definition)
-						if (m is DMethod && ((DMethod)m).SpecialType == DMethod.MethodType.Constructor)
-						{
-							ctors.Add((DMethod)m, ct);
-							foundExplicitCtor = true;
-						}
-
-					if (!foundExplicitCtor)
-						ctors.Add(new DMethod(DMethod.MethodType.Constructor) { Type = nex.Type, Parent = ct.Definition, Description = "Default constructor for "+ct.Name }, ct);
-				}
+				var ct = t as ClassType;
+				if (ct!=null)
+					foreach (var ctor in GetConstructors(ct))
+						ctors.Add(ctor, ct);
 			}
 
 			MemberSymbol finalCtor = null;
@@ -90,6 +78,32 @@ namespace D_Parser.Resolver.ExpressionSemantics
 				return AbstractType.Get(possibleTypes[0]);
 
 			return finalCtor;
+		}
+
+		/// <summary>
+		/// Returns all constructors from the given class or struct.
+		/// If no explicit constructor given, an artificial implicit constructor method stub will be created.
+		/// </summary>
+		public static IEnumerable<DMethod> GetConstructors(TemplateIntermediateType ct)
+		{
+			bool foundExplicitCtor = false;
+
+			// Simply get all constructors that have the ctor id assigned. Makin' it faster ;)
+			var ch = ct.Definition[DMethod.ConstructorIdentifier];
+			if(ch!=null)
+				foreach (var m in ch)
+				{
+					// Not to forget: 'this' aliases are also possible - so keep checking for m being a genuine ctor
+					var dm = m as DMethod;
+					if (m!=null && dm.SpecialType == DMethod.MethodType.Constructor)
+					{
+						yield return dm;
+						foundExplicitCtor = true;
+					}
+				}
+			
+			if (!foundExplicitCtor)
+				yield return new DMethod(DMethod.MethodType.Constructor) { Name = DMethod.ConstructorIdentifier, Parent = ct.Definition, Description = "Default constructor for " + ct.Name };
 		}
 
 		ISemantic E(CastExpression ce)

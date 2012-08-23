@@ -128,6 +128,10 @@ namespace D_Parser.Dom.Statements
 			}
 		}
 
+		/// <summary>
+		/// Returns a deep view on all declarations in this block statement.
+		/// Scans down to the deepest block and adds all their declarations etc.
+		/// </summary>
 		public INode[] Declarations
 		{
 			get

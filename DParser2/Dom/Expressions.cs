@@ -848,7 +848,7 @@ namespace D_Parser.Dom.Expressions
 						ret += e.ToString() + ",";
 					ret = ret.TrimEnd(',') + ")";
 				}
-				else if(Arguments.Length==1)
+				else if(Arguments.Length==1 && Arguments[0] != null)
 					ret += Arguments[0].ToString();
 			}
 

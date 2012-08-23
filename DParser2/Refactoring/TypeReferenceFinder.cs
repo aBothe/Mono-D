@@ -91,7 +91,8 @@ namespace D_Parser.Refactoring
 				if (DoPrimaryIdCheck(ExtractId(o)))
 					result.TypeMatches.Add(o);
 			}
-			/*else if (o is IdentifierExpression)
+			/* Though type resolution is very fast now it's still kinda slow - 300 ms for all expressions in std.stdio
+			else if (o is IdentifierExpression)
 			{
 				if (DoPrimaryIdCheck((string)((IdentifierExpression)o).Value))
 					q.Add(o);
