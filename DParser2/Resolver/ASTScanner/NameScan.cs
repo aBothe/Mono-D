@@ -70,12 +70,18 @@ namespace D_Parser.Resolver.ASTScanner
             return false;
 		}
 
+		static int __stack = 0;
 		/// <summary>
 		/// Scans through the node. Also checks if n is a DClassLike or an other kind of type node and checks their specific child and/or base class nodes.
 		/// </summary>
 		/// <param name="parseCache">Needed when trying to search base classes</param>
 		public static INode[] ScanNodeForIdentifier(IBlockNode curScope, string name, ResolverContextStack ctxt)
 		{
+			if (__stack > 40)
+				return null;
+
+			__stack++;
+
 			var matches = new List<INode>();
 
 			// Watch for anonymous enums
@@ -105,10 +111,11 @@ namespace D_Parser.Resolver.ASTScanner
 				if (dc.ClassType == DTokens.Class)
 				{
 					var tr=DResolver.ResolveBaseClasses(new ClassType(dc, dc, null), ctxt, true);
-					if (tr.Base is TemplateIntermediateType)
+					var tit = tr.Base as TemplateIntermediateType;
+					if (tit!=null && tit.Definition != dc)
 						{
 							// Search for items called name in the base class(es)
-							var r = ScanNodeForIdentifier(((TemplateIntermediateType)tr.Base).Definition, name, ctxt);
+							var r = ScanNodeForIdentifier(tit.Definition, name, ctxt);
 
 							if (r != null)
 								matches.AddRange(r);
@@ -120,6 +127,9 @@ namespace D_Parser.Resolver.ASTScanner
 					if (tr != null && tr.BaseInterfaces != null && tr.BaseInterfaces.Length != 0)
 						foreach (var I in tr.BaseInterfaces)
 						{
+							if (I.Definition == dc)
+								break;
+
 							// Search for items called name in the base class(es)
 							var r = ScanNodeForIdentifier(I.Definition, name, ctxt);
 
@@ -146,6 +156,8 @@ namespace D_Parser.Resolver.ASTScanner
 						if (name == ch.Name)
 							matches.Add(new TemplateParameterNode(ch) { Parent = curScope });
 			}
+
+			__stack--;
 
 			return matches.Count > 0 ? matches.ToArray() : null;
 		}
