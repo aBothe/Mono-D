@@ -295,8 +295,8 @@ namespace D_Parser.Resolver.TypeResolution
 
 			if (Parent != null && Parent.Count > 0)
 			{
-				foreach (var n in (IEnumerable<INode>)Parent.Children)
-					if (n is IBlockNode && Where >= n.Location && Where <= n.EndLocation)
+				foreach (var n in Parent.Children)
+					if (n is IBlockNode && Where > n.Location && Where < n.EndLocation)
 						return SearchBlockAt((IBlockNode)n, Where, out ScopedStatement);
 			}
 
@@ -319,11 +319,12 @@ namespace D_Parser.Resolver.TypeResolution
 			if (Parent != null && Parent.Count > 0)
 				foreach (var n in Parent)
 				{
-					if (!(n is DClassLike)) continue;
+					var dc = n as DClassLike;
+					if (dc==null)
+						continue;
 
-					var b = n as IBlockNode;
-					if (Where >= b.BlockStartLocation && Where <= b.EndLocation)
-						return SearchClassLikeAt(b, Where);
+					if (Where > dc.BlockStartLocation && Where < dc.EndLocation)
+						return SearchClassLikeAt(dc, Where);
 				}
 
 			return Parent;

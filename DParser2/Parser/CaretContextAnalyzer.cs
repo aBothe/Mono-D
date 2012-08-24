@@ -226,10 +226,7 @@ namespace D_Parser.Parser
 			 *	1) Caret offset hasn't been reached yet
 			 *	2) An end of a context block is still expected
 			 */
-			//bool isBeyondCaret = false; // Only reset bool states if NOT beyond target offset
-			while (off < Offset 
-				// ||	(isBeyondCaret = (lastBeginOffset != -1 && lastEndOffset == -1 && off < Text.Length))
-				)
+			while (off < Offset)
 			{
 				cur = Text[off];
 				if (off < Text.Length - 1)
@@ -314,7 +311,9 @@ namespace D_Parser.Parser
 						{
 							IsInLineComment = true;
 							lastBeginOffset = off;
+							off += 2;
 							lastEndOffset = -1;
+							continue;
 						}
 						else if (IsInLineComment && cur == '\n')
 						{
