@@ -90,7 +90,7 @@ namespace D_Parser.Dom
 				ret += imp.ToString()+",";
 			}
 
-			if (ImportBinding != null)
+			if (ImportBinding == null)
 				ret = ret.TrimEnd(',');
 			else
 				ret += ImportBinding.ToString();
