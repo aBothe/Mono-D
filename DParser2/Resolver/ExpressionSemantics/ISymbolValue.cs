@@ -55,9 +55,18 @@ namespace D_Parser.Resolver.ExpressionSemantics
 			return SymbolValueComparer.IsEqual(this, other);
 		}
 
-		public string ToCode()
+		public abstract string ToCode();
+
+		public override string ToString()
 		{
-			return _baseExpression!=null ? this._baseExpression.ToString() : null;
+			try
+			{
+				return ToCode();
+			}
+			catch
+			{ 
+				return null; 
+			}
 		}
 
 		public static implicit operator AbstractType(ExpressionValue v)

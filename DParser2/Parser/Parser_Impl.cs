@@ -86,7 +86,7 @@ namespace D_Parser.Parser
 			if (t == null)
 				return "";
 
-			int ExpectedLine = t.line;
+			int ExpectedLine = t.Line;
 
 			string ret = "";
 
@@ -2476,7 +2476,7 @@ namespace D_Parser.Parser
 				if (t.Kind == __FILE__ && doc != null)
 					id = doc.FileName;
 				else if(t.Kind==__LINE__)
-					id = t.line;
+					id = t.Line;
 
 				return new IdentifierExpression(id)
 				{
@@ -3856,14 +3856,15 @@ namespace D_Parser.Parser
 		#region Structs & Unions
 		private INode AggregateDeclaration(INode Parent)
 		{
-			if (!(laKind == (Union) || laKind == (Struct)))
+			var classType = laKind;
+			if (!(classType == Union || classType == Struct))
 				SynErr(t.Kind, "union or struct required");
 			Step();
 
 			var ret = new DClassLike(t.Kind) { 
 				Location = t.Location, 
 				Description = GetComments(),
-                ClassType=DTokens.Struct,
+                ClassType=classType,
 				Parent=Parent
 			};
 			LastParsedObject = ret;

@@ -27,7 +27,7 @@
 		<Begin>/+</Begin>
 		<End>+/</End>
 	</Span>
-
+  
 	<Span color = "string.other" rule="String" stopateol = "false" escape='""'>
 		<Begin>r"</Begin>
 		<End>"</End>

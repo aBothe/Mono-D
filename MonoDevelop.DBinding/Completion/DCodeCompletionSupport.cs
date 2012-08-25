@@ -334,7 +334,7 @@ namespace MonoDevelop.D.Completion
 					switch ((n as DClassLike).ClassType)
 					{
 						case DTokens.Template:
-							return DCodeCompletionSupport.GetNodeImage("template");
+							return iconIdWithProtectionAttr(n,"template");
 
 						case DTokens.Class:
 							return classIconIdWithProtectionAttr(n);

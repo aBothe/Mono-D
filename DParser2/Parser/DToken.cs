@@ -34,123 +34,108 @@ namespace D_Parser.Parser
 	}
 
     public class DToken
-    {
-        internal readonly int col;
-        internal readonly int line;
+	{
+		#region Properties
+		public readonly int Line;
+		public readonly CodeLocation Location;
+		readonly CodeLocation explicitEndLocation;
+		public readonly int TokenLength;
 
-        internal LiteralFormat literalFormat;
-        internal object literalValue;
-        internal string val;
-        internal DToken next;
-        readonly CodeLocation endLocation;
-
-        public readonly int Kind;
-
-        public LiteralFormat LiteralFormat
-        {
-            get { return literalFormat; }
-        }
-
+		public readonly int Kind;
+        public readonly LiteralFormat LiteralFormat;
 		/// <summary>
 		/// Used for scalar, floating and string literals.
 		/// Marks special formats such as explicit unsigned-ness, wide char or dchar-based strings etc.
 		/// </summary>
-		public LiteralSubformat Subformat
+		public readonly LiteralSubformat Subformat;
+        public readonly object LiteralValue;
+        public readonly string Value;
+        internal DToken next;
+
+		public DToken Next
 		{
-			get;
-			internal set;
+			get { return next; }
 		}
 
-        public object LiteralValue
-        {
-            get { return literalValue; }
-        }
+		public CodeLocation EndLocation
+		{
+			get
+			{
+				return TokenLength == 0 ? explicitEndLocation : new CodeLocation(Location.Column + TokenLength, Line);
+			}
+		}
+		#endregion
 
-        public string Value
-        {
-            get { return val; }
-        }
+		#region Constructors
+		public DToken(int kind, int startLocation_Col, int startLocation_Line, int tokenLength,
+			object literalValue, string value, LiteralFormat literalFormat = 0, LiteralSubformat literalSubFormat = 0)
+		{
+			Line = startLocation_Line;
+			Location = new CodeLocation(startLocation_Col, startLocation_Line);
+			TokenLength = tokenLength;
 
-        public DToken Next
-        {
-            get { return next; }
-        }
+			Kind = kind;
+			LiteralFormat = literalFormat;
+			Subformat = literalSubFormat;
+			LiteralValue = literalValue;
+			Value = value;
+		}
 
-        public CodeLocation EndLocation
-        {
-            get { return endLocation; }
-        }
+		public DToken(int kind, int startLocation_Col, int startLocation_Line, CodeLocation endLocation,
+			object literalValue, string value, LiteralFormat literalFormat = 0, LiteralSubformat literalSubFormat = 0)
+		{
+			Line = startLocation_Line;
+			Location = new CodeLocation(startLocation_Col, startLocation_Line);
+			explicitEndLocation = endLocation;
 
-        public CodeLocation Location
-        {
-            get
-            {
-                return new CodeLocation(col, line);
-            }
-        }
+			Kind = kind;
+			LiteralFormat = literalFormat;
+			Subformat = literalSubFormat;
+			LiteralValue = literalValue;
+			Value = value;
+		}
 
-        public override string ToString()
+		public DToken(int kind, int startLocation_Col, int startLocation_Line, int tokenLength)
+		{
+			Kind = kind;
+
+			Line = startLocation_Line;
+			Location = new CodeLocation(startLocation_Col, startLocation_Line);
+			TokenLength = tokenLength;
+		}
+
+		/// <summary>
+		/// Assumes a token length of 1
+		/// </summary>
+		public DToken(int kind, int startLocation_Col, int startLocation_Line)
+		{
+			Kind = kind;
+
+			Line = startLocation_Line;
+			Location = new CodeLocation(startLocation_Col, startLocation_Line);
+			TokenLength = 1;
+		}
+
+		public DToken(int kind, int col, int line, string val)
+		{
+			Kind = kind;
+
+			Line = line;
+			Location = new CodeLocation(col,line);
+			TokenLength = val == null ? 1 : val.Length;
+			Value = val;
+		}
+		#endregion
+
+		public override string ToString()
         {
             if (Kind == DTokens.Identifier || Kind == DTokens.Literal)
-                return val;
+                return Value;
             return DTokens.GetTokenString(Kind);
-        }
-
-        public DToken(DToken t)
-            : this(t.Kind, t.col, t.line, t.val, t.literalValue, t.LiteralFormat)
-        {
-            next = t.next;
-        }
-
-        public DToken(int kind, int col, int line, string val)
-        {
-            this.Kind = kind;
-            this.col = col;
-            this.line = line;
-            this.val = val;
-            this.endLocation = new CodeLocation(col + (val == null ? 1 : val.Length), line);
-        }
-
-		public DToken(int kind, int col, int line, int TokenLength=0)
-		{
-			this.Kind = kind;
-			this.col = col;
-			this.line = line;
-			this.endLocation = new CodeLocation(col+TokenLength,line);
-		}
-
-		public DToken(int kind, int col, int line, int TokenLength, object literalValue)
-		{
-			this.Kind = kind;
-			this.col = col;
-			this.line = line;
-			this.endLocation = new CodeLocation(col + TokenLength, line);
-
-			this.literalValue = literalValue;
-			this.val = literalValue is string ? literalValue as string : literalValue.ToString();
-		}
-
-        public DToken(int kind, int x, int y, string val, object literalValue, LiteralFormat literalFormat, LiteralSubformat Subformat=0)
-            : this(kind, new CodeLocation(x, y), new CodeLocation(x + val.Length, y), val, literalValue, literalFormat, Subformat)
-        {
-        }
-
-        public DToken(int kind, CodeLocation startLocation, CodeLocation endLocation, string val, object literalValue, 
-			LiteralFormat literalFormat,
-			LiteralSubformat Subformat=0)
-        {
-            this.Kind = kind;
-            this.col = startLocation.Column;
-            this.line = startLocation.Line;
-            this.endLocation = endLocation;
-            this.val = val;
-            this.literalValue = literalValue;
-            this.literalFormat = literalFormat;
-			this.Subformat = Subformat;
         }
     }
 
-    public class Comment
+    public struct Comment
     {
 		[Flags]
         public enum Type
@@ -160,16 +145,16 @@ namespace D_Parser.Parser
             Documentation=4
         }
 
-        public Type CommentType;
-        public string CommentText;
-        public CodeLocation StartPosition;
-        public CodeLocation EndPosition;
+        public readonly Type CommentType;
+        public readonly string CommentText;
+        public readonly CodeLocation StartPosition;
+        public readonly CodeLocation EndPosition;
 
         /// <value>
         /// Is true, when the comment is at line start or only whitespaces
         /// between line and comment start.
         /// </value>
-        public bool CommentStartsLine;
+        public readonly bool CommentStartsLine;
 
         public Comment(Type commentType, string comment, bool commentStartsLine, CodeLocation startPosition, CodeLocation endPosition)
         {

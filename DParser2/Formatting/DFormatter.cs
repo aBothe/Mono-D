@@ -90,7 +90,7 @@ namespace D_Parser.Formatting
 		public bool IsEOF
 		{
 			get {
-				return Lexer.IsEOF || (t != null && t.line > maxLine);
+				return Lexer.IsEOF || (t != null && t.Line > maxLine);
 			}
 		}
 
@@ -106,7 +106,7 @@ namespace D_Parser.Formatting
 
 			while (!Lexer.IsEOF)
 			{
-				if (t != null && la.line > t.line && t.line < maxLine)
+				if (t != null && la.Line > t.Line && t.Line < maxLine)
 				{
 					RemoveNextLineUnindentBlocks();
 				}
@@ -116,10 +116,10 @@ namespace D_Parser.Formatting
 
 				if (IsEOF)
 				{
-					if (la.line > maxLine || Lexer.IsEOF)
+					if (la.Line > maxLine || Lexer.IsEOF)
 						lastLineIndent = null;
 
-					if (t.line>maxLine)
+					if (t.Line>maxLine)
 						break;
 				}
 
@@ -130,7 +130,7 @@ namespace D_Parser.Formatting
 				 *				foo();
 				 *	// No indentation anymore!
 				 */
-				if (t.Kind == DTokens.Comma || t.Kind == DTokens.Semicolon && maxLine>t.line && la.line > t.line)
+				if (t.Kind == DTokens.Comma || t.Kind == DTokens.Semicolon && maxLine>t.Line && la.Line > t.Line)
 				{
 					if (block == null)
 						continue;
@@ -176,7 +176,7 @@ namespace D_Parser.Formatting
 						 * If the last token was on this line OR if it's eof but on the following line, 
 						 * decrement indent on next line only.
 						 */
-						if (lastToken!=null && lastToken.line == t.line && block != null)
+						if (lastToken!=null && lastToken.Line == t.Line && block != null)
 						{
 							block.PopOnNextLine = true;
 						}
@@ -188,7 +188,7 @@ namespace D_Parser.Formatting
 						while (block != null && !block.IsClampBlock)
 							PopBlock();
 
-						if (lastLineIndent == null && (block == null || block.StartLocation.Line < t.line))
+						if (lastLineIndent == null && (block == null || block.StartLocation.Line < t.Line))
 							lastLineIndent = block;
 
 						if (t.Kind == DTokens.CloseParenthesis &&
@@ -207,7 +207,7 @@ namespace D_Parser.Formatting
 							block != null &&
 							block.BlockStartToken == DTokens.OpenParenthesis)
 						{
-							if (la.Kind == DTokens.OpenCurlyBrace && la.line > t.line)
+							if (la.Kind == DTokens.OpenCurlyBrace && la.Line > t.Line)
 								PopBlock();
 							else if (block!=null && block.LastPreBlockIdentifier!=null && IsPreStatementToken(block.LastPreBlockIdentifier.Kind))
 								block = block.previousBlock;
@@ -248,7 +248,7 @@ namespace D_Parser.Formatting
 					PushBlock().Reason = CodeBlock.IndentReason.UnfinishedStatement;
 			}
 
-			if (t!=null && la.line > t.line)
+			if (t!=null && la.Line > t.Line)
 				RemoveNextLineUnindentBlocks();
 
 			return lastLineIndent ?? block;

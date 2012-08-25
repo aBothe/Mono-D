@@ -36,6 +36,11 @@ namespace D_Parser.Resolver.ExpressionSemantics
 		{
 			vp[Variable] = value;
 		}
+
+		public override string ToCode()
+		{
+			return BaseExpression== null ? (Variable==null ?"null":Variable.ToString(false)) : BaseExpression.ToString();
+		}
 	}
 
 	public class StaticVariableValue : VariableValue

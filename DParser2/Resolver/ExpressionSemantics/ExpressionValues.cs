@@ -48,6 +48,23 @@ namespace D_Parser.Resolver.ExpressionSemantics
 		{
 			return new PrimitiveValue(baseType, x);
 		}
+
+		public override string ToCode()
+		{
+			switch (BaseTypeToken)
+			{
+				case DTokens.Void:
+					return "void";
+				case DTokens.Bool:
+					return Value == 1M ? "true" : "false";
+				case DTokens.Char:
+				case DTokens.Wchar:
+				case DTokens.Dchar:
+					return Char.ConvertFromUtf32((int)Value);
+			}
+
+			return Value.ToString() + (ImaginaryPart == 0 ? "" : ("+"+ImaginaryPart.ToString()+"i"));
+		}
 	}
 
 	public class VoidValue : PrimitiveValue
@@ -67,6 +84,7 @@ namespace D_Parser.Resolver.ExpressionSemantics
 		/// If this represents a string, the string will be returned. Otherwise null.
 		/// </summary>
 		public string StringValue { get; private set; }
+		public readonly LiteralSubformat StringFormat;
 
 		/// <summary>
 		/// If not a string, the evaluated elements will be returned. Otherwise null.
@@ -86,8 +104,12 @@ namespace D_Parser.Resolver.ExpressionSemantics
 		public ArrayValue(ArrayType stringLiteralResult, IdentifierExpression stringLiteral=null)
 			: base(ExpressionValueType.Array, stringLiteralResult, stringLiteral)
 		{
+			StringFormat = LiteralSubformat.Utf8;
 			if (stringLiteralResult.DeclarationOrExpressionBase is IdentifierExpression)
+			{
+				StringFormat = ((IdentifierExpression)stringLiteralResult.DeclarationOrExpressionBase).Subformat;
 				StringValue = ((IdentifierExpression)stringLiteralResult.DeclarationOrExpressionBase).Value as string;
+			}
 			else
 				StringValue = stringLiteral.Value as string;
 		}
@@ -99,6 +121,7 @@ namespace D_Parser.Resolver.ExpressionSemantics
 		public ArrayValue(ArrayType stringTypeResult, IExpression baseExpression, string content)
 			: base(ExpressionValueType.Array, stringTypeResult, baseExpression)
 		{
+			StringFormat = LiteralSubformat.Utf8;
 			StringValue = content;
 		}
 
@@ -108,6 +131,32 @@ namespace D_Parser.Resolver.ExpressionSemantics
 			Elements = elements;
 		}
 		#endregion
+
+		public override string ToCode()
+		{
+			if (IsString)
+			{
+				var suff = "";
+
+				if (StringFormat.HasFlag(LiteralSubformat.Utf16))
+					suff = "w";
+				else if (StringFormat.HasFlag(LiteralSubformat.Utf32))
+					suff = "d";
+
+				return "\"" + StringValue + "\"" + suff;
+			}
+
+			var s = "[";
+
+			if (Elements != null)
+				foreach (var e in Elements)
+					if (e == null)
+						s += "[null], ";
+					else
+						s += e.ToCode() + ", ";
+
+			return s.TrimEnd(',',' ') + "]";
+		}
 	}
 
 	public class AssociativeArrayValue : ExpressionValue
@@ -122,6 +171,22 @@ namespace D_Parser.Resolver.ExpressionSemantics
 			: base(ExpressionValueType.AssocArray, baseType, baseExpression)
 		{
 			this.Elements = new ReadOnlyCollection<KeyValuePair<ISymbolValue, ISymbolValue>>(Elements);
+		}
+
+		public override string ToCode()
+		{
+			var s = "[";
+
+			if(Elements!=null)
+				foreach (var e in Elements)
+				{
+					var k = e.Key == null ? "[null]" : e.Key.ToCode();
+					var v = e.Value == null ? "[null]" : e.Value.ToCode();
+
+					s += k + ":" + v + ", ";
+				}
+
+			return s.TrimEnd(',',' ') + "]";
 		}
 	}
 
@@ -159,6 +224,11 @@ namespace D_Parser.Resolver.ExpressionSemantics
 		{
 			this.Definition = Definition;
 		}
+
+		public override string ToCode()
+		{
+			return Definition == null ? "[null delegate]" : Definition.ToCode();
+		}
 	}
 	#endregion
 
@@ -192,6 +262,11 @@ namespace D_Parser.Resolver.ExpressionSemantics
 	{
 		public TypeValue(AbstractType r, IExpression x)
 			: base(ExpressionValueType.Type, r, x) { }
+
+		public override string ToCode()
+		{
+			return BaseExpression != null ? BaseExpression.ToString() : RepresentedType != null ? RepresentedType.ToString() : "null";
+		}
 	}
 
 	public abstract class ReferenceValue : ExpressionValue
@@ -239,6 +314,11 @@ namespace D_Parser.Resolver.ExpressionSemantics
 	public class NullValue : ReferenceValue
 	{
 		public NullValue(IExpression x) : base(null, null, x) { }
+
+		public override string ToCode()
+		{
+			return "null";
+		}
 	}
 	#endregion
 
@@ -254,6 +334,17 @@ namespace D_Parser.Resolver.ExpressionSemantics
 			: base(ExpressionValueType.None, null, x)
 		{
 			this.Overloads = overloads;
+		}
+
+		public override string ToCode()
+		{
+			var s = "[Overloads array: ";
+
+			if(Overloads!=null)
+				foreach (var o in Overloads)
+					s += o.ToCode() + ",";
+
+			return s.TrimEnd(',') + "]";
 		}
 	}
 }

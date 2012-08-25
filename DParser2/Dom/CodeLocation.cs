@@ -10,54 +10,30 @@ namespace D_Parser.Dom
 	{
 		public static readonly CodeLocation Empty = new CodeLocation(-1, -1);
 
+		public readonly int Column, Line;
+
 		public CodeLocation(int column, int line)
 		{
-			x = column;
-			y = line;
-		}
-
-		int x, y;
-
-		public int X
-		{
-			get { return x; }
-			set { x = value; }
-		}
-
-		public int Y
-		{
-			get { return y; }
-			set { y = value; }
-		}
-
-		public int Line
-		{
-			get { return y; }
-			set { y = value; }
-		}
-
-		public int Column
-		{
-			get { return x; }
-			set { x = value; }
+			Column = column;
+			Line = line;
 		}
 
 		public bool IsEmpty
 		{
 			get
 			{
-				return x <= 0 && y <= 0;
+				return Column < 0 && Line < 0;
 			}
 		}
 
 		public override string ToString()
 		{
-			return string.Format("(Line {1}, Col {0})", this.x, this.y);
+			return string.Format("(Line {1}, Col {0})", Column, Line);
 		}
 
 		public override int GetHashCode()
 		{
-			return unchecked(87 * x.GetHashCode() ^ y.GetHashCode());
+			return unchecked(87 * Column.GetHashCode() ^ Line.GetHashCode());
 		}
 
 		public override bool Equals(object obj)
@@ -73,30 +49,30 @@ namespace D_Parser.Dom
 
 		public static bool operator ==(CodeLocation a, CodeLocation b)
 		{
-			return a.x == b.x && a.y == b.y;
+			return a.Column == b.Column && a.Line == b.Line;
 		}
 
 		public static bool operator !=(CodeLocation a, CodeLocation b)
 		{
-			return a.x != b.x || a.y != b.y;
+			return a.Column != b.Column || a.Line != b.Line;
 		}
 
 		public static bool operator <(CodeLocation a, CodeLocation b)
 		{
-			if (a.y < b.y)
+			if (a.Line < b.Line)
 				return true;
-			else if (a.y == b.y)
-				return a.x < b.x;
+			else if (a.Line == b.Line)
+				return a.Column < b.Column;
 			else
 				return false;
 		}
 
 		public static bool operator >(CodeLocation a, CodeLocation b)
 		{
-			if (a.y > b.y)
+			if (a.Line > b.Line)
 				return true;
-			else if (a.y == b.y)
-				return a.x > b.x;
+			else if (a.Line == b.Line)
+				return a.Column > b.Column;
 			else
 				return false;
 		}

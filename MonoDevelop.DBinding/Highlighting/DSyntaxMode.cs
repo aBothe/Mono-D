@@ -58,5 +58,7 @@ namespace MonoDevelop.D.Highlighting
 
 			return m;
 		}
+
+		
 	}
 }
