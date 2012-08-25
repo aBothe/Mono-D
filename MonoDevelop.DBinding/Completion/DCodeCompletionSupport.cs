@@ -87,6 +87,16 @@ namespace MonoDevelop.D.Completion
 				images["static_class_private"] = new IconId("md-private-class-static");
 				images["static_class_protected"] = new IconId("md-protected-class-static");
 
+				images["abstract_class"] = new IconId("md-class-abstract");
+				images["abstract_class_internal"] = new IconId("md-internal-class-abstract");
+				images["abstract_class_private"] = new IconId("md-private-class-abstract");
+				images["abstract_class_protected"] = new IconId("md-protected-class-abstract");
+
+				images["static_abstract_class"] = new IconId("md-class-static-abstract");
+				images["static_abstract_class_internal"] = new IconId("md-internal-class-static-abstract");
+				images["static_abstract_class_private"] = new IconId("md-private-class-static-abstract");
+				images["static_abstract_class_protected"] = new IconId("md-protected-class-static-abstract");
+
 				images["struct"] = new IconId("md-struct");
 				images["struct_internal"] = new IconId("md-internal-struct");
 				images["struct_private"] = new IconId("md-private-struct");
@@ -102,6 +112,11 @@ namespace MonoDevelop.D.Completion
 				images["enum_private"] = new IconId("md-private-enum");
 				images["enum_protected"] = new IconId("md-protected-enum");
 
+				images["union"] = new IconId("md-union");
+				images["union_internal"] = new IconId("md-internal-union");
+				images["union_private"] = new IconId("md-private-union");
+				images["union_protected"] = new IconId("md-protected-union");
+
 				images["method"] = new IconId("md-method");
 				images["method_internal"] = new IconId("md-internal-method");
 				images["method_private"] = new IconId("md-private-method");
@@ -111,6 +126,14 @@ namespace MonoDevelop.D.Completion
 				images["static_method_internal"] = new IconId("md-internal-method-static");
 				images["static_method_private"] = new IconId("md-private-method-static");
 				images["static_method_protected"] = new IconId("md-protected-method-static");
+
+				images["abstract_method"] = new IconId("md-method-abstract");
+				images["abstract_method_internal"] = new IconId("md-internal-method-abstract");
+				images["abstract_method_protected"] = new IconId("md-protected-method-abstract");
+
+				images["override_method"] = new IconId("md-method-override");
+				images["override_method_internal"] = new IconId("md-internal-method-override");
+				images["override_method_protected"] = new IconId("md-protected-method-override");
 
 				images["parameter"] = new IconId("d-parameter");
 				images["ref_parameter"] = new IconId("d-ref-parameter");
@@ -314,12 +337,11 @@ namespace MonoDevelop.D.Completion
 							return DCodeCompletionSupport.GetNodeImage("template");
 
 						case DTokens.Class:
-							if ( n.IsClassMember ) // only nested classes can be static
-								return iconIdWithProtectionAttr(n, "class", true);
-							else
-								return iconIdWithProtectionAttr(n, "class", false);
+							return classIconIdWithProtectionAttr(n);
 
-						case DTokens.Union: // TODO: separate icon for unions?
+						case DTokens.Union:
+							return iconIdWithProtectionAttr(n, "union");
+
 						case DTokens.Struct:
 							return iconIdWithProtectionAttr(n, "struct");
 
@@ -329,6 +351,7 @@ namespace MonoDevelop.D.Completion
 				}
 				else if (n is DEnum)
 				{
+					// TODO: does declaring an enum private/protected/package actually have a meaning?
 					return iconIdWithProtectionAttr(n, "enum");
 				}
 				else if (n is DEnumValue)
@@ -343,12 +366,13 @@ namespace MonoDevelop.D.Completion
 						return iconIdWithProtectionAttr(n, "property");
 					}
 
-					return iconIdWithProtectionAttr(n, "method", true);
+					return methodIconIdWithProtectionAttr(n);
 				}
 				else if (n is DVariable)
 				{
                     if (((DVariable)n).IsAlias)
                     {
+						// TODO: does declaring an alias private/protected/package actually have a meaning?
 						return iconIdWithProtectionAttr(n, "alias");
                     }
 
@@ -379,6 +403,7 @@ namespace MonoDevelop.D.Completion
 
 					if (realParent is DMethod)
 					{
+						// FIXME: first parameter of class constructors is always displayed as a local, not a parameter
 						if ((realParent as DMethod).Parameters.Contains(n))
 						{
 							if (n.ContainsAttribute(DTokens.Ref))
@@ -394,7 +419,7 @@ namespace MonoDevelop.D.Completion
 						return DCodeCompletionSupport.GetNodeImage("local");
 					}
 
-					// TODO: looks like this is supposed to handle template parameters, but
+					// FIXME: looks like this is supposed to handle template parameters, but
 					// it doesn't seem to work
 					if (realParent.ContainsTemplateParameter(n.Name))
 						return DCodeCompletionSupport.GetNodeImage("parameter");
@@ -409,28 +434,66 @@ namespace MonoDevelop.D.Completion
 		/// attribute (and, optionally, the staticness) of node.
 		/// </summary>
 		private static Core.IconId iconIdWithProtectionAttr ( DNode n, string image,
-		                                                     bool allow_static = false )
+        	bool allow_static = false )
 		{
+			string attr = "";
+
 			if ( allow_static && n.ContainsAttribute(DTokens.Static))
 			{
-				if (n.ContainsAttribute(DTokens.Package))
-					return DCodeCompletionSupport.GetNodeImage("static_" + image + "_internal");
-				else if (n.ContainsAttribute(DTokens.Protected))
-					return DCodeCompletionSupport.GetNodeImage("static_" + image + "_protected");
-				else if (n.ContainsAttribute(DTokens.Private))
-					return DCodeCompletionSupport.GetNodeImage("static_" + image + "_private");
-				return DCodeCompletionSupport.GetNodeImage("static_" + image);
+				attr += "static_";
 			}
-			else
+
+			if (n.ContainsAttribute(DTokens.Package))
+				return DCodeCompletionSupport.GetNodeImage(attr + image + "_internal");
+			else if (n.ContainsAttribute(DTokens.Protected))
+				return DCodeCompletionSupport.GetNodeImage(attr + image + "_protected");
+			else if (n.ContainsAttribute(DTokens.Private))
+				return DCodeCompletionSupport.GetNodeImage(attr + image + "_private");
+			return DCodeCompletionSupport.GetNodeImage(attr + image);
+		}
+
+		/// <summary>
+		/// Returns node icon id for a class, including the protection attribute, staticness and
+		/// abstractness.
+		/// </summary>
+		private static Core.IconId classIconIdWithProtectionAttr ( DNode n )
+		{
+			// Only nested class may be static
+			bool static_allowed = n.IsClassMember;
+
+			string attr = "";
+			if ( n.ContainsAttribute(DTokens.Abstract) )
 			{
-				if (n.ContainsAttribute(DTokens.Package))
-					return DCodeCompletionSupport.GetNodeImage(image + "_internal");
-				else if (n.ContainsAttribute(DTokens.Protected))
-					return DCodeCompletionSupport.GetNodeImage(image + "_protected");
-				else if (n.ContainsAttribute(DTokens.Private))
-					return DCodeCompletionSupport.GetNodeImage(image + "_private");
-				return DCodeCompletionSupport.GetNodeImage(image);
+				attr += "abstract_";
 			}
+
+			return iconIdWithProtectionAttr(n, attr + "class", static_allowed);
+		}
+
+		/// <summary>
+		/// Returns node icon id for a method, including the protection attribute, staticness
+		/// and abstractness.
+		/// </summary>
+		private static Core.IconId methodIconIdWithProtectionAttr ( DNode n )
+		{
+			string attr = "";
+
+			// Only class (not struct) methods, and neither static nor private methods may
+			// be abstract/override
+			if ( n.IsClassMember &&
+			    !n.ContainsAttribute(DTokens.Static) && !n.ContainsAttribute(DTokens.Private) )
+			{
+				if ( n.ContainsAttribute(DTokens.Abstract) )
+				{
+					attr += "abstract_";
+				}
+				else if ( n.ContainsAttribute(DTokens.Override) )
+				{
+					attr += "override_";
+				}
+			}
+
+			return iconIdWithProtectionAttr(n, attr + "method", true);
 		}
 
 		public string NodeString
