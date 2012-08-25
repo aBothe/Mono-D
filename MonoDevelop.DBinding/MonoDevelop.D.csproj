@@ -228,9 +228,13 @@
     <EmbeddedResource Include="icons\ref-16.png">
       <LogicalName>ref-16.png</LogicalName>
     </EmbeddedResource>
-    <EmbeddedResource Include="icons\static-16.png">
-      <LogicalName>static-16.png</LogicalName>
+    <EmbeddedResource Include="icons\element-abstract-class-16.png">
+      <LogicalName>element-abstract-class-16.png</LogicalName>
     </EmbeddedResource>
+    <EmbeddedResource Include="icons\element-abstract-method-16.png">
+      <LogicalName>element-abstract-method-16.png</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="icons\element-union-16.png" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="icons\dfile32.png" />
