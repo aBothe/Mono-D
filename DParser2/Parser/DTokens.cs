@@ -364,6 +364,13 @@ namespace D_Parser.Parser
     {While,	"while"},
     {With,	"with"}
         };
+		public static Dictionary<string, int> Keywords_Lookup = new Dictionary<string, int>();
+
+		static DTokens()
+		{
+			foreach (var kv in Keywords)
+				Keywords_Lookup[kv.Value] = kv.Key;
+		}
 
         public static BitArray FunctionAttribute = NewSet(Pure, Nothrow, PropertyAttribute);
         public static BitArray MemberFunctionAttribute = NewSet(Const, Immutable, Shared, InOut, Pure, Nothrow, PropertyAttribute);
@@ -590,12 +597,9 @@ namespace D_Parser.Parser
 
         public static int GetTokenID(string token)
         {
-            if (token == null || token.Length < 1) 
-				return -1;
-
-			foreach (var kv in Keywords)
-				if (kv.Value == token)
-					return kv.Key;
+			int k = -1;
+			if (Keywords_Lookup.TryGetValue(token, out k) || token == null || token.Length < 1)
+				return k;
 
 			foreach (var kv in NonKeywords)
 				if (kv.Value == token)

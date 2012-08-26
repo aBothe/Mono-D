@@ -3,7 +3,7 @@ using D_Parser.Dom;
 
 namespace D_Parser.Parser
 {
-	[FlagsAttribute]
+	[Flags]
 	public enum LiteralFormat
 	{
 		None = 0,
@@ -38,8 +38,7 @@ namespace D_Parser.Parser
 		#region Properties
 		public readonly int Line;
 		public readonly CodeLocation Location;
-		readonly CodeLocation explicitEndLocation;
-		public readonly int TokenLength;
+		public readonly CodeLocation EndLocation;
 
 		public readonly int Kind;
         public readonly LiteralFormat LiteralFormat;
@@ -57,13 +56,7 @@ namespace D_Parser.Parser
 			get { return next; }
 		}
 
-		public CodeLocation EndLocation
-		{
-			get
-			{
-				return TokenLength == 0 ? explicitEndLocation : new CodeLocation(Location.Column + TokenLength, Line);
-			}
-		}
+		
 		#endregion
 
 		#region Constructors
@@ -72,7 +65,7 @@ namespace D_Parser.Parser
 		{
 			Line = startLocation_Line;
 			Location = new CodeLocation(startLocation_Col, startLocation_Line);
-			TokenLength = tokenLength;
+			EndLocation = new CodeLocation(Location.Column + tokenLength, Line);
 
 			Kind = kind;
 			LiteralFormat = literalFormat;
@@ -81,12 +74,12 @@ namespace D_Parser.Parser
 			Value = value;
 		}
 
-		public DToken(int kind, int startLocation_Col, int startLocation_Line, CodeLocation endLocation,
+		public DToken(int kind, int startLocation_Col, int startLocation_Line, int endLocation_Col, int endLocation_Line,
 			object literalValue, string value, LiteralFormat literalFormat = 0, LiteralSubformat literalSubFormat = 0)
 		{
 			Line = startLocation_Line;
 			Location = new CodeLocation(startLocation_Col, startLocation_Line);
-			explicitEndLocation = endLocation;
+			EndLocation = new CodeLocation(endLocation_Col, endLocation_Line);
 
 			Kind = kind;
 			LiteralFormat = literalFormat;
@@ -95,25 +88,13 @@ namespace D_Parser.Parser
 			Value = value;
 		}
 
-		public DToken(int kind, int startLocation_Col, int startLocation_Line, int tokenLength)
+		public DToken(int kind, int startLocation_Col, int startLocation_Line, int tokenLength = 1)
 		{
 			Kind = kind;
 
 			Line = startLocation_Line;
 			Location = new CodeLocation(startLocation_Col, startLocation_Line);
-			TokenLength = tokenLength;
-		}
-
-		/// <summary>
-		/// Assumes a token length of 1
-		/// </summary>
-		public DToken(int kind, int startLocation_Col, int startLocation_Line)
-		{
-			Kind = kind;
-
-			Line = startLocation_Line;
-			Location = new CodeLocation(startLocation_Col, startLocation_Line);
-			TokenLength = 1;
+			EndLocation = new CodeLocation(Location.Column + tokenLength, Line);
 		}
 
 		public DToken(int kind, int col, int line, string val)
@@ -122,7 +103,7 @@ namespace D_Parser.Parser
 
 			Line = line;
 			Location = new CodeLocation(col,line);
-			TokenLength = val == null ? 1 : val.Length;
+			EndLocation = new CodeLocation(col + (val == null ? 1 : val.Length), line);
 			Value = val;
 		}
 		#endregion
@@ -135,7 +116,7 @@ namespace D_Parser.Parser
         }
     }
 
-    public struct Comment
+    public class Comment
     {
 		[Flags]
         public enum Type

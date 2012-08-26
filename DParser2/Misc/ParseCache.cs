@@ -238,6 +238,22 @@ namespace D_Parser.Misc
 			return null;
 		}
 
+		public bool Remove(string moduleName)
+		{
+			var packName = ModuleNameHelper.ExtractPackageName(moduleName);
+			var pack = Root.GetOrCreateSubPackage(packName, false);
+
+			return pack != null && pack.Modules.Remove(ModuleNameHelper.ExtractModuleName(moduleName));
+		}
+
+		public bool RemovePackage(string packName)
+		{
+			var superPack = ModuleNameHelper.ExtractPackageName(packName);
+			var pack = Root.GetOrCreateSubPackage(superPack);
+
+			return pack != null && pack.Packages.Remove(ModuleNameHelper.ExtractModuleName(packName));
+		}
+
 		public IAbstractSyntaxTree GetModuleByFileName(string file, string baseDirectory)
 		{
 			return GetModule(DModule.GetModuleName(baseDirectory, file));

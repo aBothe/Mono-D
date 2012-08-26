@@ -630,7 +630,7 @@ namespace D_Parser.Parser
 				ApplyAttributes(_t);
 
 				// AliasThis
-				if (laKind == Identifier && PK(This))
+				if (laKind == Identifier && Lexer.CurrentPeekToken.Kind == This)
 				{
                     var dv = new DVariable { 
                         Description = GetComments(),
@@ -713,9 +713,9 @@ namespace D_Parser.Parser
 			// If there's no explicit type declaration, leave our node's type empty!
 			if ((StorageClass.Token != DAttribute.Empty.Token && laKind == (Identifier) && DeclarationAttributes.Count > 0)) // public auto var=0; // const foo(...) {} 
 			{
-				if (PK(Assign) || PK(OpenParenthesis))
+				if (Lexer.CurrentPeekToken.Kind == Assign || Lexer.CurrentPeekToken.Kind ==OpenParenthesis) 
 				{ }
-				else if (PK(Semicolon))
+				else if (Lexer.CurrentPeekToken.Kind == Semicolon)
 				{
 					SemErr(StorageClass.Token, "Initializer expected for auto type, semicolon found!");
 				}
@@ -1431,7 +1431,7 @@ namespace D_Parser.Parser
 
 			ITypeDeclaration td = null;
 
-			while ((ParamModifiers[laKind] && laKind!=InOut) || (MemberFunctionAttribute[laKind] && !PK(OpenParenthesis)))
+			while ((ParamModifiers[laKind] && laKind != InOut) || (MemberFunctionAttribute[laKind] && Lexer.CurrentPeekToken.Kind != OpenParenthesis))
 			{
 				Step();
 				attr.Add(new DAttribute(t.Kind));
@@ -1480,7 +1480,7 @@ namespace D_Parser.Parser
 			Expect(Assign);
 
 			// VoidInitializer
-			if (laKind == (Void))
+			if (laKind == Void)
 			{
 				Step();
 				var ret= new VoidInitializer() { Location=t.Location,EndLocation=t.EndLocation};
@@ -1500,7 +1500,7 @@ namespace D_Parser.Parser
 			// ArrayInitializers are handled in PrimaryExpression(), whereas setting IsParsingInitializer to true is required!
 
 			#region StructInitializer
-			if (laKind == OpenCurlyBrace)
+			if (laKind == OpenCurlyBrace && IsStructInitializer)
 			{
 				// StructMemberInitializations
 				var ae = new StructInitializer() { Location = la.Location };
@@ -1533,9 +1533,9 @@ namespace D_Parser.Parser
 					inits.Add(sinit);
 				}
 
-				ae.MemberInitializers = inits.ToArray();
+				Expect(DTokens.CloseCurlyBrace);
 
-				Expect(CloseCurlyBrace);
+				ae.MemberInitializers = inits.ToArray();
 				ae.EndLocation = t.EndLocation;
 
 				if (!IsEOF)
@@ -1551,6 +1551,35 @@ namespace D_Parser.Parser
 				TrackerVariables.IsParsingInitializer = isParsingInitializer_backup;
 
 			return expr;
+		}
+
+		/// <summary>
+		/// If there's a semicolon or a return somewhere inside the braces, it automatically is a delegate, and not a struct initializer
+		/// </summary>
+		bool IsStructInitializer
+		{
+			get
+			{
+				int r = 1;
+				var pk = Peek(1);
+				while (r > 0 && pk.Kind != DTokens.EOF && pk.Kind != DTokens.__EOF__)
+				{
+					switch (pk.Kind)
+					{
+						case DTokens.Return:
+						case DTokens.Semicolon:
+							return false;
+						case DTokens.OpenCurlyBrace:
+							r++;
+							break;
+						case DTokens.CloseCurlyBrace:
+							r--;
+							break;
+					}
+					pk = Peek();
+				}
+				return true;
+			}
 		}
 
 		TypeOfDeclaration TypeOf()
@@ -1823,14 +1852,14 @@ namespace D_Parser.Parser
 				// Skip basictype2's
 				while (Lexer.CurrentPeekToken.Kind == Times || Lexer.CurrentPeekToken.Kind == OpenSquareBracket)
 				{
-					if (PK(Times))
+					if (Lexer.CurrentPeekToken.Kind == Times)
 						HadPointerDeclaration = true;
 
 					if (Lexer.CurrentPeekToken.Kind == OpenSquareBracket)
 						OverPeekBrackets(OpenSquareBracket);
 					else Peek();
 
-					if (HadPointerDeclaration && PK(Literal)) // char[a.member*8] abc; // conv.d:3278
+					if (HadPointerDeclaration && Lexer.CurrentPeekToken.Kind == Literal) // char[a.member*8] abc; // conv.d:3278
 					{
 						Peek(1);
 						return true;
@@ -2541,11 +2570,11 @@ namespace D_Parser.Parser
 				// Concatenate multiple string literals here
 				if (t.LiteralFormat == LiteralFormat.StringLiteral || t.LiteralFormat == LiteralFormat.VerbatimStringLiteral)
 				{
-					var a = t.LiteralValue as string;
+					var a = t.Value;
 					while (la.LiteralFormat == LiteralFormat.StringLiteral || la.LiteralFormat == LiteralFormat.VerbatimStringLiteral)
 					{
 						Step();
-						a += t.LiteralValue as string;
+						a += t.Value;
 					}
 					return new IdentifierExpression(a, t.LiteralFormat, t.Subformat) { Location = startLoc, EndLocation = t.EndLocation };
 				}
@@ -2898,7 +2927,7 @@ namespace D_Parser.Parser
 				return false;
 			}
 
-			StartPeek();
+			Lexer.StartPeek();
 
 			OverPeekBrackets(OpenParenthesis, false);
 
@@ -2910,7 +2939,7 @@ namespace D_Parser.Parser
 			if (laKind != OpenParenthesis)
 				return false;
 
-			StartPeek();
+			Lexer.StartPeek();
 
 			OverPeekBrackets(OpenParenthesis, false);
 
@@ -3575,7 +3604,7 @@ namespace D_Parser.Parser
 			#endregion
 
 			#region (Static) AssertExpression
-			else if (laKind == Assert || (laKind == Static && PK(Assert)))
+			else if (laKind == Assert || (laKind == Static && Lexer.CurrentPeekToken.Kind == Assert))
 			{
 				var s = new AssertStatement() { Location = la.Location, IsStatic = laKind == Static, Parent = Parent };
 				LastParsedObject = s;
@@ -4433,19 +4462,19 @@ namespace D_Parser.Parser
 		private bool IsTemplateParameterList()
 		{
 			Lexer.StartPeek();
+			var pk = la;
 			int r = 0;
-			while (r >= 0 && Lexer.CurrentPeekToken.Kind != EOF)
+			while (r >= 0 && pk.Kind != EOF && pk.Kind != __EOF__)
 			{
-				if (Lexer.CurrentPeekToken.Kind == OpenParenthesis) r++;
-				else if (Lexer.CurrentPeekToken.Kind == CloseParenthesis)
+				if (pk.Kind == OpenParenthesis)
+					r++;
+				else if (pk.Kind == CloseParenthesis)
 				{
 					r--;
 					if (r <= 0)
-						if (Peek().Kind == OpenParenthesis)
-							return true;
-						else return false;
+						return Peek().Kind == OpenParenthesis;
 				}
-				Peek();
+				pk = Peek();
 			}
 			return false;
 		}

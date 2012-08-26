@@ -5,14 +5,114 @@ using System.Text;
 using D_Parser.Dom;
 using D_Parser.Dom.Expressions;
 using D_Parser.Dom.Statements;
+using System;
 
 namespace D_Parser.Parser
 {
     /// <summary>
     /// Parser for D Code
     /// </summary>
-    public partial class DParser:DTokens
-    {
+    public partial class DParser:DTokens, IDisposable
+	{
+		#region Properties
+		/// <summary>
+		/// Holds document structure
+		/// </summary>
+		DModule doc;
+
+		public DModule Document
+		{
+			get { return doc; }
+		}
+
+		/// <summary>
+		/// Modifiers for entire block
+		/// </summary>
+		Stack<DAttribute> BlockAttributes = new Stack<DAttribute>();
+		/// <summary>
+		/// Modifiers for current expression only
+		/// </summary>
+		Stack<DAttribute> DeclarationAttributes = new Stack<DAttribute>();
+
+		bool ParseStructureOnly = false;
+		public Lexer Lexer;
+
+		/// <summary>
+		/// Used to track the expression/declaration/statement/whatever which is handled currently.
+		/// Required for code completion.
+		/// </summary>
+		public object LastParsedObject
+		{ 
+			get { return TrackerVariables.LastParsedObject; } 
+			set { TrackerVariables.LastParsedObject = value; }
+		}
+
+		/// <summary>
+		/// Required for code completion.
+		/// True if a type/variable/method/etc. identifier is expected.
+		/// </summary>
+		public bool ExpectingIdentifier { set { TrackerVariables.ExpectingIdentifier = value; } }
+
+		public ParserTrackerVariables TrackerVariables = new ParserTrackerVariables();
+
+		DToken t
+		{
+			[System.Diagnostics.DebuggerStepThrough]
+			get
+			{
+				return (DToken)Lexer.CurrentToken;
+			}
+		}
+
+		/// <summary>
+		/// lookAhead token
+		/// </summary>
+		DToken la
+		{
+			[System.Diagnostics.DebuggerStepThrough]
+			get
+			{
+				return Lexer.LookAhead;
+			}
+
+			set
+			{
+				Lexer.LookAhead = value;
+				laKind = value.Kind;
+			}
+		}
+		int laKind = 0;
+
+		bool IsEOF
+		{
+			get { return Lexer.IsEOF; }
+		}
+
+		public IList<ParserError> ParseErrors = new List<ParserError>();
+		public const int MaxParseErrorsBeforeFailure = 100;
+
+		#endregion
+
+		public void Dispose()
+		{
+			doc = null;
+			BlockAttributes.Clear();
+			BlockAttributes = null;
+			DeclarationAttributes.Clear();
+			DeclarationAttributes = null;
+			Lexer.Dispose();
+			Lexer = null;
+			TrackerVariables = null;
+			ParseErrors = null;
+		}
+
+		public DParser(Lexer lexer)
+		{
+			this.Lexer = lexer;
+			Lexer.LexerErrors = ParseErrors;
+		}
+
+		#region External interface
 		/// <summary>
 		/// Finds the last import statement and returns its end location (the position after the semicolon).
 		/// If no import but module statement was found, the end location of this module statement will be returned.
@@ -25,10 +125,10 @@ namespace D_Parser.Parser
 			p.doc = new DModule();// create dummy module to prevent crash at ImportDeclaration();
 			p.Step();
 
-			if (p.LA(Module))
+			if (p.laKind == Module)
 				p.ModuleDeclaration();
 
-			while (p.LA(Import))
+			while (p.laKind == Import)
 				p.ImportDeclaration();
 
 			return p.t.EndLocation;
@@ -69,7 +169,7 @@ namespace D_Parser.Parser
             var p = Create(new StringReader(Code));
             p.Step();
             // Exception: If we haven't got any basic types as our first token, return this token via OptionalToken
-            if (!p.IsBasicType() || p.LA(__LINE__) || p.LA(__FILE__))
+            if (!p.IsBasicType() || p.laKind == __LINE__ || p.laKind == __FILE__)
             {
                 p.Step();
                 p.Peek(1);
@@ -129,35 +229,7 @@ namespace D_Parser.Parser
         {
 			return new DParser(new Lexer(tr));
         }
-
-        /// <summary>
-        /// Holds document structure
-        /// </summary>
-        DModule doc;
-
-		/// <summary>
-		/// Used to track the expression/declaration/statement/whatever which is handled currently.
-		/// Required for code completion.
-		/// </summary>
-		public object LastParsedObject 
-		{ get { return TrackerVariables.LastParsedObject; } set { TrackerVariables.LastParsedObject = value; } }
-
-		/// <summary>
-		/// Required for code completion.
-		/// True if a type/variable/method/etc. identifier is expected.
-		/// </summary>
-		public bool ExpectingIdentifier {set{TrackerVariables.ExpectingIdentifier=value;}}
-
-		public readonly ParserTrackerVariables TrackerVariables = new ParserTrackerVariables();
-
-        /// <summary>
-        /// Modifiers for entire block
-        /// </summary>
-        Stack<DAttribute> BlockAttributes=new Stack<DAttribute>();
-        /// <summary>
-        /// Modifiers for current expression only
-        /// </summary>
-        Stack<DAttribute> DeclarationAttributes=new Stack<DAttribute>();
+		#endregion
 
 		void PushAttribute(DAttribute attr, bool BlockAttributes)
 		{
@@ -214,92 +286,32 @@ namespace D_Parser.Parser
 			n.Attributes = attributes.Count == 0 ? null : attributes.ToArray();
 		}
 
-        public DModule Document
-        {
-            get { return doc; }
-        }
-        bool ParseStructureOnly = false;
-        public Lexer Lexer;
-        public DParser(Lexer lexer)
-        {
-            this.Lexer = lexer;
-			Lexer.LexerErrors = ParseErrors;
-        }
-
-		DToken t
-		{
-			[System.Diagnostics.DebuggerStepThrough]
-			get
-			{
-				return (DToken)Lexer.CurrentToken;
-			}
-		}
-
-        void OverPeekBrackets(int OpenBracketKind)
-        {
-            OverPeekBrackets(OpenBracketKind, false);
-        }
-
-        void OverPeekBrackets(int OpenBracketKind,bool LAIsOpenBracket)
+        void OverPeekBrackets(int OpenBracketKind,bool LAIsOpenBracket = false)
         {
             int CloseBracket = CloseParenthesis;
-            if (OpenBracketKind == OpenSquareBracket) CloseBracket = CloseSquareBracket;
-            else if (OpenBracketKind == OpenCurlyBrace) CloseBracket = CloseCurlyBrace;
 
+            if (OpenBracketKind == OpenSquareBracket) 
+				CloseBracket = CloseSquareBracket;
+            else if (OpenBracketKind == OpenCurlyBrace) 
+				CloseBracket = CloseCurlyBrace;
+
+			var pk = Lexer.CurrentPeekToken;
             int i = LAIsOpenBracket?1:0;
-            while (Lexer.CurrentPeekToken.Kind != EOF)
+            while (pk.Kind != EOF)
             {
-                if (Lexer.CurrentPeekToken.Kind== OpenBracketKind)
+                if (pk.Kind== OpenBracketKind)
                     i++;
-                else if (Lexer.CurrentPeekToken.Kind== CloseBracket)
+                else if (pk.Kind== CloseBracket)
                 {
                     i--;
-                    if (i <= 0) { Peek(); break; }
+                    if (i <= 0) 
+					{ 
+						Peek(); 
+						break; 
+					}
                 }
-                Peek();
+                pk = Peek();
             }
-        }
-
-        /// <summary>
-        /// lookAhead token
-        /// </summary>
-        DToken la
-        {
-            [System.Diagnostics.DebuggerStepThrough]
-            get
-            {
-                return Lexer.LookAhead;
-            }
-
-			set
-			{
-				Lexer.LookAhead = value;
-				laKind = value.Kind;
-			}
-        }
-
-        /// <summary>
-        /// LookAhead token check
-        /// </summary>
-        bool LA(int n)
-        {
-            return laKind == n;
-        }
-        /// <summary>
-        /// Currenttoken check
-        /// </summary>
-        bool T(int n)
-        {
-            return t.Kind == n;
-        }
-        /// <summary>
-        /// Peek token check
-        /// </summary>
-        /// <param name="n"></param>
-        /// <returns></returns>
-        bool PK(int n)
-        {
-            return Lexer.CurrentPeekToken.Kind == n;
         }
 
         private bool Expect(int n)
@@ -333,12 +345,6 @@ namespace D_Parser.Parser
             }
         }
 
-        /* Return the n-th token after the current lookahead token */
-        void StartPeek()
-        {
-            Lexer.StartPeek();
-        }
-
         DToken Peek()
         {
             return Lexer.Peek();
@@ -356,21 +362,15 @@ namespace D_Parser.Parser
             return x;
         }
 
-        bool IsEOF
-        {
-            get { return Lexer.IsEOF; }
-        }
-
-		int laKind = 0;
-
-		public void Step() { 
+		public void Step()
+		{ 
 			Lexer.NextToken();
 
 			Lexer.StartPeek();
 			Lexer.Peek();
  
 			laKind = la.Kind;
-			}
+		}
 
         [DebuggerStepThrough()]
         public DModule Parse()
@@ -393,9 +393,6 @@ namespace D_Parser.Parser
         }
         
         #region Error handlers
-		public IList<ParserError> ParseErrors = new List<ParserError>();
-		public const int MaxParseErrorsBeforeFailure = 100;
-
         void SynErr(int n, string msg)
         {
 			if (ParseErrors.Count > MaxParseErrorsBeforeFailure)
@@ -422,7 +419,7 @@ namespace D_Parser.Parser
 			ParseErrors.Add(new ParserError(true, DTokens.GetTokenString(n) + " expected" + (t != null ? (", " + DTokens.GetTokenString(t.Kind) + " found") : ""), n, t == null ? la.Location : t.EndLocation));
         }*/
         #endregion
-    }
+	}
 
 	public class ParserTrackerVariables
 	{
