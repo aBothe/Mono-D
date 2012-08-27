@@ -75,8 +75,13 @@ namespace MonoDevelop.D.Completion
 
 			try
 			{
+				#region Class-like structures
 				images["template"] = new IconId("md-template");
+				images["template_internal"] = new IconId("md-internal-template");
+				images["template_private"] = new IconId("md-private-template");
+				images["template_protected"] = new IconId("md-protected-template");
 
+				#region Class
 				images["class"] = new IconId("md-class");
 				images["class_internal"] = new IconId("md-internal-class");
 				images["class_private"] = new IconId("md-private-class");
@@ -96,6 +101,7 @@ namespace MonoDevelop.D.Completion
 				images["static_abstract_class_internal"] = new IconId("md-internal-class-static-abstract");
 				images["static_abstract_class_private"] = new IconId("md-private-class-static-abstract");
 				images["static_abstract_class_protected"] = new IconId("md-protected-class-static-abstract");
+				#endregion
 
 				images["struct"] = new IconId("md-struct");
 				images["struct_internal"] = new IconId("md-internal-struct");
@@ -116,7 +122,9 @@ namespace MonoDevelop.D.Completion
 				images["union_internal"] = new IconId("md-internal-union");
 				images["union_private"] = new IconId("md-private-union");
 				images["union_protected"] = new IconId("md-protected-union");
+				#endregion
 
+				#region Methods
 				images["method"] = new IconId("md-method");
 				images["method_internal"] = new IconId("md-internal-method");
 				images["method_private"] = new IconId("md-private-method");
@@ -134,7 +142,9 @@ namespace MonoDevelop.D.Completion
 				images["override_method"] = new IconId("md-method-override");
 				images["override_method_internal"] = new IconId("md-internal-method-override");
 				images["override_method_protected"] = new IconId("md-protected-method-override");
+				#endregion
 
+				#region Variables
 				images["parameter"] = new IconId("d-parameter");
 				images["ref_parameter"] = new IconId("d-ref-parameter");
 				images["out_parameter"] = new IconId("d-out-parameter");
@@ -176,6 +186,7 @@ namespace MonoDevelop.D.Completion
 				images["static_literal_private"] = new IconId("md-private-literal-static");
 				images["static_literal_protected"] = new IconId("md-protected-literal-static");
 				images["static_literal_internal"] = new IconId("md-internal-literal-static");
+				#endregion
 			}
 			catch (Exception ex)
 			{

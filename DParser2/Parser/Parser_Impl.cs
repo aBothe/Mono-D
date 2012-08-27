@@ -1382,15 +1382,21 @@ namespace D_Parser.Parser
 				return ret;
 			}
 
+			INode p=null;
+
 			if (laKind != TripleDot)
-				ret.Add(Parameter(Parent));
+			{
+				p = Parameter(Parent);
+				p.Parent = Parent;
+				ret.Add(p);
+			}
 
 			while (laKind == (Comma))
 			{
 				Step();
 				if (laKind == TripleDot || laKind==CloseParenthesis)
 					break;
-				var p = Parameter(Parent);
+				p = Parameter(Parent);
 				p.Parent = Parent;
 				ret.Add(p);
 			}
@@ -4047,6 +4053,7 @@ namespace D_Parser.Parser
 			{
 				var dv = new DVariable();
 				LastParsedObject = dv;
+				dv.Parent = dm;
 				dv.Name = DMethod.ConstructorIdentifier;
 				dm.Parameters.Add(dv);
 				Step();
