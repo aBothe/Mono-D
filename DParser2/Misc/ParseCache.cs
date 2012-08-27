@@ -238,6 +238,35 @@ namespace D_Parser.Misc
 			return null;
 		}
 
+		public bool Remove(IAbstractSyntaxTree ast)
+		{
+			if (ast == null)
+				return false;
+
+			if (string.IsNullOrEmpty(ast.ModuleName))
+				return Root.Modules.ContainsValue(ast) && Root.Modules.Remove("");
+
+			return _remFromPack(Root, ast);
+		}
+
+		bool _remFromPack(ModulePackage pack, IAbstractSyntaxTree ast)
+		{
+			if(pack.Modules.ContainsValue(ast))
+				foreach (var kv in pack.Modules)
+					if (kv.Value == ast)
+					{
+						pack.Modules.Remove(kv.Key);
+						return true;
+					}
+
+			foreach (var p in pack.Packages)
+				if (_remFromPack(p.Value, ast))
+					return true;
+
+			return false;
+		}
+
+
 		public bool Remove(string moduleName)
 		{
 			var packName = ModuleNameHelper.ExtractPackageName(moduleName);

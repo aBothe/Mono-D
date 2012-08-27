@@ -17,11 +17,9 @@ namespace MonoDevelop.D.Parser
 				var sln=Ide.IdeApp.ProjectOperations.CurrentSelectedSolution;
 				if(sln!=null)
 					foreach (var prj in sln.GetAllProjects())
-						if (prj is DProject && FileName.StartsWith(prj.BaseDirectory))
+						if (prj is DProject && prj.IsFileInProject(FileName))
 						{
-							var dprj = prj as DProject;
-							_ddom = null;
-							return dprj.LocalFileCache.GetModuleByFileName(FileName, prj.BaseDirectory);
+							return ((DProject)prj).LocalFileCache.GetModuleByFileName(FileName, prj.BaseDirectory);
 						}
 				
 				return _ddom;
@@ -31,15 +29,23 @@ namespace MonoDevelop.D.Parser
 				var sln = Ide.IdeApp.ProjectOperations.CurrentSelectedSolution;
 				if (sln != null)
 					foreach(var prj in sln.GetAllProjects())
-						if (prj is DProject && FileName.StartsWith(prj.BaseDirectory))
+						if (prj is DProject && prj.IsFileInProject(FileName))
 						{
-							var dprj = prj as DProject;
+							var dprj = (DProject)prj;
 
-							var oldAst = dprj.LocalFileCache.GetModuleByFileName(FileName, prj.BaseDirectory);
-							dprj.LocalFileCache.UfcsCache.RemoveModuleItems(oldAst);
-							oldAst = null;
-							dprj.LocalFileCache.AddOrUpdate(value);
-							dprj.LocalFileCache.UfcsCache.CacheModuleMethods(value,new ResolverContextStack(dprj.ParseCache, new ResolverContext()));
+							var oldAst = DDom;
+							if (oldAst != null)
+							{
+								dprj.LocalFileCache.UfcsCache.RemoveModuleItems(oldAst);
+								dprj.LocalFileCache.Remove(oldAst);
+								oldAst = null;
+							}
+
+							if (value != null)
+							{
+								dprj.LocalFileCache.AddOrUpdate(value);
+								dprj.LocalFileCache.UfcsCache.CacheModuleMethods(value, new ResolverContextStack(dprj.ParseCache, new ResolverContext()));
+							}
 						}
 				
 				_ddom=value;

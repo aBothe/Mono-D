@@ -26,25 +26,60 @@ namespace MonoDevelop.D.Parser
 			if (!storeAst)
 				return null;
 
+			ProjectFile pf = null;
+			var modName = "";
+
+			if (prj == null)
+			{
+				var sln = Ide.IdeApp.ProjectOperations.CurrentSelectedSolution;
+				if (sln != null)
+					foreach (var proj in sln.GetAllProjects())
+						if (proj.IsFileInProject(file))
+						{
+							prj = proj;
+							pf = proj.GetProjectFile(file);
+							modName = BuildModuleName(pf);
+							break;
+						}
+			}
+			else if(prj.IsFileInProject(file))
+			{
+				pf = prj.GetProjectFile(file);
+				modName = BuildModuleName(pf);
+			}
+
 			// HACK(?) The folds are parsed before the document gets loaded 
 			// - so reuse the last parsed document to save time
 			// -- What if multiple docs are opened?
 			if (LastParsedMod is ParsedDModule && LastParsedMod.FileName == file)
 			{
 				var d = (ParsedDModule)LastParsedMod;
-				if (prj!=null)
-				{
-					var pf = prj.GetProjectFile(file);
 
-					// Build appropriate module name
-					if (pf != null)
-						d.DDom.ModuleName = BuildModuleName(pf);
-				}
+				// Build appropriate module name
+				if (pf != null)
+					d.DDom.ModuleName = BuildModuleName(pf);
+
 				LastParsedMod = null;
 				return d;
 			}
 			else
 				LastParsedMod = null;
+
+			var dprj = prj as DProject;
+
+			// Remove obsolete ast from cache
+			IAbstractSyntaxTree ast = null;
+			if (dprj != null)
+			{
+				ast = dprj.LocalFileCache[modName];
+
+				if (ast != null)
+				{
+					dprj.LocalFileCache.Remove(ast);
+					dprj.LocalFileCache.UfcsCache.RemoveModuleItems(ast);
+					ast = null;
+				}
+			}
 
 			var doc = new ParsedDModule(file);
 
@@ -54,19 +89,13 @@ namespace MonoDevelop.D.Parser
 			parser.Lexer.OnlyEnlistDDocComments = false;
 
 			// Parse the code
-			var ast = parser.Parse();
+			ast = parser.Parse();
 
-			// Update project owner information
-			if (prj is DProject)
-			{
-				var pf = prj.GetProjectFile(file);
-
-				// Build appropriate module name
-				if (pf != null)
-					ast.ModuleName = BuildModuleName(pf);
-			}
-
+			// Update project owner information / Build appropriate module name
+			ast.ModuleName = modName;
 			ast.FileName = file;
+
+			// Assign new ast to the ParsedDDocument object
 			doc.DDom = ast;
 
 			// Add parser errors to the parser output
