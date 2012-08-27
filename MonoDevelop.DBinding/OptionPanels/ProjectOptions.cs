@@ -4,7 +4,10 @@ using MonoDevelop.Ide.Gui.Dialogs;
 using MonoDevelop.Ide;
 using MonoDevelop.Core;
 using MonoDevelop.Projects;
+using System.Linq;
 using Gtk;
+using System.Collections.Generic;
+using System.Collections;
 
 namespace MonoDevelop.D.OptionPanels
 {
@@ -79,9 +82,14 @@ namespace MonoDevelop.D.OptionPanels
 			
 			text_Libraries.Buffer.Text = string.Join ("\n", config.ExtraLibraries);
 			text_Includes.Buffer.Text = string.Join ("\n", proj.LocalIncludeCache.ParsedDirectories);
-			
-			// Init project dep list
-			int i=0;
+
+			// Remove old children list
+			var depsChildren = ((ArrayList)vbox_ProjectDeps.AllChildren);
+			for (int k = depsChildren.Count - 1; k >= 0; k--)
+				vbox_ProjectDeps.Remove((Widget)depsChildren[k]);
+
+			// Init new project dep list
+			int i = 0;
 			foreach(var prj in proj.ParentSolution.GetAllProjects())
 			{
 				if (prj == proj)
