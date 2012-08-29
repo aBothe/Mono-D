@@ -2136,6 +2136,7 @@ Example:
                 <property name="CanFocus">True</property>
                 <property name="ShowScrollbars">True</property>
                 <property name="HeadersVisible">False</property>
+                <property name="SearchColumn">0</property>
                 <signal name="ButtonPressEvent" handler="OnListButtonPressEvent" />
               </widget>
             </child>
@@ -2161,7 +2162,7 @@ Example:
             <property name="UseStock">True</property>
             <property name="Type">StockItem</property>
             <property name="StockId">gtk-cancel</property>
-            <property name="ResponseId">-6</property>
+            <property name="ResponseId">-1</property>
             <signal name="Clicked" handler="OnButtonCancelClicked" />
             <property name="label">gtk-cancel</property>
           </widget>
@@ -2179,7 +2180,7 @@ Example:
             <property name="Type">TextOnly</property>
             <property name="Label" translatable="yes">_OK</property>
             <property name="UseUnderline">True</property>
-            <property name="ResponseId">-5</property>
+            <property name="ResponseId">-1</property>
             <signal name="Clicked" handler="OnButtonOkClicked" />
           </widget>
           <packing>

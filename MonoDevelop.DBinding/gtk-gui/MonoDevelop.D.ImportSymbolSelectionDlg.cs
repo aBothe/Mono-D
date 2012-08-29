@@ -29,6 +29,7 @@ namespace MonoDevelop.D
 			this.list.CanFocus = true;
 			this.list.Name = "list";
 			this.list.HeadersVisible = false;
+			this.list.SearchColumn = 0;
 			this.GtkScrolledWindow.Add (this.list);
 			w1.Add (this.GtkScrolledWindow);
 			global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(w1 [this.GtkScrolledWindow]));
@@ -46,7 +47,7 @@ namespace MonoDevelop.D
 			this.buttonCancel.UseStock = true;
 			this.buttonCancel.UseUnderline = true;
 			this.buttonCancel.Label = "gtk-cancel";
-			this.AddActionWidget (this.buttonCancel, -6);
+			w4.Add (this.buttonCancel);
 			global::Gtk.ButtonBox.ButtonBoxChild w5 = ((global::Gtk.ButtonBox.ButtonBoxChild)(w4 [this.buttonCancel]));
 			w5.Expand = false;
 			w5.Fill = false;
@@ -57,7 +58,7 @@ namespace MonoDevelop.D
 			this.buttonOk.Name = "buttonOk";
 			this.buttonOk.UseUnderline = true;
 			this.buttonOk.Label = global::Mono.Unix.Catalog.GetString ("_OK");
-			this.AddActionWidget (this.buttonOk, -5);
+			w4.Add (this.buttonOk);
 			global::Gtk.ButtonBox.ButtonBoxChild w6 = ((global::Gtk.ButtonBox.ButtonBoxChild)(w4 [this.buttonOk]));
 			w6.Position = 1;
 			w6.Expand = false;

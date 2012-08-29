@@ -54,24 +54,33 @@ namespace MonoDevelop.D
 		protected void OnListButtonPressEvent (object o, ButtonPressEventArgs args)
 		{
 			// Handle double-click
-			if(args.Event.Type == Gdk.EventType.TwoButtonPress)
+			if (args.Event.Type == Gdk.EventType.TwoButtonPress)
+			{
 				Respond(ResponseType.Ok);
+				args.RetVal = true;
+				Hide();
+			}
 		}
 
 		protected void OnButtonCancelClicked (object sender, EventArgs e)
 		{
 			Respond(ResponseType.Cancel);
+			Hide();
 		}
 
 		protected void OnButtonOkClicked (object sender, EventArgs e)
 		{
 			Respond(ResponseType.Ok);
+			Hide();
 		}
 
 		protected void OnKeyPressEvent(object o, KeyPressEventArgs e)
 		{
-			if(e.Event.Key == Gdk.Key.Return)
+			if (e.Event.Key == Gdk.Key.Return)
+			{
 				Respond(ResponseType.Ok);
+				Hide();
+			}
 		}
 	}
 }
