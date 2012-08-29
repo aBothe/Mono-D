@@ -162,6 +162,8 @@
     <Compile Include="templates\DFileDescriptionTemplate.cs" />
     <Compile Include="Formatting\FormattingPanelWidget.cs" />
     <Compile Include="gtk-gui\MonoDevelop.D.Formatting.FormattingPanelWidget.cs" />
+    <Compile Include="Refactoring\ImportSymbolSelectionDlg.cs" />
+    <Compile Include="gtk-gui\MonoDevelop.D.ImportSymbolSelectionDlg.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>

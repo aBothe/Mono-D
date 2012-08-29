@@ -75,6 +75,7 @@
     <Compile Include="Dom\NodeDictionary.cs" />
     <Compile Include="Dom\TemplateParameters.cs" />
     <Compile Include="Refactoring\DeepASTVisitor.cs" />
+    <Compile Include="Refactoring\ImportDirectiveCreator.cs" />
     <Compile Include="Refactoring\ReferencesFinder.cs" />
     <Compile Include="Refactoring\TypeReferenceFinder.cs" />
     <Compile Include="Resolver\ExpressionSemantics\CTFE\FunctionEvaluation.cs" />

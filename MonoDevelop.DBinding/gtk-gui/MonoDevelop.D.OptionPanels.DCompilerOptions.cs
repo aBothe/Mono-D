@@ -399,7 +399,8 @@ namespace MonoDevelop.D.OptionPanels
 			this.table2.ColumnSpacing = ((uint)(6));
 			// Container child table2.Gtk.Table+TableChild
 			this.GtkScrolledWindow1 = new global::Gtk.ScrolledWindow ();
-			this.GtkScrolledWindow1.TooltipMarkup = "Line-separated list of paths where the compiler (and the code completion engine!) shall look in to resolve imports.";
+			this.GtkScrolledWindow1.TooltipMarkup = "Line-separated list of paths where the compiler (and the code completion engine!)" +
+				" shall look in to resolve imports.";
 			this.GtkScrolledWindow1.Name = "GtkScrolledWindow1";
 			this.GtkScrolledWindow1.ShadowType = ((global::Gtk.ShadowType)(1));
 			// Container child GtkScrolledWindow1.Gtk.Container+ContainerChild

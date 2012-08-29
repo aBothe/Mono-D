@@ -121,17 +121,20 @@ namespace D_Parser.Parser
 		/// <returns></returns>
 		public static CodeLocation FindLastImportStatementEndLocation(string Code)
 		{
-			var p = Create(new StringReader(Code));
-			p.doc = new DModule();// create dummy module to prevent crash at ImportDeclaration();
-			p.Step();
+			using (var sr = new StringReader(Code))
+				using (var p = Create(sr))
+				{
+					p.doc = new DModule();// create dummy module to prevent crash at ImportDeclaration();
+					p.Step();
 
-			if (p.laKind == Module)
-				p.ModuleDeclaration();
+					if (p.laKind == Module)
+						p.ModuleDeclaration();
 
-			while (p.laKind == Import)
-				p.ImportDeclaration();
+					while (p.laKind == Import)
+						p.ImportDeclaration();
 
-			return p.t.EndLocation;
+					return p.t == null ? new CodeLocation() : p.t.EndLocation;
+				}
 		}
 
 		public static BlockStatement ParseBlockStatement(string Code, INode ParentNode = null)

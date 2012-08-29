@@ -41,7 +41,7 @@ namespace D_Parser.Resolver.TypeResolution
 		/// Mind the extra options that might be passed via the Options parameter.
 		/// </summary>
 		/// <param name="ctxt">Can be null</param>
-		public static object GetScopedCodeObject(IEditorData editor,
+		public static ISyntaxRegion GetScopedCodeObject(IEditorData editor,
 			ResolverContextStack ctxt=null,
 			AstReparseOptions Options=0)
 		{
@@ -127,12 +127,8 @@ namespace D_Parser.Resolver.TypeResolution
 
 			if (o is IExpression)
 			{
-				// Do not accept number literals but (100.0) etc.
-				if (o is IdentifierExpression && ((IdentifierExpression)o).Format.HasFlag(LiteralFormat.Scalar))
-					return null;
-
 				var t=Evaluation.EvaluateType((IExpression)o, ctxt);
-
+				
 				if (t != null)
 					return new[] { t };
 			}
