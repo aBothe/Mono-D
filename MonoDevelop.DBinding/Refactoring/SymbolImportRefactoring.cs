@@ -1,19 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using D_Parser.Misc;
-using MonoDevelop.Ide;
-using MonoDevelop.D.Building;
-using MonoDevelop.D.Resolver;
-using D_Parser.Resolver.TypeResolution;
-using D_Parser.Resolver;
 using D_Parser.Dom;
-using D_Parser.Dom.Expressions;
-using D_Parser.Completion;
 using D_Parser.Refactoring;
-using MonoDevelop.Ide.Gui;
 using Gtk;
+using MonoDevelop.D.Resolver;
+using MonoDevelop.Ide;
+using MonoDevelop.Ide.Gui;
 
 namespace MonoDevelop.D.Refactoring
 {
