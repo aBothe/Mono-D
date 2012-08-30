@@ -92,6 +92,7 @@ namespace D_Parser.Refactoring
 			// Extract a concrete id from that syntax object. (If access expression/nested decl, use the inner-most one)
 			string id = null;
 
+			chkAgain:
 			if (o is ITypeDeclaration)
 			{
 				var td = ((ITypeDeclaration)o).InnerMost;
@@ -112,6 +113,11 @@ namespace D_Parser.Refactoring
 					id = (string)((IdentifierExpression)x).Value;
 				else if (x is TemplateInstanceExpression)
 					id = ((TemplateInstanceExpression)x).TemplateIdentifier.Id;
+				else if (x is NewExpression)
+				{
+					o = ((NewExpression)x).Type;
+					goto chkAgain;
+				}
 			}
 
 			if (string.IsNullOrEmpty(id))
