@@ -7,3 +7,7 @@ build/*.m*
 *.pidb
 *.userprefs
 *.orig
+
+*.DS_Store
+.DS_Store
+DS_Store
