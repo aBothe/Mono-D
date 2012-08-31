@@ -9,3 +9,5 @@ build/*.m*
 *.orig
 
 *.DS_Store
+.DS_Store
+DS_Store
