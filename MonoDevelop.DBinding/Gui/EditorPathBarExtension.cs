@@ -31,6 +31,24 @@ namespace MonoDevelop.D.Gui
 			base.Initialize();
 		}
 
+		class NoSelectionCustomNode : DNode
+		{
+			public NoSelectionCustomNode(D_Parser.Dom.INode parent)
+			{
+				this.Parent = parent;
+			}
+
+			public override void Accept(NodeVisitor vis)
+			{
+				throw new System.NotImplementedException();
+			}
+
+			public override R Accept<R>(NodeVisitor<R> vis)
+			{
+				throw new System.NotImplementedException();
+			}
+		}	
+
 		public Gtk.Widget CreatePathWidget(int index)
 		{
 			PathEntry[] path = CurrentPath;

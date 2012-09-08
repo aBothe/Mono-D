@@ -168,7 +168,7 @@ namespace D_Parser.Resolver.ExpressionSemantics
 				res = TypeDeclarationResolver.ResolveFurtherTypeIdentifier(tix.TemplateIdentifier.Id, resultBases, ctxt, tix);
 
 			return !ctxt.Options.HasFlag(ResolutionOptions.NoTemplateParameterDeduction) && deduceParameters ?
-				TemplateInstanceHandler.EvalAndFilterOverloads(res, tix, ctxt) : res;
+				TemplateInstanceHandler.DeduceParamsAndFilterOverloads(res, tix, ctxt) : res;
 		}
 
 		public AbstractType[] GetOverloads(IdentifierExpression id)

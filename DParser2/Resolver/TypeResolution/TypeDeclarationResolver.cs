@@ -6,6 +6,7 @@ using D_Parser.Dom.Statements;
 using D_Parser.Parser;
 using D_Parser.Resolver.ASTScanner;
 using D_Parser.Resolver.ExpressionSemantics;
+using D_Parser.Resolver.Templates;
 
 namespace D_Parser.Resolver.TypeResolution
 {
@@ -137,7 +138,7 @@ namespace D_Parser.Resolver.TypeResolution
 					foreach(var s in res)
 						l_.Add(s);
 
-				return TemplateInstanceHandler.EvalAndFilterOverloads(l_, null, false, ctxt);
+				return TemplateInstanceHandler.DeduceParamsAndFilterOverloads(l_, null, false, ctxt);
 			}
 			else
 				return res;
@@ -421,12 +422,20 @@ namespace D_Parser.Resolver.TypeResolution
 		{
 			stackNum_HandleNodeMatch++;
 
-			bool popAfterwards = m.Parent != ctxt.ScopedBlock && m.Parent is IBlockNode;
+			/*
+			 * Pushing a new scope is only required if current scope cannot be found in the handled node's hierarchy.
+			 */
+			bool popAfterwards = !ctxt.NodeIsInCurrentScopeHierarchy(m);
+
 			if (popAfterwards)
-				ctxt.PushNewScope((IBlockNode)m.Parent);
+				ctxt.PushNewScope(m is IBlockNode ? (IBlockNode)m : m.Parent as IBlockNode);
+
+
 
 			//HACK: Really dirty stack overflow prevention via manually counting call depth
 			var canResolveBaseGenerally = stackNum_HandleNodeMatch < 6;
+
+
 
 			var DoResolveBaseType = canResolveBaseGenerally &&
 				!ctxt.Options.HasFlag(ResolutionOptions.DontResolveBaseClasses) &&
@@ -516,22 +525,47 @@ namespace D_Parser.Resolver.TypeResolution
 				UserDefinedType udt = null;
 				var dc=(DClassLike)m;
 
+				var invisibleTypeParams = new Dictionary<string, TemplateParameterSymbol>();
+
+				/*
+				 * Add 'superior' template parameters to the current symbol because the parameters 
+				 * might be re-used in the nested class.
+				 */
+				if (dc.ClassType != DTokens.Template)
+				{
+					var tStk = new Stack<ResolverContext>();
+					do
+					{
+						var curCtxt = ctxt.Pop();
+						tStk.Push(curCtxt);
+						foreach (var kv in curCtxt.DeducedTemplateParameters)
+							if (!dc.ContainsTemplateParameter(kv.Key) && 
+								!invisibleTypeParams.ContainsKey(kv.Key))
+							{
+								invisibleTypeParams.Add(kv.Key, kv.Value);
+							}
+					} while (ctxt.PrevContextIsInSameHierarchy);
+
+					while (tStk.Count != 0)
+						ctxt.Push(tStk.Pop());
+				}
+
 				switch (dc.ClassType)
 				{
 					case DTokens.Struct:
-						udt = new StructType(dc, typeBase as ISyntaxRegion);
+						udt = new StructType(dc, typeBase as ISyntaxRegion, invisibleTypeParams);
 						break;
 					case DTokens.Union:
-						udt = new UnionType(dc, typeBase as ISyntaxRegion);
+						udt = new UnionType(dc, typeBase as ISyntaxRegion, invisibleTypeParams);
 						break;
 					case DTokens.Class:
-						udt = new ClassType(dc, typeBase as ISyntaxRegion, null);
+						udt = new ClassType(dc, typeBase as ISyntaxRegion, null, null, invisibleTypeParams);
 						break;
 					case DTokens.Template:
 						udt = new TemplateType(dc, typeBase as ISyntaxRegion);
 						break;
 					case DTokens.Interface:
-						udt = new InterfaceType(dc, typeBase as ISyntaxRegion);
+						udt = new InterfaceType(dc, typeBase as ISyntaxRegion, null, invisibleTypeParams);
 						break;
 					default:
 						ctxt.LogError(new ResolutionError(m, "Unknown type ("+DTokens.GetTokenString(dc.ClassType)+")"));
@@ -559,14 +593,11 @@ namespace D_Parser.Resolver.TypeResolution
 				ret = new EnumType((DEnum)m, typeBase as ISyntaxRegion);
 			else if (m is TemplateParameterNode)
 			{
-				var tmp = ((TemplateParameterNode)m).TemplateParameter;
-
 				//ResolveResult[] templateParameterType = null;
 
 				//TODO: Resolve the specialization type
 				//var templateParameterType = TemplateInstanceHandler.ResolveTypeSpecialization(tmp, ctxt);
-
-				ret = new MemberSymbol((DNode)m, null, typeBase as ISyntaxRegion);
+				ret = new TemplateParameterSymbol((TemplateParameterNode)m, null, typeBase as ISyntaxRegion);
 			}
 
 			if (canResolveBaseGenerally && resultBase is DSymbol)
@@ -586,6 +617,11 @@ namespace D_Parser.Resolver.TypeResolution
 			AbstractType resultBase = null,
 			object TypeDeclaration = null)
 		{
+			// Abbreviate a foreach-loop + List alloc
+			var ll = matches as IList<INode>;
+			if (ll != null && ll.Count == 1)
+				return new[] { ll[0] == null ? null : HandleNodeMatch(ll[0], ctxt, resultBase, TypeDeclaration) };
+
 			var rl = new List<AbstractType>();
 
 			if (matches != null)
@@ -650,10 +686,18 @@ namespace D_Parser.Resolver.TypeResolution
 			 * 2) Resolve the returned expression
 			 * 3) Use that one as the method's type
 			 */
+			bool pushMethodScope = ctxt.ScopedBlock != method;
 
 			if (method.Type != null)
 			{
+				if(pushMethodScope)	
+					ctxt.PushNewScope(method);
+
+				//FIXME: Is it legal to explicitly return a nested type?
 				var returnType = TypeDeclarationResolver.Resolve(method.Type, ctxt);
+
+				if (pushMethodScope) 
+					ctxt.Pop();
 
 				if (ctxt.CheckForSingleResult(returnType, method.Type))
 					return returnType[0];
@@ -691,11 +735,21 @@ namespace D_Parser.Resolver.TypeResolution
 
 				if (returnStmt != null && returnStmt.ReturnExpression != null)
 				{
-					ctxt.PushNewScope(method);
+					if (pushMethodScope)
+					{
+						var dedTypes = ctxt.CurrentContext.DeducedTemplateParameters;
+						ctxt.PushNewScope(method);
+						ctxt.CurrentContext.ScopedStatement = returnStmt;
+
+						if (dedTypes.Count != 0)
+							foreach (var kv in dedTypes)
+								ctxt.CurrentContext.DeducedTemplateParameters[kv.Key] = kv.Value;
+					}
 
 					var t= Evaluation.EvaluateType(returnStmt.ReturnExpression, ctxt);
-
-					ctxt.Pop();
+					
+					if (pushMethodScope)
+						ctxt.Pop();
 
 					return t;
 				}

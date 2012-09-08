@@ -39,6 +39,13 @@ namespace D_Parser.Resolver.Templates
 		public readonly ISymbolValue ParameterValue;
 		public readonly ITemplateParameter Parameter;
 
+		public TemplateParameterSymbol(TemplateParameterNode tpn, ISemantic typeOrValue, ISyntaxRegion paramIdentifier = null)
+			: base(tpn, AbstractType.Get(typeOrValue), paramIdentifier)
+		{
+			this.Parameter = tpn.TemplateParameter;
+			this.ParameterValue = typeOrValue as ISymbolValue;
+		}
+
 		public TemplateParameterSymbol(ITemplateParameter tp,
 			ISemantic representedTypeOrValue,
 			ISyntaxRegion originalParameterIdentifier = null,

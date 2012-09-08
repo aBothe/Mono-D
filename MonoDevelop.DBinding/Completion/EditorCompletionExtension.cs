@@ -112,12 +112,4 @@ namespace MonoDevelop.D
 			return doc.IsFile && DLanguageBinding.IsDFile(doc.FileName);
 		}
 	}
-
-	class NoSelectionCustomNode : DNode
-	{
-		public NoSelectionCustomNode(D_Parser.Dom.INode parent)
-		{
-			this.Parent = parent;
-		}
-	}	
 }

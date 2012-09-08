@@ -26,6 +26,11 @@ namespace D_Parser.Dom
 			this.Token = KeyToken;
 			this.Location = ErrorLocation;
 		}
+
+		public override string ToString()
+		{
+			return "[Parse error] "+Message;
+		}
 	}
 
 	public interface IBlockNode: INode, IEnumerable<INode>
@@ -41,7 +46,7 @@ namespace D_Parser.Dom
 		ReadOnlyCollection<INode> this[string Name] { get; }
 	}
 
-	public interface INode : ISyntaxRegion
+	public interface INode : ISyntaxRegion, IVisitable<NodeVisitor>
 	{
 		string Name { get; set; }
 		CodeLocation NameLocation { get; set; }
@@ -59,5 +64,7 @@ namespace D_Parser.Dom
 
 		INode Parent { get; set; }
 		INode NodeRoot { get; set; }
+
+		R Accept<R>(NodeVisitor<R> vis);
 	}
 }

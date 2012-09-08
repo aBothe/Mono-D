@@ -201,7 +201,7 @@ namespace D_Parser.Resolver.ExpressionSemantics
 
 			// If it's sure that we got a ufcs call here, add the base expression's type as first argument type
 			if (isUFCSFunction)
-				callArguments.Add(eval ? (ISemantic)baseValue : baseExpression[0]);
+				callArguments.Add(eval ? (ISemantic)baseValue : ((MemberSymbol)baseExpression[0]).Base);
 
 			if (call.Arguments != null)
 				foreach (var arg in call.Arguments)
@@ -223,7 +223,7 @@ namespace D_Parser.Resolver.ExpressionSemantics
 				else
 					tplParamDeductionArguments.Add(arg);
 
-			var templateParamFilteredOverloads= TemplateInstanceHandler.EvalAndFilterOverloads(
+			var templateParamFilteredOverloads= TemplateInstanceHandler.DeduceParamsAndFilterOverloads(
 				methodOverloads,
 				tplParamDeductionArguments.Count > 0 ? tplParamDeductionArguments.ToArray() : null,
 				true, ctxt);
@@ -264,12 +264,12 @@ namespace D_Parser.Resolver.ExpressionSemantics
 
 							if (add)
 							{
-								var bt=TypeDeclarationResolver.GetMethodReturnType(dm, ctxt);
+								var bt=ms.Base ?? TypeDeclarationResolver.GetMethodReturnType(dm, ctxt);
 
 								if (returnBaseTypeOnly)
 									argTypeFilteredOverloads.Add(bt);
 								else
-									argTypeFilteredOverloads.Add(new MemberSymbol(dm, bt, ms.DeclarationOrExpressionBase, ms.DeducedTypes));
+									argTypeFilteredOverloads.Add(ms.Base == null ? new MemberSymbol(dm, bt, ms.DeclarationOrExpressionBase, ms.DeducedTypes) : ms);
 							}
 
 							ctxt.CurrentContext.RemoveParamTypesFromPreferredLocals(ms);
@@ -466,7 +466,6 @@ namespace D_Parser.Resolver.ExpressionSemantics
 			}
 			else
 				IsUFCS = true;
-
 
 			// If evaluation active and the access expression is stand-alone, return a single item only.
 			if (EvalAndFilterOverloads && eval)

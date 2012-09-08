@@ -12,6 +12,24 @@ namespace D_Parser.Formatting
 {
 	public class DFormatter
 	{
+		#region Properties
+
+		#endregion
+
+		#region Constructor/Init
+
+		#endregion
+
+		void PlaceOnNewLine(ISyntaxRegion sr)
+		{
+		}
+
+		void FixIndent(CodeLocation loc)
+		{
+
+		}
+
+
 		public static bool IsPreStatementToken(int t)
 		{
 			return

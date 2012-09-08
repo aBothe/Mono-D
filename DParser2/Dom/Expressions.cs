@@ -5,8 +5,9 @@ using D_Parser.Parser;
 
 namespace D_Parser.Dom.Expressions
 {
-	public interface IExpression : ISyntaxRegion
+	public interface IExpression : ISyntaxRegion, IVisitable<ExpressionVisitor>
 	{
+		R Accept<R>(ExpressionVisitor<R> vis);
 	}
 
 	/// <summary>
@@ -42,6 +43,9 @@ namespace D_Parser.Dom.Expressions
 		{
 			get { return new[]{LeftOperand, RightOperand}; }
 		}
+
+		public abstract void Accept(ExpressionVisitor v);
+		public abstract R Accept<R>(ExpressionVisitor<R> v);
 	}
 
 	public class Expression : IExpression, IEnumerable<IExpression>, ContainerExpression
@@ -85,6 +89,9 @@ namespace D_Parser.Dom.Expressions
 		{
 			get { return Expressions.ToArray(); }
 		}
+
+		public void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	/// <summary>
@@ -95,6 +102,9 @@ namespace D_Parser.Dom.Expressions
 	public class AssignExpression : OperatorBasedExpression
 	{
 		public AssignExpression(int opToken) { OperatorToken = opToken; }
+
+		public override void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public override R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	/// <summary>
@@ -126,6 +136,9 @@ namespace D_Parser.Dom.Expressions
 		{
 			get { return new[] {OrOrExpression, TrueCaseExpression, FalseCaseExpression}; }
 		}
+
+		public void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	/// <summary>
@@ -134,6 +147,9 @@ namespace D_Parser.Dom.Expressions
 	public class OrOrExpression : OperatorBasedExpression
 	{
 		public OrOrExpression() { OperatorToken = DTokens.LogicalOr; }
+
+		public override void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public override R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	/// <summary>
@@ -142,6 +158,9 @@ namespace D_Parser.Dom.Expressions
 	public class AndAndExpression : OperatorBasedExpression
 	{
 		public AndAndExpression() { OperatorToken = DTokens.LogicalAnd; }
+
+		public override void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public override R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	/// <summary>
@@ -150,6 +169,9 @@ namespace D_Parser.Dom.Expressions
 	public class XorExpression : OperatorBasedExpression
 	{
 		public XorExpression() { OperatorToken = DTokens.Xor; }
+
+		public override void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public override R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	/// <summary>
@@ -158,6 +180,9 @@ namespace D_Parser.Dom.Expressions
 	public class OrExpression : OperatorBasedExpression
 	{
 		public OrExpression() { OperatorToken = DTokens.BitwiseOr; }
+
+		public override void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public override R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	/// <summary>
@@ -166,6 +191,9 @@ namespace D_Parser.Dom.Expressions
 	public class AndExpression : OperatorBasedExpression
 	{
 		public AndExpression() { OperatorToken = DTokens.BitwiseAnd; }
+
+		public override void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public override R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	/// <summary>
@@ -174,6 +202,9 @@ namespace D_Parser.Dom.Expressions
 	public class EqualExpression : OperatorBasedExpression
 	{
 		public EqualExpression(bool isUnEqual) { OperatorToken = isUnEqual ? DTokens.NotEqual : DTokens.Equal; }
+
+		public override void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public override R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	/// <summary>
@@ -189,6 +220,9 @@ namespace D_Parser.Dom.Expressions
 		{
 			return LeftOperand.ToString() + (Not ? " !" : " ") + "is " + RightOperand.ToString();
 		}
+
+		public override void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public override R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	/// <summary>
@@ -197,6 +231,9 @@ namespace D_Parser.Dom.Expressions
 	public class RelExpression : OperatorBasedExpression
 	{
 		public RelExpression(int relationalOperator) { OperatorToken = relationalOperator; }
+
+		public override void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public override R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	/// <summary>
@@ -212,6 +249,9 @@ namespace D_Parser.Dom.Expressions
 		{
 			return LeftOperand.ToString() + (Not ? " !" : " ") + "in " + RightOperand.ToString();
 		}
+
+		public override void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public override R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	/// <summary>
@@ -220,6 +260,9 @@ namespace D_Parser.Dom.Expressions
 	public class ShiftExpression : OperatorBasedExpression
 	{
 		public ShiftExpression(int shiftOperator) { OperatorToken = shiftOperator; }
+
+		public override void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public override R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	/// <summary>
@@ -228,6 +271,9 @@ namespace D_Parser.Dom.Expressions
 	public class AddExpression : OperatorBasedExpression
 	{
 		public AddExpression(bool isMinus) { OperatorToken = isMinus ? DTokens.Minus : DTokens.Plus; }
+
+		public override void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public override R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	/// <summary>
@@ -236,6 +282,9 @@ namespace D_Parser.Dom.Expressions
 	public class MulExpression : OperatorBasedExpression
 	{
 		public MulExpression(int mulOperator) { OperatorToken = mulOperator; }
+
+		public override void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public override R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	/// <summary>
@@ -244,6 +293,9 @@ namespace D_Parser.Dom.Expressions
 	public class CatExpression : OperatorBasedExpression
 	{
 		public CatExpression() { OperatorToken = DTokens.Tilde; }
+
+		public override void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public override R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	public interface UnaryExpression : IExpression { }
@@ -251,6 +303,9 @@ namespace D_Parser.Dom.Expressions
 	public class PowExpression : OperatorBasedExpression, UnaryExpression
 	{
 		public PowExpression() { OperatorToken = DTokens.Pow; }
+
+		public override void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public override R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	public abstract class SimpleUnaryExpression : UnaryExpression, ContainerExpression
@@ -278,6 +333,9 @@ namespace D_Parser.Dom.Expressions
 		{
 			get { return new[]{UnaryExpression}; }
 		}
+
+		public abstract void Accept(ExpressionVisitor vis);
+		public abstract R Accept<R>(ExpressionVisitor<R> vis);
 	}
 
 	/// <summary>
@@ -289,6 +347,9 @@ namespace D_Parser.Dom.Expressions
 		{
 			get { return DTokens.BitwiseAnd; }
 		}
+
+		public override void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public override R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	public class UnaryExpression_Increment : SimpleUnaryExpression
@@ -297,6 +358,9 @@ namespace D_Parser.Dom.Expressions
 		{
 			get { return DTokens.Increment; }
 		}
+
+		public override void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public override R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	public class UnaryExpression_Decrement : SimpleUnaryExpression
@@ -305,6 +369,9 @@ namespace D_Parser.Dom.Expressions
 		{
 			get { return DTokens.Decrement; }
 		}
+
+		public override void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public override R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	/// <summary>
@@ -316,6 +383,9 @@ namespace D_Parser.Dom.Expressions
 		{
 			get { return DTokens.Times; }
 		}
+
+		public override void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public override R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	public class UnaryExpression_Add : SimpleUnaryExpression
@@ -324,6 +394,9 @@ namespace D_Parser.Dom.Expressions
 		{
 			get { return DTokens.Plus; }
 		}
+
+		public override void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public override R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	public class UnaryExpression_Sub : SimpleUnaryExpression
@@ -332,6 +405,9 @@ namespace D_Parser.Dom.Expressions
 		{
 			get { return DTokens.Minus; }
 		}
+
+		public override void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public override R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	public class UnaryExpression_Not : SimpleUnaryExpression
@@ -340,6 +416,9 @@ namespace D_Parser.Dom.Expressions
 		{
 			get { return DTokens.Not; }
 		}
+
+		public override void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public override R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	/// <summary>
@@ -356,6 +435,9 @@ namespace D_Parser.Dom.Expressions
 		{
 			get { return DTokens.Tilde; }
 		}
+
+		public override void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public override R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	/// <summary>
@@ -382,6 +464,9 @@ namespace D_Parser.Dom.Expressions
 			get;
 			set;
 		}
+
+		public void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 
@@ -454,6 +539,9 @@ namespace D_Parser.Dom.Expressions
 				return null;
 			}
 		}
+
+		public void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	/// <summary>
@@ -537,6 +625,9 @@ namespace D_Parser.Dom.Expressions
 				return null;
 			}
 		}
+
+		public void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	public class DeleteExpression : SimpleUnaryExpression
@@ -545,6 +636,9 @@ namespace D_Parser.Dom.Expressions
 		{
 			get { return DTokens.Delete; }
 		}
+
+		public override void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public override R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	/// <summary>
@@ -601,6 +695,9 @@ namespace D_Parser.Dom.Expressions
 		{
 			get { return new[]{UnaryExpression}; }
 		}
+
+		public void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	public abstract class PostfixExpression : IExpression, ContainerExpression
@@ -618,6 +715,9 @@ namespace D_Parser.Dom.Expressions
 		{
 			get { return new[]{PostfixForeExpression}; }
 		}
+
+		public abstract void Accept(ExpressionVisitor vis);
+		public abstract R Accept<R>(ExpressionVisitor<R> vis);
 	}
 
 	/// <summary>
@@ -658,6 +758,9 @@ namespace D_Parser.Dom.Expressions
 				return new[]{PostfixForeExpression, AccessExpression};
 			}
 		}
+
+		public override void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public override R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	public class PostfixExpression_Increment : PostfixExpression
@@ -672,6 +775,9 @@ namespace D_Parser.Dom.Expressions
 			get;
 			set;
 		}
+
+		public override void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public override R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	public class PostfixExpression_Decrement : PostfixExpression
@@ -686,6 +792,9 @@ namespace D_Parser.Dom.Expressions
 			get;
 			set;
 		}
+
+		public override void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public override R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	/// <summary>
@@ -733,6 +842,9 @@ namespace D_Parser.Dom.Expressions
 				return l.Count>0? l.ToArray():null;
 			}
 		}
+
+		public override void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public override R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	/// <summary>
@@ -776,6 +888,9 @@ namespace D_Parser.Dom.Expressions
 				return l.Count > 0 ? l.ToArray() : null;
 			}
 		}
+
+		public override void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public override R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 
@@ -820,6 +935,9 @@ namespace D_Parser.Dom.Expressions
 				return new[] { FromExpression, ToExpression};
 			}
 		}
+
+		public override void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public override R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	#region Primary Expressions
@@ -859,6 +977,11 @@ namespace D_Parser.Dom.Expressions
 		{
 			get { return Arguments; }
 		}
+
+		public void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
+		public override void Accept(TypeDeclarationVisitor vis) {	vis.Visit(this); }
+		public override R Accept<R>(TypeDeclarationVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	/// <summary>
@@ -906,6 +1029,9 @@ namespace D_Parser.Dom.Expressions
 			get;
 			set;
 		}
+
+		public void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	public class TokenExpression : PrimaryExpression
@@ -931,6 +1057,9 @@ namespace D_Parser.Dom.Expressions
 			get;
 			set;
 		}
+
+		public void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	/// <summary>
@@ -957,6 +1086,9 @@ namespace D_Parser.Dom.Expressions
 		{
 			get { return Declaration != null ? Declaration.EndLocation : CodeLocation.Empty; }
 		}
+
+		public void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	/// <summary>
@@ -999,6 +1131,9 @@ namespace D_Parser.Dom.Expressions
 		{
 			get { return Elements!=null && Elements.Count>0? Elements.ToArray() : null; }
 		}
+
+		public void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	/// <summary>
@@ -1045,6 +1180,9 @@ namespace D_Parser.Dom.Expressions
 				return l.Count > 0 ? l.ToArray() : null;
 			}
 		}
+
+		public virtual void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public virtual R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	public class FunctionLiteral : PrimaryExpression
@@ -1100,6 +1238,9 @@ namespace D_Parser.Dom.Expressions
 			get;
 			set;
 		}
+
+		public void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	public class AssertExpression : PrimaryExpression,ContainerExpression
@@ -1132,6 +1273,9 @@ namespace D_Parser.Dom.Expressions
 		{
 			get { return AssignExpressions; }
 		}
+
+		public void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	public class MixinExpression : PrimaryExpression,ContainerExpression
@@ -1159,6 +1303,9 @@ namespace D_Parser.Dom.Expressions
 		{
 			get { return new[]{AssignExpression}; }
 		}
+
+		public void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	public class ImportExpression : PrimaryExpression,ContainerExpression
@@ -1186,6 +1333,9 @@ namespace D_Parser.Dom.Expressions
 		{
 			get { return new[]{AssignExpression}; }
 		}
+
+		public void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	public class TypeidExpression : PrimaryExpression,ContainerExpression
@@ -1220,6 +1370,9 @@ namespace D_Parser.Dom.Expressions
 				return null;
 			}
 		}
+
+		public void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	public class IsExpression : PrimaryExpression,ContainerExpression
@@ -1301,6 +1454,9 @@ namespace D_Parser.Dom.Expressions
 				return null;
 			}
 		}
+
+		public void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	public class TraitsExpression : PrimaryExpression
@@ -1331,6 +1487,9 @@ namespace D_Parser.Dom.Expressions
 			get;
 			set;
 		}
+
+		public void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	public class TraitsArgument
@@ -1384,6 +1543,9 @@ namespace D_Parser.Dom.Expressions
 		{
 			get { return new[]{Expression}; }
 		}
+
+		public void Accept(ExpressionVisitor vis) {	vis.Visit(this); }
+		public R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 	#endregion
 
@@ -1404,14 +1566,23 @@ namespace D_Parser.Dom.Expressions
 			get;
 			set;
 		}
+
+		public abstract void Accept(ExpressionVisitor vis);
+		public abstract R Accept<R>(ExpressionVisitor<R> vis);
 	}
 
 	public class VoidInitializer : AbstractVariableInitializer
 	{
 		public VoidInitializer() { }
+
+		public override void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public override R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
-	public class ArrayInitializer : AssocArrayExpression,IVariableInitializer { }
+	public class ArrayInitializer : AssocArrayExpression,IVariableInitializer {
+		public override void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public override R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
+	}
 
 	public class StructInitializer : AbstractVariableInitializer, ContainerExpression
 	{
@@ -1443,6 +1614,9 @@ namespace D_Parser.Dom.Expressions
 				return l.ToArray();
 			}
 		}
+
+		public override void Accept(ExpressionVisitor vis) { vis.Visit(this); }
+		public override R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	public class StructMemberInitializer

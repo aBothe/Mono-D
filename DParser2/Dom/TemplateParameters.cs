@@ -2,9 +2,11 @@
 
 namespace D_Parser.Dom
 {
-	public interface ITemplateParameter : ISyntaxRegion
+	public interface ITemplateParameter : ISyntaxRegion, IVisitable<TemplateParameterVisitor>
 	{
 		string Name { get; }
+
+		R Accept<R>(TemplateParameterVisitor<R> vis);
 	}
 
 	/// <summary>
@@ -64,6 +66,16 @@ namespace D_Parser.Dom
 		{
 			return TemplateParameter.ToString();
 		}
+
+		public void Accept(TypeDeclarationVisitor vis)
+		{
+			vis.Visit(this);
+		}
+
+		public R Accept<R>(TypeDeclarationVisitor<R> vis)
+		{
+			return vis.Visit(this);
+		}
 	}
 
 	public class TemplateParameterNode : DNode
@@ -89,6 +101,16 @@ namespace D_Parser.Dom
 		{
 			return (GetNodePath(this, false) + "." + ToString()).TrimEnd('.');
 		}
+
+		public override void Accept(NodeVisitor vis)
+		{
+			vis.Visit(this);
+		}
+
+		public override R Accept<R>(NodeVisitor<R> vis)
+		{
+			return vis.Visit(this);
+		}
 	}
 
 	public class TemplateTypeParameter : ITemplateParameter
@@ -113,6 +135,9 @@ namespace D_Parser.Dom
 
 		public CodeLocation Location { get; set; }
 		public CodeLocation EndLocation { get; set; }
+
+		public void Accept(TemplateParameterVisitor vis) { vis.Visit(this);	}
+		public R Accept<R>(TemplateParameterVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	public class TemplateThisParameter : ITemplateParameter
@@ -128,6 +153,9 @@ namespace D_Parser.Dom
 
 		public CodeLocation Location { get; set; }
 		public CodeLocation EndLocation { get; set; }
+
+		public void Accept(TemplateParameterVisitor vis) { vis.Visit(this); }
+		public R Accept<R>(TemplateParameterVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	public class TemplateValueParameter : ITemplateParameter
@@ -146,6 +174,9 @@ namespace D_Parser.Dom
 
 		public CodeLocation Location { get; set; }
 		public CodeLocation EndLocation { get; set; }
+
+		public virtual void Accept(TemplateParameterVisitor vis) { vis.Visit(this); }
+		public virtual R Accept<R>(TemplateParameterVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	public class TemplateAliasParameter : TemplateValueParameter
@@ -157,6 +188,9 @@ namespace D_Parser.Dom
 		{
 			return "alias " + base.ToString();
 		}
+
+		public void Accept(TemplateParameterVisitor vis) { vis.Visit(this); }
+		public R Accept<R>(TemplateParameterVisitor<R> vis) { return vis.Visit(this); }
 	}
 
 	public class TemplateTupleParameter : ITemplateParameter
@@ -170,5 +204,8 @@ namespace D_Parser.Dom
 
 		public CodeLocation Location { get; set; }
 		public CodeLocation EndLocation { get; set; }
+
+		public void Accept(TemplateParameterVisitor vis) { vis.Visit(this); }
+		public R Accept<R>(TemplateParameterVisitor<R> vis) { return vis.Visit(this); }
 	}
 }

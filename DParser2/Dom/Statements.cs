@@ -6,7 +6,7 @@ using D_Parser.Parser;
 namespace D_Parser.Dom.Statements
 {
 	#region Generics
-	public interface IStatement : ISyntaxRegion
+	public interface IStatement : ISyntaxRegion, IVisitable<StatementVisitor>
 	{
 		new CodeLocation Location { get; set; }
 		new CodeLocation EndLocation { get; set; }
@@ -20,6 +20,8 @@ namespace D_Parser.Dom.Statements
 		string AttributeString { get; }
 
 		string ToCode();
+
+		R Accept<R>(StatementVisitor<R> vis);
 	}
 
 	public interface IExpressionContainingStatement : IStatement
@@ -75,6 +77,9 @@ namespace D_Parser.Dom.Statements
 		{
 			return ToCode();
 		}
+
+		public abstract void Accept(StatementVisitor vis);
+		public abstract R Accept<R>(StatementVisitor<R> vis);
 	}
 
 	/// <summary>
@@ -85,6 +90,11 @@ namespace D_Parser.Dom.Statements
 		public virtual IStatement ScopedStatement { get; set; }
 
 		public virtual IStatement[] SubStatements { get { return new[] { ScopedStatement }; } }
+
+		public override string ToCode()
+		{
+			throw new NotImplementedException();
+		}
 	}
 	#endregion
 
@@ -148,6 +158,16 @@ namespace D_Parser.Dom.Statements
 
 				return l.ToArray();
 			}
+		}
+
+		public override void Accept(StatementVisitor vis)
+		{
+			vis.Visit(this);
+		}
+
+		public override R Accept<R>(StatementVisitor<R> vis)
+		{
+			return vis.Visit(this);
 		}
 
 		public virtual IStatement SearchStatement(CodeLocation Where)
@@ -224,6 +244,16 @@ namespace D_Parser.Dom.Statements
 		{
 			return Identifier + ":";
 		}
+
+		public override void Accept(StatementVisitor vis)
+		{
+			vis.Visit(this);
+		}
+
+		public override R Accept<R>(StatementVisitor<R> vis)
+		{
+			return vis.Visit(this);
+		}
 	}
 
 	public class IfStatement : StatementContainingStatement,IDeclarationContainingStatement,IExpressionContainingStatement
@@ -295,6 +325,16 @@ namespace D_Parser.Dom.Statements
 				return IfVariable;
 			}
 		}
+
+		public override void Accept(StatementVisitor vis)
+		{
+			vis.Visit(this);
+		}
+
+		public override R Accept<R>(StatementVisitor<R> vis)
+		{
+			return vis.Visit(this);
+		}
 	}
 
 	public class WhileStatement : StatementContainingStatement, IExpressionContainingStatement
@@ -334,6 +374,16 @@ namespace D_Parser.Dom.Statements
 		public IExpression[] SubExpressions
 		{
 			get { return new[]{Condition}; }
+		}
+
+		public override void Accept(StatementVisitor vis)
+		{
+			vis.Visit(this);
+		}
+
+		public override R Accept<R>(StatementVisitor<R> vis)
+		{
+			return vis.Visit(this);
 		}
 	}
 
@@ -390,6 +440,16 @@ namespace D_Parser.Dom.Statements
 				return null;
 			}
 		}
+
+		public override void Accept(StatementVisitor vis)
+		{
+			vis.Visit(this);
+		}
+
+		public override R Accept<R>(StatementVisitor<R> vis)
+		{
+			return vis.Visit(this);
+		}
 	}
 
 	public class ForeachStatement : StatementContainingStatement, 
@@ -442,6 +502,16 @@ namespace D_Parser.Dom.Statements
 
 			return ret;
 		}
+
+		public override void Accept(StatementVisitor vis)
+		{
+			vis.Visit(this);
+		}
+
+		public override R Accept<R>(StatementVisitor<R> vis)
+		{
+			return vis.Visit(this);
+		}
 	}
 
 	public class SwitchStatement : StatementContainingStatement, IExpressionContainingStatement
@@ -467,6 +537,16 @@ namespace D_Parser.Dom.Statements
 				ret += ' '+ScopedStatement.ToCode();
 
 			return ret;
+		}
+
+		public override void Accept(StatementVisitor vis)
+		{
+			vis.Visit(this);
+		}
+
+		public override R Accept<R>(StatementVisitor<R> vis)
+		{
+			return vis.Visit(this);
 		}
 
 		public class CaseStatement : StatementContainingStatement, IExpressionContainingStatement
@@ -507,6 +587,16 @@ namespace D_Parser.Dom.Statements
 					return ScopeStatementList;
 				}
 			}
+
+			public override void Accept(StatementVisitor vis)
+			{
+				vis.Visit(this);
+			}
+
+			public override R Accept<R>(StatementVisitor<R> vis)
+			{
+				return vis.Visit(this);
+			}
 		}
 
 		public class DefaultStatement : StatementContainingStatement
@@ -530,6 +620,16 @@ namespace D_Parser.Dom.Statements
 
 				return ret;
 			}
+
+			public override void Accept(StatementVisitor vis)
+			{
+				vis.Visit(this);
+			}
+
+			public override R Accept<R>(StatementVisitor<R> vis)
+			{
+				return vis.Visit(this);
+			}
 		}
 	}
 
@@ -546,6 +646,16 @@ namespace D_Parser.Dom.Statements
 		{
 			get { return string.IsNullOrEmpty(Identifier)?null:new[]{new IdentifierExpression(Identifier)}; }
 		}
+
+		public override void Accept(StatementVisitor vis)
+		{
+			vis.Visit(this);
+		}
+
+		public override R Accept<R>(StatementVisitor<R> vis)
+		{
+			return vis.Visit(this);
+		}
 	}
 
 	public class BreakStatement : AbstractStatement,IExpressionContainingStatement
@@ -561,6 +671,16 @@ namespace D_Parser.Dom.Statements
 		{
 			get { return string.IsNullOrEmpty(Identifier) ? null : new[] { new IdentifierExpression(Identifier) }; }
 		}
+
+		public override void Accept(StatementVisitor vis)
+		{
+			vis.Visit(this);
+		}
+
+		public override R Accept<R>(StatementVisitor<R> vis)
+		{
+			return vis.Visit(this);
+		}
 	}
 
 	public class ReturnStatement : AbstractStatement,IExpressionContainingStatement
@@ -575,6 +695,16 @@ namespace D_Parser.Dom.Statements
 		public IExpression[] SubExpressions
 		{
 			get { return new[]{ReturnExpression}; }
+		}
+
+		public override void Accept(StatementVisitor vis)
+		{
+			vis.Visit(this);
+		}
+
+		public override R Accept<R>(StatementVisitor<R> vis)
+		{
+			return vis.Visit(this);
 		}
 	}
 
@@ -610,6 +740,16 @@ namespace D_Parser.Dom.Statements
 		{
 			get { return CaseExpression != null ? new[] { CaseExpression } : null; }
 		}
+
+		public override void Accept(StatementVisitor vis)
+		{
+			vis.Visit(this);
+		}
+
+		public override R Accept<R>(StatementVisitor<R> vis)
+		{
+			return vis.Visit(this);
+		}
 	}
 
 	public class WithStatement : StatementContainingStatement, IExpressionContainingStatement
@@ -644,6 +784,16 @@ namespace D_Parser.Dom.Statements
 				return null;
 			}
 		}
+
+		public override void Accept(StatementVisitor vis)
+		{
+			vis.Visit(this);
+		}
+
+		public override R Accept<R>(StatementVisitor<R> vis)
+		{
+			return vis.Visit(this);
+		}
 	}
 
 	public class SynchronizedStatement : StatementContainingStatement,IExpressionContainingStatement
@@ -666,6 +816,16 @@ namespace D_Parser.Dom.Statements
 		public IExpression[] SubExpressions
 		{
 			get { return new[]{SyncExpression}; }
+		}
+
+		public override void Accept(StatementVisitor vis)
+		{
+			vis.Visit(this);
+		}
+
+		public override R Accept<R>(StatementVisitor<R> vis)
+		{
+			return vis.Visit(this);
 		}
 	}
 
@@ -709,6 +869,16 @@ namespace D_Parser.Dom.Statements
 			return ret;
 		}
 
+		public override void Accept(StatementVisitor vis)
+		{
+			vis.Visit(this);
+		}
+
+		public override R Accept<R>(StatementVisitor<R> vis)
+		{
+			return vis.Visit(this);
+		}
+
 		public class CatchStatement : StatementContainingStatement,IDeclarationContainingStatement
 		{
 			public DVariable CatchParameter;
@@ -727,6 +897,16 @@ namespace D_Parser.Dom.Statements
 					return new[]{CatchParameter}; 
 				}
 			}
+
+			public override void Accept(StatementVisitor vis)
+			{
+				vis.Visit(this);
+			}
+
+			public override R Accept<R>(StatementVisitor<R> vis)
+			{
+				return vis.Visit(this);
+			}
 		}
 
 		public class FinallyStatement : StatementContainingStatement
@@ -734,6 +914,16 @@ namespace D_Parser.Dom.Statements
 			public override string ToCode()
 			{
 				return "finally" + (ScopedStatement != null ? (' ' + ScopedStatement.ToCode()) : "");
+			}
+
+			public override void Accept(StatementVisitor vis)
+			{
+				vis.Visit(this);
+			}
+
+			public override R Accept<R>(StatementVisitor<R> vis)
+			{
+				return vis.Visit(this);
 			}
 		}
 	}
@@ -751,6 +941,16 @@ namespace D_Parser.Dom.Statements
 		{
 			get { return new[]{ThrowExpression}; }
 		}
+
+		public override void Accept(StatementVisitor vis)
+		{
+			vis.Visit(this);
+		}
+
+		public override R Accept<R>(StatementVisitor<R> vis)
+		{
+			return vis.Visit(this);
+		}
 	}
 
 	public class ScopeGuardStatement : StatementContainingStatement
@@ -764,6 +964,16 @@ namespace D_Parser.Dom.Statements
 		public override string ToCode()
 		{
 			return "scope("+GuardedScope+')'+ (ScopedStatement==null?"":ScopedStatement.ToCode());
+		}
+
+		public override void Accept(StatementVisitor vis)
+		{
+			vis.Visit(this);
+		}
+
+		public override R Accept<R>(StatementVisitor<R> vis)
+		{
+			return vis.Visit(this);
 		}
 	}
 
@@ -784,6 +994,16 @@ namespace D_Parser.Dom.Statements
 
 			return ret+'}';
 		}
+
+		public override void Accept(StatementVisitor vis)
+		{
+			vis.Visit(this);
+		}
+
+		public override R Accept<R>(StatementVisitor<R> vis)
+		{
+			return vis.Visit(this);
+		}
 	}
 
 	public class PragmaStatement : StatementContainingStatement,IExpressionContainingStatement
@@ -802,6 +1022,16 @@ namespace D_Parser.Dom.Statements
 			r += ScopedStatement==null? "" : (" " + ScopedStatement.ToCode());
 
 			return r;
+		}
+
+		public override void Accept(StatementVisitor vis)
+		{
+			vis.Visit(this);
+		}
+
+		public override R Accept<R>(StatementVisitor<R> vis)
+		{
+			return vis.Visit(this);
 		}
 	}
 
@@ -852,6 +1082,16 @@ namespace D_Parser.Dom.Statements
 
 				return ret;
 			}
+
+			public override void Accept(StatementVisitor vis)
+			{
+				vis.Visit(this);
+			}
+
+			public override R Accept<R>(StatementVisitor<R> vis)
+			{
+				return vis.Visit(this);
+			}
 		}
 
 		public class VersionStatement : ConditionStatement
@@ -872,6 +1112,16 @@ namespace D_Parser.Dom.Statements
 
 				return ret;
 			}
+
+			public override void Accept(StatementVisitor vis)
+			{
+				vis.Visit(this);
+			}
+
+			public override R Accept<R>(StatementVisitor<R> vis)
+			{
+				return vis.Visit(this);
+			}
 		}
 	}
 
@@ -889,6 +1139,16 @@ namespace D_Parser.Dom.Statements
 		{
 			get { return new[]{ AssertedExpression }; }
 		}
+
+		public override void Accept(StatementVisitor vis)
+		{
+			vis.Visit(this);
+		}
+
+		public override R Accept<R>(StatementVisitor<R> vis)
+		{
+			return vis.Visit(this);
+		}
 	}
 
 	public class VolatileStatement : StatementContainingStatement
@@ -896,6 +1156,16 @@ namespace D_Parser.Dom.Statements
 		public override string ToCode()
 		{
 			return "volatile "+ScopedStatement==null?"":ScopedStatement.ToCode();
+		}
+
+		public override void Accept(StatementVisitor vis)
+		{
+			vis.Visit(this);
+		}
+
+		public override R Accept<R>(StatementVisitor<R> vis)
+		{
+			return vis.Visit(this);
 		}
 	}
 
@@ -911,6 +1181,16 @@ namespace D_Parser.Dom.Statements
 		public IExpression[] SubExpressions
 		{
 			get { return new[]{Expression}; }
+		}
+
+		public override void Accept(StatementVisitor vis)
+		{
+			vis.Visit(this);
+		}
+
+		public override R Accept<R>(StatementVisitor<R> vis)
+		{
+			return vis.Visit(this);
 		}
 	}
 
@@ -961,6 +1241,16 @@ namespace D_Parser.Dom.Statements
 				return l.ToArray();
 			}
 		}
+
+		public override void Accept(StatementVisitor vis)
+		{
+			vis.Visit(this);
+		}
+
+		public override R Accept<R>(StatementVisitor<R> vis)
+		{
+			return vis.Visit(this);
+		}
 	}
 
 	public class TemplateMixin : AbstractStatement,IExpressionContainingStatement
@@ -998,8 +1288,21 @@ namespace D_Parser.Dom.Statements
 				return l.ToArray();
 			}
 		}
+
+		public override void Accept(StatementVisitor vis)
+		{
+			vis.Visit(this);
+		}
+
+		public override R Accept<R>(StatementVisitor<R> vis)
+		{
+			return vis.Visit(this);
+		}
 	}
 
+	/// <summary>
+	/// version = MyVersionSpec
+	/// </summary>
 	public class VersionDebugSpecification : AbstractStatement, IExpressionContainingStatement
 	{
 		public int Token;
@@ -1014,6 +1317,16 @@ namespace D_Parser.Dom.Statements
 		public IExpression[] SubExpressions
 		{
 			get { return new[]{ SpecifiedValue }; }
+		}
+
+		public override void Accept(StatementVisitor vis)
+		{
+			vis.Visit(this);
+		}
+
+		public override R Accept<R>(StatementVisitor<R> vis)
+		{
+			return vis.Visit(this);
 		}
 	}
 }

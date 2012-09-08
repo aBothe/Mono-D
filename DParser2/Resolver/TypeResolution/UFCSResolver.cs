@@ -39,8 +39,23 @@ namespace D_Parser.Resolver.TypeResolution
 					if (tempResults != null)
 						foreach (var m in tempResults)
 						{
-							var mr = TypeDeclarationResolver.HandleNodeMatch(m, ctxt, TypeDeclarationResolver.Convert(firstArgument), acc) as MemberSymbol;
+							ctxt.PushNewScope(m);
 
+							if (m.TemplateParameters != null && m.TemplateParameters.Length != 0)
+							{
+								var ov = TemplateInstanceHandler.DeduceParamsAndFilterOverloads(
+									new[] { new MemberSymbol(m, null, acc) }, 
+									new[] { firstArgument }, true, ctxt);
+
+								if (ov == null || ov.Length == 0)
+									continue;
+
+								var ms = (DSymbol)ov[0];
+								ctxt.CurrentContext.IntroduceTemplateParameterTypes(ms);
+							}
+							
+							var mr = TypeDeclarationResolver.HandleNodeMatch(m, ctxt, null, acc) as MemberSymbol;
+							ctxt.Pop();
 							if (mr!=null)
 							{
 								mr.IsUFCSResult = true;
