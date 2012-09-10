@@ -116,6 +116,7 @@
     <Compile Include="Resolver\ResolutionOptions.cs" />
     <Compile Include="Resolver\ResultComparer.cs" />
     <Compile Include="Resolver\Templates\DeducedTypeDictionary.cs" />
+    <Compile Include="Resolver\Templates\ImplicitTemplateProperties.cs" />
     <Compile Include="Resolver\Templates\SpecializationOrdering.cs" />
     <Compile Include="Resolver\Templates\TemplateAliasParameterDeduction.cs" />
     <Compile Include="Resolver\Templates\TemplateParameterDeduction.cs" />

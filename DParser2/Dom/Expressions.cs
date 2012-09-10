@@ -1492,7 +1492,7 @@ namespace D_Parser.Dom.Expressions
 		public R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
-	public class TraitsArgument
+	public class TraitsArgument : ISyntaxRegion, IVisitable<ExpressionVisitor>
 	{
 		public ITypeDeclaration Type;
 		public IExpression AssignExpression;
@@ -1512,6 +1512,16 @@ namespace D_Parser.Dom.Expressions
 		{
 			get;
 			set;
+		}
+
+		public void Accept(ExpressionVisitor vis)
+		{
+			vis.Visit(this);
+		}
+
+		public R Accept<R>(ExpressionVisitor<R> vis)
+		{
+			return vis.Visit(this);
 		}
 	}
 
@@ -1619,7 +1629,7 @@ namespace D_Parser.Dom.Expressions
 		public override R Accept<R>(ExpressionVisitor<R> vis) { return vis.Visit(this); }
 	}
 
-	public class StructMemberInitializer
+	public class StructMemberInitializer : ISyntaxRegion, IVisitable<ExpressionVisitor>
 	{
 		public string MemberName = string.Empty;
 		public IExpression Value;
@@ -1627,6 +1637,28 @@ namespace D_Parser.Dom.Expressions
 		public sealed override string ToString()
 		{
 			return (!string.IsNullOrEmpty(MemberName) ? (MemberName + ":") : "") + Value.ToString();
+		}
+
+		public CodeLocation Location
+		{
+			get;
+			set;
+		}
+
+		public CodeLocation EndLocation
+		{
+			get;
+			set;
+		}
+
+		public void Accept(ExpressionVisitor vis)
+		{
+			vis.Visit(this);
+		}
+
+		public R Accept<R>(ExpressionVisitor<R> vis)
+		{
+			return vis.Visit(this);
 		}
 	}
 	#endregion

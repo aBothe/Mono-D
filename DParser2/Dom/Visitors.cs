@@ -214,11 +214,13 @@ namespace D_Parser.Dom
 		void Visit(TypeidExpression x);
 		void Visit(IsExpression x);
 		void Visit(TraitsExpression x);
+		void Visit(TraitsArgument arg);
 		void Visit(SurroundingParenthesesExpression x);
 
 		void Visit(VoidInitializer x);
 		void Visit(ArrayInitializer x);
 		void Visit(StructInitializer x);
+		void Visit(StructMemberInitializer structMemberInitializer);
 	}
 
 	public interface ExpressionVisitor<out R> : IVisitor<R>
@@ -276,11 +278,13 @@ namespace D_Parser.Dom
 		R Visit(TypeidExpression x);
 		R Visit(IsExpression x);
 		R Visit(TraitsExpression x);
+		R Visit(TraitsArgument arg);
 		R Visit(SurroundingParenthesesExpression x);
 
 		R Visit(VoidInitializer x);
 		R Visit(ArrayInitializer x);
 		R Visit(StructInitializer x);
+		R Visit(StructMemberInitializer structMemberInitializer);
 	}
 
 	public interface TypeDeclarationVisitor : IVisitor

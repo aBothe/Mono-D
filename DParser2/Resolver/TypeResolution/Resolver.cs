@@ -126,16 +126,11 @@ namespace D_Parser.Resolver.TypeResolution
 			var o = GetScopedCodeObject(editor, ctxt, Options);
 
 			if (o is IExpression)
-			{
-				var t=Evaluation.EvaluateType((IExpression)o, ctxt);
-				
-				if (t != null)
-					return new[] { t };
-			}
+				return Evaluation.EvaluateTypes((IExpression)o, ctxt);
 			else if(o is ITypeDeclaration)
 				return TypeDeclarationResolver.Resolve((ITypeDeclaration)o, ctxt);
-
-			return null;
+			else
+				return null;
 		}
 
 		static int bcStack = 0;

@@ -318,7 +318,8 @@ namespace D_Parser.Resolver
 
 	public class TemplateType : TemplateIntermediateType
 	{
-		public TemplateType(DClassLike dc, ISyntaxRegion td) : base(dc, td) { }
+		public TemplateType(DClassLike dc, ISyntaxRegion td, Dictionary<string, TemplateParameterSymbol> inheritedTypeParams = null) : base(dc, td, null, null, inheritedTypeParams) { }
+		public TemplateType(DClassLike dc, ISyntaxRegion td, ReadOnlyCollection<KeyValuePair<string, TemplateParameterSymbol>> inheritedTypeParams = null) : base(dc, td, null, null, inheritedTypeParams) { }
 	}
 
 	public class TemplateIntermediateType : UserDefinedType

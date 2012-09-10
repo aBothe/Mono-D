@@ -1536,7 +1536,7 @@ namespace D_Parser.Parser
 						break;
 
 					// Identifier : NonVoidInitializer
-					var sinit = new StructMemberInitializer();
+					var sinit = new StructMemberInitializer { Location = la.Location };
 					LastParsedObject = sinit;
 					if (laKind == Identifier && Lexer.CurrentPeekToken.Kind == Colon)
 					{
@@ -1546,6 +1546,8 @@ namespace D_Parser.Parser
 					}
 
 					sinit.Value = NonVoidInitializer(Scope);
+
+					sinit.EndLocation = t.EndLocation;
 
 					inits.Add(sinit);
 				}
@@ -3561,7 +3563,7 @@ namespace D_Parser.Parser
 						}
 						else
 						{
-							var catchVar = new DVariable();
+							var catchVar = new DVariable { Parent = Scope };
 							LastParsedObject = catchVar;
 							var tt = la; //TODO?
 							catchVar.Type = BasicType();
@@ -3570,8 +3572,8 @@ namespace D_Parser.Parser
 								la = tt;
 								catchVar.Type = new IdentifierDeclaration("Exception");
 							}
-							Expect(Identifier);
-							catchVar.Name = t.Value;
+							if(Expect(Identifier))
+								catchVar.Name = t.Value;
 							Expect(CloseParenthesis);
 
 							c.CatchParameter = catchVar;

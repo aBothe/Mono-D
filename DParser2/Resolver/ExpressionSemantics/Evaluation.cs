@@ -54,6 +54,20 @@ namespace D_Parser.Resolver.ExpressionSemantics
 			return new Evaluation(vp).E(x) as ISymbolValue;
 		}
 
+		/// <summary>
+		/// Since most expressions should return a single type only, it's not needed to use this function unless you might
+		/// want to pay attention on (illegal) multiple overloads.
+		/// </summary>
+		public static AbstractType[] EvaluateTypes(IExpression x, ResolverContextStack ctxt)
+		{
+			var t = new Evaluation(ctxt).E(x);
+
+			if (t is InternalOverloadValue)
+				return ((InternalOverloadValue)t).Overloads;
+
+			return new[]{ AbstractType.Get(t) };
+		}
+
 		public static AbstractType EvaluateType(IExpression x, ResolverContextStack ctxt)
 		{
 			return AbstractType.Get(new Evaluation(ctxt).E(x));

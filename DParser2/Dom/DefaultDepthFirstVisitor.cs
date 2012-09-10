@@ -9,16 +9,6 @@ namespace D_Parser.Dom
 {
 	public abstract class DefaultDepthFirstVisitor : DVisitor
 	{
-		public virtual void VisitChildren(ContainerExpression x)
-		{
-			
-		}
-
-		public virtual void VisitChildren(ITypeDeclaration td)
-		{
-
-		}
-
 		#region Nodes
 		public virtual void VisitChildren(IBlockNode block)
 		{
@@ -242,107 +232,142 @@ namespace D_Parser.Dom
 
 		public virtual void Visit(ContinueStatement s)
 		{
-			throw new NotImplementedException();
+			VisitAbstractStmt(s);
 		}
 
 		public virtual void Visit(BreakStatement s)
 		{
-			throw new NotImplementedException();
+			VisitAbstractStmt(s);
 		}
 
 		public virtual void Visit(ReturnStatement s)
 		{
-			throw new NotImplementedException();
+			VisitAbstractStmt(s);
+			if (s.ReturnExpression != null)
+				s.ReturnExpression.Accept(this);
 		}
 
 		public virtual void Visit(GotoStatement s)
 		{
-			throw new NotImplementedException();
+			VisitAbstractStmt(s);
+			if (s.CaseExpression != null)
+				s.CaseExpression.Accept(this);
 		}
 
 		public virtual void Visit(WithStatement s)
 		{
-			throw new NotImplementedException();
+			VisitChildren(s);
+
+			if (s.WithExpression != null)
+				s.WithExpression.Accept(this);
+			if (s.WithSymbol != null)
+				s.WithSymbol.Accept(this);
 		}
 
 		public virtual void Visit(SynchronizedStatement s)
 		{
-			throw new NotImplementedException();
+			VisitChildren(s);
+
+			if (s.SyncExpression != null)
+				s.SyncExpression.Accept(this);
 		}
 
 		public virtual void Visit(TryStatement s)
 		{
-			throw new NotImplementedException();
+			VisitChildren(s);
 		}
 
 		public virtual void Visit(TryStatement.CatchStatement s)
 		{
-			throw new NotImplementedException();
+			VisitChildren(s);
+
+			if (s.CatchParameter != null)
+				s.CatchParameter.Accept(this);
 		}
 
 		public virtual void Visit(Statements.TryStatement.FinallyStatement s)
 		{
-			throw new NotImplementedException();
+			VisitChildren(s);
 		}
 
 		public virtual void Visit(Statements.ThrowStatement s)
 		{
-			throw new NotImplementedException();
+			VisitAbstractStmt(s);
+
+			if (s.ThrowExpression != null)
+				s.ThrowExpression.Accept(this);
 		}
 
 		public virtual void Visit(Statements.ScopeGuardStatement s)
 		{
-			throw new NotImplementedException();
+			VisitChildren(s);
 		}
 
 		public virtual void Visit(Statements.AsmStatement s)
 		{
-			throw new NotImplementedException();
+			VisitAbstractStmt(s);
 		}
 
 		public virtual void Visit(Statements.PragmaStatement s)
 		{
-			throw new NotImplementedException();
+			VisitChildren(s);
+
+			s.Pragma.Accept(this);
 		}
 
 		public virtual void Visit(Statements.AssertStatement s)
 		{
-			throw new NotImplementedException();
+			VisitAbstractStmt(s);
+
+			if (s.AssertedExpression != null)
+				s.AssertedExpression.Accept(this);
 		}
 
 		public virtual void Visit(Statements.ConditionStatement.DebugStatement s)
 		{
-			throw new NotImplementedException();
+			VisitChildren(s);
 		}
 
 		public virtual void Visit(Statements.ConditionStatement.VersionStatement s)
 		{
-			throw new NotImplementedException();
+			VisitChildren(s);
 		}
 
 		public virtual void Visit(Statements.VolatileStatement s)
 		{
-			throw new NotImplementedException();
+			VisitChildren(s);
 		}
 
 		public virtual void Visit(Statements.ExpressionStatement s)
 		{
-			throw new NotImplementedException();
+			VisitAbstractStmt(s);
+
+			s.Expression.Accept(this);
 		}
 
 		public virtual void Visit(Statements.DeclarationStatement s)
 		{
-			throw new NotImplementedException();
+			VisitAbstractStmt(s);
+
+			if (s.Declarations != null)
+				foreach (var decl in s.Declarations)
+					decl.Accept(this);
 		}
 
 		public virtual void Visit(Statements.TemplateMixin s)
 		{
-			throw new NotImplementedException();
+			VisitAbstractStmt(s);
+
+			if (s.Qualifier != null)
+				s.Qualifier.Accept(this);
 		}
 
 		public virtual void Visit(Statements.VersionDebugSpecification s)
 		{
-			throw new NotImplementedException();
+			VisitAbstractStmt(s);
+
+			if (s.SpecifiedValue != null)
+				s.SpecifiedValue.Accept(this);
 		}
 
 		public virtual void VisitAbstractStmt(AbstractStatement stmt)
@@ -354,380 +379,524 @@ namespace D_Parser.Dom
 		#endregion
 
 		#region Expressions
+		public virtual void VisitChildren(ContainerExpression x)
+		{
+			foreach (var sx in x.SubExpressions)
+				sx.Accept(this);
+		}
+
+		public virtual void VisitOpBasedExpression(OperatorBasedExpression ox)
+		{
+			VisitChildren(ox);
+		}
+
 		public virtual void Visit(Expression x)
 		{
-			throw new NotImplementedException();
+			VisitChildren(x);
 		}
 
 		public virtual void Visit(Expressions.AssignExpression x)
 		{
-			throw new NotImplementedException();
+			VisitOpBasedExpression(x);
 		}
 
 		public virtual void Visit(Expressions.ConditionalExpression x)
 		{
-			throw new NotImplementedException();
+			VisitChildren(x);
 		}
 
 		public virtual void Visit(Expressions.OrOrExpression x)
 		{
-			throw new NotImplementedException();
+			VisitOpBasedExpression(x);
 		}
 
 		public virtual void Visit(Expressions.AndAndExpression x)
 		{
-			throw new NotImplementedException();
+			VisitOpBasedExpression(x);
 		}
 
 		public virtual void Visit(Expressions.XorExpression x)
 		{
-			throw new NotImplementedException();
+			VisitOpBasedExpression(x);
 		}
 
 		public virtual void Visit(Expressions.OrExpression x)
 		{
-			throw new NotImplementedException();
+			VisitOpBasedExpression(x);
 		}
 
 		public virtual void Visit(Expressions.AndExpression x)
 		{
-			throw new NotImplementedException();
+			VisitOpBasedExpression(x);
 		}
 
 		public virtual void Visit(Expressions.EqualExpression x)
 		{
-			throw new NotImplementedException();
+			VisitOpBasedExpression(x);
 		}
 
 		public virtual void Visit(Expressions.IdendityExpression x)
 		{
-			throw new NotImplementedException();
+			VisitOpBasedExpression(x);
 		}
 
 		public virtual void Visit(Expressions.RelExpression x)
 		{
-			throw new NotImplementedException();
+			VisitOpBasedExpression(x);
 		}
 
 		public virtual void Visit(Expressions.InExpression x)
 		{
-			throw new NotImplementedException();
+			VisitOpBasedExpression(x);
 		}
 
 		public virtual void Visit(Expressions.ShiftExpression x)
 		{
-			throw new NotImplementedException();
+			VisitOpBasedExpression(x);
 		}
 
 		public virtual void Visit(Expressions.AddExpression x)
 		{
-			throw new NotImplementedException();
+			VisitOpBasedExpression(x);
 		}
 
 		public virtual void Visit(Expressions.MulExpression x)
 		{
-			throw new NotImplementedException();
+			VisitOpBasedExpression(x);
 		}
 
 		public virtual void Visit(Expressions.CatExpression x)
 		{
-			throw new NotImplementedException();
+			VisitOpBasedExpression(x);
 		}
 
 		public virtual void Visit(Expressions.PowExpression x)
 		{
-			throw new NotImplementedException();
+			VisitOpBasedExpression(x);
 		}
 
 		public virtual void Visit(Expressions.UnaryExpression_And x)
 		{
-			throw new NotImplementedException();
+			VisitChildren(x);
 		}
 
 		public virtual void Visit(Expressions.UnaryExpression_Increment x)
 		{
-			throw new NotImplementedException();
+			VisitChildren(x);
 		}
 
 		public virtual void Visit(Expressions.UnaryExpression_Decrement x)
 		{
-			throw new NotImplementedException();
+			VisitChildren(x);
 		}
 
 		public virtual void Visit(Expressions.UnaryExpression_Mul x)
 		{
-			throw new NotImplementedException();
+			VisitChildren(x);
 		}
 
 		public virtual void Visit(Expressions.UnaryExpression_Add x)
 		{
-			throw new NotImplementedException();
+			VisitChildren(x);
 		}
 
 		public virtual void Visit(Expressions.UnaryExpression_Sub x)
 		{
-			throw new NotImplementedException();
+			VisitChildren(x);
 		}
 
 		public virtual void Visit(Expressions.UnaryExpression_Not x)
 		{
-			throw new NotImplementedException();
+			VisitChildren(x);
 		}
 
 		public virtual void Visit(Expressions.UnaryExpression_Cat x)
 		{
-			throw new NotImplementedException();
+			VisitChildren(x);
 		}
 
 		public virtual void Visit(Expressions.UnaryExpression_Type x)
 		{
-			throw new NotImplementedException();
+			if (x.Type != null)
+				x.Type.Accept(this);
 		}
 
 		public virtual void Visit(Expressions.NewExpression x)
 		{
-			throw new NotImplementedException();
+			VisitChildren(x);
 		}
 
 		public virtual void Visit(Expressions.AnonymousClassExpression x)
 		{
-			throw new NotImplementedException();
+			VisitChildren(x);
+
+			if (x.AnonymousClass != null)
+				x.AnonymousClass.Accept(this);
 		}
 
 		public virtual void Visit(Expressions.DeleteExpression x)
 		{
-			throw new NotImplementedException();
+			VisitChildren(x);
 		}
 
 		public virtual void Visit(Expressions.CastExpression x)
 		{
-			throw new NotImplementedException();
+			if (x.UnaryExpression != null)
+				x.UnaryExpression.Accept(this);
+
+			if (x.Type != null)
+				x.Type.Accept(this);
+		}
+
+		public virtual void VisitPostfixExpression(PostfixExpression x)
+		{
+			if (x.PostfixForeExpression != null)
+				x.PostfixForeExpression.Accept(this);
 		}
 
 		public virtual void Visit(Expressions.PostfixExpression_Access x)
 		{
-			throw new NotImplementedException();
+			VisitPostfixExpression(x);
+
+			if (x.AccessExpression != null)
+				x.AccessExpression.Accept(this);
 		}
 
 		public virtual void Visit(Expressions.PostfixExpression_Increment x)
 		{
-			throw new NotImplementedException();
+			VisitPostfixExpression(x);
 		}
 
 		public virtual void Visit(Expressions.PostfixExpression_Decrement x)
 		{
-			throw new NotImplementedException();
+			VisitPostfixExpression(x);
 		}
 
 		public virtual void Visit(Expressions.PostfixExpression_MethodCall x)
 		{
-			throw new NotImplementedException();
+			VisitPostfixExpression(x);
+
+			if (x.ArgumentCount != 0)
+				foreach (var arg in x.Arguments)
+					arg.Accept(this);
 		}
 
 		public virtual void Visit(Expressions.PostfixExpression_Index x)
 		{
-			throw new NotImplementedException();
+			VisitPostfixExpression(x);
+
+			if (x.Arguments != null)
+				foreach (var arg in x.Arguments)
+					arg.Accept(this);
 		}
 
 		public virtual void Visit(Expressions.PostfixExpression_Slice x)
 		{
-			throw new NotImplementedException();
+			VisitPostfixExpression(x);
+
+			if (x.FromExpression != null)
+				x.FromExpression.Accept(this);
+			if (x.ToExpression != null)
+				x.ToExpression.Accept(this);
 		}
 
-		public virtual void Visit(Expressions.TemplateInstanceExpression x)
+		public virtual void Visit(TemplateInstanceExpression x)
 		{
-			throw new NotImplementedException();
+			if (x.TemplateIdentifier != null)
+				x.TemplateIdentifier.Accept(this);
+
+			if (x.Arguments != null)
+				foreach (var arg in x.Arguments)
+					arg.Accept(this);
 		}
 
 		public virtual void Visit(Expressions.IdentifierExpression x)
 		{
-			throw new NotImplementedException();
+			
 		}
 
 		public virtual void Visit(Expressions.TokenExpression x)
 		{
-			throw new NotImplementedException();
+			
 		}
 
 		public virtual void Visit(Expressions.TypeDeclarationExpression x)
 		{
-			throw new NotImplementedException();
+			x.Declaration.Accept(this);
 		}
 
 		public virtual void Visit(Expressions.ArrayLiteralExpression x)
 		{
-			throw new NotImplementedException();
+			foreach (var e in x.Elements)
+				if(e!=null)
+					e.Accept(this);
 		}
 
 		public virtual void Visit(Expressions.AssocArrayExpression x)
 		{
-			throw new NotImplementedException();
+			foreach (var kv in x.Elements)
+			{
+				kv.Key.Accept(this);
+				kv.Value.Accept(this);
+			}
 		}
 
 		public virtual void Visit(Expressions.FunctionLiteral x)
 		{
-			throw new NotImplementedException();
+			x.AnonymousMethod.Accept(this);
 		}
 
 		public virtual void Visit(Expressions.AssertExpression x)
 		{
-			throw new NotImplementedException();
+			VisitChildren(x);
 		}
 
 		public virtual void Visit(Expressions.MixinExpression x)
 		{
-			throw new NotImplementedException();
+			if (x.AssignExpression != null)
+				x.AssignExpression.Accept(this);
 		}
 
 		public virtual void Visit(Expressions.ImportExpression x)
 		{
-			throw new NotImplementedException();
+			if (x.AssignExpression != null)
+				x.AssignExpression.Accept(this);
 		}
 
 		public virtual void Visit(Expressions.TypeidExpression x)
 		{
-			throw new NotImplementedException();
+			if (x.Type != null)
+				x.Type.Accept(this);
+			else if (x.Expression != null)
+				x.Expression.Accept(this);
 		}
 
 		public virtual void Visit(Expressions.IsExpression x)
 		{
-			throw new NotImplementedException();
+			if (x.TestedType != null)
+				x.TestedType.Accept(this);
+
+			// Do not visit the artificial param..it's not existing
+
+			if (x.TypeSpecialization != null)
+				x.TypeSpecialization.Accept(this);
+
+			if (x.TemplateParameterList != null)
+				foreach (var p in x.TemplateParameterList)
+					p.Accept(this);
 		}
 
 		public virtual void Visit(Expressions.TraitsExpression x)
 		{
-			throw new NotImplementedException();
+			if (x.Arguments != null)
+				foreach (var arg in x.Arguments)
+					arg.Accept(this);
+		}
+
+		public virtual void Visit(TraitsArgument arg)
+		{
+			if (arg.Type != null)
+				arg.Type.Accept(this);
+			if (arg.AssignExpression != null)
+				arg.AssignExpression.Accept(this);
 		}
 
 		public virtual void Visit(Expressions.SurroundingParenthesesExpression x)
 		{
-			throw new NotImplementedException();
+			if (x.Expression != null)
+				x.Expression.Accept(this);
 		}
 
 		public virtual void Visit(Expressions.VoidInitializer x)
 		{
-			throw new NotImplementedException();
+			
 		}
 
 		public virtual void Visit(Expressions.ArrayInitializer x)
 		{
-			throw new NotImplementedException();
+			Visit((AssocArrayExpression)x);
 		}
 
 		public virtual void Visit(Expressions.StructInitializer x)
 		{
-			throw new NotImplementedException();
+			if (x.MemberInitializers != null)
+				foreach (var i in x.MemberInitializers)
+					i.Accept(this);
+		}
+
+		public virtual void Visit(StructMemberInitializer init)
+		{
+			if (init.Value != null)
+				init.Value.Accept(this);
 		}
 		#endregion
 
 		#region Decls
+		public virtual void VisitInner(ITypeDeclaration td)
+		{
+			if (td.InnerDeclaration != null)
+				td.InnerDeclaration.Accept(this);
+		}
+
 		public virtual void Visit(IdentifierDeclaration td)
 		{
-			throw new NotImplementedException();
+			VisitInner(td);
 		}
 
 		public virtual void Visit(DTokenDeclaration td)
 		{
-			throw new NotImplementedException();
+			VisitInner(td);
 		}
 
 		public virtual void Visit(ArrayDecl td)
 		{
-			throw new NotImplementedException();
+			VisitInner(td);
+
+			if (td.KeyType != null)
+				td.KeyType.Accept(this);
+
+			if (td.KeyExpression != null)
+				td.KeyExpression.Accept(this);
+
+			// ValueType == InnerDeclaration
 		}
 
 		public virtual void Visit(DelegateDeclaration td)
 		{
-			throw new NotImplementedException();
+			VisitInner(td);
+			// ReturnType == InnerDeclaration
+
+			if (td.Modifiers != null && td.Modifiers.Length != 0)
+				foreach (var attr in td.Modifiers)
+					attr.Accept(this);
+
+			foreach (var p in td.Parameters)
+				p.Accept(this);
 		}
 
 		public virtual void Visit(PointerDecl td)
 		{
-			throw new NotImplementedException();
+			VisitInner(td);
 		}
 
 		public virtual void Visit(MemberFunctionAttributeDecl td)
 		{
-			throw new NotImplementedException();
+			VisitInner(td);
+
+			if (td.InnerType != null)
+				td.InnerType.Accept(this);
 		}
 
 		public virtual void Visit(TypeOfDeclaration td)
 		{
-			throw new NotImplementedException();
+			VisitInner(td);
+
+			if (td.InstanceId != null)
+				td.InstanceId.Accept(this);
 		}
 
 		public virtual void Visit(VectorDeclaration td)
 		{
-			throw new NotImplementedException();
+			VisitInner(td);
+
+			if (td.Id != null)
+				td.Id.Accept(this);
 		}
 
 		public virtual void Visit(VarArgDecl td)
 		{
-			throw new NotImplementedException();
+			VisitInner(td);
 		}
 
 		public virtual void Visit(ITemplateParameterDeclaration td)
 		{
-			throw new NotImplementedException();
+			td.TemplateParameter.Accept(this);
 		}
 		#endregion
 
 		#region Meta decl blocks
-		public void Visit(MetaDeclarationBlock metaDeclarationBlock)
+		public virtual void VisitMetaBlock(IMetaDeclarationBlock block)
 		{
-			throw new NotImplementedException();
+
 		}
 
-		public void Visit(AttributeMetaDeclarationBlock attributeMetaDeclarationBlock)
+		public virtual void Visit(MetaDeclarationBlock metaDeclarationBlock)
 		{
-			throw new NotImplementedException();
+			VisitMetaBlock(metaDeclarationBlock);
 		}
 
-		public void Visit(AttributeMetaDeclarationSection attributeMetaDeclarationSection)
+		public virtual void Visit(AttributeMetaDeclarationBlock attributeMetaDeclarationBlock)
 		{
-			throw new NotImplementedException();
+			Visit((AttributeMetaDeclaration)attributeMetaDeclarationBlock);
+			VisitMetaBlock(attributeMetaDeclarationBlock);
 		}
 
-		public void Visit(ElseMetaDeclarationBlock elseMetaDeclarationBlock)
+		public virtual void Visit(AttributeMetaDeclarationSection attributeMetaDeclarationSection)
 		{
-			throw new NotImplementedException();
+			Visit((AttributeMetaDeclaration)attributeMetaDeclarationSection);
 		}
 
-		public void Visit(ElseMetaDeclaration elseMetaDeclaration)
+		public virtual void Visit(ElseMetaDeclarationBlock elseMetaDeclarationBlock)
 		{
-			throw new NotImplementedException();
+			VisitMetaBlock(elseMetaDeclarationBlock);
 		}
 
-		public void Visit(AttributeMetaDeclaration attributeMetaDeclaration)
+		public virtual void Visit(ElseMetaDeclaration elseMetaDeclaration)
 		{
-			throw new NotImplementedException();
+			
+		}
+
+		public virtual void Visit(AttributeMetaDeclaration md)
+		{
+			if (md.AttributeOrCondition != null)
+				foreach (var attr in md.AttributeOrCondition)
+					attr.Accept(this);
+
+			if (md.OptionalElseBlock != null)
+				md.OptionalElseBlock.Accept(this);
 		}
 		#endregion
 
 		#region Template parameters
-		public void Visit(TemplateTypeParameter templateTypeParameter)
+		public virtual void Visit(TemplateTypeParameter p)
 		{
-			throw new NotImplementedException();
+			if (p.Specialization != null)
+				p.Specialization.Accept(this);
+
+			if (p.Default != null)
+				p.Default.Accept(this);
 		}
 
-		public void Visit(TemplateThisParameter templateThisParameter)
+		public virtual void Visit(TemplateThisParameter p)
 		{
-			throw new NotImplementedException();
+			if (p.FollowParameter != null)
+				p.FollowParameter.Accept(this);
 		}
 
-		public void Visit(TemplateValueParameter templateValueParameter)
+		public virtual void Visit(TemplateValueParameter p)
 		{
-			throw new NotImplementedException();
+			if (p.Type != null)
+				p.Type.Accept(this);
+
+			if (p.SpecializationExpression != null)
+				p.SpecializationExpression.Accept(this);
+			if (p.DefaultExpression != null)
+				p.DefaultExpression.Accept(this);
 		}
 
-		public void Visit(TemplateAliasParameter templateAliasParameter)
+		public virtual void Visit(TemplateAliasParameter p)
 		{
-			throw new NotImplementedException();
+			Visit((TemplateValueParameter)p);
+
+			if (p.SpecializationType != null)
+				p.SpecializationType.Accept(this);
+			if (p.DefaultType != null)
+				p.DefaultType.Accept(this);
 		}
 
-		public void Visit(TemplateTupleParameter templateTupleParameter)
+		public virtual void Visit(TemplateTupleParameter p)
 		{
-			throw new NotImplementedException();
+			
 		}
 		#endregion
 	}

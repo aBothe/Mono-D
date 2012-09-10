@@ -92,13 +92,22 @@ namespace D_Parser.Resolver.TypeResolution
 
 			var filteredOverloads = DeduceOverloads(rawOverloadList, givenTemplateArguments, isMethodCall, ctxt);
 
+			AbstractType[] sortedAndFilteredOverloads = null;
+
 			// If there are >1 overloads, filter from most to least specialized template param
 			if (filteredOverloads.Count > 1)
-				return SpecializationOrdering.FilterFromMostToLeastSpecialized(filteredOverloads, ctxt);
+				sortedAndFilteredOverloads = SpecializationOrdering.FilterFromMostToLeastSpecialized(filteredOverloads, ctxt);
 			else if (filteredOverloads.Count == 1)
-				return filteredOverloads.ToArray();
-			
-			return null;
+				sortedAndFilteredOverloads = new[] { filteredOverloads[0] };
+			else
+				return null;
+
+			if (sortedAndFilteredOverloads != null &&
+				sortedAndFilteredOverloads.Length == 1 && 
+				sortedAndFilteredOverloads[0] is TemplateType)
+				ImplicitTemplateProperties.TryGetImplicitProperty((TemplateType)sortedAndFilteredOverloads[0], ctxt, out sortedAndFilteredOverloads);
+
+			return sortedAndFilteredOverloads;
 		}
 
 		private static List<AbstractType> DeduceOverloads(

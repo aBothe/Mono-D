@@ -5,6 +5,7 @@ using D_Parser.Dom;
 using D_Parser.Dom.Expressions;
 using D_Parser.Parser;
 using D_Parser.Resolver.TypeResolution;
+using D_Parser.Resolver.Templates;
 
 namespace D_Parser.Resolver.ExpressionSemantics
 {
@@ -186,6 +187,14 @@ namespace D_Parser.Resolver.ExpressionSemantics
 						//TODO: Deduce parameters
 						return b;
 					}
+
+					/*
+					 * If the overload is a template, it quite exclusively means that we'll handle a method that is the only
+					 * child inside a template + that is named as the template.
+					 */
+					else if (b is TemplateType && 
+						ImplicitTemplateProperties.ContainsEquallyNamedChildrenOnly(((TemplateType)b).Definition))
+						methodOverloads.Add(b);
 				}
 
 				scanResults = nextResults.Count == 0 ? null : nextResults.ToArray();

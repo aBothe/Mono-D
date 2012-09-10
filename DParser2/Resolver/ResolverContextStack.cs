@@ -187,7 +187,7 @@ namespace D_Parser.Resolver
 
 				var cur = stack.Pop();
 
-				bool IsParent = cur.ScopedBlock.Parent == stack.Peek().ScopedBlock;
+				bool IsParent = cur.ScopedBlock!= null && cur.ScopedBlock.Parent == stack.Peek().ScopedBlock;
 
 				stack.Push(cur);
 				return IsParent;

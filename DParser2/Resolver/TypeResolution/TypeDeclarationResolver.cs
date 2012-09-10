@@ -531,51 +531,52 @@ namespace D_Parser.Resolver.TypeResolution
 				 * Add 'superior' template parameters to the current symbol because the parameters 
 				 * might be re-used in the nested class.
 				 */
-				if (dc.ClassType != DTokens.Template)
+				var tStk = new Stack<ResolverContext>();
+				do
 				{
-					var tStk = new Stack<ResolverContext>();
-					do
-					{
-						var curCtxt = ctxt.Pop();
-						tStk.Push(curCtxt);
-						foreach (var kv in curCtxt.DeducedTemplateParameters)
-							if (!dc.ContainsTemplateParameter(kv.Key) && 
-								!invisibleTypeParams.ContainsKey(kv.Key))
-							{
-								invisibleTypeParams.Add(kv.Key, kv.Value);
-							}
-					} while (ctxt.PrevContextIsInSameHierarchy);
+					var curCtxt = ctxt.Pop();
+					tStk.Push(curCtxt);
+					foreach (var kv in curCtxt.DeducedTemplateParameters)
+						if (!dc.ContainsTemplateParameter(kv.Key) &&
+							!invisibleTypeParams.ContainsKey(kv.Key))
+						{
+							invisibleTypeParams.Add(kv.Key, kv.Value);
+						}
+				} while (ctxt.PrevContextIsInSameHierarchy);
 
-					while (tStk.Count != 0)
-						ctxt.Push(tStk.Pop());
-				}
+				while (tStk.Count != 0)
+					ctxt.Push(tStk.Pop());
 
 				switch (dc.ClassType)
 				{
 					case DTokens.Struct:
-						udt = new StructType(dc, typeBase as ISyntaxRegion, invisibleTypeParams);
+						ret = new StructType(dc, typeBase as ISyntaxRegion, invisibleTypeParams);
 						break;
 					case DTokens.Union:
-						udt = new UnionType(dc, typeBase as ISyntaxRegion, invisibleTypeParams);
+						ret = new UnionType(dc, typeBase as ISyntaxRegion, invisibleTypeParams);
 						break;
 					case DTokens.Class:
 						udt = new ClassType(dc, typeBase as ISyntaxRegion, null, null, invisibleTypeParams);
 						break;
-					case DTokens.Template:
-						udt = new TemplateType(dc, typeBase as ISyntaxRegion);
-						break;
 					case DTokens.Interface:
 						udt = new InterfaceType(dc, typeBase as ISyntaxRegion, null, invisibleTypeParams);
 						break;
+					case DTokens.Template:
+						ret = new TemplateType(dc, typeBase as ISyntaxRegion, invisibleTypeParams);
+						break;
 					default:
-						ctxt.LogError(new ResolutionError(m, "Unknown type ("+DTokens.GetTokenString(dc.ClassType)+")"));
+						ctxt.LogError(new ResolutionError(m, "Unknown type (" + DTokens.GetTokenString(dc.ClassType) + ")"));
 						break;
 				}
 
-				if (canResolveBaseGenerally && !ctxt.Options.HasFlag(ResolutionOptions.DontResolveBaseClasses))
-					ret = DResolver.ResolveBaseClasses(udt, ctxt);
-				else
-					ret = udt;
+				if (dc.ClassType == DTokens.Class || dc.ClassType == DTokens.Interface)
+				{
+					if (canResolveBaseGenerally &&
+						!ctxt.Options.HasFlag(ResolutionOptions.DontResolveBaseClasses))
+						ret = DResolver.ResolveBaseClasses(udt, ctxt);
+					else
+						ret = udt;
+				}
 			}
 			else if (m is IAbstractSyntaxTree)
 			{

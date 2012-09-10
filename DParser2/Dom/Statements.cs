@@ -979,6 +979,9 @@ namespace D_Parser.Dom.Statements
 
 	public class AsmStatement : AbstractStatement
 	{
+		/// <summary>
+		/// TODO: Put the instructions into extra ISyntaxRegions
+		/// </summary>
 		public string[] Instructions;
 
 		public override string ToCode()

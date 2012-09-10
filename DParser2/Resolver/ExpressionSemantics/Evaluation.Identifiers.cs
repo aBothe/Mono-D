@@ -68,8 +68,11 @@ namespace D_Parser.Resolver.ExpressionSemantics
 			else
 			{
 				ctxt.CheckForSingleResult(o, tix);
-				if (o != null && o.Length == 1)
-					return o[0];
+				if (o != null)
+					if (o.Length == 1)
+						return o[0];
+					else if (o.Length > 1)
+						return new InternalOverloadValue(o, tix);
 				return null;
 			}
 		}
@@ -90,8 +93,11 @@ namespace D_Parser.Resolver.ExpressionSemantics
 				else
 				{
 					ctxt.CheckForSingleResult(o, id);
-					if (o != null && o.Length == 1)
-						return o[0];
+					if (o != null)
+						if (o.Length == 1)
+							return o[0];
+						else if (o.Length > 1)
+							return new InternalOverloadValue(o, id);
 					return null;
 				}
 			}
