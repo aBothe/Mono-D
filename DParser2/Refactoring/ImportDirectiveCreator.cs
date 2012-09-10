@@ -43,8 +43,8 @@ namespace D_Parser.Refactoring
 				throw new Exception("Symbol imported already. No further import required!");
 
 
-			var loc = DParser.FindLastImportStatementEndLocation(editor.ModuleCode);
-			IOInterface.InsertIntoCode(new CodeLocation(0, loc.Line+1), "import " + mod.ModuleName + ";\r\n");
+			var loc = new CodeLocation(0, DParser.FindLastImportStatementEndLocation(editor.SyntaxTree, editor.ModuleCode).Line+1);
+			IOInterface.InsertIntoCode(loc, "import " + mod.ModuleName + ";\n");
 		}
 
 

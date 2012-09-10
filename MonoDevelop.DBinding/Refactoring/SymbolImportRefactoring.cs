@@ -48,7 +48,7 @@ namespace MonoDevelop.D.Refactoring
 
 			public override void InsertIntoCode(CodeLocation location, string codeToInsert)
 			{
-				doc.Editor.Insert(doc.Editor.GetLine(location.Line).EndOffset, codeToInsert.TrimEnd()+doc.Editor.EolMarker);
+				doc.Editor.Insert(doc.Editor.GetLine(location.Line).Offset, codeToInsert.Trim() + doc.Editor.EolMarker);
 			}
 		}
 	}
