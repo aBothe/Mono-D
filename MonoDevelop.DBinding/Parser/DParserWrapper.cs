@@ -329,5 +329,11 @@ namespace MonoDevelop.D.Parser
 		}*/
 
 		#endregion
+
+		public ParsedDocument Parse(bool storeAst, string fileName, Project project = null)
+		{
+			using (var sr = new StreamReader(fileName))
+				return Parse(storeAst, fileName, sr, project);
+		}
 	}
 }
