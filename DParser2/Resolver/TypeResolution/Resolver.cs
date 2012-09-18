@@ -280,26 +280,90 @@ namespace D_Parser.Resolver.TypeResolution
 			return tr;
 		}
 
+		public static IBlockNode SearchBlockAt(IBlockNode Parent, CodeLocation Where)
+		{
+			IStatement s;
+			return SearchBlockAt(Parent, Where, out s);
+		}
+
 		public static IBlockNode SearchBlockAt(IBlockNode Parent, CodeLocation Where, out IStatement ScopedStatement)
 		{
 			ScopedStatement = null;
+			int pCount = 0;
 
-			if (Parent != null && Parent.Count > 0)
+			if (Parent == null || (pCount = Parent.Count) == 0)
+				return Parent;
+
+			while (pCount != 0)
 			{
-				foreach (var n in Parent.Children)
-					if (n is IBlockNode && Where > n.Location && Where < n.EndLocation)
-						return SearchBlockAt((IBlockNode)n, Where, out ScopedStatement);
+				var children = Parent.Children;
+				int start = 0;
+				INode midElement = null;
+				int midIndex = 0;
+				int len = pCount;
+
+				while (len > 0)
+				{
+					midIndex = (len % 2 + len) / 2;
+
+					// Take an element from the middle
+					if ((midElement = children[start + midIndex - 1]) == null)
+						break;
+
+					// If 'Where' is beyond its start location
+					if (Where > midElement.Location)
+					{
+						start += midIndex;
+
+						// If we've reached the (temporary) goal, break immediately
+						if (Where < midElement.EndLocation)
+							break;
+						// If it's the last tested element and if the caret is beyond the end location, 
+						// return the Parent instead the last tested child
+						else if (midIndex == len)
+						{
+							midElement = null;
+							break;
+						}
+					}
+					else if (midIndex == len)
+					{
+						midElement = null;
+						break;
+					}
+
+					len -= midIndex;
+				}
+
+				if (midElement is IBlockNode)
+				{
+					Parent = (IBlockNode)midElement;
+					pCount = Parent.Count;
+				}
+				else
+					break;
 			}
 
 			if (Parent is DMethod)
 			{
-				var dm = Parent as DMethod;
-
-				var body = dm.GetSubBlockAt(Where);
+				var body = ((DMethod)Parent).GetSubBlockAt(Where);
 
 				// First search the deepest statement under the caret
-				if (body != null)
+				if (body != null){
 					ScopedStatement = body.SearchStatementDeeply(Where);
+
+					if (ScopedStatement is IDeclarationContainingStatement)
+					{
+						var dcs = ((IDeclarationContainingStatement)ScopedStatement).Declarations;
+
+						if(dcs!=null && dcs.Length != 0)
+							foreach (var decl in dcs)
+								if (decl is IBlockNode &&
+									Where > decl.Location &&
+									Where < decl.EndLocation)
+									return SearchBlockAt((IBlockNode)decl, Where, out ScopedStatement);
+					}
+				}
 			}
 
 			return Parent;
