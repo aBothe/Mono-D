@@ -296,9 +296,18 @@ namespace D_Parser.Resolver.Templates
 				if(id!=null && id.IsIdentifier && Contains((string)id.Value))
 				{
 					// If an expression (the usual case) has been passed as argument, evaluate its value, otherwise is its type already resolved.
-					var finalArg = ad_Argument.KeyExpression != null ?
-						Evaluation.EvaluateValue(ad_Argument.KeyExpression, new StandardValueProvider(ctxt)) as ISemantic :
-						argumentArrayType.KeyType;
+					ISemantic finalArg = null;
+
+					if (ad_Argument.KeyExpression != null)
+					{
+						ISymbolValue val = null;
+						int len = -1;
+						finalArg = TypeDeclarationResolver.ResolveKey(ad_Argument, out len, out val, ctxt);
+						if (val != null)
+							finalArg = val;
+					}
+					else
+						finalArg = argumentArrayType.KeyType;
 
 					//TODO: Do a type convertability check between the param type and the given argument's type.
 					// The affected parameter must also be a value parameter then, if an expression was given.
@@ -317,7 +326,7 @@ namespace D_Parser.Resolver.Templates
 				// If the array we're passing to the decl check that is static (i.e. has a constant number as key 'type'),
 				// pass that number instead of type 'int' to the check.
 				var at = argumentArrayType as ArrayType;
-				if (argumentArrayType != null && at.IsStaticArray)
+				if (argumentArrayType != null && at != null && at.IsStaticArray)
 					result = HandleDecl(parameterRef, arrayDeclToCheckAgainst.KeyType,
 						new PrimitiveValue(D_Parser.Parser.DTokens.Int, (decimal)at.FixedLength, null)); 
 				else

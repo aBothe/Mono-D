@@ -264,6 +264,72 @@ namespace D_Parser.Resolver.TypeResolution
 			return null;
 		}
 
+		public static AbstractType ResolveKey(ArrayDecl ad, out int fixedArrayLength, out ISymbolValue keyVal, ResolverContextStack ctxt)
+		{
+			keyVal = null;
+			fixedArrayLength = 0;
+			AbstractType keyType = null;
+
+			if (ad.KeyExpression != null)
+			{
+				//TODO: Template instance expressions?
+				var id_x = ad.KeyExpression as IdentifierExpression;
+				if (id_x != null && id_x.IsIdentifier)
+				{
+					var id = new IdentifierDeclaration((string)id_x.Value)
+					{
+						Location = id_x.Location,
+						EndLocation = id_x.EndLocation
+					};
+
+					keyType = TypeDeclarationResolver.ResolveSingle(id, ctxt);
+
+					if (keyType != null)
+					{
+						var tt = DResolver.StripAliasSymbol(keyType) as MemberSymbol;
+
+						if (tt == null || 
+							!(tt.Definition is DVariable) ||
+							((DVariable)tt.Definition).Initializer == null)
+							return keyType;
+					}
+				}
+
+				try
+				{
+					keyVal = Evaluation.EvaluateValue(ad.KeyExpression, ctxt);
+
+					if (keyVal != null)
+					{
+						// Take the value's type as array key type
+						keyType = keyVal.RepresentedType;
+
+						// It should be mostly a number only that points out how large the final array should be
+						var pv = Evaluation.GetVariableContents(keyVal, new StandardValueProvider(ctxt)) as PrimitiveValue;
+						if (pv != null)
+						{
+							fixedArrayLength = System.Convert.ToInt32(pv.Value);
+
+							if (fixedArrayLength < 0)
+								ctxt.LogError(ad, "Invalid array size: Length value must be greater than 0");
+						}
+						//TODO Is there any other type of value allowed?
+					}
+				}
+				catch {}
+			}
+			else
+			{
+				var t = Resolve(ad.KeyType, ctxt);
+				ctxt.CheckForSingleResult(t, ad.KeyType);
+
+				if (t != null && t.Length != 0)
+					return t[0];
+			}
+
+			return keyType;
+		}
+
 		public static AssocArrayType Resolve(ArrayDecl ad, ResolverContextStack ctxt)
 		{
 			var valueTypes = Resolve(ad.ValueType, ctxt);
@@ -278,36 +344,9 @@ namespace D_Parser.Resolver.TypeResolution
 				return null;
 			valueType = valueTypes[0];
 
-			if (ad.KeyExpression != null)
-			{
-				var keyVal = Evaluation.EvaluateValue(ad.KeyExpression, ctxt);
-
-				if (keyVal != null)
-				{
-					// Take the value's type as array key type
-					keyType = keyVal.RepresentedType;
-
-					// It should be mostly a number only that points out how large the final array should be
-					var pv = Evaluation.GetVariableContents(keyVal, new StandardValueProvider(ctxt)) as PrimitiveValue;
-					if (pv != null)
-					{
-						fixedArrayLength = System.Convert.ToInt32(pv.Value);
-
-						if (fixedArrayLength < 0)
-							ctxt.LogError(ad, "Invalid array size: Length value must be greater than 0");
-					}
-					//TODO Is there any other type of value allowed?
-				}
-			}
-			else
-			{
-				var t = Resolve(ad.KeyType, ctxt);
-				ctxt.CheckForSingleResult(t, ad.KeyType);
-
-				if (t != null && t.Length != 0)
-					keyType = t[0];
-			}
-
+			ISymbolValue val;
+			keyType = ResolveKey(ad, out fixedArrayLength, out val, ctxt);
+			
 
 			if (keyType== null || (keyType is PrimitiveType && ((PrimitiveType)keyType).TypeToken == DTokens.Int))
 				return fixedArrayLength == -1 ? 

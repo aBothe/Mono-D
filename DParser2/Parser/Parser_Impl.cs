@@ -694,8 +694,18 @@ namespace D_Parser.Parser
 			}
 			else if (laKind == (Struct) || laKind == (Union))
 				return new[]{ AggregateDeclaration(Scope)};
-			else if (laKind == (Enum))
+			else if (laKind == Enum)
+			{
+				// As another meta-programming feature, it is possible to create static functions 
+				// that return enums, i.e. a constant value or something
+				if (Lexer.CurrentPeekToken.Kind == Identifier && Peek().Kind == OpenParenthesis)
+				{
+					Peek(1);
+					return Decl(HasStorageClassModifiers, Scope);
+				}
+
 				return EnumDeclaration(Scope);
+			}
 			else if (laKind == (Class))
 				return new[]{ ClassDeclaration(Scope)};
 			else if (laKind == (Template) || (laKind==Mixin && Peek(1).Kind==Template))
@@ -730,8 +740,16 @@ namespace D_Parser.Parser
 			// Autodeclaration
 			var StorageClass = DTokens.ContainsStorageClass(DeclarationAttributes.ToArray());
 
+			//TODO: Specify how enum-returning functions shall be handled
+			if (StorageClass.Token == DAttribute.Empty.Token && laKind == Enum)
+			{
+				Step();
+				PushAttribute(StorageClass = new DAttribute(Enum) { Location = t.Location, EndLocation = t.EndLocation },false);
+			}
+			
 			// If there's no explicit type declaration, leave our node's type empty!
-			if ((StorageClass.Token != DAttribute.Empty.Token && laKind == (Identifier) && DeclarationAttributes.Count > 0)) // public auto var=0; // const foo(...) {} 
+			if ((StorageClass.Token != DAttribute.Empty.Token && 
+				laKind == (Identifier) && DeclarationAttributes.Count > 0)) // public auto var=0; // const foo(...) {} 
 			{
 				if (Lexer.CurrentPeekToken.Kind == Assign || Lexer.CurrentPeekToken.Kind ==OpenParenthesis) 
 				{ }
