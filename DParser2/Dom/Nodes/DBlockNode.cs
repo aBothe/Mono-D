@@ -35,21 +35,40 @@ namespace D_Parser.Dom
 		/// <summary>
 		/// Returns an array consisting of meta declarations orderd from outer to inner-most, depending on the 'Where' parameter.
 		/// </summary>
-		public AbstractMetaDeclaration[] GetMetaBlockStack(CodeLocation Where)
+		public AbstractMetaDeclaration[] GetMetaBlockStack(CodeLocation Where, bool takeBlockStartLocations = false, bool mindAttributeSections = false)
 		{
 			var l = new List<AbstractMetaDeclaration>();
 
-			ISyntaxRegion lastSr = null;
-
+			AbstractMetaDeclaration lastSr = null;
 			for (int i=0; i < MetaBlocks.Count; i++)
 			{
 				var mb = MetaBlocks[i];
-				// Check if 1) block is inside last inner-most meta block
-				if ((lastSr == null || mb.Location > lastSr.Location && mb.EndLocation < lastSr.EndLocation) &&
-					mb.Location <= Where && mb.EndLocation >= Where)
+
+				if (mb is AttributeMetaDeclarationSection)
 				{
-					// and 2) if 
-					l.Add(mb);
+					if (mindAttributeSections && Where >= mb.EndLocation)
+					{
+						// Don't let multiple section attributes like 'private:' nest within each other
+						if (lastSr is AttributeMetaDeclarationSection)
+							l.Remove(lastSr);
+						l.Add(lastSr = mb);
+					}
+
+					continue;
+				}
+
+				if (lastSr != null && 
+					!(mindAttributeSections && lastSr is AttributeMetaDeclarationSection) && 
+					mb.Location < lastSr.Location &&
+					mb.EndLocation > lastSr.EndLocation)
+					continue;
+
+				// Check if 1) block is inside last inner-most meta block
+				if (((takeBlockStartLocations && mb is IMetaDeclarationBlock) ? ((IMetaDeclarationBlock)mb).BlockStartLocation : mb.Location) <= Where && 
+					mb.EndLocation >= Where)
+				{
+					// and 2) if Where is completely inside the currently handled block.
+					l.Add(lastSr = mb);
 				}
 			}
 

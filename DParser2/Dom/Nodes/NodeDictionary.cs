@@ -124,5 +124,13 @@ namespace D_Parser.Dom
 				return null;
 			}
 		}
+
+		public INode this[int Index]
+		{
+			get
+			{
+				return children[Index];
+			}
+		}
 	}
 }
