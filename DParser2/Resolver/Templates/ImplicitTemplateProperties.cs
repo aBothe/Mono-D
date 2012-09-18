@@ -17,7 +17,7 @@ namespace D_Parser.Resolver.Templates
 		{
 			//Edit: The actual dmd implementation differs from the spec immensely:
 			// It's only required that there are items called like dc, nothing else.
-			return dc[dc.Name].Count != 0;
+			return dc != null && dc[dc.Name].Count != 0;
 		}
 
 		public static bool TryGetImplicitProperty(TemplateType template, ResolverContextStack ctxt, out AbstractType[] matchingChild)
