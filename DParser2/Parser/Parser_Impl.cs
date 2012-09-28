@@ -306,7 +306,11 @@ namespace D_Parser.Parser
 
 			// else:
 			else
-				module.AddRange(Declaration(module));
+			{
+				var decls = Declaration(module);
+				if(module != null && decls!=null)
+					module.AddRange(decls);
+			}
 		}
 
 		AbstractMetaDeclaration AttributeBlock(DBlockNode module)
@@ -4133,7 +4137,8 @@ namespace D_Parser.Parser
 
 			PreviousComment = OldPreviousCommentString;
 
-			ret.Description += CheckForPostSemicolonComment();
+			if(ret!=null)
+				ret.Description += CheckForPostSemicolonComment();
 		}
 
 		INode Constructor(DBlockNode scope,bool IsStruct)

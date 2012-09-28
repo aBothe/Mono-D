@@ -238,16 +238,10 @@ namespace D_Parser.Parser
 					if (!IsInString)
 					{
 						// Char handling
-						if (!IsChar && cur == '\'')
-						{
-							lastBeginOffset = off;
-							lastEndOffset = -1;
-							IsChar = true;
-						}
-						else
+						if (IsChar)
 						{
 							// Single quote char escape
-							if (cur == '\\' && peekChar == '\'')
+							if (cur == '\\')
 							{
 								off += 2;
 								continue;
@@ -258,25 +252,34 @@ namespace D_Parser.Parser
 								lastEndOffset = off;
 							}
 						}
+						else
+						{
+							if (cur == '\'')
+							{
+								lastBeginOffset = off;
+								lastEndOffset = -1;
+								IsChar = true;
+							}
 
-						// Verbatim string recognition
-						if (cur == 'r' && peekChar == '\"')
-						{
-							lastBeginOffset = off;
-							lastEndOffset = -1;
-							off++;
-							IsInString = IsVerbatimString = true;
-						}
-						else if (cur == '`')
-						{
-							lastBeginOffset = off;
-							lastEndOffset = -1;
-							IsInString = IsAlternateVerbatimString = true;
-						}
-						// if not, test for normal string literals
-						else if (cur == '\"')
-						{
-							IsInString = true;
+							// Verbatim string recognition
+							else if (cur == 'r' && peekChar == '\"')
+							{
+								lastBeginOffset = off;
+								lastEndOffset = -1;
+								off++;
+								IsInString = IsVerbatimString = true;
+							}
+							else if (cur == '`')
+							{
+								lastBeginOffset = off;
+								lastEndOffset = -1;
+								IsInString = IsAlternateVerbatimString = true;
+							}
+							// if not, test for normal string literals
+							else if (cur == '\"')
+							{
+								IsInString = true;
+							}
 						}
 					}
 					else

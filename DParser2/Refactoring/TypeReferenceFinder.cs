@@ -44,6 +44,9 @@ namespace D_Parser.Refactoring
 
 		public static TypeReferencesResult Scan(IAbstractSyntaxTree ast, ParseCacheList pcl)
 		{
+			if (ast == null)
+				return new TypeReferencesResult();
+
 			var typeRefFinder = new TypeReferenceFinder(pcl);
 
 			typeRefFinder.ast = ast;
