@@ -62,8 +62,7 @@ namespace D_Parser.Parser
 			this.reader = reader;
 			if ((char)reader.Peek() == '#')
 			{
-				reader.ReadLine();
-				HandleLineEnd('\n');
+				SkipToEndOfLine();
 			}
 		}
 
