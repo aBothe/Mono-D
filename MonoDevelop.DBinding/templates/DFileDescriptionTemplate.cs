@@ -60,10 +60,7 @@ namespace MonoDevelop.D.templates
 		{
 			base.ModifyTags(policyParent, project, language, identifier, fileName, ref tags);
 
-			tags["ModuleName"] = 
-				Path.ChangeExtension(new FilePath(fileName ?? identifier)
-				.ToRelative(project.BaseDirectory),null)
-				.Replace(Path.DirectorySeparatorChar,'.')
+			tags["ModuleName"] = D_Parser.Dom.DModule.GetModuleName(project == null ? string.Empty : project.BaseDirectory.ToString(), fileName)
 				.Replace(' ','_');
 		}
 	}
