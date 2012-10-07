@@ -59,7 +59,7 @@ namespace D_Parser.Parser
 			foreach (var c in Lexer.Comments)
 			{
 				if (c.CommentType.HasFlag(Comment.Type.Documentation))
-					ret += c.CommentText + ' ';
+					ret += c.CommentText + Environment.NewLine;
 			}
 
 			TrackerVariables.Comments.AddRange(Lexer.Comments);
@@ -106,7 +106,7 @@ namespace D_Parser.Parser
 					else if (c.StartPosition.Line > ExpectedLine)
 						break;
 
-					ret += c.CommentText + ' ';
+					ret += c.CommentText + Environment.NewLine;
 					i++;
 
 					TrackerVariables.Comments.Add(c);
@@ -124,8 +124,11 @@ namespace D_Parser.Parser
 				return PreviousComment;
 
 			// Append post-semicolon comment string to previously read comments
-			PreviousComment += " " + ret;
-			return ' '+ret;
+			if (!string.IsNullOrWhiteSpace(PreviousComment)) // If no previous comment given, do not insert a new-line
+				return PreviousComment = ret;
+
+			PreviousComment += Environment.NewLine + ret;
+			return Environment.NewLine + ret;
 		}
 
 		#endregion
