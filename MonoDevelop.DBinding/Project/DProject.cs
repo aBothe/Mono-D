@@ -169,7 +169,7 @@ namespace MonoDevelop.D
 
 			var hasFileLinks = new List<ProjectFile>();
 			foreach (var f in Files)
-				if (f.IsLink || f.IsExternalToProject)
+				if ((f.IsLink || f.IsExternalToProject) && File.Exists(f.ToString()))
 					hasFileLinks.Add(f);
 
 			// To prevent race condition bugs, test if links exist _before_ the actual local file parse procedure starts.
