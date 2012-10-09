@@ -120,7 +120,7 @@ namespace D_Parser.Completion
 				var call = (PostfixExpression_MethodCall) lastParamExpression;
 
 				res.MethodIdentifier = call.PostfixForeExpression;
-				res.ResolvedTypesOrMethods = Evaluation.TryGetUnfilteredMethodOverloads(call.PostfixForeExpression, ctxt, call);
+				res.ResolvedTypesOrMethods = Evaluation.GetUnfilteredMethodOverloads(call.PostfixForeExpression, ctxt, call);
 
 				if (call.Arguments != null)
 				{
@@ -166,7 +166,7 @@ namespace D_Parser.Completion
 				var acc = (PostfixExpression_Access)lastParamExpression;
 
 				res.MethodIdentifier = acc.PostfixForeExpression;
-				res.ResolvedTypesOrMethods = Evaluation.TryGetUnfilteredMethodOverloads(acc.PostfixForeExpression, ctxt, acc);
+				res.ResolvedTypesOrMethods = Evaluation.GetUnfilteredMethodOverloads(acc.PostfixForeExpression, ctxt, acc);
 
 				if (res.ResolvedTypesOrMethods == null)
 					return res;
@@ -204,10 +204,10 @@ namespace D_Parser.Completion
 			res.MethodIdentifier = nex;
 			CalculateCurrentArgument(nex, res, Editor.CaretLocation, ctxt);
 
-			var type = TypeDeclarationResolver.ResolveSingle(nex.Type, ctxt) as ClassType;
+			var type = TypeDeclarationResolver.ResolveSingle(nex.Type, ctxt) as TemplateIntermediateType;
 
 			//TODO: Inform the user that only classes can be instantiated
-			if (type != null)
+			if (type is ClassType || type is StructType)
 			{
 				var constructors = new List<DMethod>();
 				bool explicitCtorFound = false;

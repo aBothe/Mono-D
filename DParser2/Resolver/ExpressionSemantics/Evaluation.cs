@@ -2,6 +2,8 @@
 using D_Parser.Dom.Expressions;
 using D_Parser.Parser;
 using System.Linq;
+using System.Collections.Generic;
+using D_Parser.Resolver.TypeResolution;
 
 namespace D_Parser.Resolver.ExpressionSemantics
 {
@@ -148,21 +150,59 @@ namespace D_Parser.Resolver.ExpressionSemantics
 			return v;
 		}
 
-		public static AbstractType[] TryGetUnfilteredMethodOverloads(IExpression foreExpression, ResolverContextStack ctxt, IExpression supExpression = null)
+		public static AbstractType[] GetUnfilteredMethodOverloads(IExpression foreExpression, ResolverContextStack ctxt, IExpression supExpression = null)
 		{
+			AbstractType[] overloads = null;
+
 			if (foreExpression is TemplateInstanceExpression)
-				return Evaluation.GetOverloads((TemplateInstanceExpression)foreExpression, ctxt, null);
+				overloads = Evaluation.GetOverloads((TemplateInstanceExpression)foreExpression, ctxt, null);
 			else if (foreExpression is IdentifierExpression)
-				return Evaluation.GetOverloads((IdentifierExpression)foreExpression, ctxt);
+				overloads = Evaluation.GetOverloads((IdentifierExpression)foreExpression, ctxt);
 			else if (foreExpression is PostfixExpression_Access)
 			{
 				bool ufcs = false; // TODO?
-				return Evaluation.GetAccessedOverloads((PostfixExpression_Access)foreExpression, ctxt, out ufcs, null, false);
+				overloads = Evaluation.GetAccessedOverloads((PostfixExpression_Access)foreExpression, ctxt, out ufcs, null, false);
 			}
 			else if (foreExpression is TokenExpression)
-				return GetResolvedConstructorOverloads((TokenExpression)foreExpression, ctxt);
+				overloads = GetResolvedConstructorOverloads((TokenExpression)foreExpression, ctxt);
 			else
-				return new[] { Evaluation.EvaluateType(foreExpression, ctxt) };
+				overloads = new[] { Evaluation.EvaluateType(foreExpression, ctxt) };
+
+			var l = new List<AbstractType>();
+
+			foreach (var ov in overloads)
+				if (ov is TemplateIntermediateType)
+				{
+					var tit = (TemplateIntermediateType)ov;
+					
+					var m = TypeDeclarationResolver.HandleNodeMatches(
+						GetOpCalls(tit), ctxt,
+						null, supExpression ?? foreExpression);
+
+					/*
+					 * On structs, there must be a default () constructor all the time.
+					 * If there are (other) constructors in structs, the explicit member initializer constructor is not
+					 * provided anymore. This will be handled in the GetConstructors() method.
+					 * If there are opCall overloads, canCreateeExplicitStructCtor overrides the ctor existence check in GetConstructors()
+					 * and enforces that the explicit ctor will not be generated.
+					 * An opCall overload with no parameters supersedes the default ctor.
+					 */
+					var canCreateExplicitStructCtor = m == null || m.Length == 0;
+
+					if (!canCreateExplicitStructCtor)
+						l.AddRange(m);
+
+					m = TypeDeclarationResolver.HandleNodeMatches(
+						GetConstructors(tit, canCreateExplicitStructCtor), ctxt,
+						null, supExpression ?? foreExpression);
+
+					if(m!=null && m.Length != 0)
+						l.AddRange(m);
+				}
+				else
+					l.Add(ov);
+
+			return l.ToArray();
 		}
 
 		public static AbstractType[] GetResolvedConstructorOverloads(TokenExpression tk, ResolverContextStack ctxt)

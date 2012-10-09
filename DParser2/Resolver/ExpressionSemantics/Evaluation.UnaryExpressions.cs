@@ -51,15 +51,16 @@ namespace D_Parser.Resolver.ExpressionSemantics
 			else
 				possibleTypes = TypeDeclarationResolver.Resolve(nex.Type, ctxt);
 
-			var ctors = new Dictionary<DMethod, ClassType>();
+			var ctors = new Dictionary<DMethod, TemplateIntermediateType>();
 
 			if (possibleTypes == null)
 				return null;
 
 			foreach (var t in possibleTypes)
 			{
-				var ct = t as ClassType;
-				if (ct!=null)
+				var ct = t as TemplateIntermediateType;
+				if (ct!=null && 
+					!ct.Definition.ContainsAttribute(DTokens.Abstract))
 					foreach (var ctor in GetConstructors(ct))
 						ctors.Add(ctor, ct);
 			}
@@ -84,7 +85,7 @@ namespace D_Parser.Resolver.ExpressionSemantics
 		/// Returns all constructors from the given class or struct.
 		/// If no explicit constructor given, an artificial implicit constructor method stub will be created.
 		/// </summary>
-		public static IEnumerable<DMethod> GetConstructors(TemplateIntermediateType ct)
+		public static IEnumerable<DMethod> GetConstructors(TemplateIntermediateType ct, bool canCreateExplicitStructCtor = true)
 		{
 			bool foundExplicitCtor = false;
 
@@ -95,15 +96,65 @@ namespace D_Parser.Resolver.ExpressionSemantics
 				{
 					// Not to forget: 'this' aliases are also possible - so keep checking for m being a genuine ctor
 					var dm = m as DMethod;
-					if (m!=null && dm.SpecialType == DMethod.MethodType.Constructor)
+					if (dm!=null && dm.SpecialType == DMethod.MethodType.Constructor)
 					{
 						yield return dm;
 						foundExplicitCtor = true;
 					}
 				}
-			
-			if (!foundExplicitCtor)
-				yield return new DMethod(DMethod.MethodType.Constructor) { Name = DMethod.ConstructorIdentifier, Parent = ct.Definition, Description = "Default constructor for " + ct.Name };
+
+			var isStruct = ct is StructType;
+			if (!foundExplicitCtor || isStruct)
+			{
+				// Check if there is an opCall that has no parameters.
+				// Only if no exists, it's allowed to make a default parameter.
+				bool canMakeDefaultCtor = true;
+				foreach(var opCall in GetOpCalls(ct))
+					if(opCall.Parameters == null || opCall.Parameters.Count == 0)
+					{
+						canMakeDefaultCtor = false;
+						break;
+					}
+
+				if(canMakeDefaultCtor)
+					yield return new DMethod(DMethod.MethodType.Constructor) { Name = DMethod.ConstructorIdentifier, Parent = ct.Definition, Description = "Default constructor for " + ct.Name };
+				
+				// If struct, there's also a ctor that has all struct members as parameters.
+				// Only, if there are no explicit ctors nor opCalls
+				if (isStruct && !foundExplicitCtor && canCreateExplicitStructCtor)
+				{
+					var l = new List<INode>();
+
+					foreach (var member in ct.Definition)
+					{
+						var dv = member as DVariable;
+						if (dv!=null && 
+							!dv.IsStatic && 
+							!dv.IsAlias && 
+							!dv.IsConst) //TODO dunno if public-ness of items is required..
+							l.Add(dv);
+					}
+
+					yield return new DMethod(DMethod.MethodType.Constructor) { 
+						Name = DMethod.ConstructorIdentifier,
+						Parent = ct.Definition,
+						Description = "Default constructor for struct "+ct.Name,
+						Parameters = l
+					};
+				}
+			}
+		}
+
+		public static IEnumerable<DMethod> GetOpCalls(TemplateIntermediateType t)
+		{
+			var opCall = t.Definition["opCall"];
+			if(opCall!=null)
+				foreach(var call in opCall)
+				{
+					var dm = call as DMethod;
+					if(dm != null)
+						yield return dm;
+				}
 		}
 
 		ISemantic E(CastExpression ce)

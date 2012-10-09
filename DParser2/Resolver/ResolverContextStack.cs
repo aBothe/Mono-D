@@ -75,7 +75,7 @@ namespace D_Parser.Resolver
 			IStatement stmt = null;
 			return new ResolverContextStack(editor.ParseCache, new ResolverContext
 			{
-				ScopedBlock = DResolver.SearchBlockAt(editor.SyntaxTree, editor.CaretLocation, out stmt),
+				ScopedBlock = DResolver.SearchBlockAt(editor.SyntaxTree, editor.CaretLocation, out stmt) ?? editor.SyntaxTree,
 				ScopedStatement = stmt
 			});
 		}

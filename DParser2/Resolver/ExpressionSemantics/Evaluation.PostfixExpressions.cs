@@ -160,18 +160,19 @@ namespace D_Parser.Resolver.ExpressionSemantics
 							return dg;
 						}
 					}
-					else if (b is ClassType)
+					else if (b is ClassType || b is StructType)
 					{
+						var tit = (TemplateIntermediateType)b;
 						/*
 						 * auto a = MyStruct(); -- opCall-Overloads can be used
 						 */
-						var classDef = ((ClassType)b).Definition;
+						var classDef = tit.Definition;
 
 						if (classDef == null)
 							continue;
 
-						foreach (var i in classDef)
-							if (i.Name == "opCall" && i is DMethod && (!requireStaticItems || (i as DNode).IsStatic))
+						foreach (var i in GetOpCalls(tit))
+							if ((!requireStaticItems || (i as DNode).IsStatic))
 								methodOverloads.Add(TypeDeclarationResolver.HandleNodeMatch(i, ctxt, b, call) as MemberSymbol);
 					}
 					/*

@@ -122,9 +122,8 @@ namespace D_Parser.Refactoring
 					return true;
 
 				bn=bn.Parent as IBlockNode;
-				if (bn == null)
+				if (bn == null || !TypeCache.TryGetValue(bn, out tc))
 					return false;
-				tc = TypeCache[bn];
 			}
 			
 			return false;

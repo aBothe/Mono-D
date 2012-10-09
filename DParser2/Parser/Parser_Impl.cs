@@ -849,7 +849,7 @@ namespace D_Parser.Parser
 			}
 
 			// BasicType Declarator FunctionBody
-			else if (firstNode is DMethod && (laKind == In || laKind == Out || laKind == Body || laKind == OpenCurlyBrace))
+			else if (firstNode is DMethod && IsFunctionBody)
 			{
 				firstNode.Description += CheckForPostSemicolonComment();
 
@@ -4178,13 +4178,17 @@ namespace D_Parser.Parser
 			// handle post argument attributes
 			FunctionAttributes(dm);
 
+			if (!IsEOF)
+				LastParsedObject = dm;
+
 			if (laKind == If)
 				Constraint();
 
 			// handle post argument attributes
 			FunctionAttributes(dm);
 
-			FunctionBody(dm);
+			if(IsFunctionBody)
+				FunctionBody(dm);
 			return dm;
 		}
 
@@ -4424,6 +4428,8 @@ namespace D_Parser.Parser
 		#endregion
 
 		#region Functions
+		bool IsFunctionBody { get { return laKind == In || laKind == Out || laKind == Body || laKind == OpenCurlyBrace; } }
+
 		void FunctionBody(DMethod par)
 		{
 			if (laKind == Semicolon) // Abstract or virtual functions
