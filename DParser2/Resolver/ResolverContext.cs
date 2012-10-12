@@ -38,6 +38,11 @@ namespace D_Parser.Resolver
 			ScopedBlock = other.ScopedBlock;
 			ScopedStatement = other.ScopedStatement;
 		}
+
+		public override string ToString()
+		{
+			return ScopedBlock.ToString() + " // " + (ScopedStatement == null ? "" : ScopedStatement.ToString());
+		}
 	}
 
 }
