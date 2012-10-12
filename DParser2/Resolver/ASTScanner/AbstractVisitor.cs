@@ -277,7 +277,11 @@ to avoid op­er­a­tions which are for­bid­den at com­pile time.",
 
 			while (Statement != null)
 			{
-				if (Statement is IDeclarationContainingStatement)
+				if (Statement is ImportStatement) 
+				{ 
+					// Handled in DBlockNode
+				}
+				else if (Statement is IDeclarationContainingStatement)
 				{
 					var decls = ((IDeclarationContainingStatement)Statement).Declarations;
 

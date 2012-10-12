@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using D_Parser.Dom.Statements;
 using D_Parser.Parser;
 
@@ -124,13 +125,13 @@ namespace D_Parser.Dom
 		/// </summary>
 		public List<DVariable> PseudoAliases = new List<DVariable>();
 
-		public void CreatePseudoAliases()
+		public void CreatePseudoAliases(IBlockNode Parent)
 		{
 			PseudoAliases.Clear();
 
 			foreach (var imp in Imports)
 				if (!string.IsNullOrEmpty(imp.ModuleAlias))
-					PseudoAliases.Add(new ImportSymbolAlias(this,imp));
+					PseudoAliases.Add(new ImportSymbolAlias(this, imp, Parent));
 
 			if (ImportBinding != null)
 			{
@@ -141,10 +142,10 @@ namespace D_Parser.Dom
 				 * whereas Convert is a direct alias for std.conv.to
 				 */
 				if(!string.IsNullOrEmpty(ImportBinding.Module.ModuleAlias))
-					PseudoAliases.Add(new ImportSymbolAlias(this,ImportBinding.Module));
+					PseudoAliases.Add(new ImportSymbolAlias(this, ImportBinding.Module, Parent));
 
 				foreach (var bind in ImportBinding.SelectedSymbols)
-					PseudoAliases.Add(new ImportSymbolAlias
+					PseudoAliases.Add(new ImportSymbolAlias(Parent)
 					{
 						IsAlias=true,
 						IsModuleAlias = false,
@@ -176,7 +177,12 @@ namespace D_Parser.Dom
 		public bool IsModuleAlias;
 		public ImportStatement OriginalImportStatement;
 
-		public ImportSymbolAlias(ImportStatement impStmt,ImportStatement.Import imp)
+		public ImportSymbolAlias(IBlockNode parentNode)
+		{
+			Parent = parentNode;
+		}
+
+		public ImportSymbolAlias(ImportStatement impStmt,ImportStatement.Import imp, IBlockNode parentNode) : this(parentNode)
 		{
 			OriginalImportStatement = impStmt;
 

@@ -153,7 +153,7 @@ namespace D_Parser.Parser
 
 			//ImportDeclaration
 			if (laKind == Import)
-				module.Add(ImportDeclaration());
+				module.Add(ImportDeclaration(module));
 
 			//Constructor
 			else if (laKind == (This))
@@ -508,7 +508,7 @@ namespace D_Parser.Parser
 			return td;
 		}
 
-		ImportStatement ImportDeclaration()
+		ImportStatement ImportDeclaration(IBlockNode scope)
 		{
 			Expect(Import);
 
@@ -543,7 +543,7 @@ namespace D_Parser.Parser
 			importStatement.EndLocation = t.EndLocation;
 
 			// Prepare for resolving external items
-			importStatement.CreatePseudoAliases();
+			importStatement.CreatePseudoAliases(scope);
 
 			return importStatement;
 		}
@@ -786,7 +786,7 @@ namespace D_Parser.Parser
 			}
 
 			// Declarators
-			var firstNode = Declarator(ttd,false);
+			var firstNode = Declarator(ttd,false, Scope);
 			firstNode.Description = initialComment;
 			firstNode.Location = startLocation;
 
@@ -1066,9 +1066,9 @@ namespace D_Parser.Parser
 		/// Parses a type declarator
 		/// </summary>
 		/// <returns>A dummy node that contains the return type, the variable name and possible parameters of a function declaration</returns>
-		DNode Declarator(ITypeDeclaration basicType,bool IsParam)
+		DNode Declarator(ITypeDeclaration basicType,bool IsParam, INode parent)
 		{
-			DNode ret = new DVariable() { Type=basicType, Location = la.Location };
+			DNode ret = new DVariable() { Type=basicType, Location = la.Location, Parent = parent };
 			LastParsedObject = ret;
 			ITypeDeclaration ttd = null;
 
@@ -1182,7 +1182,7 @@ namespace D_Parser.Parser
 
 			if (IsDeclaratorSuffix || MemberFunctionAttribute[laKind])
 			{
-				var dm = new DMethod();
+				var dm = new DMethod { Parent = parent };
 				LastParsedObject = dm;
 
 				// DeclaratorSuffixes
@@ -1489,7 +1489,7 @@ namespace D_Parser.Parser
 
 			td = BasicType();
 
-			var ret = Declarator(td,true);
+			var ret = Declarator(td,true, Scope);
 			ret.Location = startLocation;
 
 			if (attr.Count > 0) 
@@ -3137,7 +3137,7 @@ namespace D_Parser.Parser
 					if (laKind == Comma)
 						Step();
 
-					var n = Declarator(tp, false);
+					var n = Declarator(tp, false, par.ParentNode);
 
 					n.Location = tp.Location;
 
@@ -3229,7 +3229,7 @@ namespace D_Parser.Parser
 
 				Step();
 
-				var dbs = new IfStatement() { Location = t.Location, IsStatic = isStatic, Parent = Parent };
+				var dbs = new IfStatement() { Location = t.Location, IsStatic = isStatic, Parent = Parent, ParentNode = Scope };
 				LastParsedObject = dbs;
 				Expect(OpenParenthesis);
 
@@ -3751,12 +3751,20 @@ namespace D_Parser.Parser
 			#endregion
 
 			// ImportDeclaration
-			else if (laKind == Import)
-				return ImportDeclaration();
+			else if (laKind == Import || (laKind == Static && Lexer.CurrentPeekToken.Kind == Import))
+			{
+				if(laKind == Static)
+				{
+					Step();
+					PushAttribute(new DAttribute(Static) { Location = t.Location, EndLocation = t.EndLocation }, false);
+				}
+
+				return ImportDeclaration(Scope);
+			}
 
 			else if (!(ClassLike[laKind] || BasicTypes[laKind] || laKind == Enum || Modifiers[laKind] || laKind == PropertyAttribute || laKind == Alias || laKind == Typedef) && IsAssignExpression())
 			{
-				var s = new ExpressionStatement() { Location = la.Location, Parent = Parent };
+				var s = new ExpressionStatement() { Location = la.Location, Parent = Parent, ParentNode = Scope };
 
 				if (!IsEOF)
 					LastParsedObject = s;
@@ -3771,7 +3779,7 @@ namespace D_Parser.Parser
 			}
 			else
 			{
-				var s = new DeclarationStatement() { Location = la.Location, Parent = Parent };
+				var s = new DeclarationStatement() { Location = la.Location, Parent = Parent, ParentNode = Scope };
 				LastParsedObject = s;
 				s.Declarations = Declaration(Scope);
 
@@ -3967,7 +3975,7 @@ namespace D_Parser.Parser
 					while (!IsEOF && laKind != (CloseCurlyBrace))
 					{
 						var prevLocation = la.Location;
-						var s = Statement(Scope: ParentNode as IBlockNode);
+						var s = Statement(Scope: ParentNode as IBlockNode, Parent: bs);
 
 						// Avoid infinite loops -- hacky?
 						if (prevLocation == la.Location)
@@ -4730,7 +4738,7 @@ namespace D_Parser.Parser
 			LastParsedObject = tv;
 				
 			var bt = BasicType();
-			var dv = Declarator(bt,false);
+			var dv = Declarator(bt,false, null);
 
 			tv.Type = dv.Type;
 			tv.Name = dv.Name;
