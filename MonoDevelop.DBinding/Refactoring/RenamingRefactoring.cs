@@ -24,6 +24,14 @@ namespace MonoDevelop.D.Refactoring
 			return n!=null && !(n is IAbstractSyntaxTree) && !string.IsNullOrEmpty(n.Name);
 		}
 
+		class DescIntComparer : Comparer<int>
+		{
+			public override int Compare(int x, int y)
+			{
+				return x >= y ? 0 : 1;
+			}
+		}
+
 		public bool Run(DProject project,INode targetMember, string newName=null)
 		{
 			if(!CanRename(targetMember) || Ide.IdeApp.Workbench.ActiveDocument ==null)
@@ -116,104 +124,60 @@ namespace MonoDevelop.D.Refactoring
 			// Replace occurences
 			foreach (var kv1 in foundReferences)
 			{
-				var doc = TextFileProvider.Instance.GetEditableTextFile(new FilePath(kv1.Key));
+				var file = new FilePath(kv1.Key);
+				bool isOpen = false;
+				
+				var tfd = TextFileProvider.Instance.GetTextEditorData(file, out isOpen);
+				var doc = TextFileProvider.Instance.GetEditableTextFile(file);
 
 				if (doc != null)
 				{
+					var offsets = new List<int>(kv1.Value.Count);
+
 					foreach (var kv2 in kv1.Value)
+						offsets.Add(doc.GetPositionFromLineColumn(kv2.Line, kv2.Column));
+
+					/*
+					 * Important: The names have to be replaced from the last to the first identifier offset
+					 * because only this ensures the consistency of the actual offsets.
+					 * Replacing from the first to the last occurrency would obstruct huge parts of the document.
+					 */
+					offsets.Sort(new DescIntComparer());
+
+					IDisposable undoGrp = null;
+					if(isOpen)
+						undoGrp = tfd.OpenUndoGroup(); // Put all replacement into one huge undo group -- it'll be much more easier to rewind done changes
+					foreach(var offset in offsets)
 					{
-						int offset = doc.GetPositionFromLineColumn(kv2.Line, kv2.Column);
-
-						doc.DeleteText(offset, n.Name.Length);
-						doc.InsertText(offset, newName);
+						if(isOpen)
+							tfd.Replace(offset, n.Name.Length, newName);
+						else
+						{
+							doc.DeleteText(offset, n.Name.Length);
+							doc.InsertText(offset, newName);
+						}
 					}
-
+					if (undoGrp != null)
+						undoGrp.Dispose();
+					
 					// If project file not open for editing, reparse it
-					if (project != null && !IdeApp.Workbench.Documents.Any((Ide.Gui.Document d) => {
-						if (d.IsFile && d.FileName == kv1.Key)
-							return true;
-						return false;
-					}))
+					if (project != null && 
+						!IdeApp.Workbench.Documents.Any((Ide.Gui.Document d) => 
+						{ 
+							if(d.IsFile && d.FileName == kv1.Key)
+							{
+								// Important: Save file contents to ensure updated AST contents
+								d.Save();
+								return true;
+							}				
+							return false;
+						}))
 						project.ReparseModule(kv1.Key);
 				}
 			}
 
 			// Assign new name to the node
 			n.Name = newName;
-
-
-
-
-
-
-			/*
-			// Prepare current editor (setup textlinks and anchors)
-			var doc = Ide.IdeApp.Workbench.ActiveDocument;
-
-			if (doc == null || !doc.IsFile || !foundReferences.ContainsKey(doc.FileName))
-				return false;
-
-			var editor = doc.Editor;
-			var localReferences = foundReferences[doc.FileName];
-
-			List<TextLink> links = new List<TextLink>();
-			TextLink link = new TextLink("name");
-			int baseOffset = Int32.MaxValue;
-
-
-			foreach (var r in localReferences)
-			{
-				baseOffset = Math.Min(baseOffset, editor.Document.LocationToOffset(r.Line, r.Column));
-			}
-			foreach (var r in localReferences)
-			{
-				var segment = new Segment(editor.Document.LocationToOffset(r.Line, r.Column) - baseOffset, n.Name.Length);
-				if (segment.Offset <= editor.Caret.Offset - baseOffset && editor.Caret.Offset - baseOffset <= segment.EndOffset)
-				{
-					link.Links.Insert(0, segment);
-				}
-				else
-				{
-					link.AddLink(segment);
-				}
-			}
-
-			links.Add(link);
-			if (editor.CurrentMode is TextLinkEditMode)
-				((TextLinkEditMode)editor.CurrentMode).ExitTextLinkMode();
-			var tle = new TextLinkEditMode(editor.Parent, baseOffset, links);
-			tle.SetCaretPosition = false;
-			tle.SelectPrimaryLink = true;
-			
-			// Show rename helper popup
-			if (tle.ShouldStartTextLinkMode)
-			{
-				var helpWindow = new ModeHelpWindow();
-				helpWindow.TransientFor = IdeApp.Workbench.RootWindow;
-				helpWindow.TitleText = "<b>Renaming " + (n as AbstractNode).ToString(false) + "</b>";
-				helpWindow.Items.Add(new KeyValuePair<string, string>(GettextCatalog.GetString("<b>Key</b>"), GettextCatalog.GetString("<b>Behavior</b>")));
-				helpWindow.Items.Add(new KeyValuePair<string, string>(GettextCatalog.GetString("<b>Return</b>"), GettextCatalog.GetString("<b>Accept</b> this refactoring.")));
-				helpWindow.Items.Add(new KeyValuePair<string, string>(GettextCatalog.GetString("<b>Esc</b>"), GettextCatalog.GetString("<b>Cancel</b> this refactoring.")));
-				tle.HelpWindow = helpWindow;
-				tle.Cancel += delegate
-				{
-					if (tle.HasChangedText)
-						editor.Document.Undo();
-				};
-				helpWindow.Destroyed += (object o, EventArgs e) =>
-				{
-					if (tle.HasChangedText)
-					{
-
-					}
-				};
-				tle.OldMode = editor.CurrentMode;
-				tle.StartMode();
-				editor.CurrentMode = tle;
-			}
-			else
-				return false;
-			*/
 
 			return true;
 		}
