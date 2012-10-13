@@ -174,19 +174,20 @@ namespace D_Parser.Resolver.ExpressionSemantics
 						foreach (var i in GetOpCalls(tit))
 							if ((!requireStaticItems || (i as DNode).IsStatic))
 								methodOverloads.Add(TypeDeclarationResolver.HandleNodeMatch(i, ctxt, b, call) as MemberSymbol);
-					}
-					/*
-					 * Every struct can contain a default ctor:
-					 * 
-					 * struct S { int a; bool b; }
-					 * 
-					 * auto s = S(1,true); -- ok
-					 * auto s2= new S(2,false); -- error, no constructor found!
-					 */
-					else if (b is StructType && methodOverloads.Count == 0)
-					{
-						//TODO: Deduce parameters
-						return b;
+
+						/*
+						 * Every struct can contain a default ctor:
+						 * 
+						 * struct S { int a; bool b; }
+						 * 
+						 * auto s = S(1,true); -- ok
+						 * auto s2= new S(2,false); -- error, no constructor found!
+						 */
+						if (b is StructType && methodOverloads.Count == 0)
+						{
+							//TODO: Deduce parameters
+							return b;
+						}
 					}
 
 					/*
