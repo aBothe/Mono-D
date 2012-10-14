@@ -62,6 +62,7 @@ namespace MonoDevelop.D
 		public DProjectConfiguration (DProject Project)
 		{
 			this.Project = Project;
+			this.ExternalConsole = true;
 		}
 
 		public event EventHandler Changed;
