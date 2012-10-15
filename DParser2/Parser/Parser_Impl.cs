@@ -1175,7 +1175,8 @@ namespace D_Parser.Parser
 				else
 				{
 					// Code error! - to prevent infinite declaration loops, step one token forward anyway!
-					Step();
+					if(laKind != CloseCurlyBrace)
+						Step();
 					return ret;
 				}
 			}
@@ -3024,7 +3025,8 @@ namespace D_Parser.Parser
 			#endregion
 
 			SynErr(Identifier);
-			Step();
+			if(laKind != CloseCurlyBrace)
+				Step();
 			return new TokenExpression() { Location = t.Location, EndLocation = t.EndLocation };
 		}
 
