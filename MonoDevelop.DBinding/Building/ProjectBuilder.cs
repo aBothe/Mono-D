@@ -26,6 +26,7 @@ namespace MonoDevelop.D.Building
 		DProject Project;
 		DProjectConfiguration BuildConfig;
 		string AbsoluteObjectDirectory;
+		IArgumentMacroProvider commonMacros;
 		IProgressMonitor monitor;
 		List<string> BuiltObjects = new List<string> ();
 
@@ -59,7 +60,9 @@ namespace MonoDevelop.D.Building
 		{
 			this.Project = Project;
 			BuildConfig = Project.GetConfiguration (BuildConfigurationSelector) as DProjectConfiguration;
-
+			commonMacros = new PrjPathMacroProvider { 
+				slnPath = Project.ParentSolution.BaseDirectory
+			};
 			BuiltObjects.Clear ();
 
 			if (Compiler == null) {
@@ -104,6 +107,8 @@ namespace MonoDevelop.D.Building
 			// Build argument string
 			var target = Project.GetOutputFileName (BuildConfig.Selector);
 
+		
+
 			var argumentString = FillInMacros (
                 Arguments.OneStepBuildArguments.Trim () + " " +
                 BuildConfig.ExtraCompilerArguments.Trim () + " " +
@@ -114,13 +119,13 @@ namespace MonoDevelop.D.Building
                 IncludesStringPattern = Commands.IncludePathPattern,
 
                 SourceFiles = BuiltObjects,
-                Includes = Project.IncludePaths,
-                Libraries = BuildConfig.ReferencedLibraries,
+                Includes = FillCommonMacros(Project.IncludePaths),
+                Libraries = FillCommonMacros(BuildConfig.ReferencedLibraries),
 
                 RelativeTargetDirectory = BuildConfig.OutputDirectory,
                 ObjectsDirectory = BuildConfig.ObjectDirectory,
                 TargetFile = target,
-            });
+            }, commonMacros);
 
 			// Execute the compiler
 			var stdOut = "";
@@ -219,8 +224,8 @@ namespace MonoDevelop.D.Building
                 IncludePathConcatPattern = Commands.IncludePathPattern,
                 SourceFile = f.FilePath.ToRelative(Project.BaseDirectory),
                 ObjectFile = obj,
-                Includes = Project.IncludePaths.Union(FileLinkDirectories),
-            });
+				Includes = FillCommonMacros(Project.IncludePaths).Union(FileLinkDirectories),
+            },commonMacros);
 
 			// b.Execute compiler
 			string stdError;
@@ -264,7 +269,7 @@ namespace MonoDevelop.D.Building
                 {
 					RcFile = f.FilePath,
                     ResFile = res
-                });
+                },commonMacros);
 
 			// Execute compiler
 			string output;
@@ -320,8 +325,8 @@ namespace MonoDevelop.D.Building
                     Objects = BuiltObjects.ToArray (),
                     TargetFile = LinkTargetFile,
                     RelativeTargetDirectory = BuildConfig.OutputDirectory.ToRelative (Project.BaseDirectory),
-                    Libraries = BuildConfig.ReferencedLibraries
-                });
+                    Libraries = FillCommonMacros(BuildConfig.ReferencedLibraries)
+                },commonMacros);
 
 			var linkerOutput = "";
 			var linkerErrorOutput = "";
@@ -407,13 +412,14 @@ namespace MonoDevelop.D.Building
 		/// <summary>
 		/// Scans through RawArgumentString for macro uses (e.g. -of"$varname") and replace found variable matches with values provided by MacroProvider
 		/// </summary>
-		public static string FillInMacros (string RawArgumentString, IArgumentMacroProvider MacroProvider)
+		public static string FillInMacros (string RawArgumentString, params IArgumentMacroProvider[] MacroProvider)
 		{
 			var returnArgString = RawArgumentString;
 
 			var macros = new Dictionary<string, string> ();
 
-			MacroProvider.ManipulateMacros (macros);
+			foreach(var mp in MacroProvider)
+				mp.ManipulateMacros (macros);
 
 			string tempId = "";
 			char c = '\0';
@@ -436,6 +442,26 @@ namespace MonoDevelop.D.Building
 			}
 
 			return returnArgString;
+		}
+
+		class PrjPathMacroProvider : IArgumentMacroProvider
+		{
+			public string slnPath;
+
+			public void ManipulateMacros(Dictionary<string, string> macros)
+			{
+				macros["solution"] = slnPath;
+			}
+		}
+
+		List<string> FillCommonMacros(IEnumerable<string> strings)
+		{
+			var l = new List<string>();
+
+			foreach (var i in strings)
+				l.Add(FillInMacros(i, commonMacros));
+
+			return l;
 		}
 
         #endregion

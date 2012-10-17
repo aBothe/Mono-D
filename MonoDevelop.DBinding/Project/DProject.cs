@@ -129,6 +129,7 @@ namespace MonoDevelop.D
 		public void UpdateLocalIncludeCache ()
 		{
 			analysisFinished_LocalIncludes = false;
+			LocalIncludeCache.SolutionPath = ParentSolution.BaseDirectory;
 			LocalIncludeCache.FallbackPath = BaseDirectory;
 			DCompilerConfiguration.UpdateParseCacheAsync (LocalIncludeCache);
 		}
