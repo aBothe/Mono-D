@@ -28,7 +28,7 @@ namespace MonoDevelop.D.Refactoring
 		{
 			public override int Compare(int x, int y)
 			{
-				return x >= y ? 0 : 1;
+				return x > y ? -1 : 1;
 			}
 		}
 
@@ -96,8 +96,6 @@ namespace MonoDevelop.D.Refactoring
 
 				if (references.Count < 1)
 					continue;
-
-				references.Sort(new ReferenceFinding.IdLocationComparer(true));
 
 				if (!foundReferences.ContainsKey(mod.FileName))
 					foundReferences.Add(mod.FileName, new List<CodeLocation>());
