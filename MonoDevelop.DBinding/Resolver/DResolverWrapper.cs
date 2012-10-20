@@ -21,8 +21,7 @@ namespace MonoDevelop.D.Resolver
 				doc = IdeApp.Workbench.ActiveDocument;
 
 			if (doc == null || 
-				doc.FileName == FilePath.Null || 
-				IdeApp.ProjectOperations.CurrentSelectedSolution == null)
+				doc.FileName == FilePath.Null)
 				return null;
 
 			var editor = doc.GetContent<ITextBuffer>();
