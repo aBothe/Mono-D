@@ -62,7 +62,7 @@ namespace MonoDevelop.D.Refactoring
 				project.ParseCache :
 				ParseCacheList.Create(DCompilerService.Instance.GetDefaultCompiler().ParseCache);
 
-			var modules = project == null ?
+			var modules = project != null ?
 				project.LocalFileCache as IEnumerable<IAbstractSyntaxTree> :
 				new[] { (Ide.IdeApp.Workbench.ActiveDocument.ParsedDocument as MonoDevelop.D.Parser.ParsedDModule).DDom };
 
