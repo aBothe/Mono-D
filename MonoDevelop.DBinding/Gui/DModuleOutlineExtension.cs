@@ -13,6 +13,7 @@ using MonoDevelop.DesignerSupport;
 using MonoDevelop.Ide;
 using MonoDevelop.Ide.Gui;
 using MonoDevelop.Ide.Gui.Content;
+using MonoDevelop.Refactoring;
 
 namespace MonoDevelop.D.Gui
 {
@@ -240,10 +241,15 @@ namespace MonoDevelop.D.Gui
 
 			var n=TreeStore.GetValue(iter, 0) as INode;
 
-			if (n != null && args.NewText!=n.Name)
+			if (n != null && args.NewText!=n.Name && 
+				DRenameRefactoring.CanRenameNode(n) && 
+				DRenameRefactoring.IsValidIdentifier(args.NewText))
 			{
-				new RenamingRefactoring().Run(IdeApp.Workbench.ActiveDocument.HasProject ?
-					IdeApp.Workbench.ActiveDocument.Project as DProject : null, n, args.NewText);
+				RefactoringService.AcceptChanges(
+					IdeApp.Workbench.ProgressMonitors.GetBackgroundProgressMonitor("Rename item", null),
+					new DRenameRefactoring().PerformChanges(
+						new RefactoringOptions(IdeApp.Workbench.ActiveDocument)	{ SelectedItem = n}, 
+						new MonoDevelop.Refactoring.Rename.RenameRefactoring.RenameProperties { NewName = args.NewText }));
 
 				TreeView.Selection.SelectIter(iter);
 				TreeView.GrabFocus();

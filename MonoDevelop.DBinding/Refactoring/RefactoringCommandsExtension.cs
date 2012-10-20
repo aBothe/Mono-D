@@ -5,8 +5,6 @@ using MonoDevelop.Components.Commands;
 using MonoDevelop.D.Resolver;
 using MonoDevelop.Ide;
 using MonoDevelop.Ide.Commands;
-using MonoDevelop.Ide.FindInFiles;
-using MonoDevelop.Ide.Gui;
 using MonoDevelop.Ide.Gui.Content;
 using MonoDevelop.Refactoring;
 
@@ -74,8 +72,7 @@ namespace MonoDevelop.D.Refactoring
 		[CommandHandler(EditCommands.Rename)]
 		void Rename()
 		{
-			new RenamingRefactoring().Run(IdeApp.Workbench.ActiveDocument.HasProject ?
-					IdeApp.Workbench.ActiveDocument.Project as DProject : null, firstResultNode);
+			new DRenameHandler().Start(firstResultNode);
 		}
 
 		[CommandHandler(RefactoryCommands.ImportSymbol)]

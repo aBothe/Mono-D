@@ -46,7 +46,7 @@ namespace MonoDevelop.D.Refactoring
 					info.Add(IdeApp.CommandService.GetCommandInfo(RefactoryCommands.GotoDeclaration), new Action(GotoDeclaration));
 					info.Add(IdeApp.CommandService.GetCommandInfo(RefactoryCommands.FindReferences), new Action(FindReferences));
 
-					if (RenamingRefactoring.CanRename(n))
+					if (DRenameRefactoring.CanRenameNode(n))
 					{
 						info.AddSeparator();
 						info.Add(IdeApp.CommandService.GetCommandInfo(EditCommands.Rename), new Action(RenameSymbol));
@@ -85,8 +85,7 @@ namespace MonoDevelop.D.Refactoring
 
 		void RenameSymbol()
 		{
-			new RenamingRefactoring().Run(IdeApp.Workbench.ActiveDocument.HasProject ?
-					IdeApp.Workbench.ActiveDocument.Project as DProject : null,n);
+			new DRenameHandler().Start(n);
 		}
 	}
 }
