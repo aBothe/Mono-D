@@ -62,7 +62,7 @@ namespace MonoDevelop.D.templates
 			base.ModifyTags(policyParent, project, language, identifier, fileName, ref tags);
 
 			if(tags!=null)
-				tags["ModuleName"] = DModule.GetModuleName(project == null ? string.Empty : project.BaseDirectory.ToString(), fileName).Replace(' ','_');
+				tags["ModuleName"] = DModule.GetModuleName(project == null ? string.Empty : project.BaseDirectory.ToString(), fileName ?? identifier ?? string.Empty).Replace(' ','_');
 		}
 	}
 }
