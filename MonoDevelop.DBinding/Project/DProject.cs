@@ -50,8 +50,10 @@ namespace MonoDevelop.D
 		public IEnumerable<DProject> DependingProjects
 		{
 			get {
+				DProject p;
 				foreach (var dep in ProjectDependencies)
-					yield return ParentSolution.GetSolutionItem(dep) as DProject;
+					if((p=ParentSolution.GetSolutionItem(dep) as DProject) != null)
+						yield return p;
 			}
 			set
 			{
@@ -59,7 +61,7 @@ namespace MonoDevelop.D
 
 				if(value!=null)
 					foreach (var dep in value)
-						if(dep!=this)
+						if(dep!=this && dep!=null)
 							ProjectDependencies.Add(dep.ItemId);
 			}
 		}
@@ -72,7 +74,8 @@ namespace MonoDevelop.D
 				foreach (var p in LocalIncludeCache.ParsedDirectories)
 					yield return p;
 				foreach (var dep in DependingProjects)
-					yield return dep.BaseDirectory;
+					if(dep!=null)
+						yield return dep.BaseDirectory;
 			}
 		}
 

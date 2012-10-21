@@ -51,12 +51,14 @@ namespace MonoDevelop.D
 
 			var l = new CompletionDataList();
 
-			DCodeCompletionSupport.BuildCompletionData(
-				Document,
-				dom.DDom,
-				completionContext,
-				l,
-				triggerChar);
+			lock(dom)
+			lock(dom.DDom)
+				DCodeCompletionSupport.BuildCompletionData(
+					Document,
+					dom.DDom,
+					completionContext,
+					l,
+					triggerChar);
 
 			return l;
 		}
