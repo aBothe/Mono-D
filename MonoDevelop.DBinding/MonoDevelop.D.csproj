@@ -147,6 +147,8 @@
     <Compile Include="OptionPanels\DCompilerOptions.cs" />
     <Compile Include="OptionPanels\ResourcesCompilerOptions.cs" />
     <Compile Include="gtk-gui\MonoDevelop.D.ResourcesCompilerOptionsPanel.cs" />
+    <Compile Include="Refactoring\CodeActions\DCodeActionSource.cs" />
+    <Compile Include="Refactoring\CodeActions\ImportSymbol.cs" />
     <Compile Include="Refactoring\Commands.cs" />
     <Compile Include="Refactoring\DDocumentationLauncher.cs" />
     <Compile Include="Gui\EditorPathbarProvider.cs" />
@@ -190,10 +192,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="icons\dproj16.png">
       <LogicalName>dproj16.png</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="MonoDevelop.D.addin.xml">
-      <SubType>Designer</SubType>
-      <LogicalName>MonoDevelop.D.addin.xml</LogicalName>
     </EmbeddedResource>
     <EmbeddedResource Include="templates\EmptyDFile.xft.xml">
       <LogicalName>EmptyDFile.xft.xml</LogicalName>
@@ -270,6 +268,7 @@
       <SubType>Designer</SubType>
     </Content>
     <EmbeddedResource Include="icons\element-alias-16.png" />
+    <Content Include="MonoDevelop.D.addin.xml" />
     <Content Include="Remaining features.txt" />
   </ItemGroup>
   <ItemGroup>
