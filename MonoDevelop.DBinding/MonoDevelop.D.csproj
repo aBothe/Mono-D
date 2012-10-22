@@ -268,7 +268,7 @@
       <SubType>Designer</SubType>
     </Content>
     <EmbeddedResource Include="icons\element-alias-16.png" />
-    <Content Include="MonoDevelop.D.addin.xml" />
+    <EmbeddedResource Include="MonoDevelop.D.addin.xml" />
     <Content Include="Remaining features.txt" />
   </ItemGroup>
   <ItemGroup>

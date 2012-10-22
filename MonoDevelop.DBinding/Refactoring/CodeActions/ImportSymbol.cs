@@ -19,7 +19,7 @@ namespace MonoDevelop.D.Refactoring.CodeActions
     /// <summary>
     /// Provides a CodeAction for fast import in D language
     /// </summary>
-    class ImportSymbol : CodeActionProvider
+    public class ImportSymbol : CodeActionProvider
     {
         public ImportSymbol()
         {
@@ -30,8 +30,8 @@ namespace MonoDevelop.D.Refactoring.CodeActions
 
         public override IEnumerable<CodeAction> GetActions(Ide.Gui.Document document, ICSharpCode.NRefactory.TextLocation loc, System.Threading.CancellationToken cancellationToken)
         {
-            if (!document.Name.EndsWith(".d")) yield break; //is there a cleaner way?
-			var edData = DResolverWrapper.GetEditorData(document);
+            if (!DLanguageBinding.IsDFile(document.FileName)) 
+				yield break;
 
             var imports = GetSolutions(document); //it may be a bit too slow
             foreach(var i in imports)
