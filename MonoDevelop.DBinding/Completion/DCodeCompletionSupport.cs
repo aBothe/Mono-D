@@ -55,7 +55,8 @@ namespace MonoDevelop.D.Completion
 
 				// Automatically include dep projects' caches
 				foreach (var dep in Project.DependingProjects)
-					pcl.Add(dep.LocalFileCache);
+					if(dep!=null)
+						pcl.Add(dep.LocalFileCache);
 
 				return pcl;
 			}
