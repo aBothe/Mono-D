@@ -59,7 +59,8 @@ namespace MonoDevelop.D
 					completionContext,
 					l,
 					triggerChar);
-
+			if (l.Count == 0)
+				return null;
 			return l;
 		}
 		#endregion
