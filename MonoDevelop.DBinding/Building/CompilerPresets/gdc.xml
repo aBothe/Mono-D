@@ -8,12 +8,14 @@
 		<DebugArgs>
 			<CompilerArg>-c "$src" -o "$obj" $includes -g</CompilerArg>
 			<LinkerArgs>-o "$target" -g $objs $libs</LinkerArgs>
-      <OneStepBuildArgs>-O0 -g $sources $libs $includes -o "$exe"</OneStepBuildArgs>
+      		<OneStepBuildArgs>-O0 -g $sources $libs $includes -o "$exe"</OneStepBuildArgs>
+      		<gdcLibPrefixing>true</gdcLibPrefixing>
 		</DebugArgs>
 		<ReleaseArgs>
 			<CompilerArg>-c "$src" -o "$obj" $includes -O3</CompilerArg>
 			<LinkerArgs>-o "$target" -O3 $objs $libs</LinkerArgs>
-      <OneStepBuildArgs>-O3 -frelease $sources $libs $includes -o "$exe"</OneStepBuildArgs>
+      		<OneStepBuildArgs>-O3 -frelease $sources $libs $includes -o "$exe"</OneStepBuildArgs>
+      		<gdcLibPrefixing>true</gdcLibPrefixing>
 		</ReleaseArgs>
 	</TargetConfiguration>
 	
@@ -25,10 +27,12 @@
 		<DebugArgs>
 			<CompilerArg>-c "$src" -o "$obj" $includes -g</CompilerArg>
 			<LinkerArgs>-o "$target" -g $objs $libs</LinkerArgs>
+			<gdcLibPrefixing>true</gdcLibPrefixing>
 		</DebugArgs>
 		<ReleaseArgs>
 			<CompilerArg>-c "$src" -o "$obj" $includes -O3</CompilerArg>
 			<LinkerArgs>-o "$target" -O3 $objs $libs</LinkerArgs>
+			<gdcLibPrefixing>true</gdcLibPrefixing>
 		</ReleaseArgs>
 	</TargetConfiguration>
 	
@@ -40,10 +44,12 @@
 		<DebugArgs>
 			<CompilerArg>-fPIC -c "$src" -o "$obj" $includes -g</CompilerArg>
 			<LinkerArgs>-o "$target" -g $objs $libs -shared</LinkerArgs>
+			<gdcLibPrefixing>true</gdcLibPrefixing>
 		</DebugArgs>
 		<ReleaseArgs>
 			<CompilerArg>-fPIC -c "$src" -o "$obj" $includes -O3</CompilerArg>
 			<LinkerArgs>-o "$target" -O3 $objs $libs -shared</LinkerArgs>
+			<gdcLibPrefixing>true</gdcLibPrefixing>
 		</ReleaseArgs>
 	</TargetConfiguration>
 	
@@ -55,10 +61,12 @@
 		<DebugArgs>
 			<CompilerArg>-c "$src" -o "$obj" $includes -g</CompilerArg>
 			<LinkerArgs>rcs "$target" $objs</LinkerArgs>
+			<gdcLibPrefixing>true</gdcLibPrefixing>
 		</DebugArgs>
 		<ReleaseArgs>
 			<CompilerArg>-c "$src" -o "$obj" $includes -O3</CompilerArg>
 			<LinkerArgs>rcs "$target" $objs</LinkerArgs>
+			<gdcLibPrefixing>true</gdcLibPrefixing>
 		</ReleaseArgs>
 	</TargetConfiguration>
 </Compiler>

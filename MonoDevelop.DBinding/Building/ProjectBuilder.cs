@@ -120,7 +120,7 @@ namespace MonoDevelop.D.Building
 
                 SourceFiles = BuiltObjects,
                 Includes = FillCommonMacros(Project.IncludePaths),
-                Libraries = FillCommonMacros(BuildConfig.ReferencedLibraries),
+                Libraries = GetLibraries(BuildConfig,Arguments),
 
                 RelativeTargetDirectory = BuildConfig.OutputDirectory,
                 ObjectsDirectory = BuildConfig.ObjectDirectory,
@@ -325,7 +325,7 @@ namespace MonoDevelop.D.Building
                     Objects = BuiltObjects.ToArray (),
                     TargetFile = LinkTargetFile,
                     RelativeTargetDirectory = BuildConfig.OutputDirectory.ToRelative (Project.BaseDirectory),
-                    Libraries = FillCommonMacros(BuildConfig.ReferencedLibraries)
+                    Libraries = GetLibraries(BuildConfig, Arguments)
                 },commonMacros);
 
 			var linkerOutput = "";
@@ -444,7 +444,17 @@ namespace MonoDevelop.D.Building
 			return returnArgString;
 		}
 
-		class PrjPathMacroProvider : IArgumentMacroProvider
+		public static List<string> FillInMacros(IEnumerable<string> rawStrings, params IArgumentMacroProvider[] macroProvider)
+		{
+			var l = new List<string>();
+			
+			foreach (var i in rawStrings)
+				l.Add(FillInMacros(i, macroProvider));
+			
+			return l;
+		}
+
+		internal class PrjPathMacroProvider : IArgumentMacroProvider
 		{
 			public string slnPath;
 
@@ -456,12 +466,32 @@ namespace MonoDevelop.D.Building
 
 		List<string> FillCommonMacros(IEnumerable<string> strings)
 		{
-			var l = new List<string>();
+			return FillInMacros(strings, commonMacros);
+		}
 
-			foreach (var i in strings)
-				l.Add(FillInMacros(i, commonMacros));
+		public static IEnumerable<string> GetLibraries(DProjectConfiguration projCfg, BuildConfiguration buildConfig)
+		{
+			var libraries = (IEnumerable<string>)FillInMacros(projCfg.ReferencedLibraries, 
+				new PrjPathMacroProvider { slnPath = projCfg.Project.ParentSolution.BaseDirectory });
 
-			return l;
+			if (buildConfig.EnableGDCLibPrefixing)
+				libraries = HandleGdcSpecificLibraryReferencing(libraries, projCfg.Project.BaseDirectory);
+
+			return libraries;
+		}
+
+		static IEnumerable<string> HandleGdcSpecificLibraryReferencing(IEnumerable<string> libs,string baseDirectory)
+		{
+			if(libs!=null)
+				foreach(var l in libs)
+				{
+					var lib = Path.IsPathRooted(l) ? l : Path.Combine(baseDirectory,l);
+
+					if(File.Exists(lib))
+						yield return l;
+					else
+						yield return "-L-l"+Path.ChangeExtension(l,null);
+				}
 		}
 
         #endregion

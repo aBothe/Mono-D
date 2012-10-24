@@ -1,11 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
-using Mono.Addins;
 using MonoDevelop.Core;
-using MonoDevelop.Ide.Projects;
 using MonoDevelop.Ide.Gui.Dialogs;
 using MonoDevelop.D.Building;
 using MonoDevelop.Ide;

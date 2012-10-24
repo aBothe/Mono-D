@@ -66,7 +66,7 @@ namespace MonoDevelop.D.Building
                     Objects = new[]{"$(objects)"},
                     TargetFile = "$@",
                     RelativeTargetDirectory = cfg.OutputDirectory.ToRelative (Project.BaseDirectory),
-                    Libraries = cfg.ReferencedLibraries
+                    Libraries = ProjectBuilder.GetLibraries(cfg, Arguments)
                 });
 
 			s.AppendLine("\t@echo Linking...");

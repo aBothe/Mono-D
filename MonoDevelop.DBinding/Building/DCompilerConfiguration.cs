@@ -338,12 +338,14 @@ namespace MonoDevelop.D.Building
 		public bool SupportsOneStepBuild {
 			get { return !string.IsNullOrEmpty (OneStepBuildArguments); }
 		}
+		public bool EnableGDCLibPrefixing = false;
 		
 		public void CopyFrom (BuildConfiguration o)
 		{
 			CompilerArguments = o.CompilerArguments;
 			LinkerArguments = o.LinkerArguments;
 			OneStepBuildArguments = o.OneStepBuildArguments;
+			EnableGDCLibPrefixing = o.EnableGDCLibPrefixing;
 		}
 
 		public BuildConfiguration Clone ()
@@ -351,7 +353,8 @@ namespace MonoDevelop.D.Building
 			return new BuildConfiguration{
 				CompilerArguments=CompilerArguments,
 				LinkerArguments=LinkerArguments,
-				OneStepBuildArguments=OneStepBuildArguments
+				OneStepBuildArguments=OneStepBuildArguments,
+				EnableGDCLibPrefixing = EnableGDCLibPrefixing
 			};	
 		}
 
@@ -368,6 +371,10 @@ namespace MonoDevelop.D.Building
 			x.WriteStartElement ("OneStepBuildArgs");
 			x.WriteCData (OneStepBuildArguments);
 			x.WriteEndElement ();
+
+			x.WriteStartElement("gdcLibPrefixing");
+			x.WriteString(EnableGDCLibPrefixing ? "true" : "false");
+			x.WriteEndElement();
 		}
 
 		public void ReadFrom (System.Xml.XmlReader x)
@@ -382,6 +389,9 @@ namespace MonoDevelop.D.Building
 					break;
 				case "OneStepBuildArgs":
 					OneStepBuildArguments = x.ReadString ();
+					break;
+				case "gdcLibPrefixing":
+					EnableGDCLibPrefixing = x.ReadString() == "true";
 					break;
 				}
 		}
