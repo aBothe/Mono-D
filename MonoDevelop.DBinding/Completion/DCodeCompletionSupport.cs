@@ -20,11 +20,11 @@ namespace MonoDevelop.D.Completion
 			CompletionDataList l, 
 			char triggerChar)
 		{
-			bool removeChar = char.IsLetter(triggerChar);
+			bool removeChar = char.IsLetter(triggerChar) || triggerChar == '_' || triggerChar == '@';
 
-			var deltaOffset = 0;// ( || triggerChar == '_' || triggerChar == '@') ? 1 : 0;
+			var deltaOffset = 0;//removeChar ? 1 : 0;
 
-			var caretOffset = ctx.TriggerOffset-deltaOffset;
+			var caretOffset = ctx.TriggerOffset - (removeChar ? 1 : 0);
 			var caretLocation = new CodeLocation(ctx.TriggerLineOffset-deltaOffset, ctx.TriggerLine);
 			var codeCache = EnumAvailableModules(EditorDocument);
 			var edData=new EditorData {
