@@ -20,21 +20,22 @@ namespace MonoDevelop.D.Completion
 			CompletionDataList l, 
 			char triggerChar)
 		{
-			var deltaOffset = (char.IsLetter(triggerChar) || triggerChar == '_' || triggerChar == '@') ? 1 : 0;
+			bool removeChar = char.IsLetter(triggerChar);
+
+			var deltaOffset = 0;// ( || triggerChar == '_' || triggerChar == '@') ? 1 : 0;
 
 			var caretOffset = ctx.TriggerOffset-deltaOffset;
 			var caretLocation = new CodeLocation(ctx.TriggerLineOffset-deltaOffset, ctx.TriggerLine);
 			var codeCache = EnumAvailableModules(EditorDocument);
-
 			var edData=new EditorData {
 					CaretLocation=caretLocation,
 					CaretOffset=caretOffset,
-					ModuleCode=EditorDocument.Editor.Text,
+					ModuleCode=removeChar ? EditorDocument.Editor.Text.Remove(ctx.TriggerOffset-1,1) : EditorDocument.Editor.Text,
 					SyntaxTree=SyntaxTree as DModule,
 					ParseCache=codeCache,
 					Options = DCompilerService.Instance.CompletionOptions
 				};
-
+			
 			AbstractCompletionProvider.BuildCompletionData(
 				new CompletionDataGenerator { CompletionDataList = l },
 				edData, 
