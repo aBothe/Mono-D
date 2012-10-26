@@ -1,4 +1,3 @@
-using D_Parser.Dom;
 using ICSharpCode.NRefactory.Completion;
 using MonoDevelop.D.Completion;
 using MonoDevelop.D.Parser;
@@ -46,21 +45,18 @@ namespace MonoDevelop.D
 			
 			var dom = base.Document.ParsedDocument as ParsedDModule;
 
-			if (dom == null)
-				return null;
-
+			
 			var l = new CompletionDataList();
 
-			lock(dom)
-			lock(dom.DDom)
+			if (dom != null && dom.DDom!=null)
+				lock(dom.DDom)
 				DCodeCompletionSupport.BuildCompletionData(
 					Document,
 					dom.DDom,
 					completionContext,
 					l,
 					triggerChar);
-			if (l.Count == 0)
-				return null;
+
 			return l;
 		}
 		#endregion

@@ -163,7 +163,7 @@ namespace MonoDevelop.D.Refactoring
 				url = "version.html#DebugCondition";
 			else if (s is ConditionStatement.VersionStatement)
 				url = "version.html#VersionCondition";
-			else if (s is IfStatement && (s as IfStatement).IsStatic)
+			else if (s is StaticIfStatement)
 				url = "version.html#StaticIfCondition";
 			else
 				url += s.GetType ().Name;

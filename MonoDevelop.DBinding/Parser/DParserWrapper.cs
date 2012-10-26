@@ -5,7 +5,6 @@ using ICSharpCode.NRefactory.TypeSystem;
 using MonoDevelop.Ide.Tasks;
 using MonoDevelop.Ide.TypeSystem;
 using MonoDevelop.Projects;
-using System;
 
 namespace MonoDevelop.D.Parser
 {
@@ -329,7 +328,12 @@ namespace MonoDevelop.D.Parser
 		}*/
 
 		#endregion
-
+		
+		public ParsedDocument Parse(string fileName, Project prj)
+		{
+			return Parse(true, fileName, prj);
+		}
+		
 		public ParsedDocument Parse(bool storeAst, string fileName, Project project = null)
 		{
 			using (var sr = new StreamReader(fileName))
