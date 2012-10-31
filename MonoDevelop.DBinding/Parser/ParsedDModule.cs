@@ -44,7 +44,7 @@ namespace MonoDevelop.D.Parser
 							if (value != null)
 							{
 								dprj.LocalFileCache.AddOrUpdate(value);
-								dprj.LocalFileCache.UfcsCache.CacheModuleMethods(value, new ResolverContextStack(dprj.ParseCache, new ResolverContext()));
+								dprj.LocalFileCache.UfcsCache.CacheModuleMethods(value, ResolutionContext.Create(dprj.ParseCache, null));
 							}
 						}
 				

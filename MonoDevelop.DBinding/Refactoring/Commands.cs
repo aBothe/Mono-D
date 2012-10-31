@@ -29,7 +29,7 @@ namespace MonoDevelop.D.Refactoring
 
 		protected override void Update(CommandArrayInfo info)
 		{
-			ResolverContextStack ctxt;
+			ResolutionContext ctxt;
 			var rr = Resolver.DResolverWrapper.ResolveHoveredCode(out ctxt);
 
 			bool noRes = true;

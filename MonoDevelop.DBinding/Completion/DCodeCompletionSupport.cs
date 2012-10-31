@@ -572,7 +572,7 @@ namespace MonoDevelop.D.Completion
 			AddOverload(new DCompletionData(n));
 		}
 
-		public void AddOverload(ICompletionData n)
+		public override void AddOverload(ICompletionData n)
 		{
 			if (Overloads == null)
 			{

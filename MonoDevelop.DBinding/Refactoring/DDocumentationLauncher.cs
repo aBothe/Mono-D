@@ -49,13 +49,13 @@ namespace MonoDevelop.D.Refactoring
 		{
 			var caret = Ide.IdeApp.Workbench.ActiveDocument.Editor.Caret.Location;
 
-			ResolverContextStack ctxt = null;
+			ResolutionContext ctxt = null;
 			var rr = DResolverWrapper.ResolveHoveredCode (out ctxt, Ide.IdeApp.Workbench.ActiveDocument);
 
 			return GetReferenceUrl (rr != null ? rr [0] : null, ctxt, new CodeLocation (caret.Column, caret.Line));
 		}
 
-		public static string GetReferenceUrl (AbstractType result, ResolverContextStack ctxt, CodeLocation caret)
+		public static string GetReferenceUrl (AbstractType result, ResolutionContext ctxt, CodeLocation caret)
 		{
 			if (result != null) {
 				var n = DResolver.GetResultMember (result);

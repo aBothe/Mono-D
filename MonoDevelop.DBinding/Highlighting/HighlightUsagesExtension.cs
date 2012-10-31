@@ -212,7 +212,7 @@ namespace MonoDevelop.D.Highlighting
 				if (dom == null)
 					return false;
 
-				ResolverContextStack ctxt;
+				ResolutionContext ctxt;
 				var rr = DResolverWrapper.ResolveHoveredCode(out ctxt, Document);
 
 				if (rr == null || rr.Length < 1)

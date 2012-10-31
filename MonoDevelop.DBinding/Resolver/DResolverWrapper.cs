@@ -51,12 +51,12 @@ namespace MonoDevelop.D.Resolver
 		}
 
 		public static AbstractType[] ResolveHoveredCode(
-			out ResolverContextStack ResolverContext, 
+			out ResolutionContext ResolverContext, 
 			MonoDevelop.Ide.Gui.Document doc=null)
 		{
 			var edData = GetEditorData(doc);
 
-			ResolverContext = ResolverContextStack.Create(edData);
+			ResolverContext = ResolutionContext.Create(edData);
 			ResolverContext.ContextIndependentOptions |= ResolutionOptions.ReturnMethodReferencesOnly;
 
 			// Resolve the hovered piece of code

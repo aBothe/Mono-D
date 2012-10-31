@@ -151,9 +151,7 @@ namespace MonoDevelop.D
 				LocalFileCache.UfcsCache.RemoveModuleItems(LocalFileCache.GetModuleByFileName(pf.FilePath, BaseDirectory));
 				LocalFileCache.AddOrUpdate (ddom);
 				if(doUfcsCache)
-					LocalFileCache.UfcsCache.CacheModuleMethods(ddom, new ResolverContextStack(ParseCache, new ResolverContext{
-						ScopedBlock= ddom
-						}));
+					LocalFileCache.UfcsCache.CacheModuleMethods(ddom, ResolutionContext.Create(ParseCache, ddom));
 			} catch (Exception ex) {
 				LoggingService.LogError ("Error while parsing " + pf.FilePath.ToString (), ex);
 			}

@@ -57,7 +57,7 @@ namespace MonoDevelop.D.Refactoring
 				(IEnumerable<IAbstractSyntaxTree>)new[] { (Ide.IdeApp.Workbench.ActiveDocument.ParsedDocument as ParsedDModule).DDom } :
 				project.LocalFileCache;
 
-			var ctxt = new ResolverContextStack(parseCache, new ResolverContext());
+			var ctxt = ResolutionContext.Create(parseCache,null);
 			#endregion
 
 			// Enumerate references

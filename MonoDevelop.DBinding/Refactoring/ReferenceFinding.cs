@@ -76,7 +76,7 @@ namespace MonoDevelop.D.Refactoring
 					continue;
 				try
 				{
-					references = ReferencesFinder.Scan(mod, member, new ResolverContextStack(parseCache, new ResolverContext())).ToList();
+					references = ReferencesFinder.Scan(mod, member, ResolutionContext.Create(parseCache, null)).ToList();
 
 					if (member != null && member.NodeRoot != null &&
 						(member.NodeRoot as IAbstractSyntaxTree).FileName == mod.FileName)

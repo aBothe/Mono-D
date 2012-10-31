@@ -44,7 +44,7 @@ namespace MonoDevelop.D.Refactoring.CodeActions
         IEnumerable<string> GetSolutions(Document doc)
         {
             //i had to copy-paste some code from other files
-            ResolverContextStack ctxt;
+            ResolutionContext ctxt;
             var rr = Resolver.DResolverWrapper.ResolveHoveredCode(out ctxt);
             if (rr != null && rr.Length > 0)
             {

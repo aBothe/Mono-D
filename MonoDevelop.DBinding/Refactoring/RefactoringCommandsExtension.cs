@@ -14,7 +14,7 @@ namespace MonoDevelop.D.Refactoring
 	{
 		AbstractType[] lastResults;
 		INode firstResultNode;
-		ResolverContextStack lastContext;
+		ResolutionContext lastContext;
 
 		[CommandHandler(Refactoring.Commands.OpenDDocumentation)]
 		void OpenDDocumentation()
