@@ -1,21 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Compiler>
+	<VersionId>LDC</VersionId>
+
 	<TargetConfiguration Target="Executable">
-		<CompilerCommand>ldc</CompilerCommand>
-		<LinkerCommand>ldc</LinkerCommand>
-		<ObjectLinkPattern>"{0}"</ObjectLinkPattern>
-		<IncludePathPattern>-I"{0}"</IncludePathPattern>
-		<DebugArgs>
-			<CompilerArg>-c "$src" -of "$obj" $includes -g</CompilerArg>
-			<LinkerArgs>-of "$target" -g $objs $libs</LinkerArgs>
-		</DebugArgs>
-		<ReleaseArgs>
-			<CompilerArg>-c "$src" -of "$obj" $includes -O3 -release</CompilerArg>
-			<LinkerArgs>-of "$target" -O3 -release $objs $libs</LinkerArgs>
-		</ReleaseArgs>
-	</TargetConfiguration>
-	
-	<TargetConfiguration Target="ConsolelessExecutable">
 		<CompilerCommand>ldc</CompilerCommand>
 		<LinkerCommand>ldc</LinkerCommand>
 		<ObjectLinkPattern>"{0}"</ObjectLinkPattern>

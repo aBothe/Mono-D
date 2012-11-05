@@ -1,12 +1,10 @@
 using System;
 using MonoDevelop.D.Building;
 using MonoDevelop.Ide.Gui.Dialogs;
-using MonoDevelop.Ide;
 using MonoDevelop.Core;
 using MonoDevelop.Projects;
 using System.Linq;
 using Gtk;
-using System.Collections.Generic;
 using System.Collections;
 
 namespace MonoDevelop.D.OptionPanels
@@ -24,8 +22,6 @@ namespace MonoDevelop.D.OptionPanels
 		public ProjectOptions ()
 		{
 			this.Build ();
-			
-			Gtk.CellRendererText textRenderer = new Gtk.CellRendererText ();
 
 			// Init compiler selection dropdown
 			cmbCompiler.Clear ();
@@ -41,7 +37,6 @@ namespace MonoDevelop.D.OptionPanels
 			combo_ProjectType.Model = model_compileTarget;
 			
 			// Init compile target checkbox
-			model_compileTarget.AppendValues ("Consoleless executable", DCompileTarget.ConsolelessExecutable);
 			model_compileTarget.AppendValues ("Executable", DCompileTarget.Executable);
 			model_compileTarget.AppendValues ("Shared library", DCompileTarget.SharedLibrary);
 			model_compileTarget.AppendValues ("Static library", DCompileTarget.StaticLibrary);

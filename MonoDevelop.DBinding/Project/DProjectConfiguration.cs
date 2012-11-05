@@ -4,6 +4,7 @@ using System.IO;
 using MonoDevelop.Core.Serialization;
 using MonoDevelop.D.Building;
 using MonoDevelop.Projects;
+using MonoDevelop.Core;
 
 namespace MonoDevelop.D
 {
@@ -52,6 +53,13 @@ namespace MonoDevelop.D
 				}
 			}
 		}
+
+		[ItemProperty("VersionIds")]
+		private string[] versionIds;
+		[ItemProperty("DebugIds")]
+		public string[] DefinedDebugIdentifiers;
+
+		public string[] DefinedVersionIdentifiers{get{ return versionIds; }}
 		#endregion
 
 		//if absent an exception occurs when opening project config	
@@ -80,6 +88,8 @@ namespace MonoDevelop.D
 			ExtraCompilerArguments = conf.ExtraCompilerArguments;
 			ExtraLinkerArguments = conf.ExtraLinkerArguments;
 			CompileTarget = conf.CompileTarget;
+			versionIds = conf.versionIds;
+			DefinedDebugIdentifiers = conf.DefinedDebugIdentifiers;
 
             ExtraLibraries.Clear();
             ExtraLibraries.AddRange(conf.ExtraLibraries);
@@ -111,6 +121,28 @@ namespace MonoDevelop.D
 					return Path.ChangeExtension (ProjectBuilder.EnsureCorrectPathSeparators (Output), ext);
 				}
 				return ProjectBuilder.EnsureCorrectPathSeparators (Output);
+			}
+		}
+
+		public void RebuildPredefinedVersionIdentifiers()
+		{
+			if(Project==null)
+				return;
+
+			var cmp = Project.Compiler;
+
+			// Compiler args + cfg args + extra args
+			var buildCfg = cmp.GetOrCreateTargetConfiguration(this.CompileTarget);
+			var buildArgs = buildCfg.GetArguments(this.DebugMode);
+			var cmpArgs = (buildArgs.OneStepBuildArguments ?? buildArgs.CompilerArguments) + 
+				ExtraCompilerArguments + ExtraLinkerArguments;
+
+			versionIds = D_Parser.Misc.VersionIdEvaluation.GetVersionIds(cmp.PredefinedVersionConstant,cmpArgs); //TODO: Distinguish between D1/D2 and probably later versions?
+		}
+
+		public override FilePath IntermediateOutputDirectory {
+			get {
+				return FilePath.Build(ObjectDirectory);
 			}
 		}
 	}

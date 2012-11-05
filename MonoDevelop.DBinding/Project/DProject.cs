@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Xml;
-using D_Parser.Completion;
 using D_Parser.Dom;
 using D_Parser.Parser;
 using MonoDevelop.Core;

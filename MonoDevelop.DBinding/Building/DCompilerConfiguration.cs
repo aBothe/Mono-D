@@ -1,11 +1,7 @@
-using MonoDevelop.Core.Serialization;
 using System.Collections.Generic;
-using D_Parser.Completion;
-using System.Collections.ObjectModel;
 using System;
 using System.Xml;
 using MonoDevelop.Core;
-using System.Threading;
 using D_Parser.Misc;
 
 namespace MonoDevelop.D.Building
@@ -17,20 +13,31 @@ namespace MonoDevelop.D.Building
 	{
 		#region Properties
 		public readonly ParseCache ParseCache = new ParseCache ();
-		string _binPath;
 		public string BinPath
 		{
-			get { return _binPath; }
-			set { _binPath = ParseCache.FallbackPath = value; }
+			get { return ParseCache.FallbackPath; }
+			set { ParseCache.FallbackPath = value; }
 		}
-		public string Vendor;
+		public string Vendor {get;set;}
 		public List<string> DefaultLibraries = new List<string>();
 		public readonly Dictionary<DCompileTarget, LinkTargetConfiguration> LinkTargetConfigurations = new Dictionary<DCompileTarget, LinkTargetConfiguration> ();
+		/// <summary>
+		/// Contains compiler-specific version identifier that is used for better code completion support.
+		/// See http://dlang.org/version.html, "Predefined Versions"
+		/// </summary>
+		public string PredefinedVersionConstant {get; private set;}
 		#endregion
 
 		#region Ctor/Init
 		public DCompilerConfiguration()
 		{
+			ParseCache.FinishedParsing += finishedParsing;
+			ParseCache.FinishedUfcsCaching += finishedUfcsAnalysis;
+		}
+
+		public DCompilerConfiguration(string vendor)
+		{
+			this.Vendor = vendor;
 			ParseCache.FinishedParsing += finishedParsing;
 			ParseCache.FinishedUfcsCaching += finishedUfcsAnalysis;
 		}
@@ -177,12 +184,15 @@ namespace MonoDevelop.D.Building
 				case "Includes":
 					s = x.ReadSubtree ();
 
-					var paths = new List<string> ();
 					while (s.Read())
 						if (s.LocalName == "Path")
 							ParseCache.ParsedDirectories.Add (s.ReadString ());
 
 					s.Close ();
+					break;
+
+				case "VersionId":
+					PredefinedVersionConstant = x.ReadString();
 					break;
 				}
 		}
@@ -191,6 +201,10 @@ namespace MonoDevelop.D.Building
 		{
 			x.WriteStartElement ("BinaryPath");
 			x.WriteCData (BinPath);
+			x.WriteEndElement ();
+
+			x.WriteStartElement ("VersionId");
+			x.WriteCData (PredefinedVersionConstant);
 			x.WriteEndElement ();
 
 			foreach (var kv in LinkTargetConfigurations) {

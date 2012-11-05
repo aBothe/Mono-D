@@ -159,12 +159,16 @@ namespace MonoDevelop.D.Refactoring
 
 			if (s is ForeachStatement && (s as ForeachStatement).IsRangeStatement)
 				url += "ForeachRangeStatement";
-			else if (s is ConditionStatement.DebugStatement)
-				url = "version.html#DebugCondition";
-			else if (s is ConditionStatement.VersionStatement)
-				url = "version.html#VersionCondition";
-			else if (s is StaticIfStatement)
-				url = "version.html#StaticIfCondition";
+			else if (s is StatementCondition)
+			{
+				var sc = (StatementCondition) s;
+				if(sc.Condition is DebugCondition)
+					url = "version.html#DebugCondition";
+				else if (sc.Condition is VersionCondition)
+					url = "version.html#VersionCondition";
+				else if (sc.Condition is StaticIfCondition)
+					url = "version.html#StaticIfCondition";
+			}
 			else
 				url += s.GetType ().Name;
 

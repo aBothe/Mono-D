@@ -25,8 +25,8 @@ namespace MonoDevelop.D.OptionPanels
 		public DCompilerOptions ()
 		{
 			this.Build ();
-			
-			Gtk.CellRendererText textRenderer = new Gtk.CellRendererText ();
+
+			var textRenderer = new CellRendererText ();
 			
 			cmbCompilers.Clear ();
 
@@ -81,77 +81,6 @@ namespace MonoDevelop.D.OptionPanels
 				Load (null);
 			}
 		}
-		
-		private void CreateNewPreset (string name)
-		{
-			if (!CanUseNewName (name))
-				return;
-
-			ApplyToVirtConfiguration ();
-
-			configuration = new DCompilerConfiguration { 
-				Vendor=name
-			};
-
-			ApplyToVirtConfiguration ();
-
-			Gtk.TreeIter iter;
-			iter = compilerStore.AppendValues (configuration.Vendor, configuration);
-			cmbCompilers.SetActiveIter (iter);
-		}
-
-		bool CanUseNewName (string newName)
-		{
-			if (!System.Text.RegularExpressions.Regex.IsMatch (newName, "[\\w-]+")) {
-				MessageService.ShowError ("Compiler configuration", "Compiler name can only contain letters/digits/'-'");
-
-				return false;
-			}
-
-			Gtk.TreeIter iter;
-			compilerStore.GetIterFirst (out iter);
-
-			do {
-				var virtCmp = compilerStore.GetValue (iter, 1) as DCompilerConfiguration;
-				
-				if (virtCmp.Vendor == newName) {
-					MessageService.ShowError ("Compiler configuration", "Compiler name already taken");
-					return false;
-				}
-
-			} while (compilerStore.IterNext(ref iter));
-
-			return true;
-		}
-
-		void RenameCurrentPreset (string newName)
-		{
-			if (configuration == null) {
-				CreateNewPreset (newName);
-				return;
-			}
-
-			if (configuration.Vendor == newName || !CanUseNewName (newName))
-				return;
-
-			// If default compiler affected, update the default compiler's name, too
-			if (defaultCompilerVendor == configuration.Vendor)
-				defaultCompilerVendor = newName;
-
-			// Apply new name to the cfg object
-			configuration.Vendor = newName;
-
-			// + to the compiler store model
-			compilerStore.Foreach ((TreeModel tree, TreePath path, TreeIter iter) =>
-			{
-				if (compilerStore.GetValue (iter, 1) == configuration) {
-					compilerStore.SetValue (iter, 0, configuration.Vendor);
-					return true;
-				}
-
-				return false;
-			});
-		}
 
 		void MakeCurrentConfigDefault ()
 		{
@@ -161,36 +90,12 @@ namespace MonoDevelop.D.OptionPanels
 			}
 		}
 
-		protected void OnBtnAddCompilerClicked (object sender, System.EventArgs e)
-		{
-			CreateNewPreset (ComboBox_CompilersLabel);
-		}
-
-		protected void OnBtnRemoveCompilerClicked (object sender, System.EventArgs e)
-		{
-			Gtk.TreeIter iter;
-			if (cmbCompilers.GetActiveIter (out iter)) {
-				Gtk.TreeIter iter2 = iter;
-				compilerStore.Remove (ref iter2);
-
-				if (compilerStore.IterNext (ref iter) || compilerStore.GetIterFirst (out iter))
-					cmbCompilers.SetActiveIter (iter);
-				else
-					Load (null);
-			}
-		}
-
 		protected void OnTogglebuttonMakeDefaultPressed (object sender, System.EventArgs e)
 		{
 			if (configuration != null && configuration.Vendor == defaultCompilerVendor)
 				btnMakeDefault.Active = true;
 			else
 				MakeCurrentConfigDefault ();
-		}
-
-		protected void OnBtnApplyRenamingPressed (object sender, System.EventArgs e)
-		{
-			RenameCurrentPreset (ComboBox_CompilersLabel);
 		}
 		#endregion
 
@@ -203,7 +108,6 @@ namespace MonoDevelop.D.OptionPanels
 				txtBinPath.Text =
 					txtCompiler.Text =
 					txtConsoleAppLinker.Text =
-					txtGUIAppLinker.Text =
 					txtSharedLibLinker.Text =
 					txtStaticLibLinker.Text = null;
 
@@ -228,9 +132,6 @@ namespace MonoDevelop.D.OptionPanels
 			targetConfig = config.GetOrCreateTargetConfiguration (DCompileTarget.Executable); 						
 			txtConsoleAppLinker.Text = targetConfig.Linker;			
 			
-			targetConfig = config.GetOrCreateTargetConfiguration (DCompileTarget.ConsolelessExecutable); 						
-			txtGUIAppLinker.Text = targetConfig.Linker;			
-			
 			targetConfig = config.GetOrCreateTargetConfiguration (DCompileTarget.SharedLibrary); 						
 			txtSharedLibLinker.Text = targetConfig.Linker;
 			
@@ -250,7 +151,7 @@ namespace MonoDevelop.D.OptionPanels
 
 		public bool Validate ()
 		{
-			return true;
+			return true; //TODO: Establish validation
 		}
 
 		public bool Store ()
@@ -279,22 +180,16 @@ namespace MonoDevelop.D.OptionPanels
 			
 			configuration.BinPath = txtBinPath.Text;
 			
-			//for now, using Executable target compiler command for all targets source compiling
-			LinkTargetConfiguration targetConfig;
-			targetConfig = configuration.GetOrCreateTargetConfiguration (DCompileTarget.Executable); 			
+			var targetConfig = configuration.GetOrCreateTargetConfiguration (DCompileTarget.Executable); 			
 			targetConfig.Compiler = txtCompiler.Text;
-			
-			//linker targets 			
-			targetConfig = configuration.GetOrCreateTargetConfiguration (DCompileTarget.Executable); 						
-			targetConfig.Linker = txtConsoleAppLinker.Text;			
-			
-			targetConfig = configuration.GetOrCreateTargetConfiguration (DCompileTarget.ConsolelessExecutable); 						
-			targetConfig.Linker = txtGUIAppLinker.Text;			
+			targetConfig.Linker = txtConsoleAppLinker.Text;
 			
 			targetConfig = configuration.GetOrCreateTargetConfiguration (DCompileTarget.SharedLibrary); 						
+			targetConfig.Compiler = txtCompiler.Text;
 			targetConfig.Linker = txtSharedLibLinker.Text;
 			
 			targetConfig = configuration.GetOrCreateTargetConfiguration (DCompileTarget.StaticLibrary); 						
+			targetConfig.Compiler = txtCompiler.Text;
 			targetConfig.Linker = txtStaticLibLinker.Text;
 			
 			releaseArgumentsDialog.Store ();			

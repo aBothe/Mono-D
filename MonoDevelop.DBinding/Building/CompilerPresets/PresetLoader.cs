@@ -8,7 +8,8 @@ namespace MonoDevelop.D.Building.CompilerPresets
 {
 	public class PresetLoader
 	{
-		static Dictionary<string, string> presetFileContents = new Dictionary<string, string> { 
+		static Dictionary<string, string> presetFileContents = new Dictionary<string, string> {
+			{"DMD2", ConfigPresets.dmd}, //TODO: Make specific preset for dmd2/1
 			{"DMD", ConfigPresets.dmd},
 			{"GDC", ConfigPresets.gdc},
 			{"LDC", ConfigPresets.ldc},
@@ -104,14 +105,6 @@ namespace MonoDevelop.D.Building.CompilerPresets
                 var lt = kv.Value;
 				lt.Compiler = Path.ChangeExtension(lt.Compiler, DCompilerService.ExecutableExtension);
 				lt.Linker = Path.ChangeExtension(lt.Linker,DCompilerService.ExecutableExtension);
-
-				//HACK: On windows systems, add subsystem flag to the linker to hide console window
-				if (kv.Key == DCompileTarget.ConsolelessExecutable && OS.IsWindows)
-				{
-					const string subsystemExt = " -L/su:windows -L/exet:nt";
-					lt.DebugArguments.LinkerArguments += subsystemExt;
-					lt.ReleaseArguments.LinkerArguments += subsystemExt;
-				}
 			}
 		}
 	}

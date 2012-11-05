@@ -1,31 +1,14 @@
 ﻿using System;
-using System.CodeDom.Compiler;
 using System.Collections.Generic;
-using System.IO;
-using System.Text.RegularExpressions;
 using MonoDevelop.Core;
-using MonoDevelop.Core.ProgressMonitoring;
-using MonoDevelop.Projects;
-using MonoDevelop.Core.Serialization;
 using System.Xml;
-using System.Threading;
 using D_Parser.Misc;
 
 namespace MonoDevelop.D.Building
 {
 	public enum DCompileTarget
 	{
-		/// <summary>
-		/// A normal console application.
-		/// </summary>
 		Executable,
-
-		/// <summary>
-		/// Applications which explicitly draw themselves a custom GUI and do not need a console.
-		/// Usually 'Desktop' applications.
-		/// </summary>
-		ConsolelessExecutable,
-
 		SharedLibrary,
 		StaticLibrary
 	}
@@ -79,7 +62,7 @@ namespace MonoDevelop.D.Building
 		}
 
 		public static string StaticLibraryExtension {
-			get{ return OS.IsWindows ? ".lib" : ".a"; }
+			get{ return OS.IsWindows ? ".lib" : ".a"; } //FIXME: This is not correct: GDC on windows surely requires .a files..
 		}
 
 		public static string SharedLibraryExtension {
@@ -144,7 +127,7 @@ namespace MonoDevelop.D.Building
 						x.MoveToElement ();
 					}
 					
-					var cmp = GetCompiler (vendor) ?? new DCompilerConfiguration { Vendor = vendor};
+					var cmp = GetCompiler (vendor) ?? new DCompilerConfiguration(vendor);
 
 					cmp.ReadFrom (x.ReadSubtree ());
 

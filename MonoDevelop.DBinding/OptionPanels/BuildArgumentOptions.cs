@@ -18,7 +18,6 @@ namespace MonoDevelop.D.OptionPanels
 			this.Build ();
 			
 			combo_SelectedBuildTarget.Model = model_compileTarget;
-			model_compileTarget.AppendValues ("Consoleless executable", DCompileTarget.ConsolelessExecutable);
 			model_compileTarget.AppendValues ("Executable", DCompileTarget.Executable);
 			model_compileTarget.AppendValues ("Shared library", DCompileTarget.SharedLibrary);
 			model_compileTarget.AppendValues ("Static library", DCompileTarget.StaticLibrary);
@@ -30,7 +29,7 @@ namespace MonoDevelop.D.OptionPanels
 				
 				if (combo_SelectedBuildTarget.GetActiveIter (out i))
 					return (DCompileTarget)combo_SelectedBuildTarget.Model.GetValue (i, 1);
-				return DCompileTarget.ConsolelessExecutable;
+				return DCompileTarget.Executable;
 			}
 			set {
 				TreeIter i;
@@ -89,11 +88,6 @@ namespace MonoDevelop.D.OptionPanels
 			}
 			
 			//compiler targets
-			argsStore [DCompileTarget.ConsolelessExecutable] = config
-					.GetOrCreateTargetConfiguration (DCompileTarget.ConsolelessExecutable)
-					.GetArguments (isDebug)
-					.Clone ();
-			
 			argsStore [DCompileTarget.Executable] = config
 					.GetOrCreateTargetConfiguration (DCompileTarget.Executable)
 					.GetArguments (isDebug)
@@ -109,7 +103,7 @@ namespace MonoDevelop.D.OptionPanels
 					.GetArguments (isDebug)
 					.Clone ();
 			
-			SelectedCompileTarget = DCompileTarget.ConsolelessExecutable;
+			SelectedCompileTarget = DCompileTarget.Executable;
 		}
 		
 		public void Store ()

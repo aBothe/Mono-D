@@ -149,6 +149,7 @@ This is mainly activated when using the gdc compiler.";
 			w1.Add (this.table1);
 			global::Gtk.Box.BoxChild w11 = ((global::Gtk.Box.BoxChild)(w1 [this.table1]));
 			w11.Position = 0;
+			w11.Expand = false;
 			// Internal child MonoDevelop.D.OptionPanels.BuildArgumentOptions.ActionArea
 			global::Gtk.HButtonBox w12 = this.ActionArea;
 			w12.Name = "dialog1_ActionArea";
@@ -184,7 +185,7 @@ This is mainly activated when using the gdc compiler.";
 				this.Child.ShowAll ();
 			}
 			this.DefaultWidth = 571;
-			this.DefaultHeight = 255;
+			this.DefaultHeight = 225;
 			this.Hide ();
 			this.combo_SelectedBuildTarget.Changed += new global::System.EventHandler (this.OnComboSelectedBuildTargetChanged);
 			this.buttonCancel.Clicked += new global::System.EventHandler (this.OnButtonCancelClicked);

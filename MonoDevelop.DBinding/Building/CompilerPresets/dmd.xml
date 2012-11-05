@@ -1,23 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Compiler>
+	<VersionId>DigitalMars</VersionId>
+
 	<TargetConfiguration Target="Executable">
-		<CompilerCommand>dmd</CompilerCommand>
-		<LinkerCommand>dmd</LinkerCommand>
-		<ObjectLinkPattern>"{0}"</ObjectLinkPattern>
-		<IncludePathPattern>-I"{0}"</IncludePathPattern>
-		<DebugArgs>
-			<CompilerArg>-c "$src" -of"$obj" $includes -gc -debug</CompilerArg>
-			<LinkerArgs>-gc -debug -of"$target" $objs $libs</LinkerArgs>
-      <OneStepBuildArgs>-gc -debug $sources $libs $includes -od$objectsDirectory -of"$exe"</OneStepBuildArgs>
-		</DebugArgs>
-		<ReleaseArgs>
-			<CompilerArg>-c "$src" -of"$obj" $includes -O -release</CompilerArg>
-			<LinkerArgs>-O -release -of"$target" $objs $libs</LinkerArgs>
-      <OneStepBuildArgs>-O -release $sources $libs $includes -od$objectsDirectory -of"$exe"</OneStepBuildArgs>
-		</ReleaseArgs>
-	</TargetConfiguration>
-	
-	<TargetConfiguration Target="ConsolelessExecutable">
 		<CompilerCommand>dmd</CompilerCommand>
 		<LinkerCommand>dmd</LinkerCommand>
 		<ObjectLinkPattern>"{0}"</ObjectLinkPattern>

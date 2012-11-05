@@ -6,7 +6,7 @@
 	copyright=""
 	description="D Language Binding"
 	category="Language bindings"
-	version="0.4.1.7">
+	version="0.4.2">
 
   <!-- Resources -->
 
@@ -187,21 +187,21 @@
 
 
   <!-- Option panels -->
-  <Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Other">
+  <Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Preferences">
 	<Section
 		id = "DGlobalOptions"
 		_label = "D"
 		class = "MonoDevelop.D.OptionPanels.DGlobalOptionsBinding"/>
   </Extension>
 
-  <Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Other/DGlobalOptions">
+  <Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Preferences/DGlobalOptions">
 	<Section
 		id = "DCompilerOptions"
 		_label = "Compiler toolchains"
 		class = "MonoDevelop.D.OptionPanels.DCompilerOptionsBinding"/>
   </Extension>
 
-  <Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Other/DGlobalOptions">
+  <Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Preferences/DGlobalOptions">
 	<Section
 		id = "ResCompilerOptions"
 		_label = "Win32 Resource Compiler"
