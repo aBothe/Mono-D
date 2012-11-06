@@ -5,8 +5,13 @@
 	<TargetConfiguration Target="Executable">
 		<CompilerCommand>dmd</CompilerCommand>
 		<LinkerCommand>dmd</LinkerCommand>
-		<ObjectLinkPattern>"{0}"</ObjectLinkPattern>
-		<IncludePathPattern>-I"{0}"</IncludePathPattern>
+		<Patterns>
+			<obj>"{0}"</obj>
+			<include>-I"{0}"</include>
+			<version>-version</version>
+			<debug>-debug</debug>
+			<unittest>-unittest</unittest>
+		</Patterns>
 		<DebugArgs>
 			<CompilerArg>-c "$src" -of"$obj" $includes -gc -debug</CompilerArg>
 			<LinkerArgs>-gc -debug -of"$target" $objs $libs</LinkerArgs>
@@ -22,8 +27,13 @@
 	<TargetConfiguration Target="SharedLibrary">
 		<CompilerCommand>dmd</CompilerCommand>
 		<LinkerCommand>dmd</LinkerCommand>
-		<ObjectLinkPattern>"{0}"</ObjectLinkPattern>
-		<IncludePathPattern>-I"{0}"</IncludePathPattern>
+		<Patterns>
+			<obj>"{0}"</obj>
+			<include>-I"{0}"</include>
+			<version>-version</version>
+			<debug>-debug</debug>
+			<unittest>-unittest</unittest>
+		</Patterns>
 		<DebugArgs>
 			<CompilerArg>-c "$src" -of"$obj" $includes -gc -debug</CompilerArg>
 			<LinkerArgs>-gc -debug -of"$target" $objs $libs -L/IMPLIB:$relativeTargetDir </LinkerArgs>
@@ -39,8 +49,13 @@
 	<TargetConfiguration Target="StaticLibrary">
 		<CompilerCommand>dmd</CompilerCommand>
 		<LinkerCommand>dmd</LinkerCommand>
-		<ObjectLinkPattern>"{0}"</ObjectLinkPattern>
-		<IncludePathPattern>-I"{0}"</IncludePathPattern>
+		<Patterns>
+			<obj>"{0}"</obj>
+			<include>-I"{0}"</include>
+			<version>-version</version>
+			<debug>-debug</debug>
+			<unittest>-unittest</unittest>
+		</Patterns>
 		<DebugArgs>
 			<CompilerArg>-c "$src" -of"$obj" $includes -gc -debug</CompilerArg>
 			<LinkerArgs>-lib -of"$target" $objs</LinkerArgs>

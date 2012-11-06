@@ -7,6 +7,7 @@ using System.Linq;
 using MonoDevelop.Core;
 using MonoDevelop.Core.ProgressMonitoring;
 using MonoDevelop.Projects;
+using System.Text;
 
 namespace MonoDevelop.D.Building
 {
@@ -19,9 +20,9 @@ namespace MonoDevelop.D.Building
 
 		public DCompileTarget BuildTargetType { get { return BuildConfig.CompileTarget; } }
 
-		LinkTargetConfiguration Commands { get { return Compiler.GetOrCreateTargetConfiguration (BuildTargetType); } }
+		LinkTargetConfiguration LinkTargetCfg { get { return Compiler.GetOrCreateTargetConfiguration (BuildTargetType); } }
 
-		BuildConfiguration Arguments { get { return Commands.GetArguments (BuildConfig.DebugMode); } }
+		BuildConfiguration BuildArguments { get { return LinkTargetCfg.GetArguments (BuildConfig.DebugMode); } }
 
 		DProject Project;
 		DProjectConfiguration BuildConfig;
@@ -38,7 +39,7 @@ namespace MonoDevelop.D.Building
 
 		public bool CanDoOneStepBuild {
 			get {
-				return Project.PreferOneStepBuild && Arguments.SupportsOneStepBuild;
+				return Project.PreferOneStepBuild && BuildArguments.SupportsOneStepBuild;
 			}
 		}
         #endregion
@@ -109,18 +110,18 @@ namespace MonoDevelop.D.Building
 
 		
 
-			var argumentString = FillInMacros (
-                Arguments.OneStepBuildArguments.Trim () + " " +
+			var argumentString = FillInMacros (AdditionalCompilerAttributes +
+                BuildArguments.OneStepBuildArguments.Trim () + " " +
                 BuildConfig.ExtraCompilerArguments.Trim () + " " +
                 BuildConfig.ExtraLinkerArguments.Trim (),
             new OneStepBuildArgumentMacroProvider
             {
-                ObjectsStringPattern = Commands.ObjectFileLinkPattern,
-                IncludesStringPattern = Commands.IncludePathPattern,
+                ObjectsStringPattern = LinkTargetCfg.Patterns.ObjectFileLinkPattern,
+                IncludesStringPattern = LinkTargetCfg.Patterns.IncludePathPattern,
 
                 SourceFiles = BuiltObjects,
                 Includes = FillCommonMacros(Project.IncludePaths),
-                Libraries = GetLibraries(BuildConfig,Arguments),
+                Libraries = GetLibraries(BuildConfig,BuildArguments),
 
                 RelativeTargetDirectory = BuildConfig.OutputDirectory,
                 ObjectsDirectory = BuildConfig.ObjectDirectory,
@@ -131,12 +132,12 @@ namespace MonoDevelop.D.Building
 			var stdOut = "";
 			var stdError = "";
 
-			var linkerExecutable = Commands.Compiler;
+			var linkerExecutable = LinkTargetCfg.Compiler;
 			if (!Path.IsPathRooted (linkerExecutable)) {
-				linkerExecutable = Path.Combine (Compiler.BinPath, Commands.Linker);
+				linkerExecutable = Path.Combine (Compiler.BinPath, LinkTargetCfg.Linker);
 
 				if (!File.Exists (linkerExecutable))
-					linkerExecutable = Commands.Linker;
+					linkerExecutable = LinkTargetCfg.Linker;
 			}
 
             monitor.Log.WriteLine("Current dictionary: " + Project.BaseDirectory);
@@ -219,9 +220,9 @@ namespace MonoDevelop.D.Building
 			var obj = HandleObjectFileNaming (f, DCompilerService.ObjectExtension);
 
 			// Create argument string for source file compilation.
-			var dmdArgs = FillInMacros (Arguments.CompilerArguments + " " + BuildConfig.ExtraCompilerArguments, new DCompilerMacroProvider
+			var dmdArgs = FillInMacros(AdditionalCompilerAttributes + BuildArguments.CompilerArguments + " " + BuildConfig.ExtraCompilerArguments, new DCompilerMacroProvider
             {
-                IncludePathConcatPattern = Commands.IncludePathPattern,
+                IncludePathConcatPattern = LinkTargetCfg.Patterns.IncludePathPattern,
                 SourceFile = f.FilePath.ToRelative(Project.BaseDirectory),
                 ObjectFile = obj,
 				Includes = FillCommonMacros(Project.IncludePaths).Union(FileLinkDirectories),
@@ -231,12 +232,12 @@ namespace MonoDevelop.D.Building
 			string stdError;
 			string stdOutput;
 
-			var compilerExecutable = Commands.Compiler;
+			var compilerExecutable = LinkTargetCfg.Compiler;
 			if (!Path.IsPathRooted (compilerExecutable)) {
-				compilerExecutable = Path.Combine (Compiler.BinPath, Commands.Compiler);
+				compilerExecutable = Path.Combine (Compiler.BinPath, LinkTargetCfg.Compiler);
 
 				if (!File.Exists (compilerExecutable))
-					compilerExecutable = Commands.Compiler;
+					compilerExecutable = LinkTargetCfg.Compiler;
 			}
 
 			int exitCode = ExecuteCommand (compilerExecutable, dmdArgs, Project.BaseDirectory, monitor, out stdError, out stdOutput);
@@ -318,25 +319,25 @@ namespace MonoDevelop.D.Building
 
 			// b.Build linker argument string
 			// Build argument preparation
-			var linkArgs = FillInMacros (Arguments.LinkerArguments + " " + BuildConfig.ExtraLinkerArguments,
+			var linkArgs = FillInMacros (BuildArguments.LinkerArguments + " " + BuildConfig.ExtraLinkerArguments,
                 new DLinkerMacroProvider
                 {
-                    ObjectsStringPattern = Commands.ObjectFileLinkPattern,
+                    ObjectsStringPattern = LinkTargetCfg.Patterns.ObjectFileLinkPattern,
                     Objects = BuiltObjects.ToArray (),
                     TargetFile = LinkTargetFile,
                     RelativeTargetDirectory = BuildConfig.OutputDirectory.ToRelative (Project.BaseDirectory),
-                    Libraries = GetLibraries(BuildConfig, Arguments)
+                    Libraries = GetLibraries(BuildConfig, BuildArguments)
                 },commonMacros);
 
 			var linkerOutput = "";
 			var linkerErrorOutput = "";
 
-			var linkerExecutable = Commands.Linker;
+			var linkerExecutable = LinkTargetCfg.Linker;
 			if (!Path.IsPathRooted (linkerExecutable)) {
-				linkerExecutable = Path.Combine (Compiler.BinPath, Commands.Linker);
+				linkerExecutable = Path.Combine (Compiler.BinPath, LinkTargetCfg.Linker);
 
 				if (!File.Exists (linkerExecutable))
-					linkerExecutable = Commands.Linker;
+					linkerExecutable = LinkTargetCfg.Linker;
 			}
 
 			int exitCode = ExecuteCommand (linkerExecutable, linkArgs, Project.BaseDirectory, monitor,
@@ -478,6 +479,38 @@ namespace MonoDevelop.D.Building
 				libraries = HandleGdcSpecificLibraryReferencing(libraries, projCfg.Project.BaseDirectory);
 
 			return libraries;
+		}
+
+		string AdditionalCompilerAttributes
+		{
+			get
+			{
+				return GenAdditionalAttributes(LinkTargetCfg,BuildConfig);
+			}
+		}
+
+		public static string GenAdditionalAttributes(LinkTargetConfiguration linkTargetCfg, DProjectConfiguration cfg)
+		{
+			var sb = new StringBuilder();
+
+			if (cfg.UnittestMode)
+				sb.Append(linkTargetCfg.Patterns.UnittestFlag+" ");
+
+			if (cfg.CustomDebugIdentifiers != null && cfg.CustomVersionIdentifiers.Length!=0)
+				foreach (var id in cfg.CustomDebugIdentifiers)
+					sb.Append(linkTargetCfg.Patterns.DebugDefinition+"="+id+" ");
+
+			if (cfg.DebugLevel > 0)
+				sb.Append(linkTargetCfg.Patterns.DebugDefinition+"="+cfg.DebugLevel+" ");
+
+			if (cfg.DebugMode)
+				sb.Append(linkTargetCfg.Patterns.DebugDefinition+" ");
+
+			if (cfg.CustomVersionIdentifiers!=null && cfg.CustomVersionIdentifiers.Length!=0)
+				foreach (var id in cfg.CustomVersionIdentifiers)
+					sb.Append(linkTargetCfg.Patterns.VersionDefinition+"="+id+" ");
+
+			return sb.ToString();
 		}
 
 		static IEnumerable<string> HandleGdcSpecificLibraryReferencing(IEnumerable<string> libs,string baseDirectory)

@@ -59,7 +59,9 @@ namespace MonoDevelop.D.Building
 			s.AppendLine();
 			s.AppendLine("$(target): $(objects)");
 
-			var linkArgs = ProjectBuilder.FillInMacros (Arguments.LinkerArguments + " " + cfg.ExtraLinkerArguments,
+			var linkArgs = ProjectBuilder.FillInMacros (
+				ProjectBuilder.GenAdditionalAttributes(buildCommands, cfg) + 
+				Arguments.LinkerArguments + " " + cfg.ExtraLinkerArguments,
                 new DLinkerMacroProvider
                 {
                     ObjectsStringPattern = "{0}",
@@ -79,7 +81,7 @@ namespace MonoDevelop.D.Building
 			var compilerCommand = "\t$(compiler) "+ ProjectBuilder.FillInMacros(
 				Arguments.CompilerArguments + " " + cfg.ExtraCompilerArguments,
 				new DCompilerMacroProvider{
-					IncludePathConcatPattern = buildCommands.IncludePathPattern,
+					IncludePathConcatPattern = buildCommands.Patterns.IncludePathPattern,
 					Includes = Project.IncludePaths,
 					ObjectFile = "$@", SourceFile = "$?"
 				});

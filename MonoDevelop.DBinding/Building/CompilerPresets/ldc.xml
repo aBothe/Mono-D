@@ -5,45 +5,68 @@
 	<TargetConfiguration Target="Executable">
 		<CompilerCommand>ldc</CompilerCommand>
 		<LinkerCommand>ldc</LinkerCommand>
-		<ObjectLinkPattern>"{0}"</ObjectLinkPattern>
-		<IncludePathPattern>-I"{0}"</IncludePathPattern>
+		<Patterns>
+			<obj>"{0}"</obj>
+			<include>-I"{0}"</include>
+			<version>-fversion</version>
+			<debug>-fdebug</debug>
+			<unittest>-funittest</unittest>
+		</Patterns>
 		<DebugArgs>
-			<CompilerArg>-c "$src" -of "$obj" $includes -g</CompilerArg>
-			<LinkerArgs>-of "$target" -g $objs $libs</LinkerArgs>
+			<CompilerArg>-c "$src" -o "$obj" $includes -g</CompilerArg>
+			<LinkerArgs>-o "$target" -g $objs $libs</LinkerArgs>
+			<OneStepBuildArgs>-O0 -g $sources $libs $includes -o "$exe"</OneStepBuildArgs>
+			<gdcLibPrefixing>true</gdcLibPrefixing>
 		</DebugArgs>
 		<ReleaseArgs>
-			<CompilerArg>-c "$src" -of "$obj" $includes -O3 -release</CompilerArg>
-			<LinkerArgs>-of "$target" -O3 -release $objs $libs</LinkerArgs>
+			<CompilerArg>-c "$src" -frelease -o "$obj" $includes -O3</CompilerArg>
+			<LinkerArgs>-o "$target" -frelease -O3 $objs $libs</LinkerArgs>
+			<OneStepBuildArgs>-O3 -frelease $sources $libs $includes -o "$exe"</OneStepBuildArgs>
+			<gdcLibPrefixing>true</gdcLibPrefixing>
 		</ReleaseArgs>
 	</TargetConfiguration>
-	
+
 	<TargetConfiguration Target="SharedLibrary">
 		<CompilerCommand>ldc</CompilerCommand>
 		<LinkerCommand>ldc</LinkerCommand>
-		<ObjectLinkPattern>"{0}"</ObjectLinkPattern>
-		<IncludePathPattern>-I"{0}"</IncludePathPattern>
+		<Patterns>
+			<obj>"{0}"</obj>
+			<include>-I"{0}"</include>
+			<version>-fversion</version>
+			<debug>-fdebug</debug>
+			<unittest>-funittest</unittest>
+		</Patterns>
 		<DebugArgs>
-			<CompilerArg>-relocation-model=pic -c "$src" -of "$obj" $includes -g</CompilerArg>
-			<LinkerArgs>-of "$target" -g $objs $libs -L-shared</LinkerArgs>
+			<CompilerArg>-fPIC -c "$src" -o "$obj" $includes -g</CompilerArg>
+			<LinkerArgs>-o "$target" -g $objs $libs -shared</LinkerArgs>
+			<gdcLibPrefixing>true</gdcLibPrefixing>
 		</DebugArgs>
 		<ReleaseArgs>
-			<CompilerArg>-relocation-model=pic -c "$src" -of "$obj" $includes -O3 -release</CompilerArg>
-			<LinkerArgs>-of "$target" -O3 -release $objs $libs -L-shared</LinkerArgs>
+			<CompilerArg>-fPIC -frelease -c "$src" -o "$obj" $includes -O3</CompilerArg>
+			<LinkerArgs>-o "$target" -frelease -O3 $objs $libs -shared</LinkerArgs>
+			<gdcLibPrefixing>true</gdcLibPrefixing>
 		</ReleaseArgs>
 	</TargetConfiguration>
-	
+
 	<TargetConfiguration Target="StaticLibrary">
 		<CompilerCommand>ldc</CompilerCommand>
 		<LinkerCommand>ar</LinkerCommand>
-		<ObjectLinkPattern>"{0}"</ObjectLinkPattern>
-		<IncludePathPattern>-I"{0}"</IncludePathPattern>
+		<Patterns>
+			<obj>"{0}"</obj>
+			<include>-I"{0}"</include>
+			<version>-fversion</version>
+			<debug>-fdebug</debug>
+			<unittest>-funittest</unittest>
+		</Patterns>
 		<DebugArgs>
-			<CompilerArg>-c "$src" -of "$obj" $includes -g</CompilerArg>
+			<CompilerArg>-c "$src" -debug -o "$obj" $includes -g</CompilerArg>
 			<LinkerArgs>rcs "$target" $objs</LinkerArgs>
+			<gdcLibPrefixing>true</gdcLibPrefixing>
 		</DebugArgs>
 		<ReleaseArgs>
-			<CompilerArg>-c "$src" -of "$obj" $includes -O3 -release</CompilerArg>
+			<CompilerArg>-c "$src" -o "$obj" $includes -frelease -O3</CompilerArg>
 			<LinkerArgs>rcs "$target" $objs</LinkerArgs>
+			<gdcLibPrefixing>true</gdcLibPrefixing>
 		</ReleaseArgs>
 	</TargetConfiguration>
 </Compiler>

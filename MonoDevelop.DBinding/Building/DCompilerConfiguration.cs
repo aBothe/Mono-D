@@ -240,16 +240,7 @@ namespace MonoDevelop.D.Building
 		public string Compiler;
 		public string Linker;
 
-        #region Patterns
-		/// <summary>
-		/// Describes how each .obj/.o file shall be enumerated in the $objs linking macro
-		/// </summary>
-		public string ObjectFileLinkPattern = "\"{0}\"";
-		/// <summary>
-		/// Describes how each include path shall be enumerated in the $includes compiling macro
-		/// </summary>
-		public string IncludePathPattern = "-I\"{0}\"";
-        #endregion
+		public readonly CmdLineArgumentPatterns Patterns = new CmdLineArgumentPatterns();
 
 		public BuildConfiguration DebugArguments = new BuildConfiguration ();
 		public BuildConfiguration ReleaseArguments = new BuildConfiguration ();
@@ -265,8 +256,7 @@ namespace MonoDevelop.D.Building
 			Compiler = o.Compiler;
 			Linker = o.Linker;
 
-			ObjectFileLinkPattern = o.ObjectFileLinkPattern;
-			IncludePathPattern = o.IncludePathPattern;
+			Patterns.CopyFrom(o.Patterns);
 
 			DebugArguments.CopyFrom (o.DebugArguments);
 			ReleaseArguments.CopyFrom (o.ReleaseArguments);
@@ -284,12 +274,8 @@ namespace MonoDevelop.D.Building
 			x.WriteCData (Linker);
 			x.WriteEndElement ();
 
-			x.WriteStartElement ("ObjectLinkPattern");
-			x.WriteCData (ObjectFileLinkPattern);
-			x.WriteEndElement ();
-
-			x.WriteStartElement ("IncludePathPattern");
-			x.WriteCData (IncludePathPattern);
+			x.WriteStartElement ("Patterns");
+			Patterns.SaveTo(x);
 			x.WriteEndElement ();
 
 			x.WriteStartElement ("DebugArgs");
@@ -318,27 +304,98 @@ namespace MonoDevelop.D.Building
 				case "LinkerCommand":
 					Linker = x.ReadString ();
 					break;
-				case "ObjectLinkPattern":
-					ObjectFileLinkPattern = x.ReadString ();
-					break;
-				case "IncludePathPattern":
-					IncludePathPattern = x.ReadString ();
-					break;
-
-				case "DebugArgs":
+				case "Patterns":
 					var s = x.ReadSubtree ();
+					Patterns.ReadFrom (s);
+					s.Close ();
+					break;
+				case "DebugArgs":
+					s = x.ReadSubtree ();
 					DebugArguments.ReadFrom (s);
 					s.Close ();
 					break;
-
 				case "ReleaseArgs":
-					var s2 = x.ReadSubtree ();
-					ReleaseArguments.ReadFrom (s2);
-					s2.Close ();
+					s = x.ReadSubtree ();
+					ReleaseArguments.ReadFrom (s);
+					s.Close ();
 					break;
 				}
 
 			return true;
+		}
+	}
+
+	/// <summary>
+	/// Contains patterns that are used to create the argument string for e.g. a compiler or a linker.
+	/// Mostly used because GDC and DMD take different arguments.
+	/// </summary>
+	public class CmdLineArgumentPatterns
+	{
+		/// <summary>
+		/// Describes how each .obj/.o file shall be enumerated in the $objs linking macro
+		/// </summary>
+		public string ObjectFileLinkPattern = "\"{0}\"";
+		/// <summary>
+		/// Describes how each include path shall be enumerated in the $includes compiling macro
+		/// </summary>
+		public string IncludePathPattern = "-I\"{0}\"";
+		public string VersionDefinition = "-version";
+		public string DebugDefinition = "-debug";
+		public string UnittestFlag = "-unittest";
+
+		public void CopyFrom(CmdLineArgumentPatterns c)
+		{
+			ObjectFileLinkPattern = c.ObjectFileLinkPattern;
+			IncludePathPattern = c.IncludePathPattern;
+			VersionDefinition = c.VersionDefinition;
+			DebugDefinition = c.DebugDefinition;
+			UnittestFlag = c.UnittestFlag;
+		}
+
+		public void SaveTo(XmlWriter x)
+		{
+			x.WriteStartElement("obj");
+			x.WriteCData(ObjectFileLinkPattern);
+			x.WriteEndElement();
+
+			x.WriteStartElement("include");
+			x.WriteCData(IncludePathPattern);
+			x.WriteEndElement();
+
+			x.WriteStartElement("version");
+			x.WriteCData(VersionDefinition);
+			x.WriteEndElement();
+
+			x.WriteStartElement("debug");
+			x.WriteCData(DebugDefinition);
+			x.WriteEndElement();
+
+			x.WriteStartElement("unittest");
+			x.WriteCData(UnittestFlag);
+			x.WriteEndElement();
+		}
+
+		public void ReadFrom(XmlReader x)
+		{
+			while (x.Read())
+				switch (x.LocalName)
+				{
+					case "obj":
+						ObjectFileLinkPattern = x.ReadString();
+						break;
+					case "include":
+						IncludePathPattern = x.ReadString();
+						break;
+					case "version":
+						VersionDefinition = x.ReadString();
+						break;
+					case "debug":
+						DebugDefinition = x.ReadString();
+						break;
+					case "unittest":
+						UnittestFlag = x.ReadString();
+						break;
+				}
 		}
 	}
 
@@ -375,7 +432,7 @@ namespace MonoDevelop.D.Building
 			};	
 		}
 
-		public void SaveTo (System.Xml.XmlWriter x)
+		public void SaveTo (XmlWriter x)
 		{
 			x.WriteStartElement ("CompilerArg");
 			x.WriteCData (CompilerArguments);
@@ -394,7 +451,7 @@ namespace MonoDevelop.D.Building
 			x.WriteEndElement();
 		}
 
-		public void ReadFrom (System.Xml.XmlReader x)
+		public void ReadFrom (XmlReader x)
 		{
 			while (x.Read())
 				switch (x.LocalName) {

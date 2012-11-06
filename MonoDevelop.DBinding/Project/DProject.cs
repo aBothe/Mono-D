@@ -335,7 +335,7 @@ namespace MonoDevelop.D
 			
 			unittestConfig.ExtraLibraries.AddRange (libs);
 			unittestConfig.DebugMode = true;
-			unittestConfig.ExtraCompilerArguments += "-unittest ";
+			unittestConfig.UnittestMode = true;
 
 			Configurations.Add (unittestConfig);
             

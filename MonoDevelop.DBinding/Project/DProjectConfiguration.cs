@@ -20,6 +20,8 @@ namespace MonoDevelop.D
 		public DCompileTarget CompileTarget = DCompileTarget.Executable;
 		[ItemProperty("OutputName")]
 		public string Output = "";
+		[ItemProperty("UnittestMode")]
+		public bool UnittestMode = false;
 		[ItemProperty("ExtraCompilerArguments", DefaultValue = "")]
 		public string ExtraCompilerArguments = "";
 		[ItemProperty("ExtraLinkerArguments", DefaultValue = "")]

@@ -5,35 +5,45 @@
 	<TargetConfiguration Target="Executable">
 		<CompilerCommand>gdc</CompilerCommand>
 		<LinkerCommand>gdc</LinkerCommand>
-		<ObjectLinkPattern>"{0}"</ObjectLinkPattern>
-		<IncludePathPattern>-I"{0}"</IncludePathPattern>
+		<Patterns>
+			<obj>"{0}"</obj>
+			<include>-I"{0}"</include>
+			<version>-fversion</version>
+			<debug>-fdebug</debug>
+			<unittest>-funittest</unittest>
+		</Patterns>
 		<DebugArgs>
 			<CompilerArg>-c "$src" -o "$obj" $includes -g</CompilerArg>
 			<LinkerArgs>-o "$target" -g $objs $libs</LinkerArgs>
-      		<OneStepBuildArgs>-O0 -g $sources $libs $includes -o "$exe"</OneStepBuildArgs>
-      		<gdcLibPrefixing>true</gdcLibPrefixing>
+      <OneStepBuildArgs>-O0 -g $sources $libs $includes -o "$exe"</OneStepBuildArgs>
+      <gdcLibPrefixing>true</gdcLibPrefixing>
 		</DebugArgs>
 		<ReleaseArgs>
-			<CompilerArg>-c "$src" -o "$obj" $includes -O3</CompilerArg>
-			<LinkerArgs>-o "$target" -O3 $objs $libs</LinkerArgs>
-      		<OneStepBuildArgs>-O3 -frelease $sources $libs $includes -o "$exe"</OneStepBuildArgs>
-      		<gdcLibPrefixing>true</gdcLibPrefixing>
+			<CompilerArg>-c "$src" -frelease -o "$obj" $includes -O3</CompilerArg>
+			<LinkerArgs>-o "$target" -frelease -O3 $objs $libs</LinkerArgs>
+      <OneStepBuildArgs>-O3 -frelease $sources $libs $includes -o "$exe"</OneStepBuildArgs>
+      <gdcLibPrefixing>true</gdcLibPrefixing>
 		</ReleaseArgs>
 	</TargetConfiguration>
 	
 	<TargetConfiguration Target="SharedLibrary">
 		<CompilerCommand>gdc</CompilerCommand>
 		<LinkerCommand>gdc</LinkerCommand>
-		<ObjectLinkPattern>"{0}"</ObjectLinkPattern>
-		<IncludePathPattern>-I"{0}"</IncludePathPattern>
+		<Patterns>
+			<obj>"{0}"</obj>
+			<include>-I"{0}"</include>
+			<version>-fversion</version>
+			<debug>-fdebug</debug>
+			<unittest>-funittest</unittest>
+		</Patterns>
 		<DebugArgs>
 			<CompilerArg>-fPIC -c "$src" -o "$obj" $includes -g</CompilerArg>
 			<LinkerArgs>-o "$target" -g $objs $libs -shared</LinkerArgs>
 			<gdcLibPrefixing>true</gdcLibPrefixing>
 		</DebugArgs>
 		<ReleaseArgs>
-			<CompilerArg>-fPIC -c "$src" -o "$obj" $includes -O3</CompilerArg>
-			<LinkerArgs>-o "$target" -O3 $objs $libs -shared</LinkerArgs>
+			<CompilerArg>-fPIC -frelease -c "$src" -o "$obj" $includes -O3</CompilerArg>
+			<LinkerArgs>-o "$target" -frelease -O3 $objs $libs -shared</LinkerArgs>
 			<gdcLibPrefixing>true</gdcLibPrefixing>
 		</ReleaseArgs>
 	</TargetConfiguration>
@@ -41,15 +51,20 @@
 	<TargetConfiguration Target="StaticLibrary">
 		<CompilerCommand>gdc</CompilerCommand>
 		<LinkerCommand>ar</LinkerCommand>
-		<ObjectLinkPattern>"{0}"</ObjectLinkPattern>
-		<IncludePathPattern>-I"{0}"</IncludePathPattern>
+		<Patterns>
+			<obj>"{0}"</obj>
+			<include>-I"{0}"</include>
+			<version>-fversion</version>
+			<debug>-fdebug</debug>
+			<unittest>-funittest</unittest>
+		</Patterns>
 		<DebugArgs>
-			<CompilerArg>-c "$src" -o "$obj" $includes -g</CompilerArg>
+			<CompilerArg>-c "$src" -debug -o "$obj" $includes -g</CompilerArg>
 			<LinkerArgs>rcs "$target" $objs</LinkerArgs>
 			<gdcLibPrefixing>true</gdcLibPrefixing>
 		</DebugArgs>
 		<ReleaseArgs>
-			<CompilerArg>-c "$src" -o "$obj" $includes -O3</CompilerArg>
+			<CompilerArg>-c "$src" -o "$obj" $includes -frelease -O3</CompilerArg>
 			<LinkerArgs>rcs "$target" $objs</LinkerArgs>
 			<gdcLibPrefixing>true</gdcLibPrefixing>
 		</ReleaseArgs>

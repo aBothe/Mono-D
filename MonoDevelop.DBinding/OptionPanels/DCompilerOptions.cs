@@ -7,6 +7,7 @@ using MonoDevelop.D.Building;
 using MonoDevelop.Ide;
 using Gtk;
 using MonoDevelop.D.Building.CompilerPresets;
+using System.IO;
 
 namespace MonoDevelop.D.OptionPanels
 {
@@ -243,7 +244,8 @@ namespace MonoDevelop.D.OptionPanels
 		{
 			ShowArgumentsDialog (true);			
 		}
-		
+
+		string lastDir;
 		protected void OnButtonAddIncludeClicked (object sender, System.EventArgs e)
 		{
 			Gtk.FileChooserDialog dialog = new Gtk.FileChooserDialog (
@@ -259,9 +261,17 @@ namespace MonoDevelop.D.OptionPanels
 				WindowPosition = Gtk.WindowPosition.Center
 			};
 
+			if (lastDir != null)
+				dialog.SetCurrentFolder(lastDir);
+			else if (Directory.Exists(txtBinPath.Text))
+				dialog.SetCurrentFolder(txtBinPath.Text);
+
 			try {
-				if (dialog.Run () == (int)Gtk.ResponseType.Ok)
-                    text_Includes.Buffer.Text += (text_Includes.Buffer.CharCount == 0 ? "" : "\n") + string.Join("\n", dialog.Filenames);
+				if (dialog.Run() == (int)Gtk.ResponseType.Ok)
+				{
+					lastDir = dialog.Filename;
+					text_Includes.Buffer.Text += (text_Includes.Buffer.CharCount == 0 ? "" : "\n") + dialog.Filename;
+				}
 			} finally {
 				dialog.Destroy ();
 			}
