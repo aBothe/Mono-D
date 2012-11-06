@@ -157,7 +157,7 @@ namespace MonoDevelop.D
 				ExtraCompilerArguments + ExtraLinkerArguments;
 
 			//TODO: Distinguish between D1/D2 and probably later versions?
-			var a = D_Parser.Misc.VersionIdEvaluation.GetVersionIds(cmp.PredefinedVersionConstant,cmpArgs);
+			var a = D_Parser.Misc.VersionIdEvaluation.GetVersionIds(cmp.PredefinedVersionConstant,cmpArgs, UnittestMode);
 			var res = new string[(a== null ? 0 : a.Length) + (CustomVersionIdentifiers == null ? 0: CustomVersionIdentifiers.Length)];
 			if(a!=null)
 				Array.Copy(a,res,a.Length);
