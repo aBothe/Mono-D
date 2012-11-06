@@ -11,9 +11,9 @@ namespace MonoDevelop.D
 	public class DProjectConfiguration:ProjectConfiguration
 	{
 		#region Properties
-		public DProject Project {
-			get;
-			protected set;
+		public DProject Project
+		{
+			get { return ParentItem as DProject; }
 		}
 
 		[ItemProperty("Target")]
@@ -55,21 +55,30 @@ namespace MonoDevelop.D
 		}
 
 		[ItemProperty("VersionIds")]
-		private string[] versionIds;
+		public string[] CustomVersionIdentifiers;
 		[ItemProperty("DebugIds")]
-		public string[] DefinedDebugIdentifiers;
+		public string[] CustomDebugIdentifiers;
+		[ItemProperty("DebugLevel")]
+		public int DebugLevel = 0;
 
-		public string[] DefinedVersionIdentifiers{get{ return versionIds; }}
+		string[] gVersionIds;
+		/// <summary>
+		/// Includes custom version identifiers already.
+		/// Used for code completion.
+		/// </summary>
+		public string[] GlobalVersionIdentifiers
+		{
+			get
+			{ 
+				if(gVersionIds == null)
+					UpdateGlobalVersionIdentifiers();
+				return gVersionIds; 
+			}
+		}
 		#endregion
 
-		//if absent an exception occurs when opening project config	
 		public DProjectConfiguration ()
 		{
-		}
-		
-		public DProjectConfiguration (DProject Project)
-		{
-			this.Project = Project;
 			this.ExternalConsole = true;
 		}
 
@@ -88,8 +97,11 @@ namespace MonoDevelop.D
 			ExtraCompilerArguments = conf.ExtraCompilerArguments;
 			ExtraLinkerArguments = conf.ExtraLinkerArguments;
 			CompileTarget = conf.CompileTarget;
-			versionIds = conf.versionIds;
-			DefinedDebugIdentifiers = conf.DefinedDebugIdentifiers;
+			CustomVersionIdentifiers = conf.CustomVersionIdentifiers;
+			CustomDebugIdentifiers = conf.CustomDebugIdentifiers;
+			DebugLevel = conf.DebugLevel;
+			gVersionIds = conf.gVersionIds;
+			//DebugMode = conf.DebugMode;
 
             ExtraLibraries.Clear();
             ExtraLibraries.AddRange(conf.ExtraLibraries);
@@ -124,12 +136,17 @@ namespace MonoDevelop.D
 			}
 		}
 
-		public void RebuildPredefinedVersionIdentifiers()
+		/// <summary>
+		/// Builds an array of all global version id definitions.
+		/// Used for code completion.
+		/// </summary>
+		public void UpdateGlobalVersionIdentifiers(DProject prjOverride = null)
 		{
-			if(Project==null)
-				return;
+			if (prjOverride == null)
+				if ((prjOverride = Project) == null)
+					return;
 
-			var cmp = Project.Compiler;
+			var cmp = prjOverride.Compiler;
 
 			// Compiler args + cfg args + extra args
 			var buildCfg = cmp.GetOrCreateTargetConfiguration(this.CompileTarget);
@@ -137,7 +154,14 @@ namespace MonoDevelop.D
 			var cmpArgs = (buildArgs.OneStepBuildArguments ?? buildArgs.CompilerArguments) + 
 				ExtraCompilerArguments + ExtraLinkerArguments;
 
-			versionIds = D_Parser.Misc.VersionIdEvaluation.GetVersionIds(cmp.PredefinedVersionConstant,cmpArgs); //TODO: Distinguish between D1/D2 and probably later versions?
+			//TODO: Distinguish between D1/D2 and probably later versions?
+			var a = D_Parser.Misc.VersionIdEvaluation.GetVersionIds(cmp.PredefinedVersionConstant,cmpArgs);
+			var res = new string[(a== null ? 0 : a.Length) + (CustomVersionIdentifiers == null ? 0: CustomVersionIdentifiers.Length)];
+			if(a!=null)
+				Array.Copy(a,res,a.Length);
+			if(CustomVersionIdentifiers!=null)
+				Array.Copy(CustomVersionIdentifiers,0,res,res.Length - CustomVersionIdentifiers.Length,CustomVersionIdentifiers.Length);
+			gVersionIds = res;
 		}
 
 		public override FilePath IntermediateOutputDirectory {

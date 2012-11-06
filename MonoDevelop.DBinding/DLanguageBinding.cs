@@ -24,7 +24,7 @@ namespace MonoDevelop.D
 
 		public static bool IsDFile(string fileName)
 		{
-			return fileName.EndsWith(".d") || fileName.EndsWith(".di");
+			return fileName.EndsWith(".d", System.StringComparison.OrdinalIgnoreCase) || fileName.EndsWith(".di", System.StringComparison.OrdinalIgnoreCase);
 		}
 
 		public FilePath GetFileName(FilePath fileNameWithoutExtension)

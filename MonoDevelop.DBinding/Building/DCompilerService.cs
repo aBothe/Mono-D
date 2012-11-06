@@ -38,7 +38,7 @@ namespace MonoDevelop.D.Building
 
 			//LoggingService.AddLogger(new MonoDevelop.Core.Logging.FileLogger("A:\\monoDev.log", true));
 
-			if (_instance == null) {
+			if (_instance == null || _instance.Compilers.Count == 0) {
 				_instance = new DCompilerService ();
 
 				CompilerPresets.PresetLoader.LoadPresets (_instance);

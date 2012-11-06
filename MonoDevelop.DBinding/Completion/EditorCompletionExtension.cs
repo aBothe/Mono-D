@@ -30,6 +30,8 @@ namespace MonoDevelop.D
 
 		public override ICompletionDataList HandleCodeCompletion(CodeCompletionContext completionContext, char triggerChar, ref int triggerWordLength)
 		{
+			var l = new CompletionDataList();
+
 			if (!(triggerChar==' ' || 
 				char.IsLetter(triggerChar) || 
 				triggerChar == '@' ||
@@ -37,17 +39,13 @@ namespace MonoDevelop.D
 				triggerChar == '_' || 
 				triggerChar == '.' || 
 				triggerChar == '\0'))
-				return null;
+				return l;
 							
 			triggerWordLength = (char.IsLetter(triggerChar) || triggerChar=='_' || triggerChar=='@') ? 1 : 0;
 
 			// Require a parsed D source
 			
 			var dom = base.Document.ParsedDocument as ParsedDModule;
-
-			
-			var l = new CompletionDataList();
-
 			if (dom != null && dom.DDom!=null)
 				lock(dom.DDom)
 				DCodeCompletionSupport.BuildCompletionData(

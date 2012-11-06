@@ -165,8 +165,8 @@ namespace MonoDevelop.D.Building
 					s = x.ReadSubtree ();
 
 					var t = new LinkTargetConfiguration ();
-					t.LoadFrom (s);
-					LinkTargetConfigurations [t.TargetType] = t;
+					if(t.LoadFrom (s))
+						LinkTargetConfigurations [t.TargetType] = t;
 
 					s.Close ();
 					break;
@@ -301,13 +301,14 @@ namespace MonoDevelop.D.Building
 			x.WriteEndElement ();
 		}
 
-		public void LoadFrom (System.Xml.XmlReader x)
+		public bool LoadFrom (System.Xml.XmlReader x)
 		{
 			if (x.ReadState == ReadState.Initial)
 				x.Read ();
 
-			if (x.MoveToAttribute ("Target"))
-				TargetType = (DCompileTarget)Enum.Parse (typeof(DCompileTarget), x.ReadContentAsString ());
+			if (x.MoveToAttribute ("Target") && 
+			    !Enum.TryParse(x.ReadContentAsString(), true, out TargetType))
+					return false;
 
 			while (x.Read())
 				switch (x.LocalName) {
@@ -336,6 +337,8 @@ namespace MonoDevelop.D.Building
 					s2.Close ();
 					break;
 				}
+
+			return true;
 		}
 	}
 

@@ -347,6 +347,8 @@ namespace MonoDevelop.D
 				c.ObjectDirectory += Path.DirectorySeparatorChar + c.Id;
 				c.Output = outputPrefix + Name;
 
+				c.UpdateGlobalVersionIdentifiers();
+
 				if (projectOptions != null) {
 					// Set extra compiler&linker args
 					if (projectOptions.Attributes ["CompilerArgs"].InnerText != null) {
@@ -373,7 +375,7 @@ namespace MonoDevelop.D
 		#region Build Configurations
 		public override SolutionItemConfiguration CreateConfiguration (string name)
 		{
-			var config = new DProjectConfiguration (this) { Name=name};
+			var config = new DProjectConfiguration() { Name=name};
 			//config.Changed += new EventHandler(config_Changed);				
 			
 			return config;			

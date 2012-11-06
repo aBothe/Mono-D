@@ -11,7 +11,7 @@ namespace MonoDevelop.D.OptionPanels
 		private global::Gtk.Entry txtBinPath;
 		private global::Gtk.Button button_BinPathBrowser;
 		private global::Gtk.HBox hbox4;
-		private global::Gtk.ComboBoxEntry cmbCompilers;
+		private global::Gtk.ComboBox cmbCompilers;
 		private global::Gtk.ToggleButton btnMakeDefault;
 		private global::Gtk.HBox hbox8;
 		private global::Gtk.Button btnDebugArguments;
@@ -101,7 +101,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.hbox4.Name = "hbox4";
 			this.hbox4.Spacing = 2;
 			// Container child hbox4.Gtk.Box+BoxChild
-			this.cmbCompilers = new global::Gtk.ComboBoxEntry ();
+			this.cmbCompilers = global::Gtk.ComboBox.NewText ();
 			this.cmbCompilers.Name = "cmbCompilers";
 			this.hbox4.Add (this.cmbCompilers);
 			global::Gtk.Box.BoxChild w5 = ((global::Gtk.Box.BoxChild)(this.hbox4 [this.cmbCompilers]));

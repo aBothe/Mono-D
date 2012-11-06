@@ -1213,11 +1213,11 @@ Important: May affect code completion if omitted/written into extra compiler opt
                 <property name="MemberName" />
                 <property name="Spacing">2</property>
                 <child>
-                  <widget class="Gtk.ComboBoxEntry" id="cmbCompilers">
+                  <widget class="Gtk.ComboBox" id="cmbCompilers">
                     <property name="MemberName" />
-                    <property name="IsTextCombo">False</property>
+                    <property name="IsTextCombo">True</property>
                     <property name="Items" translatable="yes" />
-                    <signal name="Changed" handler="OnCmbCompilersChanged" />
+                    <signal name="Changed" handler="OnCmbCompilersChanged" after="yes" />
                   </widget>
                   <packing>
                     <property name="Position">0</property>

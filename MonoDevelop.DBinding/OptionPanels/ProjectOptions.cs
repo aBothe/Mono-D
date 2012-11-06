@@ -66,6 +66,19 @@ namespace MonoDevelop.D.OptionPanels
 			text_BinDirectory.Text = config.OutputDirectory;
 			text_TargetFile.Text = config.Output;
 			text_ObjectsDirectory.Text = config.ObjectDirectory;
+
+			if(config.CustomDebugIdentifiers==null)
+				text_debugConstants.Text = "";
+			else
+				text_debugConstants.Text = string.Join(";",config.CustomDebugIdentifiers);
+			if(config.CustomVersionIdentifiers == null)
+				text_versionConstants.Text = "";
+			else
+				text_versionConstants.Text = string.Join(";", config.CustomVersionIdentifiers);
+			spin_debugLevel.Value = (double)config.DebugLevel;
+
+			// Disable debug-specific fields on non-debug configurations
+			text_debugConstants.Sensitive = spin_debugLevel.Sensitive = config.DebugMode;
 			
 			if (model_compileTarget.GetIterFirst (out iter))
 				do {
@@ -132,6 +145,10 @@ namespace MonoDevelop.D.OptionPanels
 			
 			if (combo_ProjectType.GetActiveIter (out iter))
 				configuration.CompileTarget = (DCompileTarget)model_compileTarget.GetValue (iter, 1);
+
+			configuration.CustomDebugIdentifiers = text_debugConstants.Text.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+			configuration.CustomVersionIdentifiers = text_versionConstants.Text.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+			configuration.UpdateGlobalVersionIdentifiers(project);
 			
 			// Store libs
 			configuration.ExtraLibraries.Clear ();

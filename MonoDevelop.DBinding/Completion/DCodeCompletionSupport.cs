@@ -27,7 +27,8 @@ namespace MonoDevelop.D.Completion
 			var caretOffset = ctx.TriggerOffset - (removeChar ? 1 : 0);
 			var caretLocation = new CodeLocation(ctx.TriggerLineOffset-deltaOffset, ctx.TriggerLine);
 			var codeCache = EnumAvailableModules(EditorDocument);
-			var edData=new EditorData {
+
+			var ed=new EditorData {
 					CaretLocation=caretLocation,
 					CaretOffset=caretOffset,
 					ModuleCode=removeChar ? EditorDocument.Editor.Text.Remove(ctx.TriggerOffset-1,1) : EditorDocument.Editor.Text,
@@ -35,10 +36,34 @@ namespace MonoDevelop.D.Completion
 					ParseCache=codeCache,
 					Options = DCompilerService.Instance.CompletionOptions
 				};
+
+			if(EditorDocument.HasProject)
+			{
+				var cfg = EditorDocument.Project.GetConfiguration(Ide.IdeApp.Workspace.ActiveConfiguration) as DProjectConfiguration;
+
+				if(cfg!=null)
+				{
+					ed.GlobalDebugIds = cfg.CustomDebugIdentifiers;
+					ed.IsDebug = cfg.DebugMode;
+					ed.DebugLevel = cfg.DebugLevel;
+					ed.GlobalVersionIds = cfg.GlobalVersionIdentifiers;
+					double d;
+					int v;
+					if(Double.TryParse(EditorDocument.Project.Version, out d))
+						ed.VersionNumber = (int)d;
+					else if(Int32.TryParse(EditorDocument.Project.Version, out v))
+							ed.VersionNumber = v;
+				}
+			}
+
+			if(ed.GlobalVersionIds == null)
+			{
+				ed.GlobalVersionIds = VersionIdEvaluation.GetOSAndCPUVersions();
+			}
 			
 			AbstractCompletionProvider.BuildCompletionData(
 				new CompletionDataGenerator { CompletionDataList = l },
-				edData, 
+				ed, 
 				triggerChar=='\0'?null:triggerChar.ToString());
 		}
 
