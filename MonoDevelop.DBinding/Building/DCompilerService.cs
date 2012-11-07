@@ -40,7 +40,7 @@ namespace MonoDevelop.D.Building
 
 			if (_instance == null || _instance.Compilers.Count == 0) {
 				_instance = new DCompilerService ();
-
+				CompletionOptions = CompletionOptions.Default;
 				CompilerPresets.PresetLoader.LoadPresets (_instance);
 			}
 
