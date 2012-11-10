@@ -429,7 +429,7 @@ namespace MonoDevelop.D.Gui
 
                 if(!showFunctionMembers)
                 {
-                    if ((!(n is DMethod) || !(n is DClassLike)) && ParentAstNode is DMethod) // < Also affects displaing functions members in tree
+                    if ((!(n is DMethod) || !(n is DClassLike)) && ParentAstNode is DMethod)
                         continue;
                     else if (n is DMethod && (n as DMethod).Name == "") // Check against delegates
                         continue;
