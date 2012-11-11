@@ -9,6 +9,7 @@ using MonoDevelop.Core;
 using MonoDevelop.D.Completion;
 using MonoDevelop.D.Parser;
 using MonoDevelop.D.Refactoring;
+using MonoDevelop.D.Building;
 using MonoDevelop.DesignerSupport;
 using MonoDevelop.Ide;
 using MonoDevelop.Ide.Gui;
@@ -37,10 +38,7 @@ namespace MonoDevelop.D.Gui
 		bool clickedOnOutlineItem;
 		bool dontJumpToDeclaration;
 		bool outlineReady;
-
-        bool showFunctionParameters;
-        bool showFunctionMembers;
-        bool grayOutNonPublic;
+		        
 		#endregion
 
 		#region ctor & dtor stuff
@@ -58,11 +56,6 @@ namespace MonoDevelop.D.Gui
 				Document.DocumentParsed += UpdateDocumentOutline;
 				Document.Editor.Caret.PositionChanged += UpdateOutlineSelection;
 			}
-
-            // TO BE REMOVED
-            showFunctionParameters = true;
-            showFunctionMembers = false;
-            grayOutNonPublic = true;
 		}
 
 		void UpdateOutlineSelection(object sender, Mono.TextEditor.DocumentLocationEventArgs e)
@@ -182,7 +175,9 @@ namespace MonoDevelop.D.Gui
 					var caretLocation = Document.Editor.Caret.Location;
 					BuildTreeChildren(TreeIter.Zero, SyntaxTree, new CodeLocation(caretLocation.Column, caretLocation.Line));
 
-					//TreeView.ExpandAll();
+
+					if(DCompilerService.Instance.Outline.ExpandAll)
+						TreeView.ExpandAll();
 				}
 			}
 			catch (Exception ex)
@@ -301,31 +296,32 @@ namespace MonoDevelop.D.Gui
 			}
 		}
 
-		void OutlineTreeTextFunc(TreeViewColumn column, CellRenderer cell, TreeModel model, TreeIter iter)
+		void OutlineTreeTextFunc (TreeViewColumn column, CellRenderer cell, TreeModel model, TreeIter iter)
 		{
-			var n = model.GetValue(iter, 0) as INode;
+			var n = model.GetValue (iter, 0) as INode;
 
-			string label=n.Name ?? "";
+			string label = n.Name ?? "";
 
-            var dm = n as DMethod;
-            if (dm!=null)
-            {
-                if (dm.SpecialType == DMethod.MethodType.Unittest)
-                    label = "(Unittest)";
-                else if (dm.SpecialType == DMethod.MethodType.ClassInvariant)
-                    label = "(Class Invariant)";
-                else if (dm.SpecialType == DMethod.MethodType.Allocator)
-                    label = "(Class Allocator)";
-                else if (dm.SpecialType == DMethod.MethodType.Deallocator)
-                    label = "(Class Deallocator)";
-                else
-                {
-                    if(showFunctionParameters)
-                        label = String.Format("{0}({1})", dm.Name, FunctionParamsToString(dm.Parameters));
-                }
-            }
+			var dm = n as DMethod;
+			if (dm != null) {
+				if (dm.SpecialType == DMethod.MethodType.Unittest)
+					label = "(Unittest)";
+				else if (dm.SpecialType == DMethod.MethodType.ClassInvariant)
+					label = "(Class Invariant)";
+				else if (dm.SpecialType == DMethod.MethodType.Allocator)
+					label = "(Class Allocator)";
+				else if (dm.SpecialType == DMethod.MethodType.Deallocator)
+					label = "(Class Deallocator)";
+				else {
+					if (DCompilerService.Instance.Outline.ShowFuncParams)
+						label = String.Format ("{0}({1})", label, FunctionParamsToString (dm.Parameters));
+				}
+			}
 
-            if (grayOutNonPublic)
+			if (DCompilerService.Instance.Outline.ShowTypes)
+				label = String.Format ("{0} {1}", (n as DNode).Type, label);
+
+            if (DCompilerService.Instance.Outline.GrayOutNonPublic)
             {
                 var dn = n as DNode;
                 if (dn != null)
@@ -396,7 +392,7 @@ namespace MonoDevelop.D.Gui
 				return;
 
 
-            if (showFunctionMembers)
+			if (DCompilerService.Instance.Outline.ShowFuncVariables)
             {
                 if (ParentAstNode is DMethod)
                 {
@@ -427,7 +423,7 @@ namespace MonoDevelop.D.Gui
                     continue;
                 }
 
-                if(!showFunctionMembers)
+				if(!DCompilerService.Instance.Outline.ShowFuncVariables)
                 {
                     if ((!(n is DMethod) || !(n is DClassLike)) && ParentAstNode is DMethod)
                         continue;
