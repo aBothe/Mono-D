@@ -31,11 +31,16 @@ namespace MonoDevelop.D.Gui
 		}
 		MonoDevelop.Ide.Gui.Components.PadTreeView TreeView;
 		TreeStore TreeStore;
+        TreePath lastExpanded;
 		Widget[] toolbarWidgets;
 
 		bool clickedOnOutlineItem;
 		bool dontJumpToDeclaration;
 		bool outlineReady;
+
+        bool showFunctionParameters;
+        bool showFunctionMembers;
+        bool grayOutNonPublic;
 		#endregion
 
 		#region ctor & dtor stuff
@@ -53,6 +58,11 @@ namespace MonoDevelop.D.Gui
 				Document.DocumentParsed += UpdateDocumentOutline;
 				Document.Editor.Caret.PositionChanged += UpdateOutlineSelection;
 			}
+
+            // TO BE REMOVED
+            showFunctionParameters = true;
+            showFunctionMembers = false;
+            grayOutNonPublic = true;
 		}
 
 		void UpdateOutlineSelection(object sender, Mono.TextEditor.DocumentLocationEventArgs e)
@@ -84,14 +94,29 @@ namespace MonoDevelop.D.Gui
 			if (selectedASTNode == null)
 				return;
 
+            if (lastExpanded != null)
+            {
+                if(TreeView.GetRowExpanded(lastExpanded))
+                    TreeView.CollapseRow(lastExpanded);
+            }
+
 			TreeStore.Foreach((TreeModel model, TreePath path, TreeIter iter) =>
 			{
 				var n=model.GetValue(iter, 0);
 				if (n == selectedASTNode)
 				{
 					dontJumpToDeclaration = true;
-					TreeView.Selection.SelectIter(iter);
-					TreeView.ScrollToCell(path, TreeView.GetColumn(0), true, 0, 0);
+                    TreePath parentPath = path.Copy();
+                    parentPath.Up();
+
+                    if (!TreeView.GetRowExpanded(parentPath))
+                    {
+                        lastExpanded = parentPath;
+                    }
+
+                    TreeView.ExpandToPath(path);
+                    TreeView.ScrollToCell(path, TreeView.GetColumn(0), true, 0, 0);
+                    TreeView.Selection.SelectIter(iter);
 					dontJumpToDeclaration = false;
 
 					return true;
@@ -157,7 +182,7 @@ namespace MonoDevelop.D.Gui
 					var caretLocation = Document.Editor.Caret.Location;
 					BuildTreeChildren(TreeIter.Zero, SyntaxTree, new CodeLocation(caretLocation.Column, caretLocation.Line));
 
-					TreeView.ExpandAll();
+					//TreeView.ExpandAll();
 				}
 			}
 			catch (Exception ex)
@@ -207,7 +232,6 @@ namespace MonoDevelop.D.Gui
 			treeCol.PackStart(TreeView.TextRenderer, true);
 
 			treeCol.SetCellDataFunc(TreeView.TextRenderer, new TreeCellDataFunc(OutlineTreeTextFunc));
-
 			TreeView.AppendColumn(treeCol);
 
 			TreeView.TextRenderer.Editable = true;
@@ -294,10 +318,39 @@ namespace MonoDevelop.D.Gui
                     label = "(Class Allocator)";
                 else if (dm.SpecialType == DMethod.MethodType.Deallocator)
                     label = "(Class Deallocator)";
+                else
+                {
+                    if(showFunctionParameters)
+                        label = String.Format("{0}({1})", dm.Name, FunctionParamsToString(dm.Parameters));
+                }
+            }
+
+            if (grayOutNonPublic)
+            {
+                var dn = n as DNode;
+                if (dn != null)
+                {
+                    if (!dn.IsPublic)
+                        (cell as CellRendererText).Foreground = "#606060";
+                    else
+                        (cell as CellRendererText).Foreground = "black";
+                }
             }
 
 			(cell as CellRendererText).Text = label;
 		}
+
+        private string FunctionParamsToString(List<INode> parameters)
+        {
+            List<string> paramsStr = new List<string>(parameters.Count);
+
+            foreach (var param in parameters)
+            {
+                paramsStr.Add(param.Type + " " + param.Name);
+            }
+            
+            return String.Join(", ", paramsStr.ToArray());
+        }
 
 		void JumpToDeclaration(bool focusEditor)
 		{
@@ -342,33 +395,45 @@ namespace MonoDevelop.D.Gui
 			if (ParentAstNode == null)
 				return;
 
-			if (ParentAstNode is DMethod)
-			{
-				var dm=ParentAstNode as DMethod;
 
-				if (dm.Parameters != null)
-					foreach (var p in dm.Parameters)
-						if(p.Name!="")
-						{
-							TreeIter childIter;
-							if (!ParentTreeNode.Equals(TreeIter.Zero))
-								childIter = TreeStore.AppendValues(ParentTreeNode, p);
-							else
-								childIter = TreeStore.AppendValues(p);
+            if (showFunctionMembers)
+            {
+                if (ParentAstNode is DMethod)
+                {
+                    var dm = ParentAstNode as DMethod;
 
-							if (editorSelectionLocation >= p.Location && 
-								editorSelectionLocation < p.EndLocation)
-								TreeView.Selection.SelectIter(childIter);
-						}
-			}
+                    if (dm.Parameters != null)
+                        foreach (var p in dm.Parameters)
+                            if (p.Name != "")
+                            {
+                                TreeIter childIter;
+                                if (!ParentTreeNode.Equals(TreeIter.Zero))
+                                    childIter = TreeStore.AppendValues(ParentTreeNode, p);
+                                else
+                                    childIter = TreeStore.AppendValues(p);
+
+                                if (editorSelectionLocation >= p.Location &&
+                                    editorSelectionLocation < p.EndLocation)
+                                    TreeView.Selection.SelectIter(childIter);
+                            }
+                }
+            }
 
 			foreach (var n in ParentAstNode)
 			{
-				if (n is DEnum && (n as DEnum).IsAnonymous)
-				{
-					BuildTreeChildren(ParentTreeNode, n as IBlockNode,editorSelectionLocation);
-					continue;
-				}
+                if (n is DEnum && (n as DEnum).IsAnonymous)
+                {
+                    BuildTreeChildren(ParentTreeNode, n as IBlockNode, editorSelectionLocation);
+                    continue;
+                }
+
+                if(!showFunctionMembers)
+                {
+                    if ((!(n is DMethod) || !(n is DClassLike)) && ParentAstNode is DMethod)
+                        continue;
+                    else if (n is DMethod && (n as DMethod).Name == "") // Check against delegates
+                        continue;
+                }
 
 				TreeIter childIter;
 				if (!ParentTreeNode.Equals(TreeIter.Zero))
@@ -379,7 +444,7 @@ namespace MonoDevelop.D.Gui
 				if (editorSelectionLocation >= n.Location && 
 					editorSelectionLocation < n.EndLocation)
 					TreeView.Selection.SelectIter(childIter);
-				
+
 				BuildTreeChildren(childIter, n as IBlockNode,editorSelectionLocation);
 			}
 		}
