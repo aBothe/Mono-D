@@ -36,6 +36,9 @@
 			<version>-version</version>
 			<debug>-debug</debug>
 			<unittest>-unittest</unittest>
+			<ddFlag>-D</ddFlag>
+			<ddMacroDefinition>"{0}"</ddMacroDefinition>
+			<ddDir>"-Dd{0}"</ddDir>
 		</Patterns>
 		<DebugArgs>
 			<CompilerArg>-c "$src" -of"$obj" $includes -gc -debug</CompilerArg>
@@ -58,6 +61,9 @@
 			<version>-version</version>
 			<debug>-debug</debug>
 			<unittest>-unittest</unittest>
+			<ddFlag>-D</ddFlag>
+			<ddMacroDefinition>"{0}"</ddMacroDefinition>
+			<ddDir>"-Dd{0}"</ddDir>
 		</Patterns>
 		<DebugArgs>
 			<CompilerArg>-c "$src" -of"$obj" $includes -gc -debug</CompilerArg>

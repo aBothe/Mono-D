@@ -189,7 +189,10 @@ namespace MonoDevelop.D
 				{
 					foreach (var f in (List<ProjectFile>)o)
 					{
-						_filelinkModulesToInsert.Add(DParser.ParseFile(f.FilePath) as DModule);
+						var mod = DParser.ParseFile(f.FilePath) as DModule;
+						var modName = f.ProjectVirtualPath.ToString().Replace(Path.DirectorySeparatorChar,'.');
+						
+						_filelinkModulesToInsert.Add(mod);
 					}
 
 					analysisFinished_FileLinks = true;

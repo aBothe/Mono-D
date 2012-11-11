@@ -8,12 +8,12 @@
 		<Patterns>
 			<obj>"{0}"</obj>
 			<include>-I"{0}"</include>
-			<version>-fversion</version>
-			<debug>-fdebug</debug>
-			<unittest>-funittest</unittest>
-			<ddFlag></ddFlag>
-			<ddMacroDefinition>"-fdoc-inc={0}"</ddMacroDefinition>
-			<ddDir>"-fdoc-dir={0}"</ddDir>
+			<version>-d-version</version>
+			<debug>-d-debug</debug>
+			<unittest>-unittest</unittest>
+			<ddFlag>-D</ddFlag>
+			<ddMacroDefinition>"{0}"</ddMacroDefinition>
+			<ddDir>"-Dd{0}"</ddDir>
 		</Patterns>
 		<DebugArgs>
 			<CompilerArg>-c "$src" -o "$obj" $includes -g</CompilerArg>
@@ -22,9 +22,9 @@
 			<gdcLibPrefixing>true</gdcLibPrefixing>
 		</DebugArgs>
 		<ReleaseArgs>
-			<CompilerArg>-c "$src" -frelease -o "$obj" $includes -O3</CompilerArg>
-			<LinkerArgs>-o "$target" -frelease -O3 $objs $libs</LinkerArgs>
-			<OneStepBuildArgs>-O3 -frelease $sources $libs $includes -o "$exe"</OneStepBuildArgs>
+			<CompilerArg>-c "$src" -release -o "$obj" $includes -O3</CompilerArg>
+			<LinkerArgs>-o "$target" -release -O3 $objs $libs</LinkerArgs>
+			<OneStepBuildArgs>-O3 -release $sources $libs $includes -o "$exe"</OneStepBuildArgs>
 			<gdcLibPrefixing>true</gdcLibPrefixing>
 		</ReleaseArgs>
 	</TargetConfiguration>
@@ -35,9 +35,12 @@
 		<Patterns>
 			<obj>"{0}"</obj>
 			<include>-I"{0}"</include>
-			<version>-fversion</version>
-			<debug>-fdebug</debug>
-			<unittest>-funittest</unittest>
+			<version>-d-version</version>
+			<debug>-d-debug</debug>
+			<unittest>-unittest</unittest>
+			<ddFlag>-D</ddFlag>
+			<ddMacroDefinition>"{0}"</ddMacroDefinition>
+			<ddDir>"-Dd{0}"</ddDir>
 		</Patterns>
 		<DebugArgs>
 			<CompilerArg>-fPIC -c "$src" -o "$obj" $includes -g</CompilerArg>
@@ -45,8 +48,8 @@
 			<gdcLibPrefixing>true</gdcLibPrefixing>
 		</DebugArgs>
 		<ReleaseArgs>
-			<CompilerArg>-fPIC -frelease -c "$src" -o "$obj" $includes -O3</CompilerArg>
-			<LinkerArgs>-o "$target" -frelease -O3 $objs $libs -shared</LinkerArgs>
+			<CompilerArg>-fPIC -release -c "$src" -o "$obj" $includes -O3</CompilerArg>
+			<LinkerArgs>-o "$target" -release -O3 $objs $libs -shared</LinkerArgs>
 			<gdcLibPrefixing>true</gdcLibPrefixing>
 		</ReleaseArgs>
 	</TargetConfiguration>
@@ -57,9 +60,12 @@
 		<Patterns>
 			<obj>"{0}"</obj>
 			<include>-I"{0}"</include>
-			<version>-fversion</version>
-			<debug>-fdebug</debug>
-			<unittest>-funittest</unittest>
+			<version>-d-version</version>
+			<debug>-d-debug</debug>
+			<unittest>-unittest</unittest>
+			<ddFlag>-D</ddFlag>
+			<ddMacroDefinition>"{0}"</ddMacroDefinition>
+			<ddDir>"-Dd{0}"</ddDir>
 		</Patterns>
 		<DebugArgs>
 			<CompilerArg>-c "$src" -debug -o "$obj" $includes -g</CompilerArg>
@@ -67,7 +73,7 @@
 			<gdcLibPrefixing>true</gdcLibPrefixing>
 		</DebugArgs>
 		<ReleaseArgs>
-			<CompilerArg>-c "$src" -o "$obj" $includes -frelease -O3</CompilerArg>
+			<CompilerArg>-c "$src" -o "$obj" $includes -release -O3</CompilerArg>
 			<LinkerArgs>rcs "$target" $objs</LinkerArgs>
 			<gdcLibPrefixing>true</gdcLibPrefixing>
 		</ReleaseArgs>
