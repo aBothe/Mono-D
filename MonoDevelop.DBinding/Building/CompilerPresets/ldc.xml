@@ -11,6 +11,9 @@
 			<version>-fversion</version>
 			<debug>-fdebug</debug>
 			<unittest>-funittest</unittest>
+			<ddFlag></ddFlag>
+			<ddMacroDefinition>"-fdoc-inc={0}"</ddMacroDefinition>
+			<ddDir>"-fdoc-dir={0}"</ddDir>
 		</Patterns>
 		<DebugArgs>
 			<CompilerArg>-c "$src" -o "$obj" $includes -g</CompilerArg>

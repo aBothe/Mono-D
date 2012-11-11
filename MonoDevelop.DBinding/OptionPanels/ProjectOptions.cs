@@ -66,6 +66,7 @@ namespace MonoDevelop.D.OptionPanels
 			text_BinDirectory.Text = config.OutputDirectory;
 			text_TargetFile.Text = config.Output;
 			text_ObjectsDirectory.Text = config.ObjectDirectory;
+			text_DDocDir.Text = config.DDocDirectory;
 
 			if(config.CustomDebugIdentifiers==null)
 				text_debugConstants.Text = "";
@@ -142,6 +143,7 @@ namespace MonoDevelop.D.OptionPanels
 			configuration.OutputDirectory = text_BinDirectory.Text;
 			configuration.Output = text_TargetFile.Text;
 			configuration.ObjectDirectory = text_ObjectsDirectory.Text;
+			configuration.DDocDirectory = text_DDocDir.Text;
 			
 			if (combo_ProjectType.GetActiveIter (out iter))
 				configuration.CompileTarget = (DCompileTarget)model_compileTarget.GetValue (iter, 1);

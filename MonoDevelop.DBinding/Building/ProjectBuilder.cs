@@ -489,26 +489,48 @@ namespace MonoDevelop.D.Building
 			}
 		}
 
-		public static string GenAdditionalAttributes(LinkTargetConfiguration linkTargetCfg, DProjectConfiguration cfg)
+		public static string GenAdditionalAttributes (LinkTargetConfiguration linkTargetCfg, DProjectConfiguration cfg)
 		{
-			var sb = new StringBuilder();
+			var sb = new StringBuilder ();
+			var p = linkTargetCfg.Patterns;
 
 			if (cfg.UnittestMode)
-				sb.Append(linkTargetCfg.Patterns.UnittestFlag+" ");
+				sb.Append (p.UnittestFlag + " ");
 
-			if (cfg.CustomDebugIdentifiers != null && cfg.CustomVersionIdentifiers.Length!=0)
+			if (cfg.CustomDebugIdentifiers != null && cfg.CustomVersionIdentifiers.Length != 0)
 				foreach (var id in cfg.CustomDebugIdentifiers)
-					sb.Append(linkTargetCfg.Patterns.DebugDefinition+"="+id+" ");
+					sb.Append (p.DebugDefinition + "=" + id + " ");
 
 			if (cfg.DebugLevel > 0)
-				sb.Append(linkTargetCfg.Patterns.DebugDefinition+"="+cfg.DebugLevel+" ");
+				sb.Append (p.DebugDefinition + "=" + cfg.DebugLevel + " ");
 
 			if (cfg.DebugMode)
-				sb.Append(linkTargetCfg.Patterns.DebugDefinition+" ");
+				sb.Append (p.DebugDefinition + " ");
 
-			if (cfg.CustomVersionIdentifiers!=null && cfg.CustomVersionIdentifiers.Length!=0)
+			if (cfg.CustomVersionIdentifiers != null && cfg.CustomVersionIdentifiers.Length != 0)
 				foreach (var id in cfg.CustomVersionIdentifiers)
-					sb.Append(linkTargetCfg.Patterns.VersionDefinition+"="+id+" ");
+					sb.Append (p.VersionDefinition + "=" + id + " ");
+
+			// DDoc handling
+			var ddocFiles = new List<string> ();
+			var files = cfg.Project.GetItemFiles (true);
+			foreach (var f in files)
+				if (f.Extension.EndsWith (".ddoc", StringComparison.OrdinalIgnoreCase))
+					ddocFiles.Add (f);
+
+			if (ddocFiles.Count != 0) {
+				sb.Append(p.EnableDDocFlag+" ");
+
+				foreach(var ddoc in ddocFiles){
+					sb.AppendFormat(p.DDocDefinitionFile,ddoc);
+					sb.Append(" ");
+				}
+
+				sb.AppendFormat(p.DDocExportDirectory,Path.IsPathRooted(cfg.DDocDirectory)?
+				                cfg.DDocDirectory : 
+				              	(new FilePath(cfg.DDocDirectory).ToAbsolute(cfg.Project.BaseDirectory)).ToString());
+				sb.Append(" ");
+			}
 
 			return sb.ToString();
 		}

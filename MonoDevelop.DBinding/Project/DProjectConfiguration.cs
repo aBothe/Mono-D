@@ -31,6 +31,8 @@ namespace MonoDevelop.D
 		public List<string> ExtraLibraries = new List<string> ();
 		[ItemProperty("ObjectsDirectory", DefaultValue="obj")]
 		public string ObjectDirectory = "obj";
+		[ItemProperty("DDocDirectory", DefaultValue = "doc")]
+		public string DDocDirectory = "doc";
 
 		/// <summary>
 		/// Returns all libs that are included by default both by the compiler and this specific build config
@@ -104,6 +106,7 @@ namespace MonoDevelop.D
 			DebugLevel = conf.DebugLevel;
 			gVersionIds = conf.gVersionIds;
 			//DebugMode = conf.DebugMode;
+			DDocDirectory = conf.DDocDirectory;
 
             ExtraLibraries.Clear();
             ExtraLibraries.AddRange(conf.ExtraLibraries);

@@ -331,6 +331,7 @@ namespace MonoDevelop.D.Building
 	/// </summary>
 	public class CmdLineArgumentPatterns
 	{
+		// The patterns will be initialized with the dmd specific
 		/// <summary>
 		/// Describes how each .obj/.o file shall be enumerated in the $objs linking macro
 		/// </summary>
@@ -343,6 +344,11 @@ namespace MonoDevelop.D.Building
 		public string DebugDefinition = "-debug";
 		public string UnittestFlag = "-unittest";
 
+		public string EnableDDocFlag = "-D";
+		public string DDocDefinitionFile = "\"{0}\""; // for gdc it's "-fdoc-inc="
+		public string DDocExportDirectory = "\"-Dd{0}\"";
+		//(probably TODO:) Handle -Df parameter?
+
 		public void CopyFrom(CmdLineArgumentPatterns c)
 		{
 			ObjectFileLinkPattern = c.ObjectFileLinkPattern;
@@ -350,6 +356,9 @@ namespace MonoDevelop.D.Building
 			VersionDefinition = c.VersionDefinition;
 			DebugDefinition = c.DebugDefinition;
 			UnittestFlag = c.UnittestFlag;
+			EnableDDocFlag = c.EnableDDocFlag;
+			DDocDefinitionFile = c.DDocDefinitionFile;
+			DDocExportDirectory = c.DDocExportDirectory;
 		}
 
 		public void SaveTo(XmlWriter x)
@@ -373,6 +382,18 @@ namespace MonoDevelop.D.Building
 			x.WriteStartElement("unittest");
 			x.WriteCData(UnittestFlag);
 			x.WriteEndElement();
+
+			x.WriteStartElement("ddFlag");
+			x.WriteCData(EnableDDocFlag);
+			x.WriteEndElement();
+
+			x.WriteStartElement("ddMacroDefinition");
+			x.WriteCData(DDocDefinitionFile);
+			x.WriteEndElement();
+
+			x.WriteStartElement("ddDir");
+			x.WriteCData(DDocExportDirectory);
+			x.WriteEndElement();
 		}
 
 		public void ReadFrom(XmlReader x)
@@ -394,6 +415,15 @@ namespace MonoDevelop.D.Building
 						break;
 					case "unittest":
 						UnittestFlag = x.ReadString();
+						break;
+					case "ddFlag":
+						EnableDDocFlag = x.ReadString();
+						break;
+					case "ddMacroDefinition":
+						DDocDefinitionFile = x.ReadString();
+						break;
+					case "ddDir":
+						DDocExportDirectory = x.ReadString();
 						break;
 				}
 		}
