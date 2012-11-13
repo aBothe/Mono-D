@@ -409,10 +409,23 @@ namespace MonoDevelop.D
             return cfg.OutputDirectory.IsAbsolute ? cfg.OutputDirectory.Combine(cfg.CompiledOutputName) : cfg.OutputDirectory.Combine(cfg.CompiledOutputName).ToAbsolute(BaseDirectory);
 		}
 
+		static List<string> alreadyBuiltProjects = new List<string>();
 		protected override BuildResult DoBuild (IProgressMonitor monitor, ConfigurationSelector configuration)
 		{
 			// Handle pending events to ensure that files get saved right before the project is built
 			DispatchService.RunPendingEvents ();
+			
+			// Build projects th
+			if(alreadyBuiltProjects.Contains(ItemId))
+				return new BuildResult() { FailedBuildCount = 1, CompilerOutput="Circular dependency detected!" };
+			
+			alreadyBuiltProjects.Add(ItemId);
+			try{
+				foreach(var prj in DependingProjects)
+					if(prj.NeedsBuilding(configuration))
+						prj.DoBuild(monitor, configuration);
+			}finally
+				alreadyBuiltProjects.Remove(ItemId);
 
 			return ProjectBuilder.CompileProject (monitor, this, configuration);
 		}
@@ -426,7 +439,7 @@ namespace MonoDevelop.D
 				return true;
 
 			foreach (var f in Files) {
-				if (f.BuildAction != BuildAction.Compile)
+				if (f.BuildAction != BuildAction.Compile) //TODO: What if one file changed its properties?
 					continue;
 
 				if (!File.Exists (f.LastGenOutput) || 
@@ -434,6 +447,8 @@ namespace MonoDevelop.D
 					LastModificationTimes [f] != File.GetLastWriteTime (f.FilePath))
 					return true;
 			}
+			
+			//TODO: What if compilation parameters changed? / How to detect this?
 
 			return false;
 		}
