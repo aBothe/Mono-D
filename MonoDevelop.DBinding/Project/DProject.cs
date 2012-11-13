@@ -415,7 +415,7 @@ namespace MonoDevelop.D
 			// Handle pending events to ensure that files get saved right before the project is built
 			DispatchService.RunPendingEvents ();
 			
-			// Build projects th
+			// Build projects this project is depending on
 			if(alreadyBuiltProjects.Contains(ItemId))
 				return new BuildResult() { FailedBuildCount = 1, CompilerOutput="Circular dependency detected!" };
 			
