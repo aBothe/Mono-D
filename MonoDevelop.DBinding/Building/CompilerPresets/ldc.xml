@@ -68,7 +68,7 @@
 			<ddDir>"-Dd{0}"</ddDir>
 		</Patterns>
 		<DebugArgs>
-			<CompilerArg>-c "$src" -debug -o "$obj" $includes -g</CompilerArg>
+			<CompilerArg>-c "$src" -o "$obj" $includes -g</CompilerArg>
 			<LinkerArgs>rcs "$target" $objs</LinkerArgs>
 			<gdcLibPrefixing>true</gdcLibPrefixing>
 		</DebugArgs>
