@@ -472,7 +472,7 @@ namespace MonoDevelop.D.Building
 
 		public static IEnumerable<string> GetLibraries(DProjectConfiguration projCfg, BuildConfiguration buildConfig)
 		{
-			var libraries = (IEnumerable<string>)FillInMacros(projCfg.ReferencedLibraries, 
+			var libraries = (IEnumerable<string>)FillInMacros(projCfg.GetReferencedLibraries(projCfg.Selector),
 				new PrjPathMacroProvider { slnPath = projCfg.Project.ParentSolution.BaseDirectory });
 
 			if (buildConfig.EnableGDCLibPrefixing)

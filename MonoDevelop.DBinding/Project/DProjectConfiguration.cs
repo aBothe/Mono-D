@@ -37,24 +37,23 @@ namespace MonoDevelop.D
 		/// <summary>
 		/// Returns all libs that are included by default both by the compiler and this specific build config
  		/// </summary>
-		public IEnumerable<string> ReferencedLibraries
+ 		public IEnumerable<string> GetReferencedLibraries(ConfigurationSelector configSelector)
 		{
-			get
+			foreach (var i in Project.Compiler.DefaultLibraries)
+				yield return i;
+			foreach (var i in ExtraLibraries)
+				yield return i;
+			
+			bool takeDefSelector = configSelector == null;
+			foreach (var dep in DProject.GetSortedProjectDependencies(Project))
 			{
-				foreach (var i in Project.Compiler.DefaultLibraries)
-					yield return i;
-				foreach (var i in ExtraLibraries)
-					yield return i;
+				if(takeDefSelector)
+					configSelector = dep.DefaultConfiguration.Selector;
+				
+				var activeConfig = dep.GetConfiguration(configSelector) as DProjectConfiguration;
 
-				foreach (var dep in DProject.GetSortedProjectDependencies(Project))
-				{
-					var selector= dep.ParentSolution.DefaultConfigurationSelector;
-
-					var activeConfig = dep.GetConfiguration(selector) as DProjectConfiguration;
-
-					if (activeConfig != null && activeConfig.CompileTarget == DCompileTarget.StaticLibrary)
-						yield return dep.GetOutputFileName(selector);
-				}
+				if (activeConfig != null && activeConfig.CompileTarget == DCompileTarget.StaticLibrary)
+					yield return dep.GetOutputFileName(configSelector);
 			}
 		}
 
