@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using D_Parser.Dom;
 using D_Parser.Dom.Statements;
 using D_Parser.Resolver.TypeResolution;
@@ -101,14 +102,12 @@ namespace MonoDevelop.D.Gui
 					dontJumpToDeclaration = true;
                     TreePath parentPath = path.Copy();
                     parentPath.Up();
-
-                    if (!TreeView.GetRowExpanded(parentPath))
-                    {
-                        lastExpanded = parentPath;
-                    }
+					if (!TreeView.GetRowExpanded(parentPath))
+					{
+						lastExpanded = parentPath.Copy();
+					}
 
                     TreeView.ExpandToPath(path);
-                    TreeView.ScrollToCell(path, TreeView.GetColumn(0), true, 0, 0);
                     TreeView.Selection.SelectIter(iter);
 					dontJumpToDeclaration = false;
 
@@ -154,7 +153,7 @@ namespace MonoDevelop.D.Gui
 			refillOutlineStoreId = 0;
 		}
 
-		bool RefillOutlineStore()
+		public bool RefillOutlineStore()
 		{
 			DispatchService.AssertGuiThread();
 			Gdk.Threads.Enter();
@@ -338,14 +337,22 @@ namespace MonoDevelop.D.Gui
 
         private string FunctionParamsToString(List<INode> parameters)
         {
-            List<string> paramsStr = new List<string>(parameters.Count);
+			StringBuilder sb = new StringBuilder();
+			int i = 0;
 
-            foreach (var param in parameters)
-            {
-                paramsStr.Add(param.Type + " " + param.Name);
-            }
-            
-            return String.Join(", ", paramsStr.ToArray());
+			foreach( INode node in parameters)
+			{
+				if(node == null) continue;
+
+				sb.Append(node.Type);
+				sb.Append(" ");
+				sb.Append(node.Name);
+
+				if(i++ < parameters.Count)
+					sb.Append(", ");
+			}
+
+			return sb.ToString();
         }
 
 		void JumpToDeclaration(bool focusEditor)

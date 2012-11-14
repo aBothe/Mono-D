@@ -55,6 +55,11 @@ namespace MonoDevelop.D.Building
 
 			// Init global parse cache
 			_instance.UpdateParseCachesAsync();
+			_instance.Outline.ExpandAll = false;
+			_instance.Outline.GrayOutNonPublic = true;
+			_instance.Outline.ShowFuncParams = true;
+			_instance.Outline.ShowFuncVariables = false;
+			_instance.Outline.ShowTypes = false;
 		}
 
 		public void Save ()

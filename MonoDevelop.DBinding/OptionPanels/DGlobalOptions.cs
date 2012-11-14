@@ -25,6 +25,11 @@ namespace MonoDevelop.D.OptionPanels
 		{
 			text_ManualBaseUrl.Text = D.Refactoring.DDocumentationLauncher.DigitalMarsUrl;
 			check_EnableUFCSCompletion.Active = DCompilerService.Instance.CompletionOptions.ShowUFCSItems;
+			check_ShowFunctionParams.Active = DCompilerService.Instance.Outline.ShowFuncParams;
+			check_ShowFunctionVariables.Active = DCompilerService.Instance.Outline.ShowFuncVariables;
+			check_ShowTypes.Active = DCompilerService.Instance.Outline.ShowTypes;
+			check_GrayOutNonPublic.Active = DCompilerService.Instance.Outline.GrayOutNonPublic;
+			check_ExpandAll.Active = DCompilerService.Instance.Outline.ExpandAll;
 		}
 
 		public bool Validate ()
@@ -35,8 +40,16 @@ namespace MonoDevelop.D.OptionPanels
 		public bool Store ()
 		{
 			Refactoring.DDocumentationLauncher.DigitalMarsUrl = text_ManualBaseUrl.Text;
+
 			DCompilerService.Instance.CompletionOptions.ShowUFCSItems = check_EnableUFCSCompletion.Active;
-			
+			DCompilerService.Instance.Outline.ShowFuncParams = check_ShowFunctionParams.Active;
+			DCompilerService.Instance.Outline.ShowFuncVariables = check_ShowFunctionVariables.Active;
+			DCompilerService.Instance.Outline.GrayOutNonPublic = check_GrayOutNonPublic.Active;
+			DCompilerService.Instance.Outline.ShowTypes = check_ShowTypes.Active;
+			DCompilerService.Instance.Outline.ExpandAll = check_ExpandAll.Active;
+
+			Ide.IdeApp.Workbench.ActiveDocument.ReparseDocument();
+
 			return true;
 		}
 	}
