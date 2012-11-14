@@ -1,81 +1,56 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Compiler>
+	<!-- https://github.com/ldc-developers/ldc/blob/master/driver/cl_options.cpp -->
 	<VersionId>LDC</VersionId>
+	<CompilerCommand>ldc2</CompilerCommand>
+	<gdcLibPrefixing>true</gdcLibPrefixing>
+	
+	<Patterns>
+		<obj>"{0}"</obj>
+		<include>-I"{0}"</include>
+		<version>-d-version</version>
+		<debug>-d-debug</debug>
+		<unittest>-unittest</unittest>
+		<ddFlag>-D</ddFlag>
+		<ddMacroDefinition>"{0}"</ddMacroDefinition>
+		<ddDir>"-Dd{0}"</ddDir>
+	</Patterns>
 
 	<TargetConfiguration Target="Executable">
-		<CompilerCommand>ldc2</CompilerCommand>
 		<LinkerCommand>ldc2</LinkerCommand>
-		<Patterns>
-			<obj>"{0}"</obj>
-			<include>-I"{0}"</include>
-			<version>-d-version</version>
-			<debug>-d-debug</debug>
-			<unittest>-unittest</unittest>
-			<ddFlag>-D</ddFlag>
-			<ddMacroDefinition>"{0}"</ddMacroDefinition>
-			<ddDir>"-Dd{0}"</ddDir>
-		</Patterns>
 		<DebugArgs>
-			<CompilerArg>-c "$src" -o "$obj" $includes -g</CompilerArg>
-			<LinkerArgs>-o "$target" -g $objs $libs</LinkerArgs>
-			<OneStepBuildArgs>-O0 -g $sources $libs $includes -o "$exe"</OneStepBuildArgs>
-			<gdcLibPrefixing>true</gdcLibPrefixing>
+			<CompilerArg>-c "$src" "-of$obj" $includes -g</CompilerArg>
+			<LinkerArgs>"-of$target" -g $objs $libs</LinkerArgs>
+			<OneStepBuildArgs>-g $sources $libs $includes "-od$objectsDirectory" "-of$exe"</OneStepBuildArgs>
 		</DebugArgs>
 		<ReleaseArgs>
-			<CompilerArg>-c "$src" -release -o "$obj" $includes -O3</CompilerArg>
-			<LinkerArgs>-o "$target" -release -O3 $objs $libs</LinkerArgs>
-			<OneStepBuildArgs>-O3 -release $sources $libs $includes -o "$exe"</OneStepBuildArgs>
-			<gdcLibPrefixing>true</gdcLibPrefixing>
+			<CompilerArg>-c "$src" -release "-of$obj" $includes -O3</CompilerArg>
+			<LinkerArgs>"-of$target" -release -O3 $objs $libs</LinkerArgs>
+			<OneStepBuildArgs>-O3 -release $sources $libs $includes "-od$objectsDirectory" "-of$exe"</OneStepBuildArgs>
 		</ReleaseArgs>
 	</TargetConfiguration>
 
 	<TargetConfiguration Target="SharedLibrary">
-		<CompilerCommand>ldc2</CompilerCommand>
 		<LinkerCommand>ldc2</LinkerCommand>
-		<Patterns>
-			<obj>"{0}"</obj>
-			<include>-I"{0}"</include>
-			<version>-d-version</version>
-			<debug>-d-debug</debug>
-			<unittest>-unittest</unittest>
-			<ddFlag>-D</ddFlag>
-			<ddMacroDefinition>"{0}"</ddMacroDefinition>
-			<ddDir>"-Dd{0}"</ddDir>
-		</Patterns>
 		<DebugArgs>
-			<CompilerArg>-fPIC -c "$src" -o "$obj" $includes -g</CompilerArg>
-			<LinkerArgs>-o "$target" -g $objs $libs -shared</LinkerArgs>
-			<gdcLibPrefixing>true</gdcLibPrefixing>
+			<CompilerArg>-fPIC -c "$src" "-of$obj" $includes -g</CompilerArg>
+			<LinkerArgs>"-o$target" -g $objs $libs -shared</LinkerArgs>
 		</DebugArgs>
 		<ReleaseArgs>
-			<CompilerArg>-fPIC -release -c "$src" -o "$obj" $includes -O3</CompilerArg>
-			<LinkerArgs>-o "$target" -release -O3 $objs $libs -shared</LinkerArgs>
-			<gdcLibPrefixing>true</gdcLibPrefixing>
+			<CompilerArg>-fPIC -release -c "$src" "-of$obj" $includes -O3</CompilerArg>
+			<LinkerArgs>"-of$target" -release -O3 $objs $libs -shared</LinkerArgs>
 		</ReleaseArgs>
 	</TargetConfiguration>
 
 	<TargetConfiguration Target="StaticLibrary">
-		<CompilerCommand>ldc2</CompilerCommand>
 		<LinkerCommand>ar</LinkerCommand>
-		<Patterns>
-			<obj>"{0}"</obj>
-			<include>-I"{0}"</include>
-			<version>-d-version</version>
-			<debug>-d-debug</debug>
-			<unittest>-unittest</unittest>
-			<ddFlag>-D</ddFlag>
-			<ddMacroDefinition>"{0}"</ddMacroDefinition>
-			<ddDir>"-Dd{0}"</ddDir>
-		</Patterns>
 		<DebugArgs>
-			<CompilerArg>-c "$src" -o "$obj" $includes -g</CompilerArg>
+			<CompilerArg>-c "$src" "-of$obj" $includes -g</CompilerArg>
 			<LinkerArgs>rcs "$target" $objs</LinkerArgs>
-			<gdcLibPrefixing>true</gdcLibPrefixing>
 		</DebugArgs>
 		<ReleaseArgs>
-			<CompilerArg>-c "$src" -o "$obj" $includes -release -O3</CompilerArg>
+			<CompilerArg>-c "$src" "-of$obj" $includes -release -O3</CompilerArg>
 			<LinkerArgs>rcs "$target" $objs</LinkerArgs>
-			<gdcLibPrefixing>true</gdcLibPrefixing>
 		</ReleaseArgs>
 	</TargetConfiguration>
 </Compiler>

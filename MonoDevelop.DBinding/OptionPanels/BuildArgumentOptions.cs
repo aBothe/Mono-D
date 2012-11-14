@@ -64,7 +64,6 @@ namespace MonoDevelop.D.OptionPanels
 			text_CompilerArguments.Text = bc.CompilerArguments;
 			text_LinkerArguments.Text = bc.LinkerArguments;
 			text_OneStepBuildArguments.Text = bc.OneStepBuildArguments;
-			check_enableLibPrefixing.Active = bc.EnableGDCLibPrefixing;
 		}
 		
 		void SaveToDict ()
@@ -73,7 +72,6 @@ namespace MonoDevelop.D.OptionPanels
 				_currArgCfg.CompilerArguments = text_CompilerArguments.Text;
 				_currArgCfg.LinkerArguments = text_LinkerArguments.Text;
 				_currArgCfg.OneStepBuildArguments = text_OneStepBuildArguments.Text;
-				_currArgCfg.EnableGDCLibPrefixing = check_enableLibPrefixing.Active;
 			}
 		}
 		

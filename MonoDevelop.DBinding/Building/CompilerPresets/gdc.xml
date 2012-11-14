@@ -1,81 +1,56 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Compiler>
+	<!-- https://bitbucket.org/goshawk/gdc/wiki/UserDocumentation -->
 	<VersionId>GNU</VersionId>
+	<CompilerCommand>gdc</CompilerCommand>
+	<gdcLibPrefixing>true</gdcLibPrefixing>
+	
+	<Patterns>
+		<obj>"{0}"</obj>
+		<include>-I"{0}"</include>
+		<version>-fversion</version>
+		<debug>-fdebug</debug>
+		<unittest>-funittest</unittest>
+		<ddFlag></ddFlag>
+		<ddMacroDefinition>"-fdoc-inc={0}"</ddMacroDefinition>
+		<ddDir>"-fdoc-dir={0}"</ddDir>
+	</Patterns>
 
 	<TargetConfiguration Target="Executable">
-		<CompilerCommand>gdc</CompilerCommand>
 		<LinkerCommand>gdc</LinkerCommand>
-		<Patterns>
-			<obj>"{0}"</obj>
-			<include>-I"{0}"</include>
-			<version>-fversion</version>
-			<debug>-fdebug</debug>
-			<unittest>-funittest</unittest>
-			<ddFlag></ddFlag>
-			<ddMacroDefinition>"-fdoc-inc={0}"</ddMacroDefinition>
-			<ddDir>"-fdoc-dir={0}"</ddDir>
-		</Patterns>
 		<DebugArgs>
 			<CompilerArg>-c "$src" -o "$obj" $includes -g</CompilerArg>
 			<LinkerArgs>-o "$target" -g $objs $libs</LinkerArgs>
-      <OneStepBuildArgs>-O0 -g $sources $libs $includes -o "$exe"</OneStepBuildArgs>
-      <gdcLibPrefixing>true</gdcLibPrefixing>
+		 	<OneStepBuildArgs>-g $sources $libs $includes "-fod=$objectsDirectory" -o "$exe"</OneStepBuildArgs>
 		</DebugArgs>
 		<ReleaseArgs>
 			<CompilerArg>-c "$src" -frelease -o "$obj" $includes -O3</CompilerArg>
 			<LinkerArgs>-o "$target" -frelease -O3 $objs $libs</LinkerArgs>
-      <OneStepBuildArgs>-O3 -frelease $sources $libs $includes -o "$exe"</OneStepBuildArgs>
-      <gdcLibPrefixing>true</gdcLibPrefixing>
+	  		<OneStepBuildArgs>-O3 -frelease $sources $libs $includes "-fod=$objectsDirectory" -o "$exe"</OneStepBuildArgs>
 		</ReleaseArgs>
 	</TargetConfiguration>
 	
 	<TargetConfiguration Target="SharedLibrary">
-		<CompilerCommand>gdc</CompilerCommand>
 		<LinkerCommand>gdc</LinkerCommand>
-		<Patterns>
-			<obj>"{0}"</obj>
-			<include>-I"{0}"</include>
-			<version>-fversion</version>
-			<debug>-fdebug</debug>
-			<unittest>-funittest</unittest>
-			<ddFlag></ddFlag>
-			<ddMacroDefinition>"-fdoc-inc={0}"</ddMacroDefinition>
-			<ddDir>"-fdoc-dir={0}"</ddDir>
-		</Patterns>
 		<DebugArgs>
 			<CompilerArg>-fPIC -c "$src" -o "$obj" $includes -g</CompilerArg>
 			<LinkerArgs>-o "$target" -g $objs $libs -shared</LinkerArgs>
-			<gdcLibPrefixing>true</gdcLibPrefixing>
 		</DebugArgs>
 		<ReleaseArgs>
 			<CompilerArg>-fPIC -frelease -c "$src" -o "$obj" $includes -O3</CompilerArg>
 			<LinkerArgs>-o "$target" -frelease -O3 $objs $libs -shared</LinkerArgs>
-			<gdcLibPrefixing>true</gdcLibPrefixing>
 		</ReleaseArgs>
 	</TargetConfiguration>
 	
 	<TargetConfiguration Target="StaticLibrary">
-		<CompilerCommand>gdc</CompilerCommand>
 		<LinkerCommand>ar</LinkerCommand>
-		<Patterns>
-			<obj>"{0}"</obj>
-			<include>-I"{0}"</include>
-			<version>-fversion</version>
-			<debug>-fdebug</debug>
-			<unittest>-funittest</unittest>
-			<ddFlag></ddFlag>
-			<ddMacroDefinition>"-fdoc-inc={0}"</ddMacroDefinition>
-			<ddDir>"-fdoc-dir={0}"</ddDir>
-		</Patterns>
 		<DebugArgs>
 			<CompilerArg>-c "$src" -o "$obj" $includes -g</CompilerArg>
 			<LinkerArgs>rcs "$target" $objs</LinkerArgs>
-			<gdcLibPrefixing>true</gdcLibPrefixing>
 		</DebugArgs>
 		<ReleaseArgs>
 			<CompilerArg>-c "$src" -o "$obj" $includes -frelease -O3</CompilerArg>
 			<LinkerArgs>rcs "$target" $objs</LinkerArgs>
-			<gdcLibPrefixing>true</gdcLibPrefixing>
 		</ReleaseArgs>
 	</TargetConfiguration>
 </Compiler>

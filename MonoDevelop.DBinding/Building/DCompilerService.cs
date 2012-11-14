@@ -70,7 +70,7 @@ namespace MonoDevelop.D.Building
 		}
 
 		public static string ObjectExtension {
-			get{ return OS.IsWindows ? ".obj" : ".o";}	
+			get{ return OS.IsWindows ? ".obj" : ".o";} //FIXME: Same here. ".o" object files may be linked in mingw environments..
 		}
 
 		public string DefaultCompiler;
@@ -230,7 +230,7 @@ namespace MonoDevelop.D.Building
 	public class OS
 	{
 		public static bool IsWindows {
-			get{ return !IsMac && !IsLinux;}	
+			get{ return !IsMac && !IsLinux;} // acceptable here..	
 		}
 		
 		public static bool IsMac {

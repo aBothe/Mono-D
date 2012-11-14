@@ -18,7 +18,12 @@ namespace MonoDevelop.D.Building
 			get { return ParseCache.FallbackPath; }
 			set { ParseCache.FallbackPath = value; }
 		}
-		public string Vendor {get;set;}
+		
+		public string Vendor {get;internal set;}
+		public string SourceCompilerCommand;
+		public readonly CmdLineArgumentPatterns ArgumentPatterns = new CmdLineArgumentPatterns();
+		public bool EnableGDCLibPrefixing = false;
+		
 		public List<string> DefaultLibraries = new List<string>();
 		public readonly Dictionary<DCompileTarget, LinkTargetConfiguration> LinkTargetConfigurations = new Dictionary<DCompileTarget, LinkTargetConfiguration> ();
 		/// <summary>
@@ -57,27 +62,6 @@ namespace MonoDevelop.D.Building
 				return ltc;
 
 			return LinkTargetConfigurations [Target] = new LinkTargetConfiguration { TargetType = Target };
-		}
-
-		public void SetAllCompilerBuildArgs (string NewCompilerArguments, bool AffectDebugArguments)
-		{
-			foreach (var kv in LinkTargetConfigurations)
-				kv.Value.GetArguments (AffectDebugArguments).CompilerArguments = NewCompilerArguments;
-		}
-
-		/// <summary>
-		/// Overrides all compiler command strings of all LinkTargetConfigurations
-		/// </summary>
-		public void SetAllCompilerCommands (string NewCompilerPath)
-		{
-			foreach (var kv in LinkTargetConfigurations)
-				kv.Value.Compiler = NewCompilerPath;
-		}
-
-		public void SetAllLinkerCommands (string NewLinkerPath)
-		{
-			foreach (var kv in LinkTargetConfigurations)
-				kv.Value.Linker = NewLinkerPath;
 		}
 		#endregion
 
@@ -133,6 +117,9 @@ namespace MonoDevelop.D.Building
 		{
 			Vendor = o.Vendor;
 			BinPath = o.BinPath;
+			SourceCompilerCommand = o.SourceCompilerCommand;
+			ArgumentPatterns.CopyFrom(o.ArgumentPatterns);
+			EnableGDCLibPrefixing = o.EnableGDCLibPrefixing;
 
 			ParseCache.ParsedDirectories.Clear ();
 			if (o.ParseCache.ParsedDirectories != null)
@@ -165,7 +152,7 @@ namespace MonoDevelop.D.Building
 					s = x.ReadSubtree ();
 
 					var t = new LinkTargetConfiguration ();
-					if(t.LoadFrom (s))
+					if(t.LoadFrom (this,s))
 						LinkTargetConfigurations [t.TargetType] = t;
 
 					s.Close ();
@@ -194,6 +181,20 @@ namespace MonoDevelop.D.Building
 				case "VersionId":
 					PredefinedVersionConstant = x.ReadString();
 					break;
+					
+				case "CompilerCommand":
+					SourceCompilerCommand = x.ReadString ();
+					break;
+					
+				case "Patterns":
+					s = x.ReadSubtree ();
+					ArgumentPatterns.ReadFrom (s);
+					s.Close ();
+					break;
+					
+				case "gdcLibPrefixing":
+					EnableGDCLibPrefixing = x.ReadString() == "true";
+					break;
 				}
 		}
 
@@ -206,6 +207,18 @@ namespace MonoDevelop.D.Building
 			x.WriteStartElement ("VersionId");
 			x.WriteCData (PredefinedVersionConstant);
 			x.WriteEndElement ();
+			
+			x.WriteStartElement ("CompilerCommand");
+			x.WriteCData (SourceCompilerCommand);
+			x.WriteEndElement ();
+			
+			x.WriteStartElement ("Patterns");
+			ArgumentPatterns.SaveTo(x);
+			x.WriteEndElement ();
+			
+			x.WriteStartElement("gdcLibPrefixing");
+			x.WriteString(EnableGDCLibPrefixing ? "true" : "false");
+			x.WriteEndElement();
 
 			foreach (var kv in LinkTargetConfigurations) {
 				x.WriteStartElement ("TargetConfiguration");
@@ -237,10 +250,7 @@ namespace MonoDevelop.D.Building
 	public class LinkTargetConfiguration
 	{
 		public DCompileTarget TargetType;
-		public string Compiler;
 		public string Linker;
-
-		public readonly CmdLineArgumentPatterns Patterns = new CmdLineArgumentPatterns();
 
 		public BuildConfiguration DebugArguments = new BuildConfiguration ();
 		public BuildConfiguration ReleaseArguments = new BuildConfiguration ();
@@ -253,10 +263,7 @@ namespace MonoDevelop.D.Building
 		public void CopyFrom (LinkTargetConfiguration o)
 		{
 			TargetType = o.TargetType;
-			Compiler = o.Compiler;
 			Linker = o.Linker;
-
-			Patterns.CopyFrom(o.Patterns);
 
 			DebugArguments.CopyFrom (o.DebugArguments);
 			ReleaseArguments.CopyFrom (o.ReleaseArguments);
@@ -266,16 +273,8 @@ namespace MonoDevelop.D.Building
 		{
 			x.WriteAttributeString ("Target", TargetType.ToString ());
 
-			x.WriteStartElement ("CompilerCommand");
-			x.WriteCData (Compiler);
-			x.WriteEndElement ();
-
 			x.WriteStartElement ("LinkerCommand");
 			x.WriteCData (Linker);
-			x.WriteEndElement ();
-
-			x.WriteStartElement ("Patterns");
-			Patterns.SaveTo(x);
 			x.WriteEndElement ();
 
 			x.WriteStartElement ("DebugArgs");
@@ -287,7 +286,7 @@ namespace MonoDevelop.D.Building
 			x.WriteEndElement ();
 		}
 
-		public bool LoadFrom (System.Xml.XmlReader x)
+		public bool LoadFrom (DCompilerConfiguration cmpCfg,System.Xml.XmlReader x)
 		{
 			if (x.ReadState == ReadState.Initial)
 				x.Read ();
@@ -298,25 +297,26 @@ namespace MonoDevelop.D.Building
 
 			while (x.Read())
 				switch (x.LocalName) {
+				// For backward compatibility keep on parsing this
 				case "CompilerCommand":
-					Compiler = x.ReadString ();
+					cmpCfg.SourceCompilerCommand = x.ReadString ();
 					break;
 				case "LinkerCommand":
 					Linker = x.ReadString ();
 					break;
-				case "Patterns":
+				case "Patterns": // ditto
 					var s = x.ReadSubtree ();
-					Patterns.ReadFrom (s);
+					cmpCfg.ArgumentPatterns.ReadFrom (s);
 					s.Close ();
 					break;
 				case "DebugArgs":
 					s = x.ReadSubtree ();
-					DebugArguments.ReadFrom (s);
+					DebugArguments.ReadFrom (cmpCfg, s);
 					s.Close ();
 					break;
 				case "ReleaseArgs":
 					s = x.ReadSubtree ();
-					ReleaseArguments.ReadFrom (s);
+					ReleaseArguments.ReadFrom (cmpCfg,s);
 					s.Close ();
 					break;
 				}
@@ -442,14 +442,12 @@ namespace MonoDevelop.D.Building
 		public bool SupportsOneStepBuild {
 			get { return !string.IsNullOrEmpty (OneStepBuildArguments); }
 		}
-		public bool EnableGDCLibPrefixing = false;
 		
 		public void CopyFrom (BuildConfiguration o)
 		{
 			CompilerArguments = o.CompilerArguments;
 			LinkerArguments = o.LinkerArguments;
 			OneStepBuildArguments = o.OneStepBuildArguments;
-			EnableGDCLibPrefixing = o.EnableGDCLibPrefixing;
 		}
 
 		public BuildConfiguration Clone ()
@@ -457,8 +455,7 @@ namespace MonoDevelop.D.Building
 			return new BuildConfiguration{
 				CompilerArguments=CompilerArguments,
 				LinkerArguments=LinkerArguments,
-				OneStepBuildArguments=OneStepBuildArguments,
-				EnableGDCLibPrefixing = EnableGDCLibPrefixing
+				OneStepBuildArguments=OneStepBuildArguments
 			};	
 		}
 
@@ -475,13 +472,9 @@ namespace MonoDevelop.D.Building
 			x.WriteStartElement ("OneStepBuildArgs");
 			x.WriteCData (OneStepBuildArguments);
 			x.WriteEndElement ();
-
-			x.WriteStartElement("gdcLibPrefixing");
-			x.WriteString(EnableGDCLibPrefixing ? "true" : "false");
-			x.WriteEndElement();
 		}
 
-		public void ReadFrom (XmlReader x)
+		public void ReadFrom (DCompilerConfiguration cmpCfg,XmlReader x)
 		{
 			while (x.Read())
 				switch (x.LocalName) {
@@ -494,8 +487,9 @@ namespace MonoDevelop.D.Building
 				case "OneStepBuildArgs":
 					OneStepBuildArguments = x.ReadString ();
 					break;
+				// Legacy support
 				case "gdcLibPrefixing":
-					EnableGDCLibPrefixing = x.ReadString() == "true";
+					cmpCfg.EnableGDCLibPrefixing = x.ReadString() == "true";
 					break;
 				}
 		}

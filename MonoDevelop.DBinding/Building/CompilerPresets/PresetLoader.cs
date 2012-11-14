@@ -12,7 +12,6 @@ namespace MonoDevelop.D.Building.CompilerPresets
 			{"DMD2", ConfigPresets.dmd}, //TODO: Make specific preset for dmd2/1
 			{"DMD", ConfigPresets.dmd},
 			{"GDC", ConfigPresets.gdc},
-			{"LDC", ConfigPresets.ldc},
 			{"ldc2", ConfigPresets.ldc2}
 		};
 
@@ -99,11 +98,11 @@ namespace MonoDevelop.D.Building.CompilerPresets
 		{
 			for (int i = 0; i < cfg.DefaultLibraries.Count; i++)
 				cfg.DefaultLibraries[i] = Path.ChangeExtension(cfg.DefaultLibraries[i], DCompilerService.StaticLibraryExtension);
+			cfg.SourceCompilerCommand = Path.ChangeExtension(cfg.SourceCompilerCommand, DCompilerService.ExecutableExtension);
 
 			foreach (var kv in cfg.LinkTargetConfigurations)
 			{
                 var lt = kv.Value;
-				lt.Compiler = Path.ChangeExtension(lt.Compiler, DCompilerService.ExecutableExtension);
 				lt.Linker = Path.ChangeExtension(lt.Linker,DCompilerService.ExecutableExtension);
 			}
 		}

@@ -116,12 +116,12 @@ namespace MonoDevelop.D.Building
                 BuildConfig.ExtraLinkerArguments.Trim (),
             new OneStepBuildArgumentMacroProvider
             {
-                ObjectsStringPattern = LinkTargetCfg.Patterns.ObjectFileLinkPattern,
-                IncludesStringPattern = LinkTargetCfg.Patterns.IncludePathPattern,
+                ObjectsStringPattern = Compiler.ArgumentPatterns.ObjectFileLinkPattern,
+				IncludesStringPattern = Compiler.ArgumentPatterns.IncludePathPattern,
 
                 SourceFiles = BuiltObjects,
                 Includes = FillCommonMacros(Project.IncludePaths),
-                Libraries = GetLibraries(BuildConfig,BuildArguments),
+                Libraries = GetLibraries(BuildConfig,Compiler),
 
                 RelativeTargetDirectory = BuildConfig.OutputDirectory,
                 ObjectsDirectory = BuildConfig.ObjectDirectory,
@@ -132,7 +132,7 @@ namespace MonoDevelop.D.Building
 			var stdOut = "";
 			var stdError = "";
 
-			var linkerExecutable = LinkTargetCfg.Compiler;
+			var linkerExecutable = Compiler.SourceCompilerCommand;
 			if (!Path.IsPathRooted (linkerExecutable)) {
 				linkerExecutable = Path.Combine (Compiler.BinPath, LinkTargetCfg.Linker);
 
@@ -222,7 +222,7 @@ namespace MonoDevelop.D.Building
 			// Create argument string for source file compilation.
 			var dmdArgs = FillInMacros(AdditionalCompilerAttributes + BuildArguments.CompilerArguments + " " + BuildConfig.ExtraCompilerArguments, new DCompilerMacroProvider
             {
-                IncludePathConcatPattern = LinkTargetCfg.Patterns.IncludePathPattern,
+                IncludePathConcatPattern = Compiler.ArgumentPatterns.IncludePathPattern,
                 SourceFile = f.FilePath.ToRelative(Project.BaseDirectory),
                 ObjectFile = obj,
 				Includes = FillCommonMacros(Project.IncludePaths).Union(FileLinkDirectories),
@@ -232,12 +232,12 @@ namespace MonoDevelop.D.Building
 			string stdError;
 			string stdOutput;
 
-			var compilerExecutable = LinkTargetCfg.Compiler;
+			var compilerExecutable = Compiler.SourceCompilerCommand;
 			if (!Path.IsPathRooted (compilerExecutable)) {
-				compilerExecutable = Path.Combine (Compiler.BinPath, LinkTargetCfg.Compiler);
+				compilerExecutable = Path.Combine (Compiler.BinPath, Compiler.SourceCompilerCommand);
 
 				if (!File.Exists (compilerExecutable))
-					compilerExecutable = LinkTargetCfg.Compiler;
+					compilerExecutable = Compiler.SourceCompilerCommand;
 			}
 
 			int exitCode = ExecuteCommand (compilerExecutable, dmdArgs, Project.BaseDirectory, monitor, out stdError, out stdOutput);
@@ -322,11 +322,11 @@ namespace MonoDevelop.D.Building
 			var linkArgs = FillInMacros (BuildArguments.LinkerArguments + " " + BuildConfig.ExtraLinkerArguments,
                 new DLinkerMacroProvider
                 {
-                    ObjectsStringPattern = LinkTargetCfg.Patterns.ObjectFileLinkPattern,
+                    ObjectsStringPattern = Compiler.ArgumentPatterns.ObjectFileLinkPattern,
                     Objects = BuiltObjects.ToArray (),
                     TargetFile = LinkTargetFile,
                     RelativeTargetDirectory = BuildConfig.OutputDirectory.ToRelative (Project.BaseDirectory),
-                    Libraries = GetLibraries(BuildConfig, BuildArguments)
+                    Libraries = GetLibraries(BuildConfig, Compiler)
                 },commonMacros);
 
 			var linkerOutput = "";
@@ -470,12 +470,12 @@ namespace MonoDevelop.D.Building
 			return FillInMacros(strings, commonMacros);
 		}
 
-		public static IEnumerable<string> GetLibraries(DProjectConfiguration projCfg, BuildConfiguration buildConfig)
+		public static IEnumerable<string> GetLibraries(DProjectConfiguration projCfg, DCompilerConfiguration compiler)
 		{
 			var libraries = (IEnumerable<string>)FillInMacros(projCfg.GetReferencedLibraries(projCfg.Selector),
 				new PrjPathMacroProvider { slnPath = projCfg.Project.ParentSolution.BaseDirectory });
 
-			if (buildConfig.EnableGDCLibPrefixing)
+			if (compiler.EnableGDCLibPrefixing)
 				libraries = HandleGdcSpecificLibraryReferencing(libraries, projCfg.Project.BaseDirectory);
 
 			return libraries;
@@ -485,14 +485,14 @@ namespace MonoDevelop.D.Building
 		{
 			get
 			{
-				return GenAdditionalAttributes(LinkTargetCfg,BuildConfig);
+				return GenAdditionalAttributes(Compiler,BuildConfig);
 			}
 		}
 
-		public static string GenAdditionalAttributes (LinkTargetConfiguration linkTargetCfg, DProjectConfiguration cfg)
+		public static string GenAdditionalAttributes (DCompilerConfiguration compiler, DProjectConfiguration cfg)
 		{
 			var sb = new StringBuilder ();
-			var p = linkTargetCfg.Patterns;
+			var p = compiler.ArgumentPatterns;
 
 			if (cfg.UnittestMode)
 				sb.Append (p.UnittestFlag + " ");

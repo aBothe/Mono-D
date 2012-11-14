@@ -101,11 +101,11 @@ namespace MonoDevelop.D.OptionPanels
 		#endregion
 
 		#region Save&Load
-		public void Load (DCompilerConfiguration config)
+		public void Load (DCompilerConfiguration compiler)
 		{
-			configuration = config;
+			configuration = compiler;
 
-			if (config == null) {
+			if (compiler == null) {
 				txtBinPath.Text =
 					txtCompiler.Text =
 					txtConsoleAppLinker.Text =
@@ -123,27 +123,27 @@ namespace MonoDevelop.D.OptionPanels
 			}
 			//for now, using Executable target compiler command for all targets source compiling
 			LinkTargetConfiguration targetConfig;
-			targetConfig = config.GetOrCreateTargetConfiguration (DCompileTarget.Executable);
+			targetConfig = compiler.GetOrCreateTargetConfiguration (DCompileTarget.Executable);
 			
-			txtBinPath.Text = config.BinPath;
-			
-			txtCompiler.Text = targetConfig.Compiler;
+			txtBinPath.Text = compiler.BinPath;
+			txtCompiler.Text = compiler.SourceCompilerCommand;
+			check_enableLibPrefixing.Active = compiler.EnableGDCLibPrefixing;
 			
 			//linker targets 			
-			targetConfig = config.GetOrCreateTargetConfiguration (DCompileTarget.Executable); 						
+			targetConfig = compiler.GetOrCreateTargetConfiguration (DCompileTarget.Executable); 						
 			txtConsoleAppLinker.Text = targetConfig.Linker;			
 			
-			targetConfig = config.GetOrCreateTargetConfiguration (DCompileTarget.SharedLibrary); 						
+			targetConfig = compiler.GetOrCreateTargetConfiguration (DCompileTarget.SharedLibrary); 						
 			txtSharedLibLinker.Text = targetConfig.Linker;
 			
-			targetConfig = config.GetOrCreateTargetConfiguration (DCompileTarget.StaticLibrary); 						
+			targetConfig = compiler.GetOrCreateTargetConfiguration (DCompileTarget.StaticLibrary); 						
 			txtStaticLibLinker.Text = targetConfig.Linker;
 			
-			releaseArgumentsDialog.Load (config, false);		
-			debugArgumentsDialog.Load (config, true);				
+			releaseArgumentsDialog.Load (compiler, false);		
+			debugArgumentsDialog.Load (compiler, true);				
 
-			text_DefaultLibraries.Buffer.Text = string.Join ("\n", config.DefaultLibraries);
-			text_Includes.Buffer.Text = string.Join ("\n", config.ParseCache.ParsedDirectories);
+			text_DefaultLibraries.Buffer.Text = string.Join ("\n", compiler.DefaultLibraries);
+			text_Includes.Buffer.Text = string.Join ("\n", compiler.ParseCache.ParsedDirectories);
 
 			btnMakeDefault.Active = 
 				configuration.Vendor == defaultCompilerVendor;
@@ -180,17 +180,16 @@ namespace MonoDevelop.D.OptionPanels
 				return false;
 			
 			configuration.BinPath = txtBinPath.Text;
+			configuration.SourceCompilerCommand = txtCompiler.Text;
+			configuration.EnableGDCLibPrefixing = check_enableLibPrefixing.Active;
 			
 			var targetConfig = configuration.GetOrCreateTargetConfiguration (DCompileTarget.Executable); 			
-			targetConfig.Compiler = txtCompiler.Text;
 			targetConfig.Linker = txtConsoleAppLinker.Text;
 			
 			targetConfig = configuration.GetOrCreateTargetConfiguration (DCompileTarget.SharedLibrary); 						
-			targetConfig.Compiler = txtCompiler.Text;
 			targetConfig.Linker = txtSharedLibLinker.Text;
 			
 			targetConfig = configuration.GetOrCreateTargetConfiguration (DCompileTarget.StaticLibrary); 						
-			targetConfig.Compiler = txtCompiler.Text;
 			targetConfig.Linker = txtStaticLibLinker.Text;
 			
 			releaseArgumentsDialog.Store ();			

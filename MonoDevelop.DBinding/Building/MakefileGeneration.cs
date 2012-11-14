@@ -30,7 +30,7 @@ namespace MonoDevelop.D.Building
 			var buildCommands = compiler.GetOrCreateTargetConfiguration(cfg.CompileTarget);
 			var Arguments = buildCommands.GetArguments(cfg.DebugMode);
 
-			s.AppendLine("compiler=" + buildCommands.Compiler);
+			s.AppendLine("compiler=" + compiler.SourceCompilerCommand);
 			s.AppendLine("linker=" + buildCommands.Linker);
 			s.AppendLine();
 			s.AppendLine("target="+ cfg.OutputDirectory.Combine(cfg.CompiledOutputName).ToRelative(Project.BaseDirectory));
@@ -60,7 +60,7 @@ namespace MonoDevelop.D.Building
 			s.AppendLine("$(target): $(objects)");
 
 			var linkArgs = ProjectBuilder.FillInMacros (
-				ProjectBuilder.GenAdditionalAttributes(buildCommands, cfg) + 
+				ProjectBuilder.GenAdditionalAttributes(compiler, cfg) + 
 				Arguments.LinkerArguments + " " + cfg.ExtraLinkerArguments,
                 new DLinkerMacroProvider
                 {
@@ -68,7 +68,7 @@ namespace MonoDevelop.D.Building
                     Objects = new[]{"$(objects)"},
                     TargetFile = "$@",
                     RelativeTargetDirectory = cfg.OutputDirectory.ToRelative (Project.BaseDirectory),
-                    Libraries = ProjectBuilder.GetLibraries(cfg, Arguments)
+                    Libraries = ProjectBuilder.GetLibraries(cfg, compiler)
                 });
 
 			s.AppendLine("\t@echo Linking...");
@@ -81,7 +81,7 @@ namespace MonoDevelop.D.Building
 			var compilerCommand = "\t$(compiler) "+ ProjectBuilder.FillInMacros(
 				Arguments.CompilerArguments + " " + cfg.ExtraCompilerArguments,
 				new DCompilerMacroProvider{
-					IncludePathConcatPattern = buildCommands.Patterns.IncludePathPattern,
+					IncludePathConcatPattern = compiler.ArgumentPatterns.IncludePathPattern,
 					Includes = Project.IncludePaths,
 					ObjectFile = "$@", SourceFile = "$?"
 				});
