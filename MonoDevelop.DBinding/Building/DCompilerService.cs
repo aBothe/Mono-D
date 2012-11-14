@@ -13,6 +13,15 @@ namespace MonoDevelop.D.Building
 		StaticLibrary
 	}
 	
+	public struct DDocumentOutlineOptions
+	{	
+		public bool ShowFuncParams;
+		public bool ShowFuncVariables;
+		public bool ShowTypes;
+		public bool GrayOutNonPublic;
+		public bool ExpandAll;
+	}
+	
 	/// <summary>
 	/// Central class which enables build support for D projects in MonoDevelop.
 	/// </summary>
@@ -46,6 +55,11 @@ namespace MonoDevelop.D.Building
 
 			// Init global parse cache
 			_instance.UpdateParseCachesAsync();
+			_instance.Outline.ExpandAll = false;
+			_instance.Outline.GrayOutNonPublic = true;
+			_instance.Outline.ShowFuncParams = true;
+			_instance.Outline.ShowFuncVariables = false;
+			_instance.Outline.ShowTypes = false;
 		}
 
 		public void Save ()
@@ -72,6 +86,8 @@ namespace MonoDevelop.D.Building
 		public static string ObjectExtension {
 			get{ return OS.IsWindows ? ".obj" : ".o";} //FIXME: Same here. ".o" object files may be linked in mingw environments..
 		}
+
+		public DDocumentOutlineOptions Outline;
 
 		public string DefaultCompiler;
 		public CompletionOptions CompletionOptions;
@@ -141,6 +157,19 @@ namespace MonoDevelop.D.Building
 				case "DDocBaseUrl":
 					MonoDevelop.D.Refactoring.DDocumentationLauncher.DigitalMarsUrl = x.ReadString ();
 					break;
+
+				case "DocumentOutline":
+					x.MoveToAttribute("ShowParameters");
+					Outline.ShowFuncParams = Boolean.Parse(x.ReadContentAsString());
+					x.MoveToAttribute("ShowVariables");
+					Outline.ShowFuncVariables = Boolean.Parse(x.ReadContentAsString());
+					x.MoveToAttribute("ShowTypes");
+					Outline.ShowTypes = Boolean.Parse(x.ReadContentAsString());
+					x.MoveToAttribute("GrayOutNonPublic");
+					Outline.GrayOutNonPublic = Boolean.Parse(x.ReadContentAsString());
+					x.MoveToAttribute("ExpandTree");
+					Outline.ExpandAll = Boolean.Parse(x.ReadContentAsString());
+					break;
 					
 				case "CompletionOptions":
 					CompletionOptions.Load (x.ReadSubtree ());
@@ -177,6 +206,14 @@ namespace MonoDevelop.D.Building
 			x.WriteStartElement ("CompletionOptions");
 			CompletionOptions.Save (x);
 			x.WriteEndElement ();
+
+			x.WriteStartElement("DocumentOutline");
+			x.WriteAttributeString("ShowParameters", Outline.ShowFuncParams.ToString());
+			x.WriteAttributeString("ShowVariables", Outline.ShowFuncVariables.ToString());
+			x.WriteAttributeString("ShowTypes", Outline.ShowTypes.ToString());
+			x.WriteAttributeString("GrayOutNonPublic", Outline.GrayOutNonPublic.ToString());
+			x.WriteAttributeString("ExpandTree", Outline.ExpandAll.ToString());
+			x.WriteEndElement();
 		}
 		#endregion
 	}
