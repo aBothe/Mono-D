@@ -264,9 +264,6 @@
     <EmbeddedResource Include="Building\CompilerPresets\gdc.xml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Building\CompilerPresets\ldc.xml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
     <EmbeddedResource Include="Formatting\DPolicy.xml" />
     <Content Include="Building\CompilerPresets\ldc2.xml">
       <SubType>Designer</SubType>
