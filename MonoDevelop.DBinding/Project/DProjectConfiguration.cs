@@ -46,7 +46,7 @@ namespace MonoDevelop.D
 				foreach (var i in ExtraLibraries)
 					yield return i;
 
-				foreach (var dep in Project.DependingProjects)
+				foreach (var dep in DProject.GetSortedProjectDependencies(Project))
 				{
 					var selector= dep.ParentSolution.DefaultConfigurationSelector;
 

@@ -544,8 +544,12 @@ namespace MonoDevelop.D.Building
 
 					if(File.Exists(lib))
 						yield return l;
-					else
-						yield return "-L-l"+Path.ChangeExtension(l,null);
+					else{
+						var l_ = Path.ChangeExtension(l,null);
+						if(l_.StartsWith("lib"))
+							l_ = l_.Substring(3);
+						yield return "-L-l"+l_;
+					}
 				}
 		}
 
