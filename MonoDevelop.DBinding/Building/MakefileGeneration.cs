@@ -83,7 +83,10 @@ namespace MonoDevelop.D.Building
 					IncludePathConcatPattern = compiler.ArgumentPatterns.IncludePathPattern,
 					Includes = Project.IncludePaths,
 					ObjectFile = "$@", SourceFile = "$?"
-				});
+				})
+				// Replace "$?" by $? because the $? macro appends one ' ' (space) 
+				// to the name which obstructs the source file names
+				.Replace("\"$?\"","$?");
 
 			foreach(var kv in srcObjPairs)
 			{
