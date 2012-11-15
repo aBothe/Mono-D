@@ -102,7 +102,7 @@ namespace MonoDevelop.D.Building
 					if (!CompileResourceScript (br, pf))
 						return br;
 				} else
-					BuiltObjects.Add (GetRelObjFilename (pf.FilePath));
+					BuiltObjects.Add (MakeRelativeToPrjBase(pf.FilePath));
 			}
 
 			// Build argument string
@@ -179,14 +179,13 @@ namespace MonoDevelop.D.Building
 				// If not compilable, skip it
 				if (f.BuildAction != BuildAction.Compile || !File.Exists (f.FilePath))
 					continue;
-
+				
 				// a.Check if source file was modified and if object file still exists
 				if (Project.EnableIncrementalLinking &&
-                    !string.IsNullOrEmpty (f.LastGenOutput) &&
-                    f.LastGenOutput.StartsWith (AbsoluteObjectDirectory) &&
+                    !string.IsNullOrEmpty (f.LastGenOutput) && 
+                    File.Exists (Path.IsPathRooted(f.LastGenOutput) ? f.LastGenOutput : Project.BaseDirectory.Combine(f.LastGenOutput).ToString()) &&
                     Project.LastModificationTimes.ContainsKey (f) &&
-                    Project.LastModificationTimes [f] == File.GetLastWriteTime (f.FilePath) &&
-                    File.Exists (f.LastGenOutput)) {
+                    Project.LastModificationTimes [f] == File.GetLastWriteTime (f.FilePath)) {
 					// File wasn't edited since last build
 					// but add the built object to the objs array
 					BuiltObjects.Add (f.LastGenOutput);
@@ -217,7 +216,7 @@ namespace MonoDevelop.D.Building
 			if (File.Exists (f.LastGenOutput))
 				File.Delete (f.LastGenOutput);
 
-			var obj = HandleObjectFileNaming (f, DCompilerService.ObjectExtension);
+			var obj = GetRelativeObjectFileName (BuildConfig.ObjectDirectory,f, DCompilerService.ObjectExtension);
 
 			// Create argument string for source file compilation.
 			var dmdArgs = FillInMacros(AdditionalCompilerAttributes + BuildArguments.CompilerArguments + " " + BuildConfig.ExtraCompilerArguments, new DCompilerMacroProvider
@@ -255,14 +254,14 @@ namespace MonoDevelop.D.Building
 				targetBuildResult.BuildCount++;
 				Project.LastModificationTimes [f] = File.GetLastWriteTime (f.FilePath);
 
-				BuiltObjects.Add (GetRelObjFilename (obj));
+				BuiltObjects.Add (obj);
 				return true;
 			}
 		}
 
 		bool CompileResourceScript (BuildResult targetBuildResult, ProjectFile f)
 		{
-			var res = HandleObjectFileNaming (f, ".res");
+			var res = GetRelativeObjectFileName (BuildConfig.ObjectDirectory, f, ".res");
 
 			// Build argument string
 			var resCmpArgs = FillInMacros (Win32ResourceCompiler.Instance.Arguments,
@@ -300,7 +299,7 @@ namespace MonoDevelop.D.Building
 				targetBuildResult.BuildCount++;
 				Project.LastModificationTimes [f] = File.GetLastWriteTime (f.FilePath);
 
-				BuiltObjects.Add (GetRelObjFilename (res));
+				BuiltObjects.Add (MakeRelativeToPrjBase (res));
 				return true;
 			}
 		}
@@ -357,54 +356,18 @@ namespace MonoDevelop.D.Building
 				return file.Replace ('\\', '/');
 		}
 
-		public static string GetRelObjFilename(string baseDirectory,string obj)
+		string MakeRelativeToPrjBase(string obj)
 		{
+			var baseDirectory = Project.BaseDirectory;
 			return obj.StartsWith(baseDirectory) ? obj.Substring(baseDirectory.ToString().Length + 1) : obj;
 		}
 
-		string GetRelObjFilename (string obj)
+		public static string GetRelativeObjectFileName (string objDirectory,ProjectFile f, string extension)
 		{
-			return GetRelObjFilename(Project.BaseDirectory, obj);
-		}
-
-		string HandleObjectFileNaming(ProjectFile f, string extension)
-		{
-			return HandleObjectFileNaming(AbsoluteObjectDirectory, BuiltObjects, f, extension);
-		}
-
-		public static string HandleObjectFileNaming (string AbsoluteObjectDirectory, List<string> AlreadyBuiltObjects,ProjectFile f, string extension)
-		{
-			var obj = Path.Combine (AbsoluteObjectDirectory, f.FilePath.FileNameWithoutExtension) + extension;
-
-			if (!AlreadyBuiltObjects.Contains (GetRelObjFilename (f.Project.BaseDirectory,obj))) {
-				if (File.Exists (obj))
-					File.Delete (obj);
-				return obj;
-			}
-
-			// Take the package name + module name otherwise
-			obj = Path.Combine (AbsoluteObjectDirectory,
-                f.ProjectVirtualPath.ParentDirectory.ToString ().Replace (Path.DirectorySeparatorChar, '.') + "." +
-                f.FilePath.FileNameWithoutExtension) + extension;
-
-			if (!AlreadyBuiltObjects.Contains(GetRelObjFilename(f.Project.BaseDirectory, obj)))
-			{
-				if (File.Exists (obj))
-					File.Delete (obj);
-				return obj;
-			}
-
-			int i = 2;
-			while (AlreadyBuiltObjects.Contains(GetRelObjFilename(f.Project.BaseDirectory, obj)) && File.Exists(obj))
-			{
-				// Simply add a number between the obj name and its extension
-				obj = Path.Combine (AbsoluteObjectDirectory,
-                        f.ProjectVirtualPath.ParentDirectory.ToString ().Replace (Path.DirectorySeparatorChar, '.') + "." +
-                        f.FilePath.FileNameWithoutExtension) + i + extension;
-				i++;
-			}
-
-			return obj;
+			return Path.Combine(EnsureCorrectPathSeparators(objDirectory),
+			                    f.ProjectVirtualPath.ChangeExtension(extension)
+			                    	.ToString()
+			                    	.Replace(Path.DirectorySeparatorChar,'.'));
 		}
         #endregion
 
