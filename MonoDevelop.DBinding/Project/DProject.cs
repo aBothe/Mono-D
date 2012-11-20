@@ -150,7 +150,7 @@ namespace MonoDevelop.D
 				LocalFileCache.UfcsCache.RemoveModuleItems(LocalFileCache.GetModuleByFileName(pf.FilePath, BaseDirectory));
 				LocalFileCache.AddOrUpdate (ddom);
 				if(doUfcsCache)
-					LocalFileCache.UfcsCache.CacheModuleMethods(ddom, ResolutionContext.Create(ParseCache, ddom));
+					LocalFileCache.UfcsCache.CacheModuleMethods(ddom, ResolutionContext.Create(ParseCache, null, ddom));
 			} catch (Exception ex) {
 				LoggingService.LogError ("Error while parsing " + pf.FilePath.ToString (), ex);
 			}
@@ -240,8 +240,8 @@ namespace MonoDevelop.D
 				analysisFinished_LocalCache && analysisFinished_LocalIncludes &&
 				analysisFinished_FileLinks)
 			{
-				LocalIncludeCache.UfcsCache.Update(ParseCacheList.Create(Compiler.ParseCache, LocalIncludeCache), LocalIncludeCache);
-				LocalFileCache.UfcsCache.Update(ParseCache, LocalFileCache);
+				LocalIncludeCache.UfcsCache.Update(ParseCacheList.Create(Compiler.ParseCache, LocalIncludeCache), null, LocalIncludeCache);
+				LocalFileCache.UfcsCache.Update(ParseCache, null, LocalFileCache);
 			}
 		}
 

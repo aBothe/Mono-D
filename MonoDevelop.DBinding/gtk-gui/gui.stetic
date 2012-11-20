@@ -10,7 +10,7 @@
     <widget-library name="../../ext/MonoDevelop.Ide.dll" />
     <widget-library name="../../ext/MonoDevelop.Refactoring.dll" />
     <widget-library name="../../ext/MonoDevelop.SourceEditor2.dll" />
-    <widget-library name="D:/Programy/MonoDevelop/AddIns/BackendBindings/MonoDevelop.D.dll" internal="true" />
+    <widget-library name="../bin/Debug/MonoDevelop.D.dll" internal="true" />
   </import>
   <widget class="Gtk.Bin" id="MonoDevelop.D.OptionPanels.ProjectOptions" design-size="634 416">
     <property name="MemberName" />

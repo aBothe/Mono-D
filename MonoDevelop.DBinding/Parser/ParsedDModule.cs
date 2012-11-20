@@ -43,8 +43,8 @@ namespace MonoDevelop.D.Parser
 
 							if (value != null)
 							{
-								dprj.LocalFileCache.AddOrUpdate(value);
-								dprj.LocalFileCache.UfcsCache.CacheModuleMethods(value, ResolutionContext.Create(dprj.ParseCache, null));
+								dprj.LocalFileCache.AddOrUpdate(value);//TODO: Make it apply the current global version/debug conditions
+								dprj.LocalFileCache.UfcsCache.CacheModuleMethods(value, ResolutionContext.Create(dprj.ParseCache, null, null));
 							}
 						}
 				
