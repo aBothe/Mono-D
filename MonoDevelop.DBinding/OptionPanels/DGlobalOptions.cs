@@ -48,7 +48,8 @@ namespace MonoDevelop.D.OptionPanels
 			DCompilerService.Instance.Outline.ShowTypes = check_ShowTypes.Active;
 			DCompilerService.Instance.Outline.ExpandAll = check_ExpandAll.Active;
 
-			Ide.IdeApp.Workbench.ActiveDocument.ReparseDocument();
+			if(Ide.IdeApp.Workbench.ActiveDocument!=null)
+				Ide.IdeApp.Workbench.ActiveDocument.ReparseDocument();
 
 			return true;
 		}
