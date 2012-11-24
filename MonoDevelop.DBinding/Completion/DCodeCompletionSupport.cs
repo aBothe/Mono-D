@@ -261,7 +261,7 @@ namespace MonoDevelop.D.Completion
 			}
 		}
 
-		public void Add(int Token)
+		public void Add(byte Token)
 		{
 			CompletionDataList.Add(new TokenCompletionData(Token));
 		}
@@ -279,9 +279,9 @@ namespace MonoDevelop.D.Completion
 
 	public class TokenCompletionData : CompletionData
 	{
-		public int Token { get; set; }
+		public byte Token { get; set; }
 
-		public TokenCompletionData(int Token)
+		public TokenCompletionData(byte Token)
 		{
 			this.Token = Token;
 			CompletionText = DisplayText = DTokens.GetTokenString(Token);
