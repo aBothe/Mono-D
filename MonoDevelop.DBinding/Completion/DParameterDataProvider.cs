@@ -1,3 +1,4 @@
+using System.Text;
 using D_Parser.Completion;
 using D_Parser.Dom;
 using D_Parser.Dom.Expressions;
@@ -193,50 +194,55 @@ namespace MonoDevelop.D.Completion
 
 		string GetMethodMarkup(DMethod dm, string[] parameterMarkup, int currentParameter)
 		{
-			var s = "";
+			var sb = new StringBuilder();
 
 			switch (dm.SpecialType)
 			{
 				case DMethod.MethodType.Constructor:
-					s = "(Constructor) ";
+					sb.Append("(Constructor) ");
 					break;
 				case DMethod.MethodType.Destructor:
-					s = "(Destructor) ";
+					sb.Append("(Destructor) ");
 					break;
 				case DMethod.MethodType.Allocator:
-					s = "(Allocator) ";
+					sb.Append("(Allocator) ");
 					break;
 			}
-
-			if (dm.Attributes.Count > 0)
+			/*TODO: Show attributes?
+			if (dm.Attributes != null && dm.Attributes.Count > 0)
 				s = dm.AttributeString + ' ';
-
-			s += dm.Name;
+			*/
+			sb.Append(dm.Name);
 
 			// Template parameters
 			if (dm.TemplateParameters != null && dm.TemplateParameters.Length > 0)
 			{
-				s += "(";
+				sb.Append("(");
 
 				if (args.IsTemplateInstanceArguments)
-					s += string.Join(",", parameterMarkup);
+					sb.Append(string.Join(",", parameterMarkup));
 				else
 					foreach (var p in dm.TemplateParameters)
-						s += p.ToString() + ",";
+						sb.Append(p.ToString()+",");
 
-				s = s.Trim(',') + ")";
+				if(sb[0] == ',')
+					sb.Remove(0,1);
+				sb.Append(")");
 			}
 
 			// Parameters
-			s += "(";
+			sb.Append("(");
 			
 			if (!args.IsTemplateInstanceArguments)
-				s += string.Join(",", parameterMarkup);
+				sb.Append(string.Join(",", parameterMarkup));
 			else
 				foreach (var p in dm.Parameters)
-					s += p.ToString() + ",";
+					sb.Append(p.ToString() + ",");
 
-			return s.Trim(',') + ")";
+			if(sb[0] == ',')
+					sb.Remove(0,1);
+			sb.Append(")");
+			return sb.ToString();
 		}
 
 		public string GetParameterDescription(int overload, int paramIndex)
