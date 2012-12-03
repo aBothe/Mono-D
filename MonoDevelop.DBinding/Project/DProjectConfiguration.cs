@@ -52,8 +52,19 @@ namespace MonoDevelop.D
 				
 				var activeConfig = dep.GetConfiguration(configSelector) as DProjectConfiguration;
 
-				if (activeConfig != null && activeConfig.CompileTarget == DCompileTarget.StaticLibrary)
-					yield return dep.GetOutputFileName(configSelector);
+				if (activeConfig != null){
+					if(activeConfig.CompileTarget == DCompileTarget.StaticLibrary)
+						yield return dep.GetOutputFileName(configSelector);
+					// Assume there is an import lib inside the dll's output directory and add it to the linked-in libs
+					// https://github.com/aBothe/Mono-D/issues/180
+					else if(OS.IsWindows && 
+					        activeConfig.CompileTarget == DCompileTarget.SharedLibrary)
+					{
+						var lib = Path.ChangeExtension(dep.GetOutputFileName(configSelector), DCompilerService.StaticLibraryExtension);
+						if(File.Exists(lib))
+							yield return lib;
+					}
+				}
 			}
 		}
 
