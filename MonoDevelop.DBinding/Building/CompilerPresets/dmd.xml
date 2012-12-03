@@ -32,13 +32,13 @@
 		<LinkerCommand>dmd</LinkerCommand>
 		<DebugArgs>
 			<CompilerArg>-c "$src" "-of$obj" $includes -gc</CompilerArg>
-			<LinkerArgs>-gc "-of$target" $objs $libs "-L/IMPLIB:$relativeTargetDir"</LinkerArgs>
-      		<OneStepBuildArgs>-gc $sources $libs $includes "-od$objectsDirectory" "-of$dll"</OneStepBuildArgs>
+			<LinkerArgs>-gc "-of$target" $objs $libs "-L/IMPLIB:$lib"</LinkerArgs>
+      		<OneStepBuildArgs>-gc $sources $libs $includes "-L/IMPLIB:$lib" "-od$objectsDirectory" "-of$dll"</OneStepBuildArgs>
 		</DebugArgs>
 		<ReleaseArgs>
 			<CompilerArg>-c "$src" "-of$obj" $includes -O -release</CompilerArg>
-			<LinkerArgs>-O -release "-of$target" $objs $libs "-L/IMPLIB:$relativeTargetDir"</LinkerArgs>
-      		<OneStepBuildArgs>-O -release $sources $libs $includes "-od$objectsDirectory" "-of$dll"</OneStepBuildArgs>
+			<LinkerArgs>-O -release "-of$target" $objs $libs "-L/IMPLIB:$lib"</LinkerArgs>
+      		<OneStepBuildArgs>-O -release $sources $libs $includes "-L/IMPLIB:$lib" "-od$objectsDirectory" "-of$dll"</OneStepBuildArgs>
 		</ReleaseArgs>
 	</TargetConfiguration>
 	
