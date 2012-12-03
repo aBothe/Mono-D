@@ -376,6 +376,25 @@ namespace MonoDevelop.D
 		#endregion
 
 		#region Build Configurations
+		public override IEnumerable<SolutionItem> GetReferencedItems(ConfigurationSelector configuration)
+		{
+			return GetSortedProjectDependencies(this);
+		}
+		
+		protected override void PopulateSupportFileList(FileCopySet list, ConfigurationSelector configuration)
+		{
+			base.PopulateSupportFileList(list, configuration);
+			
+			// Automatically copy referenced dll/so's to the target dir
+			DProjectConfiguration prjCfg;
+			foreach(var prj in DependingProjects)
+				if((prjCfg=prj.GetConfiguration(configuration) as DProjectConfiguration) != null &&
+				  prjCfg.CompileTarget == DCompileTarget.SharedLibrary)
+			{
+				list.Add(prj.GetOutputFileName(configuration));
+			}
+		}
+		
 		public override SolutionItemConfiguration CreateConfiguration (string name)
 		{
 			var config = new DProjectConfiguration() { Name=name};

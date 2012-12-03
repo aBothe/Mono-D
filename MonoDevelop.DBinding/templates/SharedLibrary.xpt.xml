@@ -18,7 +18,6 @@
 				PauseConsoleOutput = "True"
 				CompilerArgs = ""
 				LinkerArgs = ""/>
-
 		<Files>
 			<DFile name = "myclass.d">
 				<![CDATA[module ${ModuleName};
@@ -26,6 +25,14 @@
 class MyClass
 {
     //TODO: Enter class code here
+}
+
+export:
+extern(D):
+
+MyClass createMyClass()
+{
+	return new MyClass();
 }
 ]]>
 			</DFile>
