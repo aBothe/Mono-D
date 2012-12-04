@@ -34,14 +34,16 @@ namespace MonoDevelop.D.Resolver
 			ed.CaretOffset = editor.CursorPosition;
 
 			var ast = doc.ParsedDocument as ParsedDModule;
-
-			var Project = doc.Project as DProject;
+			if(ast==null)
+				return null;
+			
 			ed.SyntaxTree = ast.DDom as DModule;
 			ed.ModuleCode = editor.Text;
 
 			if (ed.SyntaxTree == null)
 				return null;
 
+			var Project = doc.Project as DProject;
 			// Encapsule editor data for resolving
 			ed.ParseCache = Project != null ?
 				Project.ParseCache :
