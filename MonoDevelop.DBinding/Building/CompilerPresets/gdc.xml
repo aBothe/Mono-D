@@ -21,12 +21,12 @@
 		<DebugArgs>
 			<CompilerArg>-c "$src" -o "$obj" $includes -g</CompilerArg>
 			<LinkerArgs>-o "$target" -g $objs $libs</LinkerArgs>
-		 	<OneStepBuildArgs>-g $sources $libs $includes "-fod=$objectsDirectory" -o "$exe"</OneStepBuildArgs>
+		 	<OneStepBuildArgs>-g $sources $libs $includes -o "$exe"</OneStepBuildArgs>
 		</DebugArgs>
 		<ReleaseArgs>
 			<CompilerArg>-c "$src" -frelease -o "$obj" $includes -O3</CompilerArg>
 			<LinkerArgs>-o "$target" -frelease -O3 $objs $libs</LinkerArgs>
-	  		<OneStepBuildArgs>-O3 -frelease $sources $libs $includes "-fod=$objectsDirectory" -o "$exe"</OneStepBuildArgs>
+	  		<OneStepBuildArgs>-O3 -frelease $sources $libs $includes -o "$exe"</OneStepBuildArgs>
 		</ReleaseArgs>
 	</TargetConfiguration>
 	
