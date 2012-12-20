@@ -459,6 +459,9 @@ namespace MonoDevelop.D.Building
 
 			if (cfg.UnittestMode)
 				sb.Append (p.UnittestFlag + " ");
+				
+			if(cfg.ProfilerMode && compiler.HasProfilerSupport)
+				sb.Append (p.ProfileFlag + " -v ");
 
 			if (cfg.CustomDebugIdentifiers != null && cfg.CustomVersionIdentifiers.Length != 0)
 				foreach (var id in cfg.CustomDebugIdentifiers)

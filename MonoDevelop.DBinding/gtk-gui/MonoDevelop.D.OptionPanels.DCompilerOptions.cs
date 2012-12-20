@@ -303,10 +303,7 @@ namespace MonoDevelop.D.OptionPanels
 			w23.Position = 0;
 			// Container child vbox2.Gtk.Box+BoxChild
 			this.check_enableLibPrefixing = new global::Gtk.CheckButton ();
-			this.check_enableLibPrefixing.TooltipMarkup = @"If checked, all referenced libraries that can not be found locally will be stripped by their file extensions and get a ""-L-l"" prefix as they are passed to the compiler during project building.
-'../myCustomLib/bin/myCustomLib.a' remains untouched.
-'libphobos2.a' becomes '-L-llibphobos2' on compilation.
-This is mainly activated when using the gdc compiler.";
+			this.check_enableLibPrefixing.TooltipMarkup = "If checked, all referenced libraries that can not be found locally will be stripped by their file extensions and get a \"-L-l\" prefix as they are passed to the compiler during project building.\n'../myCustomLib/bin/myCustomLib.a' remains untouched.\n'libphobos2.a' becomes '-L-llibphobos2' on compilation.\nThis is mainly activated when using the gdc compiler.";
 			this.check_enableLibPrefixing.CanFocus = true;
 			this.check_enableLibPrefixing.Name = "check_enableLibPrefixing";
 			this.check_enableLibPrefixing.Label = global::Mono.Unix.Catalog.GetString ("Enable gdc-specific import lib prefix stripping (e.g. libopengl32.a -> opengl32)");
@@ -332,8 +329,7 @@ This is mainly activated when using the gdc compiler.";
 			this.table2.ColumnSpacing = ((uint)(6));
 			// Container child table2.Gtk.Table+TableChild
 			this.GtkScrolledWindow1 = new global::Gtk.ScrolledWindow ();
-			this.GtkScrolledWindow1.TooltipMarkup = "Line-separated list of paths where the compiler (and the code completion engine!)" +
-				" shall look in to resolve imports.";
+			this.GtkScrolledWindow1.TooltipMarkup = "Line-separated list of paths where the compiler (and the code completion engine!) shall look in to resolve imports.";
 			this.GtkScrolledWindow1.Name = "GtkScrolledWindow1";
 			this.GtkScrolledWindow1.ShadowType = ((global::Gtk.ShadowType)(1));
 			// Container child GtkScrolledWindow1.Gtk.Container+ContainerChild

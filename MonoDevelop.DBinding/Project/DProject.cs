@@ -15,6 +15,9 @@ using MonoDevelop.Projects;
 using D_Parser.Misc;
 using MonoDevelop.D.Parser;
 using D_Parser.Resolver;
+using MonoDevelop.D.Profiler;
+using MonoDevelop.Ide.Gui;
+using MonoDevelop.Components.Commands;
 
 namespace MonoDevelop.D
 {
@@ -341,6 +344,15 @@ namespace MonoDevelop.D
 			unittestConfig.UnittestMode = true;
 
 			Configurations.Add (unittestConfig);
+			
+			// Create profiler configuration
+			var profilerConfig = CreateConfiguration ("Profiler") as DProjectConfiguration;
+			
+			profilerConfig.ExtraLibraries.AddRange (libs);
+			profilerConfig.DebugMode = false;
+			profilerConfig.ProfilerMode = true;
+			
+			Configurations.Add (profilerConfig);
             
 			// Prepare all configurations
 			foreach (DProjectConfiguration c in Configurations) {
@@ -608,12 +620,16 @@ namespace MonoDevelop.D
 				op.WaitForCompleted ();
 
 				monitor.Log.WriteLine ("The operation exited with code: {0}", op.ExitCode);
+				
 			} catch (Exception ex) {
 				monitor.ReportError ("Cannot execute \"" + conf.Output + "\"", ex);
 			} finally {
 				operationMonitor.Dispose ();
 				console.Dispose ();
 			}
+			
+			if(conf.ProfilerMode && Compiler.HasProfilerSupport)
+				IdeApp.CommandService.DispatchCommand( "MonoDevelop.D.Profiler.ProfilerCommands.AnalyseTaceLog");
 		}
 		#endregion
 

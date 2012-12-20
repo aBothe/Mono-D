@@ -22,6 +22,8 @@ namespace MonoDevelop.D
 		public string Output = "";
 		[ItemProperty("UnittestMode")]
 		public bool UnittestMode = false;
+		[ItemProperty("ProfilerMode")]
+		public bool ProfilerMode = false;	
 		[ItemProperty("ExtraCompilerArguments", DefaultValue = "")]
 		public string ExtraCompilerArguments = "";
 		[ItemProperty("ExtraLinkerArguments", DefaultValue = "")]

@@ -1,12 +1,12 @@
 <Addin id="D"
 	namespace="MonoDevelop"
 	name="D Language Binding"
-	author="Alexander Bothe"
+	author="foerdi"
 	url="http://mono-d.alexanderbothe.com"
 	copyright=""
-	description="D Language Binding"
+	description="D Language Binding with Profiler support by foerdi"
 	category="Language bindings"
-	version="0.4.4.3">
+	version="0.4.4.5">
 
   <!-- Resources -->
 
@@ -291,5 +291,34 @@
   <Extension path = "/MonoDevelop/Refactoring/CodeActionSource">
     <Source class ="MonoDevelop.D.Refactoring.CodeActions.DCodeActionSource"/>
   </Extension>
+	
+	<!-- Profiler -->
+	
+	<Extension path = "/MonoDevelop/Ide/Commands">
+        <Command id = "MonoDevelop.D.Profiler.ProfilerCommands.AnalyseTaceLog"
+                 defaultHandler = "MonoDevelop.D.Profiler.ProfilerCommandHandler" 
+                 _label = "Analyse Tace Log" />
+        <!--Command id = "MonoDevelop.D.Profiler.ProfilerCommands.ProfilerCommandHandler"
+                 defaultHandler = "MonoDevelop.D.Profiler.ProfilerCommandHandler" 
+                 _label = "Profiler Commands"
+                 type="array" />
+        <Command id = "MonoDevelop.D.Profiler.ProfilerCommands.RunProfiler"
+                 _label = "Start D Profiler"
+                 _description = "Start D Profiler without Debuger" />
+        <Command id = "MonoDevelop.D.Profiler.ProfilerCommands.RunDebugProfiler"
+                 _label = "Start D Profiler with Debuger"
+                 _description = "Start D Profiler with Debuger" /-->
+    </Extension>
 
+	<!--Extension path = "/MonoDevelop/Ide/MainMenu/Run">
+		<SeparatorItem id = "DatabaseSeparator"/>
+		<CommandItem id = "MonoDevelop.D.Profiler.ProfilerCommands.ProfilerCommandHandler" />
+	</Extension-->
+    
+    
+	<Extension path = "/MonoDevelop/Ide/Pads">
+		<SolutionPad id = "MonoDevelop.D.Profiler.DProfilerPad" class = "MonoDevelop.D.Profiler.DProfilerPad" defaultPlacement = "Bottom" _label = "D Proifiler">
+		</SolutionPad>
+	</Extension>
+    
 </Addin>

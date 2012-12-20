@@ -263,12 +263,13 @@ namespace MonoDevelop.D.Gui
 				DRenameRefactoring.CanRenameNode(n) && 
 				DRenameRefactoring.IsValidIdentifier(args.NewText))
 			{
+			/*
 				RefactoringService.AcceptChanges(
 					IdeApp.Workbench.ProgressMonitors.GetBackgroundProgressMonitor("Rename item", null),
 					new DRenameRefactoring().PerformChanges(
 						new RefactoringOptions(IdeApp.Workbench.ActiveDocument)	{ SelectedItem = n}, 
 						new MonoDevelop.Refactoring.Rename.RenameRefactoring.RenameProperties { NewName = args.NewText }));
-
+*/
 				TreeView.Selection.SelectIter(iter);
 				TreeView.GrabFocus();
 			}
