@@ -270,7 +270,6 @@
     </Content>
     <EmbeddedResource Include="icons\element-alias-16.png" />
     <EmbeddedResource Include="MonoDevelop.D.addin.xml" />
-    <Content Include="Remaining features.txt" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Parser\DParser2\DParser2.csproj">
