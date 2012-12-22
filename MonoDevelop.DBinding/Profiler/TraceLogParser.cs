@@ -54,8 +54,10 @@ namespace MonoDevelop.D.Profiler
 			string moduleName = ModuleName(typeDeclaration);
 			
 			var modules = lastProfiledProject.ParseCache.LookupModuleName(moduleName);
+			
+			
 			foreach(var module in modules)
-			{//DModule
+			{
 				INode node = SearchFunctionNode(method,typeDeclaration, module);
 				if(node != null)
 				{
@@ -79,13 +81,17 @@ namespace MonoDevelop.D.Profiler
 				if(methodSymbol == null)
 					continue;
 				
-				if(methodSymbol.Type.ToString() != typeDeclaration.ToString())
-					continue;
-				
-				if(CompareParamethers(methodSymbol, method))
+				if(CompareMethod(methodSymbol, method))
 					return methodSymbol;
 			}
 			return null;
+		}
+		
+		private bool CompareMethod(DMethod methodA, DMethod methodB)
+		{
+			if(methodA.Name != methodB.Name )
+				return false;
+			return CompareParamethers(methodA, methodB);
 		}
 		
 		private bool CompareParamethers(DMethod methodA, DMethod methodB)
@@ -94,11 +100,12 @@ namespace MonoDevelop.D.Profiler
 				return false;
 			
 			for(int i = 0; i < methodA.Parameters.Count; i++)
-				if(methodA.Parameters[i].ToString() != methodB.Parameters[i].ToString())
+				if(methodA.Parameters[i].Type.ToString() != methodB.Parameters[i].Type.ToString())
 					return false;
 			return true;
 		}
 		
+		// buggy..
 		private string ModuleName(ITypeDeclaration type)
 		{
 			if(type.InnerDeclaration != null)

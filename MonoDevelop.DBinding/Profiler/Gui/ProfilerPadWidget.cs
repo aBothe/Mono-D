@@ -75,8 +75,11 @@ namespace MonoDevelop.D.Profiler.Gui
 
 		protected void OnNodeViewRowActivated (object o, RowActivatedArgs args)
 		{
-			string function = traceFunctionsStore.Data[4] as string;
-			profilerPad.TraceParser.GoToFunction("void main.foo(int)");
+			TreeIter iter;
+			traceFunctionsStore.GetIter(out iter, args.Path);
+			string function = traceFunctionsStore.GetValue(iter,4) as String;
+			profilerPad.TraceParser.GoToFunction(function);
+			//profilerPad.TraceParser.GoToFunction("void main.foo(int)");
 		}
 		
 		private void AddColumn(string title, int index)
