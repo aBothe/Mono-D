@@ -298,7 +298,6 @@
     </Content>
     <EmbeddedResource Include="icons\element-alias-16.png" />
     <EmbeddedResource Include="MonoDevelop.D.addin.xml" />
-    <Content Include="Remaining features.txt" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>

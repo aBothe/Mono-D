@@ -239,11 +239,6 @@ namespace MonoDevelop.D.Completion
 	{
 		public CompletionDataList CompletionDataList;
 
-		public void Add(string ModuleName, IAbstractSyntaxTree Module = null, string PathOverride = null)
-		{
-			CompletionDataList.Add(new NamespaceCompletionData(ModuleName, Module) { ExplicitModulePath = PathOverride });
-		}
-
 		Dictionary<string, DCompletionData> overloadCheckDict = new Dictionary<string, DCompletionData>();
 		public void Add(INode Node)
 		{
@@ -275,6 +270,16 @@ namespace MonoDevelop.D.Completion
 		{
 			CompletionDataList.Add(Text, IconId.Null, Description);
 		}
+		
+		public void AddModule(IAbstractSyntaxTree module, string nameOverride)
+		{
+			CompletionDataList.Add(new NamespaceCompletionData(nameOverride ?? module.ModuleName,module) { ExplicitModulePath = module.ModuleName });
+		}
+		
+		public void AddPackage(string packageName)
+		{
+			CompletionDataList.Add(new NamespaceCompletionData(packageName,null));
+		}
 	}
 
 	public class TokenCompletionData : CompletionData
@@ -301,6 +306,9 @@ namespace MonoDevelop.D.Completion
 	public class NamespaceCompletionData : CompletionData
 	{
 		public string ModuleName { get; private set; }
+		/// <summary>
+		/// Used for building the description.
+		/// </summary>
 		public string ExplicitModulePath { get; set; }
 		public IAbstractSyntaxTree AssociatedModule { get; private set; }
 
