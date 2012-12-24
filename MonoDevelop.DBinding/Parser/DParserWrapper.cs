@@ -26,8 +26,7 @@ namespace MonoDevelop.D.Parser
 				return null;
 
 			ProjectFile pf = null;
-			var modName = "";
-
+			
 			if (prj == null)
 			{
 				var sln = Ide.IdeApp.ProjectOperations.CurrentSelectedSolution;
@@ -37,14 +36,12 @@ namespace MonoDevelop.D.Parser
 						{
 							prj = proj;
 							pf = proj.GetProjectFile(file);
-							modName = BuildModuleName(pf);
 							break;
 						}
 			}
 			else if(prj.IsFileInProject(file))
 			{
 				pf = prj.GetProjectFile(file);
-				modName = BuildModuleName(pf);
 			}
 
 			// HACK(?) The folds are parsed before the document gets loaded 
@@ -52,12 +49,7 @@ namespace MonoDevelop.D.Parser
 			// -- What if multiple docs are opened?
 			if (LastParsedMod is ParsedDModule && LastParsedMod.FileName == file)
 			{
-				var d = (ParsedDModule)LastParsedMod;
-
-				// Build appropriate module name
-				if (pf != null)
-					d.DDom.ModuleName = BuildModuleName(pf);
-
+				var d = LastParsedMod as ParsedDModule;
 				LastParsedMod = null;
 				return d;
 			}
@@ -70,7 +62,7 @@ namespace MonoDevelop.D.Parser
 			IAbstractSyntaxTree ast = null;
 			if (dprj != null)
 			{
-				ast = dprj.LocalFileCache[modName];
+				ast = dprj.LocalFileCache.GetModuleByFileName(file, prj.BaseDirectory);
 
 				if (ast != null)
 				{
@@ -91,7 +83,8 @@ namespace MonoDevelop.D.Parser
 			ast = parser.Parse();
 
 			// Update project owner information / Build appropriate module name
-			ast.ModuleName = modName;
+			if(string.IsNullOrEmpty(ast.ModuleName))
+				ast.ModuleName = BuildModuleName(pf);
 			ast.FileName = file;
 
 			// Assign new ast to the ParsedDDocument object
