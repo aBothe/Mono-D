@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text;
 using D_Parser.Completion;
 using D_Parser.Dom;
@@ -19,28 +20,22 @@ namespace MonoDevelop.D.Completion
 		public AbstractType CurrentResult { get {
 			return args.ResolvedTypesOrMethods[selIndex];
 		} }
-
-		/// <summary>
-		/// Might be either an INode or a ITemplateParameter.
-		/// </summary>
-		public object GetParameterObj(int paramIndex)
+		
+		public IEnumerable<ISyntaxRegion> GetParameters()
 		{
-			if (paramIndex < 0)
-				return null;
-
 			if (CurrentResult is DSymbol)
 			{
 				var tir = (DSymbol)CurrentResult;
 
 				if (tir.Definition is DClassLike && ((DClassLike)tir.Definition).TemplateParameters!=null)
-					return ((DClassLike)tir.Definition).TemplateParameters[paramIndex];
+					return ((DClassLike)tir.Definition).TemplateParameters;
 
 				var dm = tir.Definition as DMethod;
 				if (dm != null)
 				{
 					if (args.IsTemplateInstanceArguments)
-						return dm.TemplateParameters[paramIndex];
-					return dm.Parameters[paramIndex];
+						return dm.TemplateParameters;
+					return dm.Parameters;
 				}
 			}
 			else if (CurrentResult is DelegateType)
@@ -48,11 +43,31 @@ namespace MonoDevelop.D.Completion
 				var dr = (DelegateType)CurrentResult;
 
 				if (dr.IsFunctionLiteral)
-					return ((FunctionLiteral)dr.DeclarationOrExpressionBase).AnonymousMethod.Parameters[paramIndex];
+					return ((FunctionLiteral)dr.DeclarationOrExpressionBase).AnonymousMethod.Parameters;
 				else
-					return ((DelegateDeclaration)dr.DeclarationOrExpressionBase).Parameters[paramIndex];
+					return ((DelegateDeclaration)dr.DeclarationOrExpressionBase).Parameters;
 			}
 
+			return null;
+		}
+
+		/// <summary>
+		/// Might be either an INode or a ITemplateParameter.
+		/// </summary>
+		public ISyntaxRegion GetParameterObj(int paramIndex)
+		{
+			if (paramIndex < 0)
+				return null;
+
+			var parameters = GetParameters();
+			
+			if(parameters == null)
+				return null;
+			
+			if(parameters is ITemplateParameter[])
+				return (parameters as ITemplateParameter[])[paramIndex];
+			else if(parameters is List<INode>)
+				return (parameters as List<INode>)[paramIndex];
 			return null;
 		}
 
@@ -107,7 +122,24 @@ namespace MonoDevelop.D.Completion
 
 
 		#region IParameterDataProvider implementation
-
+		public int GetCurrentParameterIndex(CodeLocation where)
+		{
+			/*
+			if(args.ParsedExpression is PostfixExpression_MethodCall)
+			{
+				var mc = args.ParsedExpression as PostfixExpression_MethodCall;
+				
+				if(mc.ArgumentCount == 0)
+					return 0;
+				for(int i = 0; i < mc.ArgumentCount; i++)
+				{
+					if(where <= mc.Arguments[i].EndLocation)
+						return i+1;
+				}
+			}*/
+			return args.CurrentlyTypedArgumentIndex;
+		}
+		
 		public int GetCurrentParameterIndex (ICompletionWidget widget, CodeCompletionContext ctx)
 		{
 			/*
@@ -150,7 +182,7 @@ namespace MonoDevelop.D.Completion
 						return i + 1;
 			}
 			*/
-			return 1;
+			return args.CurrentlyTypedArgumentIndex;
 		}
 
 		public string GetHeading(int overload, string[] parameterMarkup, int currentParameter)
@@ -263,38 +295,13 @@ namespace MonoDevelop.D.Completion
 		{			
 			selIndex = overload;
 
-			if (CurrentResult is DSymbol)
-			{
-				var tir = (DSymbol)CurrentResult;
-
-				if (tir.Definition is DClassLike)
-				{
-					var dc=(DClassLike)tir.Definition;
-
-					if(dc.TemplateParameters!=null)
-						return dc.TemplateParameters.Length;
-					return 0;
-				}
-				
-				var dm = tir.Definition as DMethod;
-
-				if (dm != null)
-				{
-					if (args.IsTemplateInstanceArguments)
-						return dm.TemplateParameters != null ? dm.TemplateParameters.Length : 0;
-					return dm.Parameters.Count;
-				}
-			}
-			else if (CurrentResult is DelegateType)
-			{
-				var dr = (DelegateType)CurrentResult;
-
-				if (dr.IsFunctionLiteral)
-					return ((FunctionLiteral)dr.DeclarationOrExpressionBase).AnonymousMethod.Parameters.Count;
-				
-				return ((DelegateDeclaration)dr.DeclarationOrExpressionBase).Parameters.Count;
-			}
-
+			var parameters = GetParameters();
+			
+			if(parameters is ITemplateParameter[])
+				return (parameters as ITemplateParameter[]).Length;
+			else if(parameters is List<INode>)
+				return (parameters as List<INode>).Count;
+			
 			return 0;
 		}
 

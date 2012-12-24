@@ -1,3 +1,4 @@
+using D_Parser.Dom;
 using ICSharpCode.NRefactory.Completion;
 using MonoDevelop.D.Completion;
 using MonoDevelop.D.Parser;
@@ -60,9 +61,13 @@ namespace MonoDevelop.D
 		#endregion
 
 		#region Parameter completion
+		DParameterDataProvider dParamProv;
+		
 		public override int GetCurrentParameterIndex(int startOffset)
 		{
-			return 0; //TODO: Get actually typed parameter
+			var loc = Editor.Document.OffsetToLocation(startOffset);
+			
+			return dParamProv == null ? 0 : dParamProv.GetCurrentParameterIndex(new CodeLocation(loc.Column,loc.Line));
 		}
 
 		public override void CursorPositionChanged()
@@ -83,7 +88,7 @@ namespace MonoDevelop.D
 			
 			return base.KeyPress(key, keyChar, modifier);
 		}
-
+		
 		public override IParameterDataProvider HandleParameterCompletion(CodeCompletionContext completionContext, char completionChar)
 		{
 			if (completionChar != ',' &&
@@ -100,7 +105,7 @@ namespace MonoDevelop.D
 				return null;
 
 			lastTriggerOffset=completionContext.TriggerOffset;
-			return DParameterDataProvider.Create(Document, dom.DDom, completionContext);
+			return dParamProv = DParameterDataProvider.Create(Document, dom.DDom, completionContext);
 		}
 		#endregion
 
