@@ -1,12 +1,12 @@
 <Addin id="D"
 	namespace="MonoDevelop"
 	name="D Language Binding"
-	author="foerdi"
+	author="Alexander Bothe"
 	url="http://mono-d.alexanderbothe.com"
 	copyright=""
-	description="D Language Binding with Profiler support by foerdi"
+	description="D Language Binding"
 	category="Language bindings"
-	version="0.4.4.5">
+	version="0.4.5">
 
   <!-- Resources -->
 
