@@ -22,7 +22,7 @@ namespace MonoDevelop.D.Profiler.Gui
 			this.Build ();
 			
 			// Create a model for the cards
-			traceFunctionsStore = new ListStore (typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
+			traceFunctionsStore = new ListStore (typeof(long), typeof(long), typeof(long), typeof(long), typeof(string));
 			
 			TreeModelSort cardSort = new TreeModelSort (traceFunctionsStore);
 			
@@ -35,14 +35,6 @@ namespace MonoDevelop.D.Profiler.Gui
 			AddColumn("Func Symbol", 4);
 			
 			nodeView.ShowAll();
-			
-			
-			
-			
-			traceFunctionsStore.AppendValues("a","d","","");
-			traceFunctionsStore.AppendValues("b","a","","");
-			traceFunctionsStore.AppendValues("c","b","","");
-			traceFunctionsStore.AppendValues("d","c","","");
 		}
 
 		protected void OnRefreshActionActivated (object sender, EventArgs e)
@@ -68,7 +60,7 @@ namespace MonoDevelop.D.Profiler.Gui
 			traceFunctionsStore.Clear();
 		}
 		
-		public void AddTracedFunction(string numCalls, string treeTime, string funcTime, string perCall, string symbol)
+		public void AddTracedFunction(long numCalls, long treeTime, long funcTime, long perCall, string symbol)
 		{
 			traceFunctionsStore.AppendValues(numCalls, treeTime, funcTime, perCall, symbol);
 		}
@@ -76,8 +68,9 @@ namespace MonoDevelop.D.Profiler.Gui
 		protected void OnNodeViewRowActivated (object o, RowActivatedArgs args)
 		{
 			TreeIter iter;
-			traceFunctionsStore.GetIter(out iter, args.Path);
-			string function = traceFunctionsStore.GetValue(iter,4) as String;
+			TreeModel model;
+			nodeView.Selection.GetSelected(out model, out iter);
+			string function = model.GetValue(iter,4) as String;
 			profilerPad.TraceParser.GoToFunction(function);
 			//profilerPad.TraceParser.GoToFunction("void main.foo(int)");
 		}

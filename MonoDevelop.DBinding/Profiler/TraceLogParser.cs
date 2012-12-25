@@ -28,18 +28,18 @@ namespace MonoDevelop.D.Profiler
 			string file = Path.Combine(folder, "trace.log");
 			if(File.Exists(file) == false)
 			{
-				profilerPadWidget.AddTracedFunction("trace.log not found..","","","","");
+				profilerPadWidget.AddTracedFunction(0,0,0,0,"trace.log not found..");
 				return;
 			}
 				
 			StreamReader reader = File.OpenText(file);
 			string line;
 			while ((line = reader.ReadLine()) != null) {
-				Match m = Regex.Match(line, @"^\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\S.*)");
+				Match m = Regex.Match(line, "^\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\S\\P{C}[\\P{C}.]*)$");
 				
 				if (m.Success) {
-					profilerPadWidget.AddTracedFunction(m.Groups[1].Value, m.Groups[2].Value, 
-					                                    m.Groups[3].Value, m.Groups[4].Value, m.Groups[5].Value);
+					profilerPadWidget.AddTracedFunction(long.Parse(m.Groups[1].Value), long.Parse(m.Groups[2].Value), 
+					                                    long.Parse(m.Groups[3].Value), long.Parse(m.Groups[4].Value), m.Groups[5].Value);
 				}
 			}
 		}
@@ -89,7 +89,7 @@ namespace MonoDevelop.D.Profiler
 		}
 		
 		private bool CompareMethod(DMethod methodA, DMethod methodB, ResolutionContext context)
-		{//TypeDeclarationResolver.ge
+		{
 			if(methodA.Name != methodB.Name )
 				return false;
 			return CompareParamethers(methodA, methodB, context);
