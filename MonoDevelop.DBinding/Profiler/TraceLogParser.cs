@@ -56,20 +56,21 @@ namespace MonoDevelop.D.Profiler
 			var modules = lastProfiledProject.ParseCache.LookupModuleName(moduleName);
 			
 			
-			foreach(var module in modules)
-			{
-				INode node = SearchFunctionNode(method,typeDeclaration, module);
+//			foreach(var module in modules)
+//			{
+			INode node = SearchFunctionNode(method,typeDeclaration, new DModule{ModuleName="___dummy___"});
 				if(node != null)
 				{
 					RefactoringCommandsExtension.GotoDeclaration(node);
 					return;
 				}
-			}
+//			}
 		}
 		
 		private INode SearchFunctionNode(DMethod method, ITypeDeclaration typeDeclaration, IBlockNode module)
 		{
 			ResolutionContext context = ResolutionContext.Create(lastProfiledProject.ParseCache, null,module);
+			context.ContextIndependentOptions = ResolutionOptions.IgnoreAllProtectionAttributes;
 			
 			AbstractType[] foundedTypes = TypeDeclarationResolver.Resolve(typeDeclaration,context);
 			foreach(AbstractType type in foundedTypes)
@@ -81,28 +82,44 @@ namespace MonoDevelop.D.Profiler
 				if(methodSymbol == null)
 					continue;
 				
-				if(CompareMethod(methodSymbol, method))
+				if(CompareMethod(methodSymbol, method, context))
 					return methodSymbol;
 			}
 			return null;
 		}
 		
-		private bool CompareMethod(DMethod methodA, DMethod methodB)
-		{
+		private bool CompareMethod(DMethod methodA, DMethod methodB, ResolutionContext context)
+		{//TypeDeclarationResolver.ge
 			if(methodA.Name != methodB.Name )
 				return false;
-			return CompareParamethers(methodA, methodB);
+			return CompareParamethers(methodA, methodB, context);
 		}
 		
-		private bool CompareParamethers(DMethod methodA, DMethod methodB)
+		private bool CompareParamethers(DMethod methodA, DMethod traceMethod, ResolutionContext context)
 		{
-			if(methodA.Parameters.Count != methodB.Parameters.Count)
+			if(methodA.Parameters.Count != traceMethod.Parameters.Count)
 				return false;
 			
 			for(int i = 0; i < methodA.Parameters.Count; i++)
-				if(methodA.Parameters[i].Type.ToString() != methodB.Parameters[i].Type.ToString())
-					return false;
+			{
+				if(methodA.Parameters[i].Type.ToString() != traceMethod.Parameters[i].Type.ToString())
+				{
+					AbstractType typeA = TypeDeclarationResolver.ResolveSingle(methodA.Parameters[i].Type, context);
+					AbstractType typeB = TypeDeclarationResolver.ResolveSingle(traceMethod.Parameters[i].Type, context);
+					if(ResultComparer.IsEqual(typeA is AliasedType ? ((AliasedType)typeA).Base :typeA, typeB) == false)
+						return false;
+				}
+			}
 			return true;
+		}
+		
+		private DModule FindModule(DProject project, ITypeDeclaration type)
+		{
+			foreach(DModule module in project.FilelinkModulesToInsert)
+			{
+			}
+			
+			return null;
 		}
 		
 		// buggy..

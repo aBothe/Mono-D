@@ -86,6 +86,11 @@ namespace MonoDevelop.D
 		/// </summary>
 		public readonly ParseCache LocalFileCache = new ParseCache { EnableUfcsCaching = false };
 		readonly List<DModule> _filelinkModulesToInsert = new List<DModule>();
+		
+		public List<DModule> FilelinkModulesToInsert
+		{
+			get{ return _filelinkModulesToInsert;}
+		}
 
 		public ParseCacheList ParseCache {
 			get {

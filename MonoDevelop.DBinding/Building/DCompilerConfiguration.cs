@@ -26,7 +26,7 @@ namespace MonoDevelop.D.Building
 		
 		public bool HasProfilerSupport
 		{
-			get { return Vendor == "DMD2" || Vendor == "DMD";}
+			get { return HasVendorProfilerSupport(Vendor); }
 		}
 		
 		public List<string> DefaultLibraries = new List<string>();
@@ -52,6 +52,11 @@ namespace MonoDevelop.D.Building
 			ParseCache.FinishedUfcsCaching += finishedUfcsAnalysis;
 		}
 		#endregion
+
+		public static bool HasVendorProfilerSupport(string vendor)
+		{
+			return vendor == "DMD2" || vendor == "DMD";
+		}
 
 		#region Configuration-related methods
 		public static bool ResetToDefaults(DCompilerConfiguration cfg)

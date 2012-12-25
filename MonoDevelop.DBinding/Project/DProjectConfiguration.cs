@@ -117,6 +117,8 @@ namespace MonoDevelop.D
 			CustomDebugIdentifiers = conf.CustomDebugIdentifiers;
 			DebugLevel = conf.DebugLevel;
 			gVersionIds = conf.gVersionIds;
+			UnittestMode = conf.UnittestMode;
+			ProfilerMode = conf.ProfilerMode;
 			//DebugMode = conf.DebugMode;
 			DDocDirectory = conf.DDocDirectory;
 
