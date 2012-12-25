@@ -113,14 +113,6 @@ namespace MonoDevelop.D.Profiler
 			return true;
 		}
 		
-		private DModule FindModule(DProject project, ITypeDeclaration type)
-		{
-			foreach(DModule module in project.FilelinkModulesToInsert)
-			{
-			}
-			
-			return null;
-		}
 		
 		// buggy..
 		private string ModuleName(ITypeDeclaration type)
