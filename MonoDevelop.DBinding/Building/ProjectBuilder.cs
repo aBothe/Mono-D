@@ -133,7 +133,7 @@ namespace MonoDevelop.D.Building
 			var stdError = "";
 
 			var linkerExecutable = Compiler.SourceCompilerCommand;
-			if (!Path.IsPathRooted (linkerExecutable)) {
+			if (!Path.IsPathRooted (linkerExecutable) && !string.IsNullOrEmpty(Compiler.BinPath)) {
 				linkerExecutable = Path.Combine (Compiler.BinPath, LinkTargetCfg.Linker);
 
 				if (!File.Exists (linkerExecutable))
@@ -232,7 +232,7 @@ namespace MonoDevelop.D.Building
 			string stdOutput;
 
 			var compilerExecutable = Compiler.SourceCompilerCommand;
-			if (!Path.IsPathRooted (compilerExecutable)) {
+			if (!Path.IsPathRooted (compilerExecutable) && !string.IsNullOrEmpty(Compiler.BinPath)) {
 				compilerExecutable = Path.Combine (Compiler.BinPath, Compiler.SourceCompilerCommand);
 
 				if (!File.Exists (compilerExecutable))
@@ -332,7 +332,7 @@ namespace MonoDevelop.D.Building
 			var linkerErrorOutput = "";
 
 			var linkerExecutable = LinkTargetCfg.Linker;
-			if (!Path.IsPathRooted (linkerExecutable)) {
+			if (!Path.IsPathRooted (linkerExecutable) && !string.IsNullOrEmpty(Compiler.BinPath)) {
 				linkerExecutable = Path.Combine (Compiler.BinPath, LinkTargetCfg.Linker);
 
 				if (!File.Exists (linkerExecutable))
