@@ -15,7 +15,7 @@ namespace MonoDevelop.D.Building
 		public readonly ParseCache ParseCache = new ParseCache ();
 		public string BinPath
 		{
-			get { return ParseCache.FallbackPath; }
+			get { return ParseCache.FallbackPath ?? ""; }
 			set { ParseCache.FallbackPath = value; }
 		}
 		
