@@ -48,16 +48,8 @@ namespace MonoDevelop.D.Profiler.Gui
 		public void AnalyseTraceFile(DProject project)
 		{
 			TraceParser.Clear();
-			
-			var config = project.GetConfiguration(Ide.IdeApp.Workspace.ActiveConfiguration) as DProjectConfiguration;
-			
-			if (config == null || ProfilerModeHandler.IsProfilerMode == false || 
-			    config.CompileTarget != DCompileTarget.Executable || 
-			    project.Compiler.HasProfilerSupport == false)
-			{
-				return;
-			}
-			TraceParser.Parse(project, config.OutputDirectory);
+			if(ProfilerModeHandler.IsProfilerMode)
+				TraceParser.Parse(project);
 		}
 	}
 }

@@ -7,6 +7,8 @@ using D_Parser.Parser;
 using D_Parser.Resolver.TypeResolution;
 using D_Parser.Resolver;
 using MonoDevelop.D.Refactoring;
+using MonoDevelop.D.Profiler.Commands;
+using MonoDevelop.D.Building;
 
 namespace MonoDevelop.D.Profiler
 {
@@ -20,17 +22,38 @@ namespace MonoDevelop.D.Profiler
 			profilerPadWidget = widget;
 		}
 		
-		public void Parse(DProject project, string folder)
+		public static string TraceLogFile(DProject project)
 		{
-			lastProfiledProject = project;
-			profilerPadWidget.ClearTracedFunctions();
+			if(project == null)
+				return null;
+		
+			var config = project.GetConfiguration(Ide.IdeApp.Workspace.ActiveConfiguration) as DProjectConfiguration;
 			
-			string file = Path.Combine(folder, "trace.log");
+			if (config == null || 
+			    config.CompileTarget != DCompileTarget.Executable || 
+			    project.Compiler.HasProfilerSupport == false)
+			{
+				return null;
+			}
+			
+			
+			string file = Path.Combine(config.OutputDirectory, "trace.log");
 			if(File.Exists(file) == false)
+				return null;
+			return file;
+		}
+		
+		public void Parse(DProject project)
+		{
+			string file = TraceLogFile(project);
+			if(file == null)
 			{
 				profilerPadWidget.AddTracedFunction(0,0,0,0,"trace.log not found..");
 				return;
 			}
+		
+			lastProfiledProject = project;
+			profilerPadWidget.ClearTracedFunctions();
 				
 			StreamReader reader = File.OpenText(file);
 			string line;

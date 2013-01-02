@@ -2622,6 +2622,7 @@ This is mainly activated when using the gdc compiler.</property>
         <property name="Label" translatable="yes">Scann</property>
         <property name="ShortLabel" translatable="yes">Scann</property>
         <property name="StockId">gtk-refresh</property>
+        <property name="Tooltip" translatable="yes">Analysing the trace.log of the selected project</property>
         <signal name="Activated" handler="OnRefreshActionActivated" />
       </action>
       <action id="switchProfilingModeAction">
@@ -2629,7 +2630,29 @@ This is mainly activated when using the gdc compiler.</property>
         <property name="Label" translatable="yes">Switch Profiling Mode</property>
         <property name="ShortLabel" translatable="yes">Switch Profiling Mode</property>
         <property name="StockId">gtk-yes</property>
+        <property name="Tooltip" translatable="yes">Enable / Disable Profiling Mode</property>
         <signal name="Activated" handler="OnSwitchProfilingModeActionActivated" />
+      </action>
+      <action id="openTraceLogAction">
+        <property name="Type">Action</property>
+        <property name="Label" translatable="yes" />
+        <property name="StockId">gtk-open</property>
+        <property name="Tooltip" translatable="yes">Open the trace.log file of the selected project</property>
+        <signal name="Activated" handler="OnOpenTraceLogActionActivated" />
+      </action>
+      <action id="copyRowAction">
+        <property name="Type">Action</property>
+        <property name="Label" translatable="yes" />
+        <property name="StockId">gtk-copy</property>
+        <property name="Tooltip" translatable="yes">Copy the selected row to the clipboard</property>
+        <signal name="Activated" handler="OnCopyRowActionActivated" />
+      </action>
+      <action id="goToFunctionAction">
+        <property name="Type">Action</property>
+        <property name="Label" translatable="yes" />
+        <property name="StockId">gtk-jump-to</property>
+        <property name="Tooltip" translatable="yes">Go to the selected function</property>
+        <signal name="Activated" handler="OnGoToFunctionActionActivated" />
       </action>
     </action-group>
     <property name="MemberName" />
@@ -2641,12 +2664,15 @@ This is mainly activated when using the gdc compiler.</property>
         <child>
           <widget class="Gtk.Toolbar" id="toolbar2">
             <property name="MemberName" />
-            <property name="ShowArrow">False</property>
+            <property name="Tooltip" translatable="yes" />
             <property name="ButtonStyle">Icons</property>
             <property name="IconSize">SmallToolbar</property>
             <node name="toolbar2" type="Toolbar">
               <node type="Toolitem" action="switchProfilingModeAction" />
               <node type="Toolitem" action="refreshAction" />
+              <node type="Toolitem" action="openTraceLogAction" />
+              <node type="Toolitem" action="copyRowAction" />
+              <node type="Toolitem" action="goToFunctionAction" />
             </node>
           </widget>
           <packing>

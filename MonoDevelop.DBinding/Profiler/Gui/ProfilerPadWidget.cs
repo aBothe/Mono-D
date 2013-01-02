@@ -8,6 +8,7 @@ using Gtk;
 using D_Parser.Parser;
 using D_Parser.Dom;
 using MonoDevelop.D.Profiler.Commands;
+using MonoDevelop.Core;
 
 namespace MonoDevelop.D.Profiler.Gui
 {
@@ -28,12 +29,12 @@ namespace MonoDevelop.D.Profiler.Gui
 			
 			nodeView.Model = cardSort;
 			
-			AddColumn("Num Calls", 0);
-			AddColumn("Tree Time", 1);
-			AddColumn("Func Time", 2);
+			AddColumn("Num Calls [µs]", 0);
+			AddColumn("Tree Time [µs]", 1);
+			AddColumn("Func Time [µs]", 2);
 			AddColumn("Per Call", 3);
 			AddColumn("Func Symbol", 4);
-			
+		
 			nodeView.ShowAll();
 			RefreshSwitchProfilingIcon();
 		}
@@ -55,11 +56,7 @@ namespace MonoDevelop.D.Profiler.Gui
 
 		protected void OnNodeViewRowActivated (object o, RowActivatedArgs args)
 		{
-			TreeIter iter;
-			TreeModel model;
-			nodeView.Selection.GetSelected(out model, out iter);
-			string function = model.GetValue(iter,4) as String;
-			profilerPad.TraceParser.GoToFunction(function);
+			GotoSelectedFunction();
 		}
 		
 		private void AddColumn(string title, int index)
@@ -83,6 +80,51 @@ namespace MonoDevelop.D.Profiler.Gui
 			ProfilerModeHandler.IsProfilerMode = !ProfilerModeHandler.IsProfilerMode;
 		}
 
+		protected void OnOpenTraceLogActionActivated (object sender, EventArgs e)
+		{
+			string file = TraceLogParser.TraceLogFile(IdeApp.ProjectOperations.CurrentSelectedProject as DProject);
+			if(file != null)
+				IdeApp.Workbench.OpenDocument(new FilePath(file), true);
+		}
+
+		protected void OnCopyRowActionActivated (object sender, EventArgs e)
+		{
+			Clipboard clipboard = GetClipboard(Gdk.Atom.Intern("CLIPBOARD", false));
+			
+			TreeIter iter;
+			TreeModel model;
+			nodeView.Selection.GetSelected(out model, out iter);
+		
+			if(model == null || nodeView.Selection.IterIsSelected(iter) == false)
+				return;
+				
+			long numCalls = (long)model.GetValue(iter,0);
+			long treeTime = (long)model.GetValue(iter,1);
+			long funcTime = (long)model.GetValue(iter,2);
+			long perCall = (long)model.GetValue(iter,3);
+			string function = model.GetValue(iter,4) as String;
+			
+			clipboard.Text = string.Join("\t",new object[]{numCalls,treeTime,funcTime,perCall,function});
+		}
+
+		protected void OnGoToFunctionActionActivated (object sender, EventArgs e)
+		{
+			GotoSelectedFunction();
+		}
+		
+		
+		private void GotoSelectedFunction()
+		{
+			TreeIter iter;
+			TreeModel model;
+			nodeView.Selection.GetSelected(out model, out iter);
+			
+			if(model == null || nodeView.Selection.IterIsSelected(iter) == false)
+				return;
+				
+			string function = model.GetValue(iter,4) as String;
+			profilerPad.TraceParser.GoToFunction(function);
+		}
 	}
 }
 
