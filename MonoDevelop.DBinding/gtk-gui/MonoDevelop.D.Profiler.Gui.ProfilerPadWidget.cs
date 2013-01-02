@@ -6,6 +6,7 @@ namespace MonoDevelop.D.Profiler.Gui
 	{
 		private global::Gtk.UIManager UIManager;
 		private global::Gtk.Action refreshAction;
+		private global::Gtk.Action switchProfilingModeAction;
 		private global::Gtk.VBox vbox2;
 		private global::Gtk.Toolbar toolbar2;
 		private global::Gtk.ScrolledWindow GtkScrolledWindow;
@@ -21,6 +22,9 @@ namespace MonoDevelop.D.Profiler.Gui
 			this.refreshAction = new global::Gtk.Action ("refreshAction", global::Mono.Unix.Catalog.GetString ("Scann"), null, "gtk-refresh");
 			this.refreshAction.ShortLabel = global::Mono.Unix.Catalog.GetString ("Scann");
 			w2.Add (this.refreshAction, null);
+			this.switchProfilingModeAction = new global::Gtk.Action ("switchProfilingModeAction", global::Mono.Unix.Catalog.GetString ("Switch Profiling Mode"), null, "gtk-yes");
+			this.switchProfilingModeAction.ShortLabel = global::Mono.Unix.Catalog.GetString ("Switch Profiling Mode");
+			w2.Add (this.switchProfilingModeAction, null);
 			this.UIManager.InsertActionGroup (w2, 0);
 			this.Name = "MonoDevelop.D.Profiler.Gui.ProfilerPadWidget";
 			// Container child MonoDevelop.D.Profiler.Gui.ProfilerPadWidget.Gtk.Container+ContainerChild
@@ -28,7 +32,7 @@ namespace MonoDevelop.D.Profiler.Gui
 			this.vbox2.Name = "vbox2";
 			this.vbox2.Spacing = 6;
 			// Container child vbox2.Gtk.Box+BoxChild
-			this.UIManager.AddUiFromString ("<ui><toolbar name='toolbar2'><toolitem name='refreshAction' action='refreshAction'/></toolbar></ui>");
+			this.UIManager.AddUiFromString ("<ui><toolbar name='toolbar2'><toolitem name='switchProfilingModeAction' action='switchProfilingModeAction'/><toolitem name='refreshAction' action='refreshAction'/></toolbar></ui>");
 			this.toolbar2 = ((global::Gtk.Toolbar)(this.UIManager.GetWidget ("/toolbar2")));
 			this.toolbar2.Name = "toolbar2";
 			this.toolbar2.ShowArrow = false;
@@ -59,6 +63,7 @@ namespace MonoDevelop.D.Profiler.Gui
 			w1.SetUiManager (UIManager);
 			this.Hide ();
 			this.refreshAction.Activated += new global::System.EventHandler (this.OnRefreshActionActivated);
+			this.switchProfilingModeAction.Activated += new global::System.EventHandler (this.OnSwitchProfilingModeActionActivated);
 			this.nodeView.RowActivated += new global::Gtk.RowActivatedHandler (this.OnNodeViewRowActivated);
 		}
 	}

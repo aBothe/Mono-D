@@ -8,6 +8,7 @@ using MonoDevelop.Core;
 using MonoDevelop.Core.ProgressMonitoring;
 using MonoDevelop.Projects;
 using System.Text;
+using MonoDevelop.D.Profiler.Commands;
 
 namespace MonoDevelop.D.Building
 {
@@ -460,7 +461,7 @@ namespace MonoDevelop.D.Building
 			if (cfg.UnittestMode)
 				sb.Append (p.UnittestFlag + " ");
 				
-			if(cfg.ProfilerMode && compiler.HasProfilerSupport)
+			if(ProfilerModeHandler.IsProfilerMode && compiler.HasProfilerSupport)
 				sb.Append (p.ProfileFlag + " -v ");
 
 			if (cfg.CustomDebugIdentifiers != null && cfg.CustomVersionIdentifiers.Length != 0)

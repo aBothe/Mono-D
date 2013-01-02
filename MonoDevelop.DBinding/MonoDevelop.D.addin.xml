@@ -295,29 +295,25 @@
 	<!-- Profiler -->
 	
 	<Extension path = "/MonoDevelop/Ide/Commands">
-        <Command id = "MonoDevelop.D.Profiler.ProfilerCommands.AnalyseTaceLog"
-                 defaultHandler = "MonoDevelop.D.Profiler.ProfilerCommandHandler" 
+        <Command id = "MonoDevelop.D.Profiler.Commands.ProfilerCommands.AnalyseTaceLog"
+                 defaultHandler = "MonoDevelop.D.Profiler.Commands.ProfilerCommandHandler" 
                  _label = "Analyse Tace Log" />
-        <!--Command id = "MonoDevelop.D.Profiler.ProfilerCommands.ProfilerCommandHandler"
-                 defaultHandler = "MonoDevelop.D.Profiler.ProfilerCommandHandler" 
-                 _label = "Profiler Commands"
-                 type="array" />
-        <Command id = "MonoDevelop.D.Profiler.ProfilerCommands.RunProfiler"
-                 _label = "Start D Profiler"
-                 _description = "Start D Profiler without Debuger" />
-        <Command id = "MonoDevelop.D.Profiler.ProfilerCommands.RunDebugProfiler"
-                 _label = "Start D Profiler with Debuger"
-                 _description = "Start D Profiler with Debuger" /-->
+        <Command id = "MonoDevelop.D.Profiler.Commands.ProfilerCommands.SwitchProfilerMode" 
+        		 type = "check"
+        		 defaultHandler = "MonoDevelop.D.Profiler.Commands.ProfilerModeHandler"
+				 _description = "enable/disable profiling mode"
+                 _label = "Activate Profiling" />
     </Extension>
 
-	<!--Extension path = "/MonoDevelop/Ide/MainMenu/Run">
-		<SeparatorItem id = "DatabaseSeparator"/>
-		<CommandItem id = "MonoDevelop.D.Profiler.ProfilerCommands.ProfilerCommandHandler" />
-	</Extension-->
+	<Extension path = "/MonoDevelop/Ide/MainMenu/Tools">
+		<ItemSet id = "D" _label = "D">
+			<CommandItem id = "MonoDevelop.D.Profiler.Commands.ProfilerCommands.SwitchProfilerMode" />
+		</ItemSet>
+	</Extension>
     
     
 	<Extension path = "/MonoDevelop/Ide/Pads">
-		<SolutionPad id = "MonoDevelop.D.Profiler.DProfilerPad" class = "MonoDevelop.D.Profiler.DProfilerPad" defaultPlacement = "Bottom" _label = "D Proifiler">
+		<SolutionPad id = "MonoDevelop.D.Profiler.DProfilerPad" class = "MonoDevelop.D.Profiler.Gui.DProfilerPad" defaultPlacement = "Bottom" _label = "D Proifiler">
 		</SolutionPad>
 	</Extension>
     

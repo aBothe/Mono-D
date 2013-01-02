@@ -43,6 +43,10 @@ namespace MonoDevelop.D.Profiler
 				}
 			}
 		}
+		public void Clear()
+		{
+			profilerPadWidget.ClearTracedFunctions();
+		}
 		
 		public void GoToFunction(string functionSymbol)
 		{
@@ -51,20 +55,10 @@ namespace MonoDevelop.D.Profiler
 				
 			ITypeDeclaration typeDeclaration;
 			DMethod method = DParser.ParseMethodDeclarationHeader(functionSymbol, out typeDeclaration);
-			string moduleName = ModuleName(typeDeclaration);
-			
-			var modules = lastProfiledProject.ParseCache.LookupModuleName(moduleName);
-			
-			
-//			foreach(var module in modules)
-//			{
-			INode node = SearchFunctionNode(method,typeDeclaration, new DModule{ModuleName="___dummy___"});
-				if(node != null)
-				{
-					RefactoringCommandsExtension.GotoDeclaration(node);
-					return;
-				}
-//			}
+				
+			INode node = SearchFunctionNode(method, typeDeclaration, new DModule{ModuleName="___dummy___"});
+			if(node != null)
+				RefactoringCommandsExtension.GotoDeclaration(node);
 		}
 		
 		private INode SearchFunctionNode(DMethod method, ITypeDeclaration typeDeclaration, IBlockNode module)
@@ -73,6 +67,9 @@ namespace MonoDevelop.D.Profiler
 			context.ContextIndependentOptions = ResolutionOptions.IgnoreAllProtectionAttributes;
 			
 			AbstractType[] foundedTypes = TypeDeclarationResolver.Resolve(typeDeclaration,context);
+			if(foundedTypes == null)
+				return null;
+				
 			foreach(AbstractType type in foundedTypes)
 			{
 				MemberSymbol symbol = type as MemberSymbol;
@@ -111,17 +108,6 @@ namespace MonoDevelop.D.Profiler
 				}
 			}
 			return true;
-		}
-		
-		
-		// buggy..
-		private string ModuleName(ITypeDeclaration type)
-		{
-			if(type.InnerDeclaration != null)
-				return ModuleName(type.InnerDeclaration);
-			if(type is IdentifierDeclaration)
-				return ((IdentifierDeclaration)type).Id;
-			return null;
 		}
 	}
 }

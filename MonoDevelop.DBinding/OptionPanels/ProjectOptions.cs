@@ -68,10 +68,6 @@ namespace MonoDevelop.D.OptionPanels
 			text_ObjectsDirectory.Text = config.ObjectDirectory;
 			text_DDocDir.Text = config.DDocDirectory;
 			
-			cbProfiler.Sensitive = project.Compiler.HasProfilerSupport;
-			cbProfiler.Active = config.ProfilerMode;
-			cbUnittest.Active = config.UnittestMode;
-
 			if(config.CustomDebugIdentifiers==null)
 				text_debugConstants.Text = "";
 			else
@@ -140,10 +136,7 @@ namespace MonoDevelop.D.OptionPanels
 			if (cmbCompiler.GetActiveIter (out iter))
 				project.UsedCompilerVendor = cmbCompiler.Model.GetValue (iter, 0) as string;
 			
-			// Store args
-			configuration.UnittestMode = cbUnittest.Active;
-			configuration.ProfilerMode = cbProfiler.Active;
-			
+			// Store args			
 			configuration.ExtraCompilerArguments = extraCompilerTextView.Buffer.Text;
 			configuration.ExtraLinkerArguments = extraLinkerTextView.Buffer.Text;
 			
@@ -229,24 +222,11 @@ namespace MonoDevelop.D.OptionPanels
 		protected virtual void OnUseDefaultCompilerChanged ()
 		{
 			cmbCompiler.Sensitive = (!cbUseDefaultCompiler.Active);	
-			OnCmbCompilerChanged(null,null);	
 		}
 				
 		protected void cbUseDefaultCompiler_Clicked (object sender, System.EventArgs e)
 		{
 			OnUseDefaultCompilerChanged ();
-		}
-
-		protected void OnCmbCompilerChanged (object sender, EventArgs e)
-		{
-			Gtk.TreeIter iter;
-			if (cmbCompiler.GetActiveIter (out iter) == false)
-				return;
-			string vendor = cmbCompiler.Model.GetValue (iter, 0) as string;
-			bool hasProfiler = DCompilerConfiguration.HasVendorProfilerSupport(vendor);
-			if(hasProfiler == false)
-				cbProfiler.Active = configuration.ProfilerMode = false;
-			cbProfiler.Sensitive = hasProfiler;
 		}
 	}
 	

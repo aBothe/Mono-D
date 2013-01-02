@@ -5,6 +5,8 @@ using MonoDevelop.Core.Serialization;
 using MonoDevelop.D.Building;
 using MonoDevelop.Projects;
 using MonoDevelop.Core;
+using MonoDevelop.D.Profiler;
+using MonoDevelop.D.Profiler.Commands;
 
 namespace MonoDevelop.D
 {
@@ -22,8 +24,6 @@ namespace MonoDevelop.D
 		public string Output = "";
 		[ItemProperty("UnittestMode")]
 		public bool UnittestMode = false;
-		[ItemProperty("ProfilerMode")]
-		public bool ProfilerMode = false;	
 		[ItemProperty("ExtraCompilerArguments", DefaultValue = "")]
 		public string ExtraCompilerArguments = "";
 		[ItemProperty("ExtraLinkerArguments", DefaultValue = "")]
@@ -118,7 +118,6 @@ namespace MonoDevelop.D
 			DebugLevel = conf.DebugLevel;
 			gVersionIds = conf.gVersionIds;
 			UnittestMode = conf.UnittestMode;
-			ProfilerMode = conf.ProfilerMode;
 			//DebugMode = conf.DebugMode;
 			DDocDirectory = conf.DDocDirectory;
 

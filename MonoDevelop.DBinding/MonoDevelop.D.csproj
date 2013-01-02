@@ -195,12 +195,13 @@
     <Compile Include="Refactoring\Renaming\DRenameNameDialog.cs" />
     <Compile Include="gtk-gui\MonoDevelop.D.DRenameNameDialog.cs" />
     <Compile Include="Refactoring\Renaming\DRenameHandler.cs" />
-    <Compile Include="Profiler\ProfilerCommands.cs" />
     <Compile Include="Profiler\Gui\ProfilerPadWidget.cs" />
     <Compile Include="gtk-gui\MonoDevelop.D.Profiler.Gui.ProfilerPadWidget.cs" />
     <Compile Include="Profiler\TraceLogParser.cs" />
-    <Compile Include="Profiler\ProfilerCommandHandler.cs" />
-    <Compile Include="Profiler\DProfilerPad.cs" />
+    <Compile Include="Profiler\Commands\ProfilerCommands.cs" />
+    <Compile Include="Profiler\Commands\ProfilerCommandHandler.cs" />
+    <Compile Include="Profiler\Commands\ProfilerModeHandler.cs" />
+    <Compile Include="Profiler\Gui\DProfilerPad.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
@@ -320,6 +321,7 @@
   <ItemGroup>
     <Folder Include="Profiler\" />
     <Folder Include="Profiler\Gui\" />
+    <Folder Include="Profiler\Commands\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Parser\DParser2\DParser2.csproj">
