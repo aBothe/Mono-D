@@ -11,6 +11,7 @@
 		<version>-d-version</version>
 		<debug>-d-debug</debug>
 		<unittest>-unittest</unittest>
+		<profile></profile>
 		<ddFlag>-D</ddFlag>
 		<ddMacroDefinition>"{0}"</ddMacroDefinition>
 		<ddDir>"-Dd{0}"</ddDir>

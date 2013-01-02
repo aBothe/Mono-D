@@ -24,6 +24,11 @@ namespace MonoDevelop.D.Building
 		public readonly CmdLineArgumentPatterns ArgumentPatterns = new CmdLineArgumentPatterns();
 		public bool EnableGDCLibPrefixing = false;
 		
+		public bool HasProfilerSupport
+		{
+			get { return HasVendorProfilerSupport(Vendor); }
+		}
+		
 		public List<string> DefaultLibraries = new List<string>();
 		public readonly Dictionary<DCompileTarget, LinkTargetConfiguration> LinkTargetConfigurations = new Dictionary<DCompileTarget, LinkTargetConfiguration> ();
 		/// <summary>
@@ -47,6 +52,11 @@ namespace MonoDevelop.D.Building
 			ParseCache.FinishedUfcsCaching += finishedUfcsAnalysis;
 		}
 		#endregion
+
+		public static bool HasVendorProfilerSupport(string vendor)
+		{
+			return vendor == "DMD2" || vendor == "DMD";
+		}
 
 		#region Configuration-related methods
 		public static bool ResetToDefaults(DCompilerConfiguration cfg)
@@ -343,6 +353,7 @@ namespace MonoDevelop.D.Building
 		public string VersionDefinition = "-version";
 		public string DebugDefinition = "-debug";
 		public string UnittestFlag = "-unittest";
+		public string ProfileFlag = "-profile";
 
 		public string EnableDDocFlag = "-D";
 		public string DDocDefinitionFile = "\"{0}\""; // for gdc it's "-fdoc-inc="
@@ -356,6 +367,7 @@ namespace MonoDevelop.D.Building
 			VersionDefinition = c.VersionDefinition;
 			DebugDefinition = c.DebugDefinition;
 			UnittestFlag = c.UnittestFlag;
+			ProfileFlag = c.ProfileFlag;
 			EnableDDocFlag = c.EnableDDocFlag;
 			DDocDefinitionFile = c.DDocDefinitionFile;
 			DDocExportDirectory = c.DDocExportDirectory;
@@ -382,6 +394,10 @@ namespace MonoDevelop.D.Building
 			x.WriteStartElement("unittest");
 			x.WriteCData(UnittestFlag);
 			x.WriteEndElement();
+			
+			x.WriteStartElement("profile");
+			x.WriteCData(ProfileFlag);
+			x.WriteEndElement();
 
 			x.WriteStartElement("ddFlag");
 			x.WriteCData(EnableDDocFlag);
@@ -399,6 +415,7 @@ namespace MonoDevelop.D.Building
 		public void ReadFrom(XmlReader x)
 		{
 			while (x.Read())
+			{
 				switch (x.LocalName)
 				{
 					case "obj":
@@ -416,6 +433,9 @@ namespace MonoDevelop.D.Building
 					case "unittest":
 						UnittestFlag = x.ReadString();
 						break;
+				case "profile":
+					ProfileFlag = x.ReadString();
+					break;
 					case "ddFlag":
 						EnableDDocFlag = x.ReadString();
 						break;
@@ -426,6 +446,7 @@ namespace MonoDevelop.D.Building
 						DDocExportDirectory = x.ReadString();
 						break;
 				}
+			}
 		}
 	}
 

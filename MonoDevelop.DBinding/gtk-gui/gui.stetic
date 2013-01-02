@@ -12,7 +12,7 @@
     <widget-library name="../../ext/MonoDevelop.SourceEditor2.dll" />
     <widget-library name="../bin/Debug/MonoDevelop.D.dll" internal="true" />
   </import>
-  <widget class="Gtk.Bin" id="MonoDevelop.D.OptionPanels.ProjectOptions" design-size="634 416">
+  <widget class="Gtk.Bin" id="MonoDevelop.D.OptionPanels.ProjectOptions" design-size="652 466">
     <property name="MemberName" />
     <child>
       <widget class="Gtk.Notebook" id="notebook1">
@@ -566,12 +566,13 @@ Example:
                 <property name="BottomAttach">10</property>
                 <property name="LeftAttach">1</property>
                 <property name="RightAttach">2</property>
-                <property name="AutoSize">False</property>
+                <property name="AutoSize">True</property>
                 <property name="XOptions">Fill</property>
+                <property name="YOptions">Fill</property>
                 <property name="XExpand">False</property>
                 <property name="XFill">True</property>
                 <property name="XShrink">False</property>
-                <property name="YExpand">True</property>
+                <property name="YExpand">False</property>
                 <property name="YFill">True</property>
                 <property name="YShrink">False</property>
               </packing>
@@ -593,7 +594,7 @@ A value of zero (0) will not emit a -debug flag to the compilation argument stri
                 <property name="BottomAttach">6</property>
                 <property name="LeftAttach">1</property>
                 <property name="RightAttach">2</property>
-                <property name="AutoSize">False</property>
+                <property name="AutoSize">True</property>
                 <property name="XOptions">Fill</property>
                 <property name="YOptions">Fill</property>
                 <property name="XExpand">False</property>
@@ -1353,7 +1354,7 @@ Important: May affect code completion if omitted/written into extra compiler opt
       </widget>
     </child>
   </widget>
-  <widget class="Gtk.Bin" id="MonoDevelop.D.OptionPanels.DCompilerOptions" design-size="530 372">
+  <widget class="Gtk.Bin" id="MonoDevelop.D.OptionPanels.DCompilerOptions" design-size="530 386">
     <property name="MemberName" />
     <child>
       <widget class="Gtk.VBox" id="vbox8">
@@ -2610,6 +2611,98 @@ This is mainly activated when using the gdc compiler.</property>
             <property name="Expand">False</property>
             <property name="Fill">False</property>
           </packing>
+        </child>
+      </widget>
+    </child>
+  </widget>
+  <widget class="Gtk.Bin" id="MonoDevelop.D.Profiler.Gui.ProfilerPadWidget" design-size="642 457">
+    <action-group name="Default">
+      <action id="refreshAction">
+        <property name="Type">Action</property>
+        <property name="Label" translatable="yes">Scann</property>
+        <property name="ShortLabel" translatable="yes">Scann</property>
+        <property name="StockId">gtk-refresh</property>
+        <property name="Tooltip" translatable="yes">Analysing the trace.log of the selected project</property>
+        <signal name="Activated" handler="OnRefreshActionActivated" />
+      </action>
+      <action id="switchProfilingModeAction">
+        <property name="Type">Action</property>
+        <property name="Label" translatable="yes">Switch Profiling Mode</property>
+        <property name="ShortLabel" translatable="yes">Switch Profiling Mode</property>
+        <property name="StockId">gtk-yes</property>
+        <property name="Tooltip" translatable="yes">Enable / Disable Profiling Mode</property>
+        <signal name="Activated" handler="OnSwitchProfilingModeActionActivated" />
+      </action>
+      <action id="openTraceLogAction">
+        <property name="Type">Action</property>
+        <property name="Label" translatable="yes" />
+        <property name="StockId">gtk-open</property>
+        <property name="Tooltip" translatable="yes">Open the trace.log file of the selected project</property>
+        <signal name="Activated" handler="OnOpenTraceLogActionActivated" />
+      </action>
+      <action id="copyRowAction">
+        <property name="Type">Action</property>
+        <property name="Label" translatable="yes" />
+        <property name="StockId">gtk-copy</property>
+        <property name="Tooltip" translatable="yes">Copy the selected row to the clipboard</property>
+        <signal name="Activated" handler="OnCopyRowActionActivated" />
+      </action>
+      <action id="goToFunctionAction">
+        <property name="Type">Action</property>
+        <property name="Label" translatable="yes" />
+        <property name="StockId">gtk-jump-to</property>
+        <property name="Tooltip" translatable="yes">Go to the selected function</property>
+        <signal name="Activated" handler="OnGoToFunctionActionActivated" />
+      </action>
+    </action-group>
+    <property name="MemberName" />
+    <property name="Visible">False</property>
+    <child>
+      <widget class="Gtk.VBox" id="vbox2">
+        <property name="MemberName" />
+        <property name="Spacing">6</property>
+        <child>
+          <widget class="Gtk.Toolbar" id="toolbar2">
+            <property name="MemberName" />
+            <property name="Tooltip" translatable="yes" />
+            <property name="ButtonStyle">Icons</property>
+            <property name="IconSize">SmallToolbar</property>
+            <node name="toolbar2" type="Toolbar">
+              <node type="Toolitem" action="switchProfilingModeAction" />
+              <node type="Toolitem" action="refreshAction" />
+              <node type="Toolitem" action="openTraceLogAction" />
+              <node type="Toolitem" action="copyRowAction" />
+              <node type="Toolitem" action="goToFunctionAction" />
+            </node>
+          </widget>
+          <packing>
+            <property name="Position">0</property>
+            <property name="AutoSize">True</property>
+            <property name="Expand">False</property>
+            <property name="Fill">False</property>
+          </packing>
+        </child>
+        <child>
+          <widget class="Gtk.ScrolledWindow" id="GtkScrolledWindow">
+            <property name="MemberName" />
+            <property name="ShadowType">In</property>
+            <child>
+              <widget class="Gtk.NodeView" id="nodeView">
+                <property name="MemberName" />
+                <property name="CanFocus">True</property>
+                <property name="ShowScrollbars">True</property>
+                <property name="Reorderable">True</property>
+                <signal name="RowActivated" handler="OnNodeViewRowActivated" />
+              </widget>
+            </child>
+          </widget>
+          <packing>
+            <property name="Position">1</property>
+            <property name="AutoSize">True</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder />
         </child>
       </widget>
     </child>

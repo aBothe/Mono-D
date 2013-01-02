@@ -291,5 +291,30 @@
   <Extension path = "/MonoDevelop/Refactoring/CodeActionSource">
     <Source class ="MonoDevelop.D.Refactoring.CodeActions.DCodeActionSource"/>
   </Extension>
+	
+	<!-- Profiler -->
+	
+	<Extension path = "/MonoDevelop/Ide/Commands">
+        <Command id = "MonoDevelop.D.Profiler.Commands.ProfilerCommands.AnalyseTaceLog"
+                 defaultHandler = "MonoDevelop.D.Profiler.Commands.ProfilerCommandHandler" 
+                 _label = "Analyse Tace Log" />
+        <Command id = "MonoDevelop.D.Profiler.Commands.ProfilerCommands.SwitchProfilerMode" 
+        		 type = "check"
+        		 defaultHandler = "MonoDevelop.D.Profiler.Commands.ProfilerModeHandler"
+				 _description = "enable/disable profiling mode"
+                 _label = "Activate Profiling" />
+    </Extension>
 
+	<Extension path = "/MonoDevelop/Ide/MainMenu/Tools">
+		<ItemSet id = "D" _label = "D">
+			<CommandItem id = "MonoDevelop.D.Profiler.Commands.ProfilerCommands.SwitchProfilerMode" />
+		</ItemSet>
+	</Extension>
+    
+    
+	<Extension path = "/MonoDevelop/Ide/Pads">
+		<SolutionPad id = "MonoDevelop.D.Profiler.DProfilerPad" class = "MonoDevelop.D.Profiler.Gui.DProfilerPad" defaultPlacement = "Bottom" _label = "D Proifiler">
+		</SolutionPad>
+	</Extension>
+    
 </Addin>
