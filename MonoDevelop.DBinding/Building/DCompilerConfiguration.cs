@@ -15,7 +15,7 @@ namespace MonoDevelop.D.Building
 		public readonly ParseCache ParseCache = new ParseCache ();
 		public string BinPath
 		{
-			get { return ParseCache.FallbackPath; }
+			get { return ParseCache.FallbackPath ?? ""; }
 			set { ParseCache.FallbackPath = value; }
 		}
 		
@@ -390,7 +390,7 @@ namespace MonoDevelop.D.Building
 			x.WriteStartElement("debug");
 			x.WriteCData(DebugDefinition);
 			x.WriteEndElement();
-			
+
 			x.WriteStartElement("unittest");
 			x.WriteCData(UnittestFlag);
 			x.WriteEndElement();
