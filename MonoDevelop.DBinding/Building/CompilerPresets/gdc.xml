@@ -11,6 +11,7 @@
 		<version>-fversion</version>
 		<debug>-fdebug</debug>
 		<unittest>-funittest</unittest>
+		<profile></profile>
 		<ddFlag></ddFlag>
 		<ddMacroDefinition>"-fdoc-inc={0}"</ddMacroDefinition>
 		<ddDir>"-fdoc-dir={0}"</ddDir>

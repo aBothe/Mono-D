@@ -5,6 +5,8 @@ using MonoDevelop.Core.Serialization;
 using MonoDevelop.D.Building;
 using MonoDevelop.Projects;
 using MonoDevelop.Core;
+using MonoDevelop.D.Profiler;
+using MonoDevelop.D.Profiler.Commands;
 
 namespace MonoDevelop.D
 {
@@ -115,6 +117,7 @@ namespace MonoDevelop.D
 			CustomDebugIdentifiers = conf.CustomDebugIdentifiers;
 			DebugLevel = conf.DebugLevel;
 			gVersionIds = conf.gVersionIds;
+			UnittestMode = conf.UnittestMode;
 			//DebugMode = conf.DebugMode;
 			DDocDirectory = conf.DDocDirectory;
 

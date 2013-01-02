@@ -67,7 +67,7 @@ namespace MonoDevelop.D.OptionPanels
 			text_TargetFile.Text = config.Output;
 			text_ObjectsDirectory.Text = config.ObjectDirectory;
 			text_DDocDir.Text = config.DDocDirectory;
-
+			
 			if(config.CustomDebugIdentifiers==null)
 				text_debugConstants.Text = "";
 			else
@@ -136,7 +136,7 @@ namespace MonoDevelop.D.OptionPanels
 			if (cmbCompiler.GetActiveIter (out iter))
 				project.UsedCompilerVendor = cmbCompiler.Model.GetValue (iter, 0) as string;
 			
-			// Store args
+			// Store args			
 			configuration.ExtraCompilerArguments = extraCompilerTextView.Buffer.Text;
 			configuration.ExtraLinkerArguments = extraLinkerTextView.Buffer.Text;
 			
@@ -221,7 +221,7 @@ namespace MonoDevelop.D.OptionPanels
 			
 		protected virtual void OnUseDefaultCompilerChanged ()
 		{
-			cmbCompiler.Sensitive = (!cbUseDefaultCompiler.Active);			
+			cmbCompiler.Sensitive = (!cbUseDefaultCompiler.Active);	
 		}
 				
 		protected void cbUseDefaultCompiler_Clicked (object sender, System.EventArgs e)

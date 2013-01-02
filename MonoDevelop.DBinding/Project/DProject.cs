@@ -15,6 +15,10 @@ using MonoDevelop.Projects;
 using D_Parser.Misc;
 using MonoDevelop.D.Parser;
 using D_Parser.Resolver;
+using MonoDevelop.D.Profiler;
+using MonoDevelop.Ide.Gui;
+using MonoDevelop.Components.Commands;
+using MonoDevelop.D.Profiler.Commands;
 
 namespace MonoDevelop.D
 {
@@ -608,12 +612,16 @@ namespace MonoDevelop.D
 				op.WaitForCompleted ();
 
 				monitor.Log.WriteLine ("The operation exited with code: {0}", op.ExitCode);
+				
 			} catch (Exception ex) {
 				monitor.ReportError ("Cannot execute \"" + conf.Output + "\"", ex);
 			} finally {
 				operationMonitor.Dispose ();
 				console.Dispose ();
 			}
+			
+			if(ProfilerModeHandler.IsProfilerMode && Compiler.HasProfilerSupport)
+				IdeApp.CommandService.DispatchCommand( "MonoDevelop.D.Profiler.Commands.ProfilerCommands.AnalyseTaceLog");
 		}
 		#endregion
 
