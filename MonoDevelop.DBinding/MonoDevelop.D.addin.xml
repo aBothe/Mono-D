@@ -6,7 +6,7 @@
 	copyright=""
 	description="D Language Binding"
 	category="Language bindings"
-	version="0.4.5">
+	version="0.4.6">
 
   <!-- Resources -->
 
@@ -313,7 +313,7 @@
     
     
 	<Extension path = "/MonoDevelop/Ide/Pads">
-		<SolutionPad id = "MonoDevelop.D.Profiler.DProfilerPad" class = "MonoDevelop.D.Profiler.Gui.DProfilerPad" defaultPlacement = "Bottom" _label = "D Proifiler">
+		<SolutionPad id = "MonoDevelop.D.Profiler.DProfilerPad" class = "MonoDevelop.D.Profiler.Gui.DProfilerPad" defaultPlacement = "Bottom" _label = "D Profiler">
 		</SolutionPad>
 	</Extension>
     
