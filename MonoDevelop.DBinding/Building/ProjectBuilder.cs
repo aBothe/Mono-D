@@ -111,7 +111,7 @@ namespace MonoDevelop.D.Building
 
 		
 
-			var argumentString = FillInMacros (AdditionalCompilerAttributes +
+			var argumentString = FillInMacros (AdditionalCompilerAttributes.Trim() +
                 BuildArguments.OneStepBuildArguments.Trim () + " " +
                 BuildConfig.ExtraCompilerArguments.Trim () + " " +
                 BuildConfig.ExtraLinkerArguments.Trim (),
@@ -220,7 +220,7 @@ namespace MonoDevelop.D.Building
 			var obj = GetRelativeObjectFileName (BuildConfig.ObjectDirectory,f, DCompilerService.ObjectExtension);
 
 			// Create argument string for source file compilation.
-			var dmdArgs = FillInMacros(AdditionalCompilerAttributes + BuildArguments.CompilerArguments + " " + BuildConfig.ExtraCompilerArguments, new DCompilerMacroProvider
+			var dmdArgs = FillInMacros(AdditionalCompilerAttributes.Trim() + BuildArguments.CompilerArguments.Trim() + " " + BuildConfig.ExtraCompilerArguments.Trim(), new DCompilerMacroProvider
             {
                 IncludePathConcatPattern = Compiler.ArgumentPatterns.IncludePathPattern,
                 SourceFile = f.FilePath.ToRelative(Project.BaseDirectory),
