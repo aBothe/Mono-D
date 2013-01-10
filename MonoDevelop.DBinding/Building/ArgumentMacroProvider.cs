@@ -25,6 +25,7 @@ namespace MonoDevelop.D.Building
 				if(value!=null)
 					foreach(var p in value)
 						importPaths+=string.Format(IncludePathConcatPattern,p)+' ';
+				importPaths = importPaths.TrimEnd();
 			}
 		}
 		
@@ -52,6 +53,7 @@ namespace MonoDevelop.D.Building
 				if(value!=null)
 					foreach (var o in value)
 						objects += string.Format(ObjectsStringPattern,o)+ ' ';
+				objects = objects.TrimEnd();
 			}
 		}
 		public string TargetFile;
@@ -66,6 +68,7 @@ namespace MonoDevelop.D.Building
 				if(value!=null)
 					foreach(var p in value)
 						libs+='"'+p+'"'+' ';
+				libs = libs.TrimEnd();
 			}
 		}
 		
@@ -103,6 +106,7 @@ namespace MonoDevelop.D.Building
                 if (value != null)
                     foreach (var o in value)
                         sources += string.Format(ObjectsStringPattern, o) + ' ';
+                sources = sources.TrimEnd();
             }
         }
         
@@ -114,6 +118,7 @@ namespace MonoDevelop.D.Building
                 if (value != null)
                     foreach (var p in value)
                         libs += '"' + p + '"' + ' ';
+                libs = libs.TrimEnd();
             }
         }
 
@@ -125,6 +130,7 @@ namespace MonoDevelop.D.Building
                 if (value != null)
                     foreach (var p in value)
                         includes += string.Format(IncludesStringPattern,p)+" ";
+                includes = includes.TrimEnd();
             }
         }
 

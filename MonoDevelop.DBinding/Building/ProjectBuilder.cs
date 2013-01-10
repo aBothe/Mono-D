@@ -111,10 +111,10 @@ namespace MonoDevelop.D.Building
 
 		
 
-			var argumentString = FillInMacros (AdditionalCompilerAttributes.Trim() +
-                BuildArguments.OneStepBuildArguments.Trim () + " " +
-                BuildConfig.ExtraCompilerArguments.Trim () + " " +
-                BuildConfig.ExtraLinkerArguments.Trim (),
+			var argumentString = FillInMacros ((string.IsNullOrEmpty(AdditionalCompilerAttributes) ? string.Empty : (AdditionalCompilerAttributes.Trim() + " ")) +
+                BuildArguments.OneStepBuildArguments.Trim () + 
+                (string.IsNullOrEmpty(BuildConfig.ExtraCompilerArguments) ? string.Empty : (" " +BuildConfig.ExtraCompilerArguments.Trim ())) +
+                (string.IsNullOrEmpty(BuildConfig.ExtraLinkerArguments) ? string.Empty : (" "+BuildConfig.ExtraLinkerArguments.Trim ())),
             new OneStepBuildArgumentMacroProvider
             {
                 ObjectsStringPattern = Compiler.ArgumentPatterns.ObjectFileLinkPattern,
@@ -220,7 +220,10 @@ namespace MonoDevelop.D.Building
 			var obj = GetRelativeObjectFileName (BuildConfig.ObjectDirectory,f, DCompilerService.ObjectExtension);
 
 			// Create argument string for source file compilation.
-			var dmdArgs = FillInMacros(AdditionalCompilerAttributes.Trim() + BuildArguments.CompilerArguments.Trim() + " " + BuildConfig.ExtraCompilerArguments.Trim(), new DCompilerMacroProvider
+			var dmdArgs = FillInMacros((string.IsNullOrEmpty(AdditionalCompilerAttributes) ? string.Empty : (AdditionalCompilerAttributes.Trim() + " ")) +
+			                           BuildArguments.CompilerArguments.Trim() + 
+			                           (string.IsNullOrEmpty(BuildConfig.ExtraCompilerArguments) ? string.Empty : (" " + BuildConfig.ExtraCompilerArguments.Trim())),
+			new DCompilerMacroProvider
             {
                 IncludePathConcatPattern = Compiler.ArgumentPatterns.IncludePathPattern,
                 SourceFile = f.FilePath.ToRelative(Project.BaseDirectory),
@@ -319,7 +322,8 @@ namespace MonoDevelop.D.Building
 
 			// b.Build linker argument string
 			// Build argument preparation
-			var linkArgs = FillInMacros (BuildArguments.LinkerArguments + " " + BuildConfig.ExtraLinkerArguments,
+			var linkArgs = FillInMacros (BuildArguments.LinkerArguments.Trim() + 
+			                             (string.IsNullOrEmpty(BuildConfig.ExtraLinkerArguments) ? string.Empty : (" " + BuildConfig.ExtraLinkerArguments.Trim())),
                 new DLinkerMacroProvider
                 {
                     ObjectsStringPattern = Compiler.ArgumentPatterns.ObjectFileLinkPattern,
@@ -496,10 +500,9 @@ namespace MonoDevelop.D.Building
 				sb.AppendFormat(p.DDocExportDirectory,Path.IsPathRooted(cfg.DDocDirectory)?
 				                cfg.DDocDirectory : 
 				              	(new FilePath(cfg.DDocDirectory).ToAbsolute(cfg.Project.BaseDirectory)).ToString());
-				sb.Append(" ");
 			}
 
-			return sb.ToString();
+			return sb.ToString().Trim();
 		}
 
 		static IEnumerable<string> HandleGdcSpecificLibraryReferencing(IEnumerable<string> libs,string baseDirectory)
