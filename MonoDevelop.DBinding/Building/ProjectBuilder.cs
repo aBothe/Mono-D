@@ -2,13 +2,18 @@
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
-using System.Text.RegularExpressions;
 using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+
+using D_Parser.Dom;
+using D_Parser.Misc;
+using D_Parser.Resolver;
+using D_Parser.Resolver.TypeResolution;
 using MonoDevelop.Core;
 using MonoDevelop.Core.ProgressMonitoring;
-using MonoDevelop.Projects;
-using System.Text;
 using MonoDevelop.D.Profiler.Commands;
+using MonoDevelop.Projects;
 
 namespace MonoDevelop.D.Building
 {
@@ -532,10 +537,24 @@ namespace MonoDevelop.D.Building
 		static Regex optlinkRegex = new Regex (
             @"\n(?<obj>[a-zA-Z0-9/\\.]+)\((?<module>[a-zA-Z0-9]+)\) (?<offset>[a-zA-Z0-9 ]+)?(\r)?\n Error (?<code>\d*): (?<message>[a-zA-Z0-9_ :]+)",
             RegexOptions.Compiled | RegexOptions.ExplicitCapture);
+		
+		static Regex symbolUndefRegex = new Regex (
+            @"Symbol Undefined (?<mangle>[a-zA-Z0-9_]+)",
+            RegexOptions.Compiled | RegexOptions.ExplicitCapture);
 
 		private void HandleOptLinkOutput (BuildResult br, string linkerOutput)
 		{
 			var matches = optlinkRegex.Matches (linkerOutput);
+			
+			var ctxt = ResolutionContext.Create(Project == null ? 
+			                                    ParseCacheList.Create(DCompilerService.Instance.GetDefaultCompiler().ParseCache) : 
+			                                    Project.ParseCache, null, null);
+			
+			ctxt.ContextIndependentOptions = 
+				ResolutionOptions.IgnoreAllProtectionAttributes | 
+				ResolutionOptions.DontResolveBaseTypes |
+				ResolutionOptions.DontResolveBaseClasses | 
+				ResolutionOptions.DontResolveAliases;
 
 			foreach (Match match in matches) {
 				var error = new BuildError ();
@@ -550,8 +569,37 @@ namespace MonoDevelop.D.Building
 							break;
 						}
 				}
-
-				error.ErrorText = "Linker error " + match.Groups ["code"].Value + " - " + match.Groups ["message"].Value;
+				
+				var msg = match.Groups ["message"].Value;
+				
+				var symUndefMatch = symbolUndefRegex.Match(msg);
+				
+				if(symUndefMatch.Success && symUndefMatch.Groups["mangle"].Success)
+				{
+					var mangledSymbol = symUndefMatch.Groups["mangle"].Value;
+					ITypeDeclaration qualifier;
+					try{
+						var resSym = D_Parser.Misc.Mangling.Demangler.DemangleAndResolve(mangledSymbol, ctxt, out qualifier);
+						if(resSym is DSymbol)
+						{
+							var ds = resSym as DSymbol;
+							var ast = ds.Definition.NodeRoot as IAbstractSyntaxTree;
+							if(ast!=null)
+								error.FileName = ast.FileName;
+							error.Line = ds.Definition.Location.Line;
+							error.Column = ds.Definition.Location.Column;
+							msg = ds.Definition.ToString(false, true);
+						}
+						else
+							msg = qualifier.ToString();
+					}catch(Exception ex)
+					{
+						msg = "<log analysis error> "+ex.Message;
+					}
+					error.ErrorText = msg + " could not be resolved - library reference missing?";
+				}
+				else
+					error.ErrorText = "Linker error " + match.Groups ["code"].Value + " - " + msg;
 
 				br.Append (error);
 			}
