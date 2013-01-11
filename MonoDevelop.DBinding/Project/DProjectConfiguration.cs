@@ -13,9 +13,19 @@ namespace MonoDevelop.D
 	public class DProjectConfiguration:ProjectConfiguration
 	{
 		#region Properties
+		DProject _prj;
 		public DProject Project
 		{
-			get { return ParentItem as DProject; }
+			get {
+				if(_prj != null)
+					return _prj;
+				
+				foreach(var prj in Ide.IdeApp.Workspace.GetAllProjects())
+					if(prj.GetConfiguration(this.Selector) == this)
+						return _prj = prj as DProject;
+				
+				return _prj = ParentItem as DProject;
+			}
 		}
 
 		[ItemProperty("Target")]
@@ -169,8 +179,8 @@ namespace MonoDevelop.D
 			// Compiler args + cfg args + extra args
 			var buildCfg = cmp.GetOrCreateTargetConfiguration(this.CompileTarget);
 			var buildArgs = buildCfg.GetArguments(this.DebugMode);
-			var cmpArgs = (buildArgs.OneStepBuildArguments ?? buildArgs.CompilerArguments) + 
-				ExtraCompilerArguments + ExtraLinkerArguments;
+			var cmpArgs = (buildArgs.OneStepBuildArguments ?? buildArgs.CompilerArguments) + " " +
+				ExtraCompilerArguments + " " + ExtraLinkerArguments;
 
 			//TODO: Distinguish between D1/D2 and probably later versions?
 			var a = D_Parser.Misc.VersionIdEvaluation.GetVersionIds(cmp.PredefinedVersionConstant,cmpArgs, UnittestMode);
