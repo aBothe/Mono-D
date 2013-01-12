@@ -1,14 +1,18 @@
 using System;
-using MonoDevelop.D.Profiler.Gui;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
+
 using D_Parser.Dom;
+using D_Parser.Misc;
+using D_Parser.Misc.Mangling;
 using D_Parser.Parser;
-using D_Parser.Resolver.TypeResolution;
 using D_Parser.Resolver;
-using MonoDevelop.D.Refactoring;
-using MonoDevelop.D.Profiler.Commands;
+using D_Parser.Resolver.TypeResolution;
 using MonoDevelop.D.Building;
+using MonoDevelop.D.Profiler.Commands;
+using MonoDevelop.D.Profiler.Gui;
+using MonoDevelop.D.Refactoring;
 
 namespace MonoDevelop.D.Profiler
 {
@@ -43,26 +47,42 @@ namespace MonoDevelop.D.Profiler
 			return file;
 		}
 		
+		static Regex traceFuncRegex = new Regex ("^\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\S\\P{C}[\\P{C}.]*)$",RegexOptions.Compiled);
+		
 		public void Parse(DProject project)
 		{
 			string file = TraceLogFile(project);
 			if(file == null)
 			{
-				profilerPadWidget.AddTracedFunction(0,0,0,0,"trace.log not found..");
+				profilerPadWidget.AddTracedFunction(0,0,0,0,new DVariable{Name = "trace.log not found.."});
 				return;
 			}
 		
 			lastProfiledProject = project;
 			profilerPadWidget.ClearTracedFunctions();
-				
+			
+			var ctxt = ResolutionContext.Create(lastProfiledProject == null ? 
+			                                    ParseCacheList.Create(DCompilerService.Instance.GetDefaultCompiler().ParseCache) : 
+			                                    lastProfiledProject.ParseCache, null, null);
+			
 			StreamReader reader = File.OpenText(file);
 			string line;
 			while ((line = reader.ReadLine()) != null) {
-				Match m = Regex.Match(line, "^\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\S\\P{C}[\\P{C}.]*)$");
+				var m = traceFuncRegex.Match(line);
 				
-				if (m.Success) {
-					profilerPadWidget.AddTracedFunction(long.Parse(m.Groups[1].Value), long.Parse(m.Groups[2].Value), 
-					                                    long.Parse(m.Groups[3].Value), long.Parse(m.Groups[4].Value), m.Groups[5].Value);
+				if (m.Success)
+				{
+					var symName = m.Groups[5].Value;
+					
+					if(symName.StartsWith("="))
+						continue;
+					
+					bool mightBeLegalUnresolvableSymbol;
+					var dn = ExamTraceSymbol(symName, ctxt, out mightBeLegalUnresolvableSymbol);
+					
+					if(dn != null || mightBeLegalUnresolvableSymbol)
+						profilerPadWidget.AddTracedFunction(long.Parse(m.Groups[1].Value), long.Parse(m.Groups[2].Value), 
+						                                    long.Parse(m.Groups[3].Value), long.Parse(m.Groups[4].Value), dn ?? new DVariable{Name = symName});
 				}
 			}
 		}
@@ -71,8 +91,9 @@ namespace MonoDevelop.D.Profiler
 			profilerPadWidget.ClearTracedFunctions();
 		}
 		
-		public void GoToFunction(string functionSymbol)
+		public void GoToFunction(INode functionSymbol)
 		{
+			/*
 			if(lastProfiledProject == null)
 				return;
 				
@@ -80,11 +101,86 @@ namespace MonoDevelop.D.Profiler
 			DMethod method = DParser.ParseMethodDeclarationHeader(functionSymbol, out typeDeclaration);
 				
 			INode node = SearchFunctionNode(method, typeDeclaration, new DModule{ModuleName="___dummy___"});
-			if(node != null)
-				RefactoringCommandsExtension.GotoDeclaration(node);
+			if(node != null)*/
+			RefactoringCommandsExtension.GotoDeclaration(functionSymbol);
 		}
 		
-		private INode SearchFunctionNode(DMethod method, ITypeDeclaration typeDeclaration, IBlockNode module)
+		public static DNode ExamTraceSymbol(string symName, ResolutionContext ctxt, out bool mightBeLegalUnresolvableSymbol)
+		{
+			DSymbol ds=null;
+			mightBeLegalUnresolvableSymbol = false;
+			
+			if(string.IsNullOrWhiteSpace(symName))
+				return null;
+			
+			// Try to handle a probably mangled string or C function.			
+			if(symName.StartsWith("_"))
+			{
+				try{
+					ds = Demangler.DemangleAndResolve(symName, ctxt) as DSymbol;
+				}catch{}
+			}
+			
+			// Stuff like void std.stdio.File.LockingTextWriter.put!(immutable(char)[]).put(immutable(char)[])
+			if(ds == null && Lexer.IsIdentifierPart((int)symName[0]))
+			{
+				mightBeLegalUnresolvableSymbol = true;
+				ITypeDeclaration q;
+				var method = DParser.ParseMethodDeclarationHeader(symName, out q);
+				q = Demangler.RemoveNestedTemplateRefsFromQualifier(q);
+				method.Type = Demangler.RemoveNestedTemplateRefsFromQualifier(method.Type);
+				var methodType = TypeDeclarationResolver.GetMethodReturnType(method, ctxt);
+				var methodParameters = new List<AbstractType>();
+				
+				if(method.Parameters != null && method.Parameters.Count != 0)
+				{
+					foreach(var parm in method.Parameters)
+						methodParameters.Add(TypeDeclarationResolver.ResolveSingle(Demangler.RemoveNestedTemplateRefsFromQualifier(parm.Type),ctxt));
+				}
+				
+				ctxt.ContextIndependentOptions |= ResolutionOptions.IgnoreAllProtectionAttributes;
+				var overloads = TypeDeclarationResolver.Resolve(q, ctxt);
+				
+				
+				if(overloads == null || overloads.Length == 0)
+					return null;
+				else if(overloads.Length == 1)
+					ds = overloads[0] as DSymbol;
+				else
+				{
+					foreach(var o in overloads)
+					{
+						ds = o as DSymbol;
+						if(ds == null || !(ds.Definition is DMethod))
+							continue;
+						
+						var dm = ds.Definition as DMethod;
+						// Compare return types
+						if(dm.Type != null)
+						{
+							if(methodType == null || ds.Base == null || !ResultComparer.IsEqual(methodType, ds.Base))
+								continue;
+						}
+						else if(dm.Type == null && methodType != null)
+							return null;
+						
+						// Compare parameters
+						if(methodParameters.Count != dm.Parameters.Count)
+							continue;
+						
+						for(int i = 0; i< methodParameters.Count; i++)
+							if(!ResultComparer.IsImplicitlyConvertible(methodParameters[i], TypeDeclarationResolver.ResolveSingle(Demangler.RemoveNestedTemplateRefsFromQualifier(dm.Parameters[i].Type),ctxt)))
+								continue;
+					}
+				}
+			}
+			
+			if(ds !=null)
+				return ds.Definition;
+			return null;
+		}
+		
+		/*private INode SearchFunctionNode(DMethod method, ITypeDeclaration typeDeclaration, IBlockNode module)
 		{
 			ResolutionContext context = ResolutionContext.Create(lastProfiledProject.ParseCache, null,module);
 			context.ContextIndependentOptions = ResolutionOptions.IgnoreAllProtectionAttributes;
@@ -131,7 +227,7 @@ namespace MonoDevelop.D.Profiler
 				}
 			}
 			return true;
-		}
+		}*/
 	}
 }
 

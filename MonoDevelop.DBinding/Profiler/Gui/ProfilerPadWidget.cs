@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using MonoDevelop.Ide.Gui.Pads.ProjectPad;
 using MonoDevelop.Projects;
 using MonoDevelop.Ide.Gui.Components;
@@ -23,7 +23,7 @@ namespace MonoDevelop.D.Profiler.Gui
 			profilerPad = pad;
 			this.Build ();
 			
-			traceFunctionsStore = new ListStore (typeof(long), typeof(long), typeof(long), typeof(long), typeof(string));
+			traceFunctionsStore = new ListStore (typeof(long), typeof(long), typeof(long), typeof(long), typeof(string), typeof(DNode));
 			
 			TreeModelSort cardSort = new TreeModelSort (traceFunctionsStore);
 			
@@ -49,9 +49,9 @@ namespace MonoDevelop.D.Profiler.Gui
 			traceFunctionsStore.Clear();
 		}
 		
-		public void AddTracedFunction(long numCalls, long treeTime, long funcTime, long perCall, string symbol)
+		public void AddTracedFunction(long numCalls, long treeTime, long funcTime, long perCall, DNode symbol)
 		{
-			traceFunctionsStore.AppendValues(numCalls, treeTime, funcTime, perCall, symbol);
+			traceFunctionsStore.AppendValues(numCalls, treeTime, funcTime, perCall, symbol.ToString(false, true), symbol);
 		}
 
 		protected void OnNodeViewRowActivated (object o, RowActivatedArgs args)
@@ -112,7 +112,6 @@ namespace MonoDevelop.D.Profiler.Gui
 			GotoSelectedFunction();
 		}
 		
-		
 		private void GotoSelectedFunction()
 		{
 			TreeIter iter;
@@ -122,8 +121,8 @@ namespace MonoDevelop.D.Profiler.Gui
 			if(model == null || nodeView.Selection.IterIsSelected(iter) == false)
 				return;
 				
-			string function = model.GetValue(iter,4) as String;
-			profilerPad.TraceParser.GoToFunction(function);
+			var n = model.GetValue(iter,5) as DNode;
+			profilerPad.TraceParser.GoToFunction(n);
 		}
 	}
 }
