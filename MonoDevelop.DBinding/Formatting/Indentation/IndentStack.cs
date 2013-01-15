@@ -249,7 +249,16 @@ namespace MonoDevelop.D.Formatting.Indentation
 			return stack[size - up - 1].inside;
 		}
 		
-		public byte PeekKeyword (int up)
+		public byte PeekKeyword
+		{
+			get{
+				if(size > 0)
+					return stack[size-1].keyword;
+				return DTokens.INVALID;
+			}
+		}
+		
+		public byte GetKeywordInStack (int up)
 		{
 			if (up < 0)
 				throw new ArgumentOutOfRangeException ();

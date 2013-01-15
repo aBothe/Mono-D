@@ -304,7 +304,7 @@ namespace MonoDevelop.D.Formatting.Indentation
 		{
 			return stack.PeekInside (0) == Inside.FoldedStatement &&
 				stack.PeekInside (1) == Inside.FoldedStatement &&
-				!KeywordIsSpecial (stack.PeekKeyword (0)) &&
+				!KeywordIsSpecial (stack.PeekKeyword) &&
 				!KeywordIsSpecial (keyword);
 		}
 		
@@ -371,12 +371,12 @@ namespace MonoDevelop.D.Formatting.Indentation
 				// check for end of multi-line comment block
 				if (pc == '*') {
 					// restore the keyword and pop the multiline comment
-					keyword = stack.PeekKeyword (0);
+					keyword = stack.PeekKeyword;
 					stack.Pop ();
 				}
 			}else if (inside == Inside.NestedComment) {
 				if (pc == '+') {
-					keyword = stack.PeekKeyword (0);
+					keyword = stack.PeekKeyword;
 					stack.Pop ();
 				}
 			} else {
@@ -447,7 +447,7 @@ namespace MonoDevelop.D.Formatting.Indentation
 			} else if (inside == Inside.StringLiteral) {
 				// check that it isn't escaped
 				if (!isEscaped) {
-					keyword = stack.PeekKeyword (0);
+					keyword = stack.PeekKeyword;
 					stack.Pop ();
 				}
 			} else {
@@ -469,7 +469,7 @@ namespace MonoDevelop.D.Formatting.Indentation
 				if (isEscaped)
 					return;
 				
-				keyword = stack.PeekKeyword (0);
+				keyword = stack.PeekKeyword;
 				stack.Pop ();
 				return;
 			}
@@ -495,7 +495,7 @@ namespace MonoDevelop.D.Formatting.Indentation
 			// goto-label or case statement
 			if (keyword == DTokens.Case || keyword == DTokens.Default) {
 				// case (or default) statement
-				if (stack.PeekKeyword (0) != DTokens.Switch)
+				if (stack.PeekKeyword != DTokens.Switch)
 					return;
 				
 				if (inside == Inside.Case) {
@@ -556,7 +556,7 @@ namespace MonoDevelop.D.Formatting.Indentation
 			}
 			
 			// pop this attribute off the stack
-			keyword = stack.PeekKeyword (0);
+			keyword = stack.PeekKeyword;
 			stack.Pop ();
 		}
 		
@@ -587,7 +587,7 @@ namespace MonoDevelop.D.Formatting.Indentation
 			}
 			
 			// pop this paren list off the stack
-			keyword = stack.PeekKeyword (0);
+			keyword = stack.PeekKeyword;
 			stack.Pop ();
 		}
 		
@@ -600,7 +600,7 @@ namespace MonoDevelop.D.Formatting.Indentation
 				byte pKeyword;
 				
 				if (firstNonLwsp == -1) {
-					pKeyword = stack.PeekKeyword (0);
+					pKeyword = stack.PeekKeyword;
 					stack.Pop ();
 				} else {
 					pKeyword = keyword;
@@ -609,7 +609,7 @@ namespace MonoDevelop.D.Formatting.Indentation
 				while (true) {
 					if (stack.PeekInside (0) != Inside.FoldedStatement)
 						break;
-					var kw = stack.PeekKeyword (0);
+					var kw = stack.PeekKeyword;
 					stack.Pop ();
 					TrimIndent ();
 					if (kw != DTokens.INVALID) {
@@ -654,7 +654,7 @@ namespace MonoDevelop.D.Formatting.Indentation
 						stack.Pop ();
 					}
 					curIndent = stack.PeekIndent (0);
-					keyword = stack.PeekKeyword (0);
+					keyword = stack.PeekKeyword;
 					inside = stack.PeekInside (0);
 				}
 				//Console.WriteLine ("can't pop a '{' if we ain't got one?");
@@ -664,19 +664,19 @@ namespace MonoDevelop.D.Formatting.Indentation
 
 			if (inside == Inside.Case) {
 				curIndent = stack.PeekIndent (1);
-				keyword = stack.PeekKeyword (0);
+				keyword = stack.PeekKeyword;
 				inside = stack.PeekInside (1);
 				stack.Pop ();
 			}
 			
 			if (inside == Inside.ParenList) {
 				curIndent = stack.PeekIndent (0);
-				keyword = stack.PeekKeyword (0);
+				keyword = stack.PeekKeyword;
 				inside = stack.PeekInside (0);
 			}
 			
 			// pop this block off the stack
-			keyword = stack.PeekKeyword (0);
+			keyword = stack.PeekKeyword;
 			if (keyword != DTokens.Case && keyword != DTokens.Default)
 				keyword = DTokens.INVALID;
 
@@ -700,7 +700,7 @@ namespace MonoDevelop.D.Formatting.Indentation
 			case Inside.PreProcessor:
 				// pop the preprocesor state unless the eoln is escaped
 				if (rc != '\\') {
-					keyword = stack.PeekKeyword (0);
+					keyword = stack.PeekKeyword;
 					stack.Pop ();
 				}
 				break;
@@ -711,7 +711,7 @@ namespace MonoDevelop.D.Formatting.Indentation
 			case Inside.DocComment:
 			case Inside.LineComment:
 				// pop the line comment
-				keyword = stack.PeekKeyword (0);
+				keyword = stack.PeekKeyword;
 				stack.Pop ();
 
 				inside = stack.PeekInside (0);
@@ -774,6 +774,8 @@ namespace MonoDevelop.D.Formatting.Indentation
 					// handled elsewhere
 					break;
 				case ',':
+					if(keyword == DTokens.Import)
+						PushFoldedStatement();
 					// avoid indenting if we are in a list
 					break;
 				default:
@@ -783,9 +785,8 @@ namespace MonoDevelop.D.Formatting.Indentation
 					}
 
 					if (inside == Inside.Block) {
-						if (stack.PeekKeyword (0) == DTokens.Struct ||
-							stack.PeekKeyword (0) == DTokens.Enum ||
-								stack.PeekKeyword (0) == DTokens.Assign) {
+						var peekKw = stack.PeekKeyword;
+						if (peekKw == DTokens.Struct || peekKw == DTokens.Enum || peekKw == DTokens.Assign || peekKw == DTokens.Import) {
 							// just variable/value declarations
 							break;
 						}
@@ -825,7 +826,7 @@ namespace MonoDevelop.D.Formatting.Indentation
 			var after = stack.PeekInside (0);
 			if ((after & Inside.ParenList) == Inside.ParenList && pc == '(') {
 //				var indent = stack.PeekIndent (0);
-				var kw = stack.PeekKeyword (0);
+				var kw = stack.PeekKeyword;
 				var line = stack.PeekLineNr (0);
 				stack.Pop ();
 				stack.Push (after, kw, line, 0);
@@ -847,7 +848,7 @@ namespace MonoDevelop.D.Formatting.Indentation
 			
 			// pop the verbatim-string-literal
 			if (inside == Inside.VerbatimString && popVerbatim && c != '"') {
-				keyword = stack.PeekKeyword (0);
+				keyword = stack.PeekKeyword;
 				popVerbatim = false;
 				stack.Pop ();
 				
@@ -865,7 +866,7 @@ namespace MonoDevelop.D.Formatting.Indentation
 					keyword = DTokens.Default;
 				}	
 			//get the keyword for preprocessor directives
-			} /*else if ((inside & (Inside.PreProcessor)) != 0 && stack.PeekKeyword (0) == null) {
+			} /*else if ((inside & (Inside.PreProcessor)) != 0 && stack.PeekKeyword == null) {
 				//replace the stack item with a keyworded one
 				var preProcessorKeyword = GetDirectiveKeyword (c);
 				int peekLine = stack.PeekLineNr (0);
