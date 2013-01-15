@@ -320,7 +320,9 @@
     <StartAction>Program</StartAction>
     <StartProgram>..\..\tutorial.lib\MonoDevelop\main\build\bin\MonoDevelop.exe</StartProgram>
   </PropertyGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="Formatting\Indentation\doc.txt" />
+  </ItemGroup>
   <ItemGroup>
     <Folder Include="Formatting\Indentation" />
     <Folder Include="Profiler\" />

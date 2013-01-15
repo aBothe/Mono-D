@@ -8,25 +8,26 @@ namespace MonoDevelop.D.Formatting.Indentation
 		Empty              = 0,
 		
 		PreProcessor       = (1 << 0),
+		Shebang = (1<<1),
 		
-		BlockComment   = (1 << 1),
-		NestedComment      = (1 << 13),
-		LineComment        = (1 << 2),
-		DocComment         = (1 << 11),
+		BlockComment   = (1 << 2),
+		NestedComment      = (1 << 3),
+		LineComment        = (1 << 4),
+		DocComment         = (1 << 5),
 		Comment            = (BlockComment | NestedComment | LineComment | DocComment),
 		
-		VerbatimString     = (1 << 3),
-		StringLiteral      = (1 << 4),
-		CharLiteral        = (1 << 5),
+		VerbatimString     = (1 << 6),
+		StringLiteral      = (1 << 7),
+		CharLiteral        = (1 << 8),
 		String             = (VerbatimString | StringLiteral),
 		StringOrChar       = (String | CharLiteral),
 		
-		Attribute          = (1 << 6),
-		ParenList          = (1 << 7),
+		Attribute          = (1 << 9),
+		ParenList          = (1 << 10),
 		
-		FoldedStatement    = (1 << 8),
-		Block              = (1 << 9),
-		Case               = (1 << 10),
+		FoldedStatement    = (1 << 11),
+		Block              = (1 << 12),
+		Case               = (1 << 13),
 		
 		FoldedOrBlock      = (FoldedStatement | Block),
 		FoldedBlockOrCase  = (FoldedStatement | Block | Case)

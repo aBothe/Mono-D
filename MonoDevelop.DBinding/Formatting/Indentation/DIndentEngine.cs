@@ -31,7 +31,6 @@ namespace MonoDevelop.D.Formatting.Indentation
 		
 		bool needsReindent;
 		bool popVerbatim;
-		bool canBeLabel;
 		bool isEscaped;
 		
 		int firstNonLwsp;
@@ -40,14 +39,20 @@ namespace MonoDevelop.D.Formatting.Indentation
 		
 		char lastChar;
 		
-		// previous char in the line
+		/// <summary>
+		/// Previous char in the line
+		/// </summary>
 		char pc;
 		
-		// last significant (real) char in the line
-		// (e.g. non-whitespace, not in a comment, etc)
+		/// <summary>
+		/// last significant (real) char in the line
+		/// (e.g. non-whitespace, not in a comment, etc)
+		/// </summary>
 		char rc;
 		
-		// previous last significant (real) char in the line
+		/// <summary>
+		/// previous last significant (real) char in the line
+		/// </summary>
 		char prc;
 		
 		int curLineNr;
@@ -178,7 +183,6 @@ namespace MonoDevelop.D.Formatting.Indentation
 
 			needsReindent = false;
 			popVerbatim = false;
-			canBeLabel = true;
 			isEscaped = false;
 
 			firstNonLwsp = -1;
@@ -205,7 +209,6 @@ namespace MonoDevelop.D.Formatting.Indentation
 			
 			engine.needsReindent = needsReindent;
 			engine.popVerbatim = popVerbatim;
-			engine.canBeLabel = canBeLabel;
 			engine.isEscaped = isEscaped;
 			
 			engine.firstNonLwsp = firstNonLwsp;
@@ -331,9 +334,17 @@ namespace MonoDevelop.D.Formatting.Indentation
 			keyword = DTokens.INVALID;
 		}
 		
-		// Handlers for specific characters
+		#region Handlers for specific characters
 		void PushHash (Inside inside)
 		{
+			if(this.cursor == 0)
+			{
+				stack.Push(Inside.Shebang, DTokens.INVALID, curLineNr, 0);
+				curIndent = string.Empty;
+				needsReindent = false;
+				return;
+			}
+			
 			// ignore if we are inside a string, char, or comment
 			if ((inside & (Inside.StringOrChar | Inside.Comment)) != 0)
 				return;
@@ -388,14 +399,14 @@ namespace MonoDevelop.D.Formatting.Indentation
 				isEscaped = !isEscaped;
 		}
 		
-		void PushStar (Inside inside)
+		void PushStar (Inside inside, char c)
 		{
 			int n;
 			
 			if (pc != '/')
 				return;
 			
-			//TODO: Nested comments
+			//TODO: Multiline ddoc comments(?)
 			
 			// got a "/*" - might start a MultiLineComment
 			if ((inside & (Inside.StringOrChar | Inside.Comment)) != 0) {
@@ -410,7 +421,7 @@ namespace MonoDevelop.D.Formatting.Indentation
 			else
 				n = linebuf.Length;
 			
-			stack.Push (Inside.BlockComment, keyword, curLineNr, n);
+			stack.Push (c == '*' ? Inside.BlockComment : Inside.NestedComment, keyword, curLineNr, n);
 			
 			// drop the previous '/': it belongs to this comment block
 			rc = prc;
@@ -441,7 +452,7 @@ namespace MonoDevelop.D.Formatting.Indentation
 				}
 			} else {
 				// FoldedStatement, Block, Attribute or ParenList
-				if (pc == '@')
+				if (pc == 'r')
 					type = Inside.VerbatimString;
 				else
 					type = Inside.StringLiteral;
@@ -503,28 +514,6 @@ namespace MonoDevelop.D.Formatting.Indentation
 				}
 				
 				stack.Push (Inside.Case, DTokens.Switch, curLineNr, 0);
-			} else if (canBeLabel) {
-				//GotoLabelIndentStyle style = FormattingProperties.GotoLabelIndentStyle;
-				var style = GotoLabelIndentStyle.OneLess;
-				// indent goto labels as specified
-				switch (style) {
-				case GotoLabelIndentStyle.LeftJustify:
-					needsReindent = true;
-			//		curIndent = " ";
-					break;
-				case GotoLabelIndentStyle.OneLess:
-					needsReindent = true;
-					TrimIndent ();
-			//		curIndent += " ";
-					break;
-				default:
-					break;
-				}
-				canBeLabel = false;
-			} else if (pc == ':') {
-				// :: operator, need to undo the "unindent label" operation we did for the previous ':'
-				curIndent = stack.PeekIndent (0);
-				needsReindent = true;
 			}
 		}
 		
@@ -707,6 +696,7 @@ namespace MonoDevelop.D.Formatting.Indentation
 		{
 			top:
 			switch (inside) {
+			case Inside.Shebang:
 			case Inside.PreProcessor:
 				// pop the preprocesor state unless the eoln is escaped
 				if (rc != '\\') {
@@ -760,9 +750,7 @@ namespace MonoDevelop.D.Formatting.Indentation
 					// nothing entered on this line
 					break;
 				case ':':
-					canBeLabel = canBeLabel && inside != Inside.FoldedStatement;
-
-					if ((keyword == DTokens.Case || keyword == DTokens.Default) || canBeLabel)
+					if (keyword == DTokens.Case || keyword == DTokens.Default)
 						break;
 
 					PushFoldedStatement ();
@@ -814,9 +802,7 @@ namespace MonoDevelop.D.Formatting.Indentation
 			
 			beganInside = stack.PeekInside (0);
 			curIndent = stack.PeekIndent (0);
-			
-			canBeLabel = true;
-			
+						
 			firstNonLwsp = -1;
 			lastNonLwsp = -1;
 			wordStart = -1;
@@ -828,6 +814,7 @@ namespace MonoDevelop.D.Formatting.Indentation
 			curLineNr++;
 			cursor++;
 		}
+		#endregion
 		
 		static string[] preProcessorIndents = new string[] {
 			"line"
@@ -845,12 +832,18 @@ namespace MonoDevelop.D.Formatting.Indentation
 			}
 		}
 		
-		// This is the main logic of this class...
+		/// <summary>
+		/// The engine's main logic
+		/// </summary>
 		public void Push (char c)
 		{
 			Inside inside, after;
 			
 			inside = stack.PeekInside (0);
+			
+			// Skip the first optional shebang line
+			if(inside == Inside.Shebang && c != '\n' && c != '\r')
+				return;
 			
 			// pop the verbatim-string-literal
 			if (inside == Inside.VerbatimString && popVerbatim && c != '"') {
@@ -899,8 +892,9 @@ namespace MonoDevelop.D.Formatting.Indentation
 			case '\\':
 				PushBackSlash (inside);
 				break;
+			case '+':
 			case '*':
-				PushStar (inside);
+				PushStar (inside,c);
 				break;
 			case '"':
 				PushQuote (inside);
@@ -970,14 +964,14 @@ namespace MonoDevelop.D.Formatting.Indentation
 				if (!Char.IsWhiteSpace (c)) {
 					if (firstNonLwsp == -1)
 						firstNonLwsp = linebuf.Length;
-					
+					/*
 					if (wordStart != -1 && c != ':' && Char.IsWhiteSpace (pc)) {
 						// goto labels must be single word tokens
 						canBeLabel = false;
 					} else if (wordStart == -1 && Char.IsDigit (c)) {
 						// labels cannot start with a digit
 						canBeLabel = false;
-					}
+					}*/
 					
 					lastNonLwsp = linebuf.Length;
 					
@@ -1006,60 +1000,6 @@ namespace MonoDevelop.D.Formatting.Indentation
 			
 			cursor++;
 			lastChar = c;
-		}
-		
-		public void Debug ()
-		{
-			Console.WriteLine ("\ncurLine = {0}", linebuf);
-			Console.WriteLine ("curLineNr = {0}\ncursor = {1}\nneedsReindent = {2}",
-			                   curLineNr, cursor, needsReindent);
-			Console.WriteLine ("stack:");
-			for (int i = 0; i < stack.Count; i++) {
-				switch (stack.PeekInside (i)) {
-				case Inside.PreProcessor:
-					Console.WriteLine ("\tpreprocessor directive");
-					break;
-				case Inside.NestedComment:
-					Console.WriteLine ("\t/+ +/ comment block");
-					break;
-				case Inside.BlockComment:
-					Console.WriteLine ("\t/* */ comment block");
-					break;
-				case Inside.LineComment:
-					Console.WriteLine ("\t// comment");
-					break;
-				case Inside.VerbatimString:
-					Console.WriteLine ("\tverbatim string");
-					break;
-				case Inside.StringLiteral:
-					Console.WriteLine ("\tstring literal");
-					break;
-				case Inside.CharLiteral:
-					Console.WriteLine ("\tchar literal");
-					break;
-				case Inside.Attribute:
-					Console.WriteLine ("\t[ ] attribute");
-					break;
-				case Inside.ParenList:
-					Console.WriteLine ("\t( ) paren list");
-					break;
-				case Inside.FoldedStatement:
-					if (stack.PeekKeyword (i) != DTokens.INVALID)
-						Console.WriteLine ("\t{0}-statement", stack.PeekKeyword (i));
-					else
-						Console.WriteLine ("\tfolded statement?");
-					break;
-				case Inside.Case:
-					Console.WriteLine ("\tcase statement");
-					break;
-				case Inside.Block:
-					if (stack.PeekKeyword (i) != DTokens.INVALID)
-						Console.WriteLine ("\t{0} {1} block", stack.PeekKeyword (i), "{ }");
-					else
-						Console.WriteLine ("\tmethod {0} block?", "{ }");
-					break;
-				}
-			}
 		}
 	}
 }
