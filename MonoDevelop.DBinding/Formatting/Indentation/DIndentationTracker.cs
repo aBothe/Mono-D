@@ -4,12 +4,12 @@ using MonoDevelop.Ide.Gui.Content;
 
 namespace MonoDevelop.D.Formatting.Indentation
 {
-	public class DIndentVirtualSpaceManager: IIndentationTracker
+	public class DIndentationTracker: IIndentationTracker
 	{
 		Mono.TextEditor.TextEditorData data;
 		DocumentStateTracker<DIndentEngine> stateTracker;
 
-		public DIndentVirtualSpaceManager (Mono.TextEditor.TextEditorData data, DocumentStateTracker<DIndentEngine> stateTracker)
+		public DIndentationTracker (Mono.TextEditor.TextEditorData data, DocumentStateTracker<DIndentEngine> stateTracker)
 		{
 			this.data = data;
 			this.stateTracker = stateTracker;

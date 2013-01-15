@@ -1,19 +1,33 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using MonoDevelop.Projects.Policies;
-using MonoDevelop.Ide.Gui.Content;
 using MonoDevelop.Core.Serialization;
+using MonoDevelop.Projects.Policies;
 
 namespace MonoDevelop.D.Formatting
 {
+	public enum GotoLabelIndentStyle {
+		///<summary>Place goto labels in the leftmost column</summary>
+		LeftJustify,
+		
+		/// <summary>
+		/// Place goto labels one indent less than current
+		/// </summary>
+		OneLess,
+		
+		/// <summary>
+		/// Indent goto labels normally
+		/// </summary>
+		Normal
+	}
+	
 	[PolicyType("D formatting")]
 	public class DFormattingPolicy: IEquatable<DFormattingPolicy>
 	{
 		public DFormattingPolicy()
 		{
+			//TODO: Generate default attributes or so
 			CommentOutStandardHeaders = true;
 			InsertStarAtCommentNewLine = true;
+			IndentSwitchBody = true;
 		}
 
 		public bool Equals (DFormattingPolicy other)
@@ -35,5 +49,11 @@ namespace MonoDevelop.D.Formatting
 		public bool CommentOutStandardHeaders { get; set; }
 		[ItemProperty]
 		public bool InsertStarAtCommentNewLine { get; set; }
+		
+		#region Indenting
+		[ItemProperty]
+		public bool IndentSwitchBody {get;set;}
+		
+		#endregion
 	}
 }

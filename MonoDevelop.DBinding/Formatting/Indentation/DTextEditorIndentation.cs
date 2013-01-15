@@ -83,12 +83,12 @@ namespace MonoDevelop.D.Formatting.Indentation
 						policy = project.Policies.Get<DFormattingPolicy> (types);
 						textStylePolicy = project.Policies.Get<TextStylePolicy> (types);
 					}
-					textEditorData.IndentationTracker = new DIndentVirtualSpaceManager (
+					textEditorData.IndentationTracker = new DIndentationTracker (
 						textEditorData,
 						new DocumentStateTracker<DIndentEngine> (new DIndentEngine (policy, textStylePolicy), textEditorData)
 					);
 				};
-				textEditorData.IndentationTracker = new DIndentVirtualSpaceManager (
+				textEditorData.IndentationTracker = new DIndentationTracker (
 					textEditorData,
 					new DocumentStateTracker<DIndentEngine> (new DIndentEngine (policy, textStylePolicy), textEditorData)
 				);

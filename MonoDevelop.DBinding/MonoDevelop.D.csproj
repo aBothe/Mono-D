@@ -139,8 +139,9 @@
     <Compile Include="Formatting\DFormattingPolicy.cs" />
     <Compile Include="Formatting\FormattingPanel.cs" />
     <Compile Include="Formatting\Indentation\DIndentEngine.cs" />
-    <Compile Include="Formatting\Indentation\DIndentVirtualSpaceManager.cs" />
+    <Compile Include="Formatting\Indentation\DIndentationTracker.cs" />
     <Compile Include="Formatting\Indentation\DTextEditorIndentation.cs" />
+    <Compile Include="Formatting\Indentation\IndentStack.cs" />
     <Compile Include="gtk-gui\generated.cs" />
     <Compile Include="Completion\DCodeCompletionSupport.cs" />
     <Compile Include="Completion\EditorCompletionExtension.cs" />
