@@ -348,9 +348,28 @@ namespace MonoDevelop.D.Formatting.Indentation
 				if (prevLine == null)
 					return false;
 				string trimmedPreviousLine = textEditorData.Document.GetTextAt (prevLine).TrimStart ();
+				
+				// DDoc tag
+				const string singleLineDDocOpener = "///";
+				if(trimmedPreviousLine.StartsWith(singleLineDDocOpener))
+				{
+					if (textEditorData.GetTextAt (line.Offset, line.Length).TrimStart ().StartsWith (singleLineDDocOpener))
+						return false;
+					//check that the newline command actually inserted a newline
+					textEditorData.EnsureCaretIsNotVirtual ();
+					int insertionPoint = line.Offset + line.GetIndentation (textEditorData.Document).Length;
+					string nextLine = textEditorData.Document.GetTextAt (textEditorData.Document.GetLine (lineNumber + 1)).TrimStart ();
 
+					if (trimmedPreviousLine.Length >= singleLineDDocOpener.Length || nextLine.StartsWith (singleLineDDocOpener)) {
+						textEditorData.Insert (insertionPoint, 
+						                       trimmedPreviousLine.Length == singleLineDDocOpener.Length ?
+						                       singleLineDDocOpener : (singleLineDDocOpener+" "));
+						return true;
+					}
+				}
+				
 				//multi-line comments
-				if (stateTracker.Engine.IsInsideMultiLineComment) {
+				else if (stateTracker.Engine.IsInsideMultiLineComment) {
 					var commentChar = stateTracker.Engine.IsInsideNestedComment ? "+" : "*";
 					
 					if (textEditorData.GetTextAt (line.Offset, line.Length).TrimStart ().StartsWith (commentChar))
