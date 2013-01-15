@@ -9,6 +9,7 @@ namespace MonoDevelop.D.Formatting
 {
 	public class DCodeFormatter: AbstractAdvancedFormatter
 	{
+		internal const string MimeType = "text/x-d";
 		public static readonly DFormatter NativeFormatterInstance=new DFormatter();
 
 		public override bool SupportsOnTheFlyFormatting	{	get	{return true;}	}

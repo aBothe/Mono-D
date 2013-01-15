@@ -231,8 +231,8 @@
   <!-- Code Completion -->
 
   <Extension path = "/MonoDevelop/Ide/TextEditorExtensions">
-	<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.DEditorCompletionExtension" />
-	<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.Formatting.DTextEditorIndentation" />
+	<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.Formatting.Indentation.DTextEditorIndentation" />
+  	<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.DEditorCompletionExtension" />
 	<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.Refactoring.RefactoringCommandsExtension" />
 
 	<!-- D Document Outline Provider -->

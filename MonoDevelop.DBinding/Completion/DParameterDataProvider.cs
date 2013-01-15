@@ -205,7 +205,7 @@ namespace MonoDevelop.D.Completion
 				}
 
 				// Optional: description
-				if (!string.IsNullOrWhiteSpace(tir.Definition.Description))
+				if (tir.Definition != null && !string.IsNullOrWhiteSpace(tir.Definition.Description))
 					s += "\n\n " + tir.Definition.Description;
 
 				return s;
@@ -214,11 +214,13 @@ namespace MonoDevelop.D.Completion
 			{
 				var dr = (DelegateType)CurrentResult;
 
-				if (dr.IsFunctionLiteral)
+				if (dr.IsFunctionLiteral && dr.DeclarationOrExpressionBase is FunctionLiteral)
 					return GetMethodMarkup(((FunctionLiteral)dr.DeclarationOrExpressionBase).AnonymousMethod, parameterMarkup, currentParameter);
-
-				var dg = (DelegateDeclaration)dr.DeclarationOrExpressionBase;
-				return dg.ReturnType.ToString() + " " + (dg.IsFunction?"function":"delegate") + "(" + string.Join(",", parameterMarkup) + ")";
+				else if(dr.DeclarationOrExpressionBase is DelegateDeclaration)
+				{
+					var dg = (DelegateDeclaration)dr.DeclarationOrExpressionBase;
+					return dg.ReturnType.ToString() + " " + (dg.IsFunction?"function":"delegate") + "(" + string.Join(",", parameterMarkup) + ")";
+				}
 			}
 
 			return "";
