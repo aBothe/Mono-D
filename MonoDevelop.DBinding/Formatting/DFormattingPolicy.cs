@@ -28,6 +28,7 @@ namespace MonoDevelop.D.Formatting
 			CommentOutStandardHeaders = true;
 			InsertStarAtCommentNewLine = true;
 			IndentSwitchBody = true;
+			LabelIndentStyle = GotoLabelIndentStyle.OneLess;
 		}
 
 		public bool Equals (DFormattingPolicy other)
@@ -53,7 +54,8 @@ namespace MonoDevelop.D.Formatting
 		#region Indenting
 		[ItemProperty]
 		public bool IndentSwitchBody {get;set;}
-		
+		[ItemProperty]
+		public GotoLabelIndentStyle LabelIndentStyle {get;set;}
 		#endregion
 	}
 }

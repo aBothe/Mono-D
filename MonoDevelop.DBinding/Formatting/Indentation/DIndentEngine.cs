@@ -29,6 +29,7 @@ namespace MonoDevelop.D.Formatting.Indentation
 		
 		bool needsReindent;
 		bool popVerbatim;
+		bool canBeLabel;
 		bool isEscaped;
 		
 		int firstNonLwsp;
@@ -181,6 +182,7 @@ namespace MonoDevelop.D.Formatting.Indentation
 
 			needsReindent = false;
 			popVerbatim = false;
+			canBeLabel = true;
 			isEscaped = false;
 
 			firstNonLwsp = -1;
@@ -207,6 +209,7 @@ namespace MonoDevelop.D.Formatting.Indentation
 			
 			engine.needsReindent = needsReindent;
 			engine.popVerbatim = popVerbatim;
+			engine.canBeLabel = canBeLabel;
 			engine.isEscaped = isEscaped;
 			
 			engine.firstNonLwsp = firstNonLwsp;
@@ -512,6 +515,23 @@ namespace MonoDevelop.D.Formatting.Indentation
 				}
 				
 				stack.Push (Inside.Case, DTokens.Switch, curLineNr, 0);
+			} else if (canBeLabel) {
+				var style = Policy.LabelIndentStyle;
+				// indent goto labels as specified
+				switch (style) {
+				case GotoLabelIndentStyle.LeftJustify:
+					needsReindent = true;
+			//		curIndent = " ";
+					break;
+				case GotoLabelIndentStyle.OneLess:
+					needsReindent = true;
+					TrimIndent ();
+			//		curIndent += " ";
+					break;
+				default:
+					break;
+				}
+				canBeLabel = false;
 			}
 		}
 		
@@ -748,7 +768,9 @@ namespace MonoDevelop.D.Formatting.Indentation
 					// nothing entered on this line
 					break;
 				case ':':
-					if (keyword == DTokens.Case || keyword == DTokens.Default)
+					canBeLabel = canBeLabel && inside != Inside.FoldedStatement;
+					
+					if (keyword == DTokens.Case || keyword == DTokens.Default || !canBeLabel)
 						break;
 
 					PushFoldedStatement ();
@@ -798,6 +820,8 @@ namespace MonoDevelop.D.Formatting.Indentation
 			}
 			
 			linebuf.Length = 0;
+			
+			canBeLabel = true;
 			
 			beganInside = stack.PeekInside (0);
 			curIndent = stack.PeekIndent (0);
@@ -963,14 +987,14 @@ namespace MonoDevelop.D.Formatting.Indentation
 				if (!Char.IsWhiteSpace (c)) {
 					if (firstNonLwsp == -1)
 						firstNonLwsp = linebuf.Length;
-					/*
+					
 					if (wordStart != -1 && c != ':' && Char.IsWhiteSpace (pc)) {
 						// goto labels must be single word tokens
 						canBeLabel = false;
 					} else if (wordStart == -1 && Char.IsDigit (c)) {
 						// labels cannot start with a digit
 						canBeLabel = false;
-					}*/
+					}
 					
 					lastNonLwsp = linebuf.Length;
 					
