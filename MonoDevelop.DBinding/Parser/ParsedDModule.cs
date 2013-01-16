@@ -18,9 +18,7 @@ namespace MonoDevelop.D.Parser
 				if(sln!=null)
 					foreach (var prj in sln.GetAllProjects())
 						if (prj is DProject && prj.IsFileInProject(FileName))
-						{
-							return ((DProject)prj).LocalFileCache.GetModuleByFileName(FileName, prj.BaseDirectory);
-						}
+							return ((DProject)prj).LocalFileCache.GetModuleByFileName(FileName, prj.BaseDirectory) ?? _ddom;
 				
 				return _ddom;
 			}

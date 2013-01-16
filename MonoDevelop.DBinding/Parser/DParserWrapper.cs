@@ -84,7 +84,12 @@ namespace MonoDevelop.D.Parser
 
 			// Update project owner information / Build appropriate module name
 			if(string.IsNullOrEmpty(ast.ModuleName))
-				ast.ModuleName = BuildModuleName(pf);
+			{
+				if(pf == null)
+					ast.ModuleName = Path.GetFileNameWithoutExtension(file);
+				else
+					ast.ModuleName = BuildModuleName(pf);
+			}
 			ast.FileName = file;
 
 			// Assign new ast to the ParsedDDocument object
@@ -172,7 +177,7 @@ namespace MonoDevelop.D.Parser
 		public static string BuildModuleName(ProjectFile pf)
 		{
 			if(pf==null)
-				return null;
+				return string.Empty;
 			
 			// When handling an external link, keep it rooted though it might occur in a project's subfolder
 			if (pf.IsLink || pf.IsExternalToProject)
