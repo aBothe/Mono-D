@@ -178,7 +178,7 @@ namespace MonoDevelop.D.Formatting.Indentation
 				}
 				
 				nSpaces = 0;
-			} else if ((inside & (Inside.PreProcessor | Inside.StringOrChar)) != 0) {
+			} else if ((inside & (Inside.Shebang | Inside.PreProcessor | Inside.StringOrChar)) != 0) {
 				// if these fold, do not indent
 				nSpaces = 0;
 				
