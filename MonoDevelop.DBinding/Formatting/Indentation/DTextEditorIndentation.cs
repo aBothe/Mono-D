@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using D_Parser.Parser;
 using Mono.TextEditor;
 using MonoDevelop.Core;
@@ -18,13 +19,29 @@ namespace MonoDevelop.D.Formatting.Indentation
 	public class DTextEditorIndentation:TextEditorExtension
 	{
 		#region Properties
+		static IEnumerable<string> mimeTypes = MonoDevelop.Ide.DesktopService.GetMimeTypeInheritanceChain (DCodeFormatter.MimeType);
 		DocumentStateTracker<DIndentEngine> stateTracker;
 		internal DocumentStateTracker<DIndentEngine> StateTracker { get { return stateTracker; } }
 		
 		int cursorPositionBeforeKeyPress;
 		TextEditorData textEditorData;
-		DFormattingPolicy policy;
-		TextStylePolicy textStylePolicy;
+		DFormattingPolicy Policy
+		{
+			get
+			{
+				if(Document != null && Document.HasProject)
+					return Document.Project.Policies.Get<DFormattingPolicy>(mimeTypes);
+				return MonoDevelop.Projects.Policies.PolicyService.GetDefaultPolicy<DFormattingPolicy> (mimeTypes);
+			}
+		}
+		TextStylePolicy TextStyle
+		{
+			get{
+				if(Document != null && Document.HasProject)
+					return Document.Project.Policies.Get<TextStylePolicy>(mimeTypes);
+				return MonoDevelop.Projects.Policies.PolicyService.GetDefaultPolicy<TextStylePolicy> (mimeTypes);
+			}
+		}
 
 		char lastCharInserted;
 
@@ -39,13 +56,6 @@ namespace MonoDevelop.D.Formatting.Indentation
 		#endregion
 		
 		#region Constructor/Init
-		public DTextEditorIndentation()
-		{
-			var types = MonoDevelop.Ide.DesktopService.GetMimeTypeInheritanceChain (DCodeFormatter.MimeType);
-			policy = MonoDevelop.Projects.Policies.PolicyService.GetDefaultPolicy<DFormattingPolicy> (types);
-			textStylePolicy = MonoDevelop.Projects.Policies.PolicyService.GetDefaultPolicy<TextStylePolicy> (types);
-		}
-		
 		static DTextEditorIndentation ()
 		{
 			CompletionWindowManager.WordCompleted += delegate(object sender,CodeCompletionContextEventArgs e) {
@@ -69,33 +79,22 @@ namespace MonoDevelop.D.Formatting.Indentation
 		{
 			base.Initialize ();
 
-			var types = MonoDevelop.Ide.DesktopService.GetMimeTypeInheritanceChain (DCodeFormatter.MimeType);
-			if (base.Document.Project != null && base.Document.Project.Policies != null) {
-				policy = base.Document.Project.Policies.Get<DFormattingPolicy> (types);
-				textStylePolicy = base.Document.Project.Policies.Get<TextStylePolicy> (types);
-			}
-
 			textEditorData = Document.Editor;
 			if (textEditorData != null) {
 				textEditorData.Options.Changed += delegate {
-					var project = base.Document.Project;
-					if (project != null) {
-						policy = project.Policies.Get<DFormattingPolicy> (types);
-						textStylePolicy = project.Policies.Get<TextStylePolicy> (types);
-					}
 					textEditorData.IndentationTracker = new DIndentationTracker (
 						textEditorData,
-						new DocumentStateTracker<DIndentEngine> (new DIndentEngine (policy, textStylePolicy), textEditorData)
+						new DocumentStateTracker<DIndentEngine> (new DIndentEngine (Policy, TextStyle), textEditorData)
 					);
 				};
 				textEditorData.IndentationTracker = new DIndentationTracker (
 					textEditorData,
-					new DocumentStateTracker<DIndentEngine> (new DIndentEngine (policy, textStylePolicy), textEditorData)
+					new DocumentStateTracker<DIndentEngine> (new DIndentEngine (Policy, TextStyle), textEditorData)
 				);
 			}
 
 			// Init tracker
-			stateTracker = new DocumentStateTracker<DIndentEngine> (new DIndentEngine (policy, textStylePolicy), textEditorData);
+			stateTracker = new DocumentStateTracker<DIndentEngine> (new DIndentEngine (Policy, TextStyle), textEditorData);
 			
 			Document.Editor.Paste += HandleTextPaste;
 		}
@@ -202,7 +201,7 @@ namespace MonoDevelop.D.Formatting.Indentation
 					stateTracker.UpdateEngine ();
 
 					if (key == Gdk.Key.Return && modifier == Gdk.ModifierType.ControlMask) {
-						FixLineStart (textEditorData, stateTracker, textEditorData.Caret.Line + 1);
+						FixLineStart (textEditorData.Caret.Line + 1);
 					} else {
 						if (!(oldLine == textEditorData.Caret.Line + 1 && lastCharInserted == '\n') && (oldBufLen != textEditorData.Length || lastCharInserted != '\0'))
 							DoPostInsertionSmartIndent (lastCharInserted, hadSelection, out reIndent);
@@ -326,7 +325,7 @@ namespace MonoDevelop.D.Formatting.Indentation
 				reIndent = true;
 				break;
 			case '\n':
-				if (FixLineStart (textEditorData, stateTracker, stateTracker.Engine.LineNumber)) 
+				if (FixLineStart (stateTracker.Engine.LineNumber)) 
 					return;
 				//newline always reindents unless it's had special handling
 				reIndent = true;
@@ -337,7 +336,7 @@ namespace MonoDevelop.D.Formatting.Indentation
 		/// <summary>
 		/// Insert e.g. * or + on the freshly created line in order to continue e.g. the multiline comment or string.
 		/// </summary>
-		public static bool FixLineStart (TextEditorData textEditorData, DocumentStateTracker<DIndentEngine> stateTracker, int lineNumber)
+		bool FixLineStart (int lineNumber)
 		{
 			if (lineNumber > DocumentLocation.MinLine) {
 				var line = textEditorData.Document.GetLine (lineNumber);
@@ -369,7 +368,7 @@ namespace MonoDevelop.D.Formatting.Indentation
 				}
 				
 				//multi-line comments
-				else if (stateTracker.Engine.IsInsideMultiLineComment) {
+				else if (stateTracker.Engine.IsInsideMultiLineComment && Policy.InsertStarAtCommentNewLine) {
 					var commentChar = stateTracker.Engine.IsInsideNestedComment ? "+" : "*";
 					
 					if (textEditorData.GetTextAt (line.Offset, line.Length).TrimStart ().StartsWith (commentChar))

@@ -11,10 +11,8 @@ namespace MonoDevelop.D.Formatting.Indentation
 	public class DIndentEngine : ICloneable, IDocumentStateEngine
 	{
 		#region Properties
-		DFormattingPolicy policy;
-		public DFormattingPolicy Policy {get{return policy;}}
-		TextStylePolicy textStyle;
-		public TextStylePolicy TextStyle {get{return textStyle;}}
+		public DFormattingPolicy Policy;
+		public TextStylePolicy TextStyle;
 		
 		IndentStack stack;
 		
@@ -139,8 +137,8 @@ namespace MonoDevelop.D.Formatting.Indentation
 		
 		public string ThisLineIndent {
 			get {
-				if (textStyle.TabsToSpaces)
-					return TabsToSpaces (curIndent, textStyle.IndentWidth);
+				if (TextStyle.TabsToSpaces)
+					return TabsToSpaces (curIndent, TextStyle.IndentWidth);
 				
 				return curIndent;
 			}
@@ -148,8 +146,8 @@ namespace MonoDevelop.D.Formatting.Indentation
 		
 		public string NewLineIndent {
 			get {
-				if (textStyle.TabsToSpaces)
-					return TabsToSpaces (stack.PeekIndent (0), textStyle.IndentWidth);
+				if (TextStyle.TabsToSpaces)
+					return TabsToSpaces (stack.PeekIndent (0), TextStyle.IndentWidth);
 				
 				return stack.PeekIndent (0);
 			}
@@ -163,8 +161,8 @@ namespace MonoDevelop.D.Formatting.Indentation
 				throw new ArgumentNullException ("policy");
 			if (textStyle == null)
 				throw new ArgumentNullException ("textPolicy");
-			this.policy = policy;
-			this.textStyle = textStyle;
+			this.Policy = policy;
+			this.TextStyle = textStyle;
 			stack = new IndentStack (this);
 			linebuf = new StringBuilder ();
 			Reset ();
@@ -199,7 +197,7 @@ namespace MonoDevelop.D.Formatting.Indentation
 		
 		public object Clone ()
 		{
-			DIndentEngine engine = new DIndentEngine (policy, textStyle);
+			DIndentEngine engine = new DIndentEngine (Policy, TextStyle);
 			
 			engine.stack = (IndentStack) stack.Clone ();
 			engine.linebuf = new StringBuilder (linebuf.ToString (), linebuf.Capacity);
@@ -508,7 +506,7 @@ namespace MonoDevelop.D.Formatting.Indentation
 					}
 				}
 				
-				if (!policy.IndentSwitchBody) {
+				if (!Policy.IndentSwitchBody) {
 					needsReindent = true;
 					TrimIndent ();
 				}
