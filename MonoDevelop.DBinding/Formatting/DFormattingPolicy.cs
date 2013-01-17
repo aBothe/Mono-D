@@ -1,26 +1,12 @@
 ﻿using System;
+using D_Parser.Formatting;
 using MonoDevelop.Core.Serialization;
 using MonoDevelop.Projects.Policies;
 
 namespace MonoDevelop.D.Formatting
-{
-	public enum GotoLabelIndentStyle {
-		///<summary>Place goto labels in the leftmost column</summary>
-		LeftJustify,
-		
-		/// <summary>
-		/// Place goto labels one indent less than current
-		/// </summary>
-		OneLess,
-		
-		/// <summary>
-		/// Indent goto labels normally
-		/// </summary>
-		Normal
-	}
-	
+{	
 	[PolicyType("D formatting")]
-	public class DFormattingPolicy: IEquatable<DFormattingPolicy>
+	public class DFormattingPolicy: IEquatable<DFormattingPolicy>, DFormattingOptionsFactory
 	{
 		public DFormattingPolicy()
 		{
@@ -45,6 +31,14 @@ namespace MonoDevelop.D.Formatting
 			
 			return p;
 		}
+		
+		DFormattingOptions o = DFormattingOptions.CreateDStandard();
+		
+		public DFormattingOptions Options {
+			get {
+				return o;
+			}
+		}
 
 		[ItemProperty]
 		public bool CommentOutStandardHeaders { get; set; }
@@ -53,9 +47,15 @@ namespace MonoDevelop.D.Formatting
 		
 		#region Indenting
 		[ItemProperty]
-		public bool IndentSwitchBody {get;set;}
+		public bool IndentSwitchBody {
+			get{ return o.IndentSwitchBody; }
+			set{ o.IndentSwitchBody = value; }
+		}
 		[ItemProperty]
-		public GotoLabelIndentStyle LabelIndentStyle {get;set;}
+		public GotoLabelIndentStyle LabelIndentStyle {
+			get{ return o.LabelIndentStyle; }
+			set{ o.LabelIndentStyle = value; }
+		}
 		#endregion
 	}
 }
