@@ -19,7 +19,7 @@ namespace MonoDevelop.D.Formatting.Indentation
 	public class DTextEditorIndentation:TextEditorExtension
 	{
 		#region Properties
-		static IEnumerable<string> mimeTypes = MonoDevelop.Ide.DesktopService.GetMimeTypeInheritanceChain (DCodeFormatter.MimeType);
+		internal static IEnumerable<string> mimeTypes = MonoDevelop.Ide.DesktopService.GetMimeTypeInheritanceChain (DCodeFormatter.MimeType);
 		DocumentStateTracker<DIndentEngine> stateTracker;
 		internal DocumentStateTracker<DIndentEngine> StateTracker { get { return stateTracker; } }
 		
