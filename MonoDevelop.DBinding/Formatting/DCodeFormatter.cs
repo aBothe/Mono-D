@@ -143,6 +143,12 @@ namespace MonoDevelop.D.Formatting
 				var dl = doc.OffsetToLocation(offset);
 				return new D_Parser.Dom.CodeLocation(dl.Column, dl.Line);
 			}
+			
+			public int LineCount {
+				get {
+					return doc.LineCount;
+				}
+			}
 		}
 
 		/// <summary>
