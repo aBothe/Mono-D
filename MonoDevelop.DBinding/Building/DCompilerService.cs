@@ -174,6 +174,10 @@ namespace MonoDevelop.D.Building
 				case "CompletionOptions":
 					CompletionOptions.Load (x.ReadSubtree ());
 					break;
+					
+				case "FormattingCorrectsIndentOnly":
+					Formatting.DCodeFormatter.IndentCorrectionOnly = x.ReadString().ToLowerInvariant() == "true";
+					break;
 				}
 			}
 
@@ -213,6 +217,10 @@ namespace MonoDevelop.D.Building
 			x.WriteAttributeString("ShowTypes", Outline.ShowTypes.ToString());
 			x.WriteAttributeString("GrayOutNonPublic", Outline.GrayOutNonPublic.ToString());
 			x.WriteAttributeString("ExpandTree", Outline.ExpandAll.ToString());
+			x.WriteEndElement();
+			
+			x.WriteStartElement("FormattingCorrectsIndentOnly");
+			x.WriteString(Formatting.DCodeFormatter.IndentCorrectionOnly ? "true" : "false");
 			x.WriteEndElement();
 		}
 		#endregion

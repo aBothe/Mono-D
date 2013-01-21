@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Linq;
 
-using Mono.Addins;
-using MonoDevelop.Core;
-using MonoDevelop.Ide.Projects;
 using MonoDevelop.Ide.Gui.Dialogs;
 using MonoDevelop.D.Building;
+using MonoDevelop.D.Formatting;
 
 namespace MonoDevelop.D.OptionPanels
 {
@@ -30,6 +25,7 @@ namespace MonoDevelop.D.OptionPanels
 			check_ShowTypes.Active = DCompilerService.Instance.Outline.ShowTypes;
 			check_GrayOutNonPublic.Active = DCompilerService.Instance.Outline.GrayOutNonPublic;
 			check_ExpandAll.Active = DCompilerService.Instance.Outline.ExpandAll;
+			check_IndentInsteadFormatCode.Active = DCodeFormatter.IndentCorrectionOnly;
 		}
 
 		public bool Validate ()
@@ -47,6 +43,7 @@ namespace MonoDevelop.D.OptionPanels
 			DCompilerService.Instance.Outline.GrayOutNonPublic = check_GrayOutNonPublic.Active;
 			DCompilerService.Instance.Outline.ShowTypes = check_ShowTypes.Active;
 			DCompilerService.Instance.Outline.ExpandAll = check_ExpandAll.Active;
+			DCodeFormatter.IndentCorrectionOnly = check_IndentInsteadFormatCode.Active;
 
 			if(Ide.IdeApp.Workbench.ActiveDocument!=null)
 				Ide.IdeApp.Workbench.ActiveDocument.ReparseDocument();

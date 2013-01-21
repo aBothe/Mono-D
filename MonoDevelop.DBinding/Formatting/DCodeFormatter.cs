@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 using D_Parser.Dom;
@@ -15,6 +16,12 @@ namespace MonoDevelop.D.Formatting
 {
 	public class DCodeFormatter: AbstractAdvancedFormatter
 	{
+		/// <summary>
+		/// True if one of these formatting routines shall only correct the file's indents.
+		/// False, if e.g. brace relocation shall be done too.
+		/// </summary>
+		public static bool IndentCorrectionOnly = true;
+		
 		internal const string MimeType = "text/x-d";
 
 		public override bool SupportsOnTheFlyFormatting	{	get	{return true;}	}
@@ -24,19 +31,17 @@ namespace MonoDevelop.D.Formatting
 		/// <summary>
 		/// Used for formatting selected code
 		/// </summary>
-		public override void OnTheFlyFormat(Ide.Gui.Document doc, int startOffset, int endOffset)
+		public override void OnTheFlyFormat(Ide.Gui.Document _doc, int startOffset, int endOffset)
 		{
-			var dpd = doc.ParsedDocument as ParsedDModule;
+			var doc = _doc.Editor.Document;
 			
-			if(dpd == null)
-				return;
 			DFormattingPolicy policy = null;
 			TextStylePolicy textStyle = null;
 
-			if(doc.HasProject)
+			if(_doc.HasProject)
 			{
-				policy = doc.Project.Policies.Get<DFormattingPolicy>(Indentation.DTextEditorIndentation.mimeTypes);
-				textStyle = doc.Project.Policies.Get<TextStylePolicy>(Indentation.DTextEditorIndentation.mimeTypes);
+				policy = _doc.Project.Policies.Get<DFormattingPolicy>(Indentation.DTextEditorIndentation.mimeTypes);
+				textStyle = _doc.Project.Policies.Get<TextStylePolicy>(Indentation.DTextEditorIndentation.mimeTypes);
 			}
 			else
 			{
@@ -44,17 +49,29 @@ namespace MonoDevelop.D.Formatting
 				textStyle = MonoDevelop.Projects.Policies.PolicyService.GetDefaultPolicy<TextStylePolicy> (Indentation.DTextEditorIndentation.mimeTypes);
 			}
 			
-			var formattingVisitor = new DFormattingVisitor(policy.Options, new DocAdapt(doc.Editor.Document), dpd.DDom as D_Parser.Dom.DModule, new TextStyleAdapter(textStyle));
+			if(IndentCorrectionOnly)
+			{
+				using(var r = doc.CreateReader())
+					D_Parser.Formatting.Indent.IndentEngineWrapper.CorrectIndent(r, startOffset, endOffset, doc.Replace, policy.Options, new TextStyleAdapter(textStyle));
+				return;
+			}
+			
+			var dpd = _doc.ParsedDocument as ParsedDModule;
+			
+			if(dpd == null)
+				return;
+			
+			var formattingVisitor = new DFormattingVisitor(policy.Options, new DocAdapt(doc), dpd.DDom as D_Parser.Dom.DModule, new TextStyleAdapter(textStyle));
 			
 			formattingVisitor.CheckFormattingBoundaries = true;
-			var dl = doc.Editor.Document.OffsetToLocation(startOffset);
+			var dl = doc.OffsetToLocation(startOffset);
 			formattingVisitor.FormattingStartLocation = new D_Parser.Dom.CodeLocation(dl.Column, dl.Line);
-			dl = doc.Editor.Document.OffsetToLocation(endOffset);
+			dl = doc.OffsetToLocation(endOffset);
 			formattingVisitor.FormattingEndLocation = new D_Parser.Dom.CodeLocation(dl.Column, dl.Line);
 			
 			formattingVisitor.WalkThroughAst();
 			
-			formattingVisitor.ApplyChanges(doc.Editor.Document.Replace);
+			formattingVisitor.ApplyChanges(doc.Replace);
 		}
 		
 		public class TextStyleAdapter : D_Parser.Formatting.ITextEditorOptions{
@@ -158,11 +175,17 @@ namespace MonoDevelop.D.Formatting
 		{
 			var policy = policyParent.Get<DFormattingPolicy> (mimeTypeChain);
 			var textPolicy = policyParent.Get<TextStylePolicy> (mimeTypeChain);
+			var data = new TextEditorData{ Text = input };
+			
+			if(IndentCorrectionOnly)
+			{
+				using(var s = data.OpenStream())
+					using(var r = new StreamReader(s))
+						D_Parser.Formatting.Indent.IndentEngineWrapper.CorrectIndent(r, startOffset, endOffset, data.Document.Replace, policy.Options, new TextStyleAdapter(textPolicy));
+				return data.Text;
+			}
+			
 			var ast = DParser.ParseString(input, false, true) as DModule;
-			
-			var data = new TextEditorData ();
-			data.Text = input;
-			
 			var formattingVisitor = new DFormattingVisitor(policy.Options, new DocAdapt(data.Document), ast, new TextStyleAdapter(textPolicy));
 			
 			// Only clip to a region if it's necessary
