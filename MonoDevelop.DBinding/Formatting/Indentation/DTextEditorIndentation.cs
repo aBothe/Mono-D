@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
+
 using D_Parser.Parser;
 using Mono.TextEditor;
 using MonoDevelop.Core;
@@ -122,7 +124,7 @@ namespace MonoDevelop.D.Formatting.Indentation
 
 		public override bool KeyPress (Gdk.Key key, char keyChar, Gdk.ModifierType modifier)
 		{
-			bool skipFormatting = StateTracker.Engine.IsInsideOrdinaryCommentOrString ||
+			bool skipFormatting = StateTracker.Engine.IsInsideCommentOrString ||
 					StateTracker.Engine.IsInsidePreprocessorDirective;
 
 			cursorPositionBeforeKeyPress = textEditorData.Caret.Offset;
@@ -322,7 +324,8 @@ namespace MonoDevelop.D.Formatting.Indentation
 			switch (charInserted) {
 			case '}':
 			case ';':
-				reIndent = true;
+				if(!(stateTracker.Engine.IsInsideCommentOrString))
+					reIndent = true;
 				break;
 			case '\n':
 				if (FixLineStart (stateTracker.Engine.LineNumber)) 
@@ -354,17 +357,21 @@ namespace MonoDevelop.D.Formatting.Indentation
 				{
 					if (textEditorData.GetTextAt (line.Offset, line.Length).TrimStart ().StartsWith (singleLineDDocOpener))
 						return false;
-					//check that the newline command actually inserted a newline
+					
 					textEditorData.EnsureCaretIsNotVirtual ();
-					int insertionPoint = line.Offset + line.GetIndentation (textEditorData.Document).Length;
-					string nextLine = textEditorData.Document.GetTextAt (textEditorData.Document.GetLine (lineNumber + 1)).TrimStart ();
+					
+					var sb = new StringBuilder();
+					sb.Append(prevLine.GetIndentation (textEditorData.Document));
+					sb.Append(singleLineDDocOpener);
+					
+					int i = 3;
+					for(; i < trimmedPreviousLine.Length && trimmedPreviousLine[i] == ' '; i++);
+					sb.Append(' ',i-3);
 
-					if (trimmedPreviousLine.Length >= singleLineDDocOpener.Length || nextLine.StartsWith (singleLineDDocOpener)) {
-						textEditorData.Insert (insertionPoint, 
-						                       trimmedPreviousLine.Length == singleLineDDocOpener.Length ?
-						                       singleLineDDocOpener : (singleLineDDocOpener+" "));
-						return true;
-					}
+					int indentSize = line.GetIndentation (textEditorData.Document).Length;
+					textEditorData.Replace (line.Offset, indentSize, sb.ToString());
+					textEditorData.Caret.Offset = line.Offset + sb.Length;
+					return true;
 				}
 				
 				//multi-line comments
