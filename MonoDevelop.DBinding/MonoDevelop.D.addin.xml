@@ -240,6 +240,8 @@
 
 	<!-- Document path bar extension -->
 	<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.Gui.EditorPathBarExtension" />
+	
+	<Class mimeTypes ="text/x-d" class = "MonoDevelop.D.Gui.MixinInsightExtension" />
 
 	<!-- Usages highlighting -->
 	<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.Highlighting.HighlightUsagesExtension" />
@@ -313,8 +315,8 @@
     
     
 	<Extension path = "/MonoDevelop/Ide/Pads">
-		<SolutionPad id = "MonoDevelop.D.Profiler.DProfilerPad" class = "MonoDevelop.D.Profiler.Gui.DProfilerPad" defaultPlacement = "Bottom" _label = "D Profiler">
-		</SolutionPad>
+		<SolutionPad id = "MonoDevelop.D.Profiler.DProfilerPad" class = "MonoDevelop.D.Profiler.Gui.DProfilerPad" defaultPlacement = "Bottom" defaultStatus="AutoHide" _label = "D Profiler"></SolutionPad>
+		<Pad id = "MonoDevelop.D.ExpressionEvaluationPad" class = "MonoDevelop.D.ExpressionEvaluationPad" defaultPlacement = "Right" defaultStatus="AutoHide" _label = "Expression Evaluation"></Pad>
 	</Extension>
     
 </Addin>

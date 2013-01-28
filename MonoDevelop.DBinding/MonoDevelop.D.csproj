@@ -64,9 +64,10 @@
       </CustomCommands>
     </CustomCommands>
     <DebugSymbols>True</DebugSymbols>
+    <DefineConstants>DEBUG</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>Full</DebugType>
+    <DebugType>full</DebugType>
     <Optimize>True</Optimize>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -78,7 +79,7 @@
     <FileAlignment>4096</FileAlignment>
     <StartAction>Program</StartAction>
     <StartProgram>..\..\tutorial.lib\MonoDevelop\main\build\bin\MonoDevelop.exe</StartProgram>
-    <DebugSymbols>true</DebugSymbols>
+    <DebugSymbols>True</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Mono.Addins">
@@ -204,6 +205,9 @@
     <Compile Include="Profiler\Commands\ProfilerCommandHandler.cs" />
     <Compile Include="Profiler\Commands\ProfilerModeHandler.cs" />
     <Compile Include="Profiler\Gui\DProfilerPad.cs" />
+    <Compile Include="Gui\ExpressionEvaluationWidget.cs" />
+    <Compile Include="gtk-gui\MonoDevelop.D.ExpressionEvaluationWidget.cs" />
+    <Compile Include="Gui\MixinInsightExtension.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
@@ -323,10 +327,10 @@
     <None Include="Formatting\Indentation\doc.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Formatting\Indentation" />
     <Folder Include="Profiler\" />
     <Folder Include="Profiler\Gui\" />
     <Folder Include="Profiler\Commands\" />
+    <Folder Include="Formatting\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Parser\DParser2\DParser2.csproj">

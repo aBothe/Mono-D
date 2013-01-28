@@ -144,7 +144,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.label9 = new global::Gtk.Label ();
 			this.label9.Name = "label9";
 			this.label9.Xalign = 0F;
-			this.label9.LabelProp = global::Mono.Unix.Catalog.GetString ("Note: Relative paths will be related to the project's base directory!");
+			this.label9.LabelProp = global::Mono.Unix.Catalog.GetString ("Note: Relative paths will be related to the project\'s base directory!");
 			this.table4.Add (this.label9);
 			global::Gtk.Table.TableChild w7 = ((global::Gtk.Table.TableChild)(this.table4 [this.label9]));
 			w7.LeftAttach = ((uint)(1));
@@ -177,7 +177,8 @@ namespace MonoDevelop.D.OptionPanels
 			this.scrolledwindow5.ShadowType = ((global::Gtk.ShadowType)(1));
 			// Container child scrolledwindow5.Gtk.Container+ContainerChild
 			this.extraLinkerTextView = new global::Gtk.TextView ();
-			this.extraLinkerTextView.TooltipMarkup = "A newline-separated list of extra options to send to the compiler.\nOne option can be in more than one line.\nExample:\n\t`--pkg\n\tcairo`";
+			this.extraLinkerTextView.TooltipMarkup = "A newline-separated list of extra options to send to the compiler.\nOne option can" +
+				" be in more than one line.\nExample:\n\t`--pkg\n\tcairo`";
 			this.extraLinkerTextView.CanFocus = true;
 			this.extraLinkerTextView.Name = "extraLinkerTextView";
 			this.scrolledwindow5.Add (this.extraLinkerTextView);
@@ -274,7 +275,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.label11 = new global::Gtk.Label ();
 			this.label11.Name = "label11";
 			this.label11.Xalign = 0F;
-			this.label11.LabelProp = global::Mono.Unix.Catalog.GetString ("Note: Relative paths will be related to the project's base directory!");
+			this.label11.LabelProp = global::Mono.Unix.Catalog.GetString ("Note: Relative paths will be related to the project\'s base directory!");
 			this.table1.Add (this.label11);
 			global::Gtk.Table.TableChild w18 = ((global::Gtk.Table.TableChild)(this.table1 [this.label11]));
 			w18.LeftAttach = ((uint)(1));
@@ -362,7 +363,8 @@ namespace MonoDevelop.D.OptionPanels
 			this.scrolledwindow4.ShadowType = ((global::Gtk.ShadowType)(1));
 			// Container child scrolledwindow4.Gtk.Container+ContainerChild
 			this.extraCompilerTextView = new global::Gtk.TextView ();
-			this.extraCompilerTextView.TooltipMarkup = "A newline-separated list of extra options to send to the compiler.\nOne option can be in more than one line.\nExample:\n\t`--pkg\n\tcairo`";
+			this.extraCompilerTextView.TooltipMarkup = "A newline-separated list of extra options to send to the compiler.\nOne option can" +
+				" be in more than one line.\nExample:\n\t`--pkg\n\tcairo`";
 			this.extraCompilerTextView.CanFocus = true;
 			this.extraCompilerTextView.Name = "extraCompilerTextView";
 			this.scrolledwindow4.Add (this.extraCompilerTextView);
@@ -375,12 +377,13 @@ namespace MonoDevelop.D.OptionPanels
 			w27.XOptions = ((global::Gtk.AttachOptions)(4));
 			w27.YOptions = ((global::Gtk.AttachOptions)(4));
 			// Container child table1.Gtk.Table+TableChild
-			this.spin_debugLevel = new global::Gtk.SpinButton (0, 100, 1);
-			this.spin_debugLevel.TooltipMarkup = "The debug level the program is built in.\nA value of zero (0) will not emit a -debug flag to the compilation argument string!";
+			this.spin_debugLevel = new global::Gtk.SpinButton (0D, 100D, 1D);
+			this.spin_debugLevel.TooltipMarkup = "The debug level the program is built in.\nA value of zero (0) will not emit a -deb" +
+				"ug flag to the compilation argument string!";
 			this.spin_debugLevel.CanFocus = true;
 			this.spin_debugLevel.Name = "spin_debugLevel";
-			this.spin_debugLevel.Adjustment.PageIncrement = 10;
-			this.spin_debugLevel.ClimbRate = 1;
+			this.spin_debugLevel.Adjustment.PageIncrement = 10D;
+			this.spin_debugLevel.ClimbRate = 1D;
 			this.spin_debugLevel.Numeric = true;
 			this.table1.Add (this.spin_debugLevel);
 			global::Gtk.Table.TableChild w28 = ((global::Gtk.Table.TableChild)(this.table1 [this.spin_debugLevel]));
@@ -406,7 +409,9 @@ namespace MonoDevelop.D.OptionPanels
 			w29.YOptions = ((global::Gtk.AttachOptions)(4));
 			// Container child table1.Gtk.Table+TableChild
 			this.text_debugConstants = new global::Gtk.Entry ();
-			this.text_debugConstants.TooltipMarkup = "Semicolon (;) separated list of debug constants to define for debug-build compilation.\nImportant: May affect code completion if omitted/written into extra compiler options field!";
+			this.text_debugConstants.TooltipMarkup = "Semicolon (;) separated list of debug constants to define for debug-build compila" +
+				"tion.\nImportant: May affect code completion if omitted/written into extra compil" +
+				"er options field!";
 			this.text_debugConstants.CanFocus = true;
 			this.text_debugConstants.Name = "text_debugConstants";
 			this.text_debugConstants.IsEditable = true;
@@ -435,7 +440,9 @@ namespace MonoDevelop.D.OptionPanels
 			w31.YOptions = ((global::Gtk.AttachOptions)(4));
 			// Container child table1.Gtk.Table+TableChild
 			this.text_versionConstants = new global::Gtk.Entry ();
-			this.text_versionConstants.TooltipMarkup = "Semicolon (;) separated list of version constants to define for compilation.\nImportant: May affect code completion if omitted/written into extra compiler options field!";
+			this.text_versionConstants.TooltipMarkup = "Semicolon (;) separated list of version constants to define for compilation.\nImpo" +
+				"rtant: May affect code completion if omitted/written into extra compiler options" +
+				" field!";
 			this.text_versionConstants.CanFocus = true;
 			this.text_versionConstants.Name = "text_versionConstants";
 			this.text_versionConstants.IsEditable = true;
@@ -465,7 +472,8 @@ namespace MonoDevelop.D.OptionPanels
 			this.label16 = new global::Gtk.Label ();
 			this.label16.Name = "label16";
 			this.label16.Xalign = 0F;
-			this.label16.LabelProp = global::Mono.Unix.Catalog.GetString ("Checking a project in this list will add an include (that points to the respective project's base directory) to this project automatically.");
+			this.label16.LabelProp = global::Mono.Unix.Catalog.GetString ("Checking a project in this list will add an include (that points to the respectiv" +
+				"e project\'s base directory) to this project automatically.");
 			this.label16.Wrap = true;
 			this.vbox2.Add (this.label16);
 			global::Gtk.Box.BoxChild w34 = ((global::Gtk.Box.BoxChild)(this.vbox2 [this.label16]));
@@ -509,7 +517,8 @@ namespace MonoDevelop.D.OptionPanels
 			this.table2.ColumnSpacing = ((uint)(6));
 			// Container child table2.Gtk.Table+TableChild
 			this.GtkScrolledWindow1 = new global::Gtk.ScrolledWindow ();
-			this.GtkScrolledWindow1.TooltipMarkup = "Line-separated list of paths where the compiler (and the code completion engine!) shall look in to resolve imports.";
+			this.GtkScrolledWindow1.TooltipMarkup = "Line-separated list of paths where the compiler (and the code completion engine!)" +
+				" shall look in to resolve imports.";
 			this.GtkScrolledWindow1.Name = "GtkScrolledWindow1";
 			this.GtkScrolledWindow1.ShadowType = ((global::Gtk.ShadowType)(1));
 			// Container child GtkScrolledWindow1.Gtk.Container+ContainerChild
@@ -526,7 +535,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.label14 = new global::Gtk.Label ();
 			this.label14.Name = "label14";
 			this.label14.Xalign = 0F;
-			this.label14.LabelProp = global::Mono.Unix.Catalog.GetString ("Note: Relative paths will be related to the project's base directory!");
+			this.label14.LabelProp = global::Mono.Unix.Catalog.GetString ("Note: Relative paths will be related to the project\'s base directory!");
 			this.table2.Add (this.label14);
 			global::Gtk.Table.TableChild w42 = ((global::Gtk.Table.TableChild)(this.table2 [this.label14]));
 			w42.YOptions = ((global::Gtk.AttachOptions)(4));
