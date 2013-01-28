@@ -1,30 +1,82 @@
 using System;
 using MonoDevelop.Ide.Gui.Content;
+using System.Threading;
+using MonoDevelop.Ide;
 
 namespace MonoDevelop.D.Gui
 {
 	public class MixinInsightExtension : TextEditorExtension
 	{
-		ExpressionEvaluationPad pad;
+		static AutoResetEvent stateChanged = new AutoResetEvent(false);
+		static Ide.Gui.Document doc;
+		static ExpressionEvaluationPad pad;
 
-		public override void CursorPositionChanged ()
+		public override void Initialize()
 		{
-			base.CursorPositionChanged ();
+			base.Initialize();
 
-			if(pad != null)
-				pad.Update(Document);
+			Document.DocumentParsed += Document_DocumentParsed;
 		}
 
-		public override bool ExtendsEditor (MonoDevelop.Ide.Gui.Document doc, IEditableTextBuffer editor)
+		void Document_DocumentParsed(object sender, EventArgs e)
+		{
+			stateChanged.Set();
+		}
+
+		public override void Dispose()
+		{
+			Document.DocumentParsed -= Document_DocumentParsed;
+		}
+
+		public override void TextChanged(int startIndex, int endIndex)
+		{
+			stateChanged.Set();
+			base.TextChanged(startIndex, endIndex);
+		}
+
+		public override void CursorPositionChanged()
+		{
+			base.CursorPositionChanged();
+			stateChanged.Set();
+		}
+
+		static void updateTh_method()
+		{
+			while (true)
+			{
+				stateChanged.WaitOne();
+				while (stateChanged.WaitOne(400));
+
+				DispatchService.GuiSyncDispatch(() =>
+				{
+					var p = Ide.IdeApp.Workbench.GetPad<ExpressionEvaluationPad>();
+					if (p == null)
+						return;
+
+					pad = p.Content as ExpressionEvaluationPad;
+
+					if (pad == null || !pad.Window.ContentVisible)
+						return;
+
+					doc = Ide.IdeApp.Workbench.ActiveDocument;
+					});
+				
+				if (pad != null && doc != null)
+					pad.Update(doc);
+			}
+		}
+
+		static MixinInsightExtension()
+		{
+			var updateTh = new Thread(updateTh_method);
+			updateTh.IsBackground = true;
+			updateTh.Priority = ThreadPriority.Lowest;
+			updateTh.Start();
+		}
+
+		public override bool ExtendsEditor(MonoDevelop.Ide.Gui.Document doc, IEditableTextBuffer editor)
 		{
 			return doc.IsFile && DLanguageBinding.IsDFile(doc.FileName);
-		}
-
-		public MixinInsightExtension ()
-		{
-			var p = Ide.IdeApp.Workbench.GetPad<ExpressionEvaluationPad>();
-			if(p != null)
-				pad = p.Content as ExpressionEvaluationPad;
 		}
 	}
 }

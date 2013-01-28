@@ -115,6 +115,12 @@ namespace MonoDevelop.D.Building
 
 			Cache.BeginParse();
 		}
+		
+		public static void UpdateParseCacheSync(ParseCache Cache)
+		{
+			UpdateParseCacheAsync(Cache);
+			Cache.WaitForParserFinish();
+		}
 		#endregion
 
 		#region Loading & Saving

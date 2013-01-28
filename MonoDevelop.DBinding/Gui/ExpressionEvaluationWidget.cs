@@ -6,6 +6,7 @@ using D_Parser.Dom.Statements;
 using D_Parser.Dom;
 using D_Parser.Resolver;
 using System.Text;
+using MonoDevelop.Ide;
 
 namespace MonoDevelop.D
 {
@@ -24,6 +25,9 @@ namespace MonoDevelop.D
 			o.ShowLineNumberMargin = false;
 			o.ShowFoldMargin = false;
 			o.ShowInvalidLines = false;
+			o.ShowIconMargin = false;
+			
+			editor.Document.ReadOnly = true;
 		}
 
 		public void Update (Document doc)
@@ -38,9 +42,9 @@ namespace MonoDevelop.D
 
 			IStatement stmt;
 			var caret = new D_Parser.Dom.CodeLocation (doc.Editor.Caret.Column, doc.Editor.Caret.Line);
-			var dbn = DResolver.SearchBlockAt (ast, caret, out stmt) as DBlockNode;
+			var bn = DResolver.SearchBlockAt (ast, caret, out stmt);
 			bool isMixinStmt = stmt != null;
-
+			var dbn = bn as DBlockNode;
 			if (stmt == null && dbn != null && dbn.StaticStatements.Count != 0) {
 				foreach (var ss in dbn.StaticStatements) {
 					if (caret >= ss.Location && caret <= ss.EndLocation) {
@@ -50,33 +54,66 @@ namespace MonoDevelop.D
 				}
 			}
 
+			var ed = Completion.DCodeCompletionSupport.CreateEditorData (doc);
+			var ctxt = new ResolutionContext (ed.ParseCache, new ConditionalCompilationFlags (ed), bn);
+
+			var sb = new StringBuilder ();
+
 			if (stmt is MixinStatement) {
 				var mx = stmt as MixinStatement;
-				var ed = Completion.DCodeCompletionSupport.CreateEditorData(doc);
-				var ctxt = new ResolutionContext(ed.ParseCache, new ConditionalCompilationFlags(ed), dbn, isMixinStmt ? stmt : null);
 
-				var sb = new StringBuilder();
+				if (isMixinStmt) {
+					ctxt.CurrentContext.Set (mx);
 
-				MixinAnalysis.UseResultCaching = false;
-				
-				if(isMixinStmt)
-				{
-					var bs = MixinAnalysis.ParseMixinStatement(mx, ctxt);
-				}
-				else
-				{
-					var bn = MixinAnalysis.ParseMixinDeclaration(mx, ctxt);
+					var bs = MixinAnalysis.ParseMixinStatement (mx, ctxt);
 
-					if(bn != null)
-					{
-						foreach(var n in bn)
-							BuildModuleCode(sb, n as DNode);
+					if (bs != null)
+						BuildStmtCode (sb, bs);
+				} else {
+					bn = MixinAnalysis.ParseMixinDeclaration (mx, ctxt);
+
+					if (bn != null) {
+						foreach (var n in bn)
+							BuildModuleCode (sb, n as DNode);
 					}
 				}
-				
-				MixinAnalysis.UseResultCaching = true;
-				editor.Text = sb.ToString();
+			} else if (stmt is TemplateMixin) {
+				var tmx = stmt as TemplateMixin;
+				var mxt = D_Parser.Resolver.ASTScanner.AbstractVisitor.GetTemplateMixinContent(ctxt, tmx);
+
+				if(mxt != null)
+					BuildModuleCode(sb, mxt.Definition);
 			}
+
+			DispatchService.GuiSyncDispatch(() => editor.Text = sb.ToString());
+		}
+
+		static void BuildStmtCode(StringBuilder sb, IStatement stmt, string indent = "")
+		{
+			if (stmt == null)
+				return;
+
+			if (stmt is BlockStatement)
+			{
+				var bs = stmt as BlockStatement;
+				sb.Append("{");
+				sb.AppendLine();
+
+				var deeperIndent = indent + "\t";
+				foreach (var sn in bs.SubStatements)
+				{
+					BuildStmtCode(sb, sn, deeperIndent);
+				}
+
+				sb.Append(indent);
+				sb.Append("}");
+				sb.AppendLine();
+				return;
+			}
+
+			sb.Append(indent);
+			sb.Append(stmt.ToCode());
+			sb.AppendLine();
 		}
 
 		static void BuildModuleCode (StringBuilder sb, DNode bn, string indent = "")
@@ -85,20 +122,26 @@ namespace MonoDevelop.D
 				return;
 			
 			sb.Append (indent);
-			sb.AppendLine (bn.ToString (true, false));
-			if (bn is IBlockNode) {
-				sb.Append (indent);
-				sb.Append('{');
-				sb.AppendLine ();
+			sb.Append (bn.ToString (true, false));
+			if (bn is IBlockNode)
+			{
+				sb.Append(" {");
+				sb.AppendLine();
 
 				var deeperIndent = indent + "\t";
-				foreach (var sn in (bn as IBlockNode)) {
+				foreach (var sn in (bn as IBlockNode))
+				{
 					BuildModuleCode(sb, sn as DNode, deeperIndent);
 				}
 
-				sb.Append (indent);
+				sb.Append(indent);
 				sb.Append('}');
-				sb.AppendLine ();
+				sb.AppendLine();
+			}
+			else
+			{
+				sb.Append(";");
+				sb.AppendLine();
 			}
 		}
 	}
@@ -126,8 +169,6 @@ namespace MonoDevelop.D
 		{
 			widget.Dispose();
 		}
-
-
 
 		public void Update (Document doc)
 		{

@@ -182,6 +182,7 @@ namespace MonoDevelop.D
 				analysisFinished_FileLinks = true;
 
 			LocalFileCache.BeginParse (new[] { BaseDirectory.ToString () }, BaseDirectory);
+			//LocalFileCache.WaitForParserFinish();
 
 			/*
 			 * Since we don't want to include all link files' directories for performance reasons,
@@ -193,10 +194,7 @@ namespace MonoDevelop.D
 				{
 					foreach (var f in (List<ProjectFile>)o)
 					{
-						var mod = DParser.ParseFile(f.FilePath) as DModule;
-						var modName = f.ProjectVirtualPath.ToString().Replace(Path.DirectorySeparatorChar,'.');
-						
-						_filelinkModulesToInsert.Add(mod);
+						_filelinkModulesToInsert.Add(DParser.ParseFile(f.FilePath) as DModule);
 					}
 
 					analysisFinished_FileLinks = true;
