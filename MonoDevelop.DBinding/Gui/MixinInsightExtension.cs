@@ -2,6 +2,7 @@ using System;
 using MonoDevelop.Ide.Gui.Content;
 using System.Threading;
 using MonoDevelop.Ide;
+using MonoDevelop.Core;
 
 namespace MonoDevelop.D.Gui
 {
@@ -10,12 +11,38 @@ namespace MonoDevelop.D.Gui
 		static AutoResetEvent stateChanged = new AutoResetEvent(false);
 		static Ide.Gui.Document doc;
 		static ExpressionEvaluationPad pad;
+		static Thread updateTh;
 
 		public override void Initialize()
 		{
 			base.Initialize();
 
 			Document.DocumentParsed += Document_DocumentParsed;
+		}
+
+		static MixinInsightExtension ()
+		{
+			StartUpdateThread();
+
+			PropertyService.AddPropertyHandler(ExpressionEvaluationPad.activateAutomatedCaretTrackingPropId, (object s, PropertyChangedEventArgs pea) => {
+				if((bool)pea.NewValue)
+				{
+					StartUpdateThread();
+				}
+				else if(updateTh != null){
+					updateTh.Abort();
+				}
+			});
+		}
+
+		static void StartUpdateThread()
+		{
+			if(updateTh == null || !updateTh.IsAlive){
+				updateTh = new Thread(updateTh_method);
+				updateTh.IsBackground = true;
+				updateTh.Priority = ThreadPriority.Lowest;
+				updateTh.Start();
+			}
 		}
 
 		void Document_DocumentParsed(object sender, EventArgs e)
@@ -64,14 +91,6 @@ namespace MonoDevelop.D.Gui
 				if (pad != null && doc != null)
 					pad.Update(doc);
 			}
-		}
-
-		static MixinInsightExtension()
-		{
-			var updateTh = new Thread(updateTh_method);
-			updateTh.IsBackground = true;
-			updateTh.Priority = ThreadPriority.Lowest;
-			updateTh.Start();
 		}
 
 		public override bool ExtendsEditor(MonoDevelop.Ide.Gui.Document doc, IEditableTextBuffer editor)

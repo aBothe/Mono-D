@@ -7,6 +7,8 @@ using D_Parser.Dom;
 using D_Parser.Resolver;
 using System.Text;
 using MonoDevelop.Ide;
+using MonoDevelop.Core;
+using D_Parser.Dom.Expressions;
 
 namespace MonoDevelop.D
 {
@@ -14,6 +16,7 @@ namespace MonoDevelop.D
 	public partial class ExpressionEvaluationWidget : Gtk.Bin
 	{
 		ExpressionEvaluationPad pad;
+		Gtk.Button abortButton;
 
 		public ExpressionEvaluationWidget (ExpressionEvaluationPad p)
 		{
@@ -21,13 +24,44 @@ namespace MonoDevelop.D
 			this.pad = p;
 
 			var o = editor.Options;
-			editor.Document.MimeType = Formatting.DCodeFormatter.MimeType;
+			inputEditor.Options = o;
+			editor.Document.MimeType = 
+				inputEditor.Document.MimeType = 
+					Formatting.DCodeFormatter.MimeType;
 			o.ShowLineNumberMargin = false;
 			o.ShowFoldMargin = false;
 			o.ShowInvalidLines = false;
 			o.ShowIconMargin = false;
-			
+
 			editor.Document.ReadOnly = true;
+
+			var tb = pad.Window.GetToolbar(Gtk.PositionType.Top);
+
+			var ch = new Gtk.ToggleButton();
+			ch.Image = new Gtk.Image(Gtk.Stock.Refresh, Gtk.IconSize.Menu);
+			ch.Active = ExpressionEvaluationPad.EnableCaretTracking;
+			ch.TooltipText = "Toggle automatic update after the caret has been moved.";
+			ch.Toggled+=(object s, EventArgs ea)=>{ ExpressionEvaluationPad.EnableCaretTracking = (s as Gtk.ToggleToolButton).Active; };
+			tb.Add(ch);
+
+			var b = new Gtk.Button();
+			b.Image = new Gtk.Image(Gtk.Stock.Execute, Gtk.IconSize.Menu);
+			b.TooltipText = "Evaluates the expression typed in the upper input editor.";
+			b.Clicked+=(object s, EventArgs ea)=>{ 
+				MessageService.ShowMessage("Derp"); 
+			};
+			tb.Add(b);
+
+			abortButton = new Gtk.Button();
+			abortButton.Sensitive = false;
+			abortButton.Image = new Gtk.Image(Gtk.Stock.Stop, Gtk.IconSize.Menu);
+			abortButton.TooltipText = "Stops the evaluation.";
+			abortButton.Clicked += (object sender, EventArgs e) => {
+
+			};
+			tb.Add(abortButton);
+
+			tb.ShowAll();
 		}
 
 		public void Update (Document doc)
@@ -78,14 +112,16 @@ namespace MonoDevelop.D
 					}
 				}
 			} else if (stmt is TemplateMixin) {
-				var tmx = stmt as TemplateMixin;
-				var mxt = D_Parser.Resolver.ASTScanner.AbstractVisitor.GetTemplateMixinContent(ctxt, tmx);
+				var mxt = D_Parser.Resolver.ASTScanner.AbstractVisitor.GetTemplateMixinContent(ctxt, stmt as TemplateMixin);
 
 				if(mxt != null)
 					BuildModuleCode(sb, mxt.Definition);
 			}
 
-			DispatchService.GuiSyncDispatch(() => editor.Text = sb.ToString());
+			DispatchService.GuiSyncDispatch(() => {
+				editor.Text = sb.ToString(); 
+				inputEditor.Text= stmt == null ? string.Empty : stmt.ToString();
+			});
 		}
 
 		static void BuildStmtCode(StringBuilder sb, IStatement stmt, string indent = "")
@@ -148,17 +184,27 @@ namespace MonoDevelop.D
 
 	public class ExpressionEvaluationPad : AbstractPadContent
 	{
+		internal const string activateAutomatedCaretTrackingPropId = "mono-d-expression-evaluation-activate-caret-tracking";
+
+		public static bool EnableCaretTracking {
+			get{ return PropertyService.Get<bool> (activateAutomatedCaretTrackingPropId, true); }
+			set{ PropertyService.Set(activateAutomatedCaretTrackingPropId, value); }
+		}
+
 		ExpressionEvaluationWidget widget;
 
 		public ExpressionEvaluationPad ()
 		{
-			widget = new ExpressionEvaluationWidget(this);
+
 		}
 		
 		public override void Initialize (IPadWindow window)
 		{
 			base.Initialize(window);
+			widget = new ExpressionEvaluationWidget(this);
+
 			widget.ShowAll();
+
 		}
 
 		public override Gtk.Widget Control {
@@ -167,12 +213,14 @@ namespace MonoDevelop.D
 		
 		public override void Dispose ()
 		{
-			widget.Dispose();
+			if(widget!=null)
+				widget.Dispose();
 		}
 
 		public void Update (Document doc)
 		{
-			widget.Update(doc);
+			if(widget!=null)
+				widget.Update(doc);
 		}
 	}
 }
