@@ -26,8 +26,8 @@ namespace MonoDevelop.D
 		TextEditor inputEditor, editor;
 		Gtk.Button executeButton;
 		Gtk.Button abortButton;
+		const string lastInputStringPropId = "MonoD.ExpressionEvaluation.LastInputString";
 
-		List<ErrorMarker> inputErrors = new List<ErrorMarker>();
 		Thread evalThread;
 		#endregion
 		
@@ -35,41 +35,43 @@ namespace MonoDevelop.D
 		{
 			base.Initialize(window);
 
+			// Call ctors
+			inputEditor = new TextEditor() { Name = "input", Events = Gdk.EventMask.AllEventsMask, HeightRequest = 80 };
+			editor = new TextEditor() { Name = "output", Events = Gdk.EventMask.AllEventsMask };
+			vpaned = new Gtk.VPaned();
+			var scr1 = new Gtk.ScrolledWindow();
+			var scr2 = new Gtk.ScrolledWindow();
+
+			// Init layout
+			scr1.ShadowType = Gtk.ShadowType.In;
+			scr1.Child = inputEditor;
+			vpaned.Add1(scr1);
+			scr1.ShowAll();
+			inputEditor.ShowAll();
+
+			scr2.ShadowType = Gtk.ShadowType.In;
+			scr2.Child = editor;
+			vpaned.Add2(scr2);
+			scr2.ShowAll();
+			editor.ShowAll();
+
+			vpaned.ShowAll();
+
 			// Init editors
-			inputEditor = new TextEditor();
-			editor = new TextEditor();
-			inputEditor.HeightRequest = 80;
-
-			editor.Events = inputEditor.Events = Gdk.EventMask.AllEventsMask;
-
 			var o = editor.Options;
 			inputEditor.Options = o;
-			editor.Document.MimeType =
-				inputEditor.Document.MimeType =
-					Formatting.DCodeFormatter.MimeType;
 			o.ShowLineNumberMargin = false;
 			o.ShowFoldMargin = false;
 			o.ShowInvalidLines = false;
 			o.ShowIconMargin = false;
 
 			editor.Document.ReadOnly = true;
-
-
-			// Init layout
-			vpaned = new Gtk.VPaned();
-
-			var scr1 = new Gtk.ScrolledWindow();
-			scr1.ShadowType = Gtk.ShadowType.In;
-			scr1.Child = inputEditor;
-			vpaned.Add1(scr1);
-
-			var scr2 = new Gtk.ScrolledWindow();
-			scr2.ShadowType = Gtk.ShadowType.In;
-			scr2.Child = editor;
-			vpaned.Add2(scr2);
-
-			vpaned.ShowAll();
-
+			inputEditor.Text = PropertyService.Get(lastInputStringPropId, string.Empty);
+			editor.Text = string.Empty;
+			editor.Document.SyntaxMode = new Highlighting.DSyntaxMode();
+			inputEditor.Document.SyntaxMode = new Highlighting.DSyntaxMode();
+			editor.Document.MimeType = Formatting.DCodeFormatter.MimeType;
+			inputEditor.Document.MimeType = Formatting.DCodeFormatter.MimeType;
 
 			// Init toolbar
 			var tb = window.GetToolbar(Gtk.PositionType.Top);
@@ -94,37 +96,10 @@ namespace MonoDevelop.D
 			get{return vpaned;}
 		}
 
-
-		class ErrorMarker : UnderlineMarker
+		public override void Dispose()
 		{
-			public ParserError Info { get; private set; }
-
-			public ErrorMarker(TextDocument doc, ParserError info, DocumentLine line)
-			{
-				Info = info;
-				LineSegment = line;
-				// may be null if no line is assigned to the error.
-				Wave = true;
-
-				ColorName = Mono.TextEditor.Highlighting.ColorScheme.ErrorUnderlineString;
-				StartCol = info.Location.Column;
-
-				if (line == null)
-				{
-					EndCol = StartCol;
-					return;
-				}
-				var start = line.Offset + StartCol;
-				int o = start + 1;
-				while (o < line.EndOffset)
-				{
-					char ch = doc.GetCharAt(o);
-					if (!(char.IsLetterOrDigit(ch) || ch == '_'))
-						break;
-					o++;
-				}
-				EndCol = Info.Location.Column + o - start;
-			}
+			PropertyService.Set(lastInputStringPropId, inputEditor.Text);
+			base.Dispose();
 		}
 
 		void Execute(object s, EventArgs ea)
@@ -139,20 +114,18 @@ namespace MonoDevelop.D
 			var x = p.Expression(null);
 			tr.Close();
 
-			// Handle evaluation errors
-			foreach (var mkr in inputErrors)
-				inputEditor.Document.RemoveMarker(mkr);
-
+			// Handle parse errors
 			if (p.ParseErrors.Count != 0)
 			{
+				var sb = new StringBuilder();
+				sb.AppendLine("<Syntax errors>");
 				foreach (var parserError in p.ParseErrors)
 				{
-					var ln = inputEditor.GetLine(parserError.Location.Line);
-					var mkr = new ErrorMarker(inputEditor.Document, parserError, ln);
-					inputErrors.Add(mkr);
-					inputEditor.Document.AddMarker(ln, mkr);
+					sb.Append(parserError.Location.ToString());
+					sb.Append(": ");
+					sb.AppendLine(parserError.Message);
 				}
-				inputEditor.Document.CommitUpdateAll();
+				editor.Text = sb.ToString();
 
 				return;
 			}
