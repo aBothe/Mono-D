@@ -2770,40 +2770,4 @@ This is mainly activated when using the gdc compiler.</property>
       </widget>
     </child>
   </widget>
-  <widget class="Gtk.Bin" id="MonoDevelop.D.ExpressionEvaluationWidget" design-size="400 300">
-    <property name="MemberName" />
-    <property name="Visible">False</property>
-    <child>
-      <widget class="Gtk.VPaned" id="vpaned1">
-        <property name="MemberName" />
-        <property name="CanFocus">True</property>
-        <property name="Position">77</property>
-        <child>
-          <widget class="Mono.TextEditor.TextEditor" id="inputEditor">
-            <property name="MemberName" />
-            <property name="Events">PointerMotionMask, ButtonPressMask, ButtonReleaseMask, KeyPressMask, KeyReleaseMask, FocusChangeMask, StructureMask, PropertyChangeMask, VisibilityNotifyMask, ScrollMask</property>
-            <property name="TabsToSpaces">False</property>
-            <property name="SelectionAnchor">0</property>
-            <property name="HighlightSearchPattern">False</property>
-            <property name="IsCaseSensitive">False</property>
-            <property name="IsWholeWordOnly">False</property>
-          </widget>
-          <packing>
-            <property name="Resize">False</property>
-          </packing>
-        </child>
-        <child>
-          <widget class="Mono.TextEditor.TextEditor" id="editor">
-            <property name="MemberName" />
-            <property name="Events">PointerMotionMask, ButtonPressMask, ButtonReleaseMask, KeyPressMask, KeyReleaseMask, FocusChangeMask, StructureMask, PropertyChangeMask, VisibilityNotifyMask, ScrollMask</property>
-            <property name="TabsToSpaces">False</property>
-            <property name="SelectionAnchor">0</property>
-            <property name="HighlightSearchPattern">False</property>
-            <property name="IsCaseSensitive">False</property>
-            <property name="IsWholeWordOnly">False</property>
-          </widget>
-        </child>
-      </widget>
-    </child>
-  </widget>
 </stetic-interface>

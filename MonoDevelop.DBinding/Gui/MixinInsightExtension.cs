@@ -9,30 +9,35 @@ namespace MonoDevelop.D.Gui
 	public class MixinInsightExtension : TextEditorExtension
 	{
 		static AutoResetEvent stateChanged = new AutoResetEvent(false);
-		static Ide.Gui.Document doc;
-		static ExpressionEvaluationPad pad;
+		static MixinInsightPad pad;
 		static Thread updateTh;
+		static bool initialized;
 
 		public override void Initialize()
 		{
 			base.Initialize();
 
-			Document.DocumentParsed += Document_DocumentParsed;
-		}
+			if (!initialized)
+			{
+				initialized = true;
 
-		static MixinInsightExtension ()
-		{
-			StartUpdateThread();
-
-			PropertyService.AddPropertyHandler(ExpressionEvaluationPad.activateAutomatedCaretTrackingPropId, (object s, PropertyChangedEventArgs pea) => {
-				if((bool)pea.NewValue)
-				{
+				if(MixinInsightPad.EnableCaretTracking)
 					StartUpdateThread();
-				}
-				else if(updateTh != null){
-					updateTh.Abort();
-				}
-			});
+
+				PropertyService.AddPropertyHandler(MixinInsightPad.activateAutomatedCaretTrackingPropId, (object s, PropertyChangedEventArgs pea) =>
+				{
+					if ((bool)pea.NewValue)
+					{
+						StartUpdateThread();
+					}
+					else if (updateTh != null)
+					{
+						updateTh.Abort();
+					}
+				});
+			}
+
+			Document.DocumentParsed += Document_DocumentParsed;
 		}
 
 		static void StartUpdateThread()
@@ -76,20 +81,15 @@ namespace MonoDevelop.D.Gui
 
 				DispatchService.GuiSyncDispatch(() =>
 				{
-					var p = Ide.IdeApp.Workbench.GetPad<ExpressionEvaluationPad>();
+					var p = Ide.IdeApp.Workbench.GetPad<MixinInsightPad>();
 					if (p == null)
 						return;
 
-					pad = p.Content as ExpressionEvaluationPad;
-
-					if (pad == null || !pad.Window.ContentVisible)
-						return;
-
-					doc = Ide.IdeApp.Workbench.ActiveDocument;
-					});
+					pad = p.Content as MixinInsightPad;
+				});
 				
-				if (pad != null && doc != null)
-					pad.Update(doc);
+				if (pad != null && pad.Window.ContentVisible)
+					pad.Update();
 			}
 		}
 
@@ -99,4 +99,3 @@ namespace MonoDevelop.D.Gui
 		}
 	}
 }
-

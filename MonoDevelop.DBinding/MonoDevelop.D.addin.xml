@@ -316,6 +316,7 @@
     
 	<Extension path = "/MonoDevelop/Ide/Pads">
 		<SolutionPad id = "MonoDevelop.D.Profiler.DProfilerPad" class = "MonoDevelop.D.Profiler.Gui.DProfilerPad" defaultPlacement = "Bottom" defaultStatus="AutoHide" _label = "D Profiler"></SolutionPad>
+		<Pad id = "MonoDevelop.D.Gui.MixinInsightPad" class = "MonoDevelop.D.Gui.MixinInsightPad" defaultPlacement = "Bottom" defaultStatus="AutoHide" _label = "Mixin Insight"></Pad>
 		<Pad id = "MonoDevelop.D.ExpressionEvaluationPad" class = "MonoDevelop.D.ExpressionEvaluationPad" defaultPlacement = "Right" defaultStatus="AutoHide" _label = "Expression Evaluation"></Pad>
 	</Extension>
     

@@ -10,6 +10,10 @@ using MonoDevelop.Ide.CodeCompletion;
 using MonoDevelop.Ide.Gui;
 using ICSharpCode.NRefactory.Completion;
 using MonoDevelop.D.Parser;
+using D_Parser.Resolver;
+using D_Parser.Dom.Statements;
+using D_Parser.Resolver.TypeResolution;
+using MonoDevelop.Ide;
 
 namespace MonoDevelop.D.Completion
 {
@@ -83,6 +87,48 @@ namespace MonoDevelop.D.Completion
 				new CompletionDataGenerator { CompletionDataList = l },
 				CreateEditorData(EditorDocument, SyntaxTree as DModule, ctx, triggerChar), 
 				triggerChar=='\0'?null:triggerChar.ToString());
+		}
+
+		public static ResolutionContext CreateCurrentContext()
+		{
+			Document doc = null;
+			DispatchService.GuiSyncDispatch(() => doc = Ide.IdeApp.Workbench.ActiveDocument);
+			if (doc != null)
+			{
+				var ddoc = doc.ParsedDocument as ParsedDModule;
+				if (ddoc != null)
+				{
+					var ast = ddoc.DDom;
+					if (ast != null)
+					{
+						IStatement stmt;
+						var caret = new D_Parser.Dom.CodeLocation(doc.Editor.Caret.Column, doc.Editor.Caret.Line);
+						var bn = DResolver.SearchBlockAt(ast, caret, out stmt);
+						var dbn = bn as DBlockNode;
+						if (stmt == null && dbn != null)
+						{
+							//TODO: If inside an expression statement, search the nearest function call or template instance expression - and try to evaluate that one.
+
+							if (dbn.StaticStatements.Count != 0)
+							{
+								foreach (var ss in dbn.StaticStatements)
+								{
+									if (caret >= ss.Location && caret <= ss.EndLocation)
+									{
+										stmt = ss;
+										break;
+									}
+								}
+							}
+						}
+
+						var ed = Completion.DCodeCompletionSupport.CreateEditorData(doc);
+						return new ResolutionContext(ed.ParseCache, new ConditionalCompilationFlags(ed), bn, stmt);
+					}
+				}
+			}
+			return new ResolutionContext(Completion.DCodeCompletionSupport.EnumAvailableModules(),
+					new ConditionalCompilationFlags(VersionIdEvaluation.GetOSAndCPUVersions(), 1, true), null);
 		}
 
 		#region Module enumeration helper
