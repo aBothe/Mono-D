@@ -304,7 +304,9 @@
       <SubType>Designer</SubType>
     </Content>
     <EmbeddedResource Include="icons\element-alias-16.png" />
-    <EmbeddedResource Include="MonoDevelop.D.addin.xml" />
+    <EmbeddedResource Include="MonoDevelop.D.addin.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
