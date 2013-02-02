@@ -80,7 +80,14 @@ namespace MonoDevelop.D.Parser
 			parser.Lexer.OnlyEnlistDDocComments = false;
 
 			// Parse the code
-			ast = parser.Parse();
+			try
+			{
+				ast = parser.Parse();
+			}
+			catch (TooManyErrorsException x)
+			{
+				ast = parser.Document;
+			}
 
 			// Update project owner information / Build appropriate module name
 			if(string.IsNullOrEmpty(ast.ModuleName))
