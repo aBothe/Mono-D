@@ -58,9 +58,6 @@ namespace MonoDevelop.D.Gui
 			var results = item.Item as AbstractTooltipContent[];
 
 			var win = new DToolTipWindow();
-			
-			// Set white background
-			win.ModifyBg(StateType.Normal,new Gdk.Color(0xff,0xff,0xff));
 
 			var pack = new Gtk.VBox();
 			
@@ -71,9 +68,9 @@ namespace MonoDevelop.D.Gui
 				// Make left-bound
 				titleLabel.SetAlignment(0, 0);
 
-				// Set bold font
+				// Make the title bold
 				titleLabel.ModifyFont(new Pango.FontDescription() {Weight=Weight.Bold, AbsoluteSize=12*(int)Pango.Scale.PangoScale});
-
+				
 				pack.Add(titleLabel);
 
 				if (!string.IsNullOrEmpty( r.Description))
