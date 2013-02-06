@@ -18,13 +18,27 @@ namespace MonoDevelop.D.OptionPanels
 	
 		public void Load ()
 		{
+
 			text_ManualBaseUrl.Text = D.Refactoring.DDocumentationLauncher.DigitalMarsUrl;
 			check_EnableUFCSCompletion.Active = DCompilerService.Instance.CompletionOptions.ShowUFCSItems;
-			check_ShowFunctionParams.Active = DCompilerService.Instance.Outline.ShowFuncParams;
-			check_ShowFunctionVariables.Active = DCompilerService.Instance.Outline.ShowFuncVariables;
-			check_ShowTypes.Active = DCompilerService.Instance.Outline.ShowTypes;
-			check_GrayOutNonPublic.Active = DCompilerService.Instance.Outline.GrayOutNonPublic;
-			check_ExpandAll.Active = DCompilerService.Instance.Outline.ExpandAll;
+
+			var outline = DCompilerService.Instance.Outline;
+			check_ShowFunctionParams.Active = outline.ShowFuncParams;
+			check_ShowFunctionVariables.Active = outline.ShowFuncVariables;
+			check_ShowTypes.Active = outline.ShowBaseTypes;
+			check_GrayOutNonPublic.Active = outline.GrayOutNonPublic;
+			switch (outline.ExpansionBehaviour) {
+			case DocOutlineCollapseBehaviour.CollapseAll:
+				combo_ExpansionBehaviour.Active = 0;
+				break;
+			case DocOutlineCollapseBehaviour.ReopenPreviouslyExpanded:
+				combo_ExpansionBehaviour.Active = 1;
+				break;
+			case DocOutlineCollapseBehaviour.ExpandAll:
+				combo_ExpansionBehaviour.Active = 2;
+				break;
+			}
+
 			check_IndentInsteadFormatCode.Active = DCodeFormatter.IndentCorrectionOnly;
 		}
 
@@ -38,11 +52,24 @@ namespace MonoDevelop.D.OptionPanels
 			Refactoring.DDocumentationLauncher.DigitalMarsUrl = text_ManualBaseUrl.Text;
 
 			DCompilerService.Instance.CompletionOptions.ShowUFCSItems = check_EnableUFCSCompletion.Active;
-			DCompilerService.Instance.Outline.ShowFuncParams = check_ShowFunctionParams.Active;
-			DCompilerService.Instance.Outline.ShowFuncVariables = check_ShowFunctionVariables.Active;
-			DCompilerService.Instance.Outline.GrayOutNonPublic = check_GrayOutNonPublic.Active;
-			DCompilerService.Instance.Outline.ShowTypes = check_ShowTypes.Active;
-			DCompilerService.Instance.Outline.ExpandAll = check_ExpandAll.Active;
+
+			var outline = DCompilerService.Instance.Outline;
+			outline.ShowFuncParams = check_ShowFunctionParams.Active;
+			outline.ShowFuncVariables = check_ShowFunctionVariables.Active;
+			outline.GrayOutNonPublic = check_GrayOutNonPublic.Active;
+			outline.ShowBaseTypes = check_ShowTypes.Active;
+			switch (combo_ExpansionBehaviour.Active) {
+			case 0:
+				outline.ExpansionBehaviour = DocOutlineCollapseBehaviour.CollapseAll;
+				break;
+			case 1:
+				outline.ExpansionBehaviour = DocOutlineCollapseBehaviour.ReopenPreviouslyExpanded;
+				break;
+			case 2:
+				outline.ExpansionBehaviour = DocOutlineCollapseBehaviour.ExpandAll;
+				break;
+			}
+
 			DCodeFormatter.IndentCorrectionOnly = check_IndentInsteadFormatCode.Active;
 
 			if(Ide.IdeApp.Workbench.ActiveDocument!=null)
