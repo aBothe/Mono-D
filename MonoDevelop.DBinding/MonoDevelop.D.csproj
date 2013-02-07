@@ -53,18 +53,17 @@
     <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
     <BaseAddress>4194304</BaseAddress>
     <FileAlignment>4096</FileAlignment>
-    <CustomCommands>
-      <CustomCommands>
-        <Command type="Execute" command="monodevelop" workingdir="${TargetDir}">
-          <EnvironmentVariables>
-            <Variable name="MONODEVELOP_DEV_ADDINS" value="${TargetDir}/.." />
-          </EnvironmentVariables>
-        </Command>
-        <Command type="BeforeBuild" />
-      </CustomCommands>
-    </CustomCommands>
     <DebugSymbols>True</DebugSymbols>
     <DefineConstants>DEBUG</DefineConstants>
+    
+    <CustomCommands>
+  <CustomCommands>
+    <Command type="Execute"
+      command="..\..\tutorial.lib\monodevelop\main\build\bin\MonoDevelop.exe"
+      workingdir="..\..\tutorial.lib\monodevelop\main\build\bin" />
+  </CustomCommands>
+</CustomCommands>
+    
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>full</DebugType>
