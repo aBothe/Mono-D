@@ -29,7 +29,7 @@ namespace MonoDevelop.D.Profiler.Gui
 			
 			nodeView.Model = cardSort;
 			
-			AddColumn("Num Calls [µs]", 0);
+			AddColumn("Num Calls", 0);
 			AddColumn("Tree Time [µs]", 1);
 			AddColumn("Func Time [µs]", 2);
 			AddColumn("Per Call", 3);
