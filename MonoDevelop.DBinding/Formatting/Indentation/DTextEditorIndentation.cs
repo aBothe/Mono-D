@@ -408,7 +408,7 @@ namespace MonoDevelop.D.Formatting.Indentation
 
 		void DoReSmartIndent (int cursor)
 		{
-			if (stateTracker.Engine.LineBeganInsideVerbatimString || stateTracker.Engine.LineBeganInsideMultiLineComment)
+			if (stateTracker.Engine.LineBeganInsideString || stateTracker.Engine.LineBeganInsideMultiLineComment)
 				return;
 			string newIndent = string.Empty;
 			DocumentLine line = textEditorData.Document.GetLineByOffset (cursor);
