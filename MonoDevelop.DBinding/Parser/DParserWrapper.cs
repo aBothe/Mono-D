@@ -5,6 +5,8 @@ using ICSharpCode.NRefactory.TypeSystem;
 using MonoDevelop.Ide.Tasks;
 using MonoDevelop.Ide.TypeSystem;
 using MonoDevelop.Projects;
+using System.Collections.Generic;
+using D_Parser.Misc;
 
 namespace MonoDevelop.D.Parser
 {
@@ -18,6 +20,7 @@ namespace MonoDevelop.D.Parser
 	{
 		public static DParserWrapper Instance=new DParserWrapper();
 
+		// Used for not having to parse a module two times, for 1) The fold region parser and 2) this parser wrapper
 		internal static ParsedDocument LastParsedMod;
 
 		public ParsedDocument Parse(bool storeAst, string file, TextReader content, Project prj = null)
@@ -59,10 +62,10 @@ namespace MonoDevelop.D.Parser
 			var dprj = prj as DProject;
 
 			// Remove obsolete ast from cache
-			IAbstractSyntaxTree ast = null;
+			DModule ast = null;
 			if (dprj != null)
 			{
-				ast = dprj.LocalFileCache.GetModuleByFileName(file, prj.BaseDirectory);
+				ast = dprj.LocalFileCache.GetModuleByFileName(file, prj.BaseDirectory) as DModule;
 
 				if (ast != null)
 				{

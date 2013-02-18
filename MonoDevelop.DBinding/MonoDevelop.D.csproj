@@ -55,15 +55,11 @@
     <FileAlignment>4096</FileAlignment>
     <DebugSymbols>True</DebugSymbols>
     <DefineConstants>DEBUG</DefineConstants>
-    
     <CustomCommands>
-  <CustomCommands>
-    <Command type="Execute"
-      command="..\..\tutorial.lib\monodevelop\main\build\bin\MonoDevelop.exe"
-      workingdir="..\..\tutorial.lib\monodevelop\main\build\bin" />
-  </CustomCommands>
-</CustomCommands>
-    
+      <CustomCommands>
+        <Command type="Execute" command="..\..\tutorial.lib\monodevelop\main\build\bin\MonoDevelop.exe" workingdir="..\..\tutorial.lib\monodevelop\main\build\bin" />
+      </CustomCommands>
+    </CustomCommands>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>full</DebugType>
