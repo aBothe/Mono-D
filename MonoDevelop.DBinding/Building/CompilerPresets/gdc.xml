@@ -7,7 +7,7 @@
 	
 	<Patterns>
 		<obj>"{0}"</obj>
-		<include>-I"{0}"</include>
+		<include>"-I{0}"</include>
 		<version>-fversion</version>
 		<debug>-fdebug</debug>
 		<unittest>-funittest</unittest>

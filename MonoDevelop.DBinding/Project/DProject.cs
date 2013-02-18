@@ -538,7 +538,7 @@ namespace MonoDevelop.D
 					if(!hasNotYetEnlistedChild){
 						
 						if(skippedItems.Contains(i))
-							return null;
+							return new List<DProject>();
 						skippedItems.Add(i);
 						continue;
 					}
