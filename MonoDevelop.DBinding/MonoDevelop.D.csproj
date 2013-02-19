@@ -132,14 +132,14 @@
       <HintPath>..\ext\MonoDevelop.SourceEditor2.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="MonoDevelop.Debugger, Version=2.6.0.0, Culture=neutral">
+    <Reference Include="MonoDevelop.Debugger">
       <Private>False</Private>
-      <Package>monodevelop-core-addins</Package>
+      <HintPath>..\ext\MonoDevelop.Debugger.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
-    <Reference Include="Mono.Debugging, Version=0.0.0.0, Culture=neutral, PublicKeyToken=5e9ce85b0923c84f">
+    <Reference Include="Mono.Debugging">
       <Private>False</Private>
-      <Package>monodevelop</Package>
+      <HintPath>..\ext\Mono.Debugging.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
   </ItemGroup>
