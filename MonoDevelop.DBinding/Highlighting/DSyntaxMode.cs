@@ -17,11 +17,11 @@ namespace MonoDevelop.D.Highlighting
 
 			if (baseMode == null)
 			{
-				var provider = new ResourceXmlProvider(
+				var provider = new ResourceStreamProvider(
 					typeof(DSyntaxMode).Assembly,
 					typeof(DSyntaxMode).Assembly.GetManifestResourceNames().First(s => s.Contains("DSyntaxHighlightingMode")));
-				using (XmlReader reader = provider.Open())
-					baseMode = SyntaxMode.Read(reader);
+				using (Stream s = provider.Open())
+					baseMode = SyntaxMode.Read(s);
 			}
 
 			this.rules = new List<Rule>(baseMode.Rules);

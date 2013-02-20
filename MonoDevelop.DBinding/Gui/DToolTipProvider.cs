@@ -13,9 +13,9 @@ namespace MonoDevelop.D.Gui
 	/// <summary>
 	/// Description of DToolTipProvider.
 	/// </summary>
-	public class DToolTipProvider:ITooltipProvider
+	public class DToolTipProvider:TooltipProvider
 	{
-		public TooltipItem GetItem(TextEditor editor, int offset)
+		public override TooltipItem GetItem(TextEditor editor, int offset)
 		{
 			// Note: Normally, the document already should be open
 			var doc=IdeApp.Workbench.GetDocument(editor.Document.FileName);
@@ -52,7 +52,7 @@ namespace MonoDevelop.D.Gui
 			return null;
 		}
 		
-		public Window CreateTooltipWindow(TextEditor editor, int offset, Gdk.ModifierType modifierState, TooltipItem item)
+		protected override Window CreateTooltipWindow(TextEditor editor, int offset, Gdk.ModifierType modifierState, TooltipItem item)
 		{
 			//create a message string from all the results
 			var results = item.Item as AbstractTooltipContent[];

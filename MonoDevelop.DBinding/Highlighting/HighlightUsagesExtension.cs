@@ -125,12 +125,13 @@ namespace MonoDevelop.D.Highlighting
 			}
 			return result;
 		}
+		#endregion
 
-		public class UsageMarker : TextMarker, IBackgroundMarker
+		public class UsageMarker : TextLineMarker, IBackgroundMarker
 		{
-			List<ISegment> usages = new List<ISegment>();
+			List<TextSegment> usages = new List<TextSegment>();
 
-			public List<ISegment> Usages
+			public List<TextSegment> Usages
 			{
 				get { return this.usages; }
 			}
@@ -140,16 +141,12 @@ namespace MonoDevelop.D.Highlighting
 				return usages.Any(u => u.Offset <= offset && offset <= u.EndOffset);
 			}
 
-			public bool DrawBackground(Mono.TextEditor.TextEditor editor, Cairo.Context cr, Mono.TextEditor.TextViewMargin.LayoutWrapper layout, int selectionStart, int selectionEnd, int startOffset, int endOffset, double y, double startXPos, double endXPos, ref bool drawBg)
+			public bool DrawBackground(TextEditor editor, Cairo.Context cr, TextViewMargin.LayoutWrapper layout, int selectionStart, int selectionEnd, int startOffset, int endOffset, double y, double startXPos, double endXPos, ref bool drawBg)
 			{
 				drawBg = false;
-				if (selectionStart >= 0 || editor.CurrentMode is TextLinkEditMode)
+				if (selectionStart >= 0 || editor.CurrentMode is TextLinkEditMode || editor.TextViewMargin.SearchResultMatchCount > 0)
 					return true;
-
-				var color_Bg = (HslColor)editor.ColorStyle.BracketHighlightRectangle.BackgroundColor;
-				var color_Rect=(HslColor)editor.ColorStyle.BracketHighlightRectangle.Color;
-
-				foreach (ISegment usage in Usages)
+				foreach (var usage in Usages)
 				{
 					int markerStart = usage.Offset;
 					int markerEnd = usage.EndOffset;
@@ -187,19 +184,19 @@ namespace MonoDevelop.D.Highlighting
 					to = System.Math.Max(to, editor.TextViewMargin.XOffset);
 					if (@from < to)
 					{
-						cr.Color = color_Bg;
+						cr.Color = (HslColor)editor.ColorStyle.UsagesRectangle.GetColor("secondcolor");
 						cr.Rectangle(@from + 1, y + 1, to - @from - 1, editor.LineHeight - 2);
 						cr.Fill();
 
-						cr.Color = color_Rect;
-						cr.Rectangle(@from, y, to - @from, editor.LineHeight - 1);
-						cr.Fill();
+						cr.Color = (HslColor)editor.ColorStyle.UsagesRectangle.GetColor("color");
+						cr.Rectangle(@from + 0.5, y + 0.5, to - @from, editor.LineHeight - 1);
+						cr.Stroke();
 					}
 				}
 				return true;
 			}
 		}
-		#endregion
+
 
 		#region Main functionality
 

@@ -11,7 +11,7 @@ using MonoDevelop.Ide.Gui;
 
 namespace MonoDevelop.D.Completion
 {
-	public class DParameterDataProvider : IParameterDataProvider
+	public class DParameterDataProvider : ParameterDataProvider
 	{
 		Document doc;
 		ArgumentsResolutionResult args;
@@ -71,8 +71,6 @@ namespace MonoDevelop.D.Completion
 			return null;
 		}
 
-		int startoffset;
-
 		public static DParameterDataProvider Create (Document doc, IAbstractSyntaxTree SyntaxTree, CodeCompletionContext ctx)
 		{
 			var caretLocation = new CodeLocation (ctx.TriggerLineOffset, ctx.TriggerLine);
@@ -88,13 +86,13 @@ namespace MonoDevelop.D.Completion
 				if (argsResult == null || argsResult.ResolvedTypesOrMethods == null || argsResult.ResolvedTypesOrMethods.Length < 1)
 					return null;
 
-				return new DParameterDataProvider(doc, argsResult) { startoffset=ctx.TriggerOffset };
+				return new DParameterDataProvider(doc, argsResult, ctx.TriggerOffset);
 			} catch {
 				return null;
 			}
 		}
 		
-		private DParameterDataProvider (Document doc, ArgumentsResolutionResult argsResult)
+		private DParameterDataProvider (Document doc, ArgumentsResolutionResult argsResult, int startOffset) : base(startOffset)
 		{
 			this.doc = doc;
 			args = argsResult;
@@ -183,6 +181,20 @@ namespace MonoDevelop.D.Completion
 			}
 			*/
 			return args.CurrentlyTypedArgumentIndex;
+		}
+
+		public override string GetParameterName(int overload, int currentParameter)
+		{
+			selIndex = overload;
+
+			var param = GetParameterObj(currentParameter);
+
+			if (param is AbstractNode)
+				return ((AbstractNode)param).Name;
+			else if (param is ITemplateParameter)
+				return (param as ITemplateParameter).Name;
+
+			return null;
 		}
 
 		public string GetHeading(int overload, string[] parameterMarkup, int currentParameter)
@@ -293,7 +305,7 @@ namespace MonoDevelop.D.Completion
 			return null;
 		}
 
-		public int GetParameterCount (int overload)
+		public override int GetParameterCount (int overload)
 		{			
 			selIndex = overload;
 
@@ -310,12 +322,12 @@ namespace MonoDevelop.D.Completion
 		/// <summary>
 		/// Count of overloads
 		/// </summary>
-		public int Count {
+		public override int Count {
 			get { return args.ResolvedTypesOrMethods.Length; }
 		}
 		#endregion
 
-		public bool AllowParameterList(int overload)
+		public override bool AllowParameterList(int overload)
 		{
 			return true;
 		}
@@ -330,13 +342,6 @@ namespace MonoDevelop.D.Completion
 				return ((INode)param).Description;
 
 			return null;
-		}
-
-		public int StartOffset
-		{
-			get {
-				return startoffset;
-			}
 		}
 	}
 }

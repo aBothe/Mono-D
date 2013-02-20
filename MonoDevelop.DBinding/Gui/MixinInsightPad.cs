@@ -51,7 +51,6 @@ namespace MonoDevelop.D.Gui
 			outputEditor.Document.MimeType = Formatting.DCodeFormatter.MimeType;
 			o.ShowLineNumberMargin = false;
 			o.ShowFoldMargin = false;
-			o.ShowInvalidLines = false;
 			o.ShowIconMargin = false;
 			outputEditor.Document.ReadOnly = true;
 

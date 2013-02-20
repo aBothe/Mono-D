@@ -16,14 +16,14 @@ namespace MonoDevelop.D.Parser
 	/// Note: For natively parsing the code, the D_Parser engine will be used. 
 	/// To make it compatible to the MonoDevelop.Dom, its output will be wrapped afterwards!
 	/// </summary>
-	public class DParserWrapper : ITypeSystemParser
+	public class DParserWrapper : TypeSystemParser
 	{
 		public static DParserWrapper Instance=new DParserWrapper();
 
 		// Used for not having to parse a module two times, for 1) The fold region parser and 2) this parser wrapper
 		internal static ParsedDocument LastParsedMod;
 
-		public ParsedDocument Parse(bool storeAst, string file, TextReader content, Project prj = null)
+		public override ParsedDocument Parse(bool storeAst, string file, TextReader content, Project prj = null)
 		{
 			if (!storeAst)
 				return null;

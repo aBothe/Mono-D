@@ -28,7 +28,7 @@ namespace MonoDevelop.D.Refactoring.CodeActions
             this.Description = "";
         }
 
-        public override IEnumerable<CodeAction> GetActions(Ide.Gui.Document document, ICSharpCode.NRefactory.TextLocation loc, System.Threading.CancellationToken cancellationToken)
+		public override IEnumerable<CodeAction> GetActions(Ide.Gui.Document document, object refactoringContext, ICSharpCode.NRefactory.TextLocation loc, System.Threading.CancellationToken cancellationToken)
         {
             if (!DLanguageBinding.IsDFile(document.FileName)) 
 				yield break;
@@ -107,5 +107,5 @@ namespace MonoDevelop.D.Refactoring.CodeActions
                 ApplySolution(Title, document);
             }
         }
-    }
+	}
 }

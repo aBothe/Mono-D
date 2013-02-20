@@ -62,7 +62,6 @@ namespace MonoDevelop.D
 			inputEditor.Options = o;
 			o.ShowLineNumberMargin = false;
 			o.ShowFoldMargin = false;
-			o.ShowInvalidLines = false;
 			o.ShowIconMargin = false;
 
 			editor.Document.ReadOnly = true;

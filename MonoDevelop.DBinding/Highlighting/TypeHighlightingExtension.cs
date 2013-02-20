@@ -105,7 +105,7 @@ namespace MonoDevelop.D.Highlighting
 		}
 
 
-		public class HighlightMarker : TextMarker, IDisposable
+		public class HighlightMarker : TextLineMarker, IDisposable
 		{
 			string text;
 			TextDocument doc;
@@ -176,7 +176,7 @@ namespace MonoDevelop.D.Highlighting
 				to = System.Math.Max(to, editor.TextViewMargin.XOffset);
 				if (@from < to)
 				{
-					cr.DrawLine(editor.ColorStyle.GetChunkStyle(style).CairoColor, 
+					cr.DrawLine(editor.ColorStyle.GetChunkStyle(style).Foreground, 
 						@from,
 						y + editor.LineHeight,
 						to,

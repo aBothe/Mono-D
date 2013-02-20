@@ -89,7 +89,7 @@ namespace MonoDevelop.D
 			return base.KeyPress(key, keyChar, modifier);
 		}
 		
-		public override IParameterDataProvider HandleParameterCompletion(CodeCompletionContext completionContext, char completionChar)
+		public override ParameterDataProvider HandleParameterCompletion(CodeCompletionContext completionContext, char completionChar)
 		{
 			if (completionChar != ',' &&
 				completionChar != '(' &&

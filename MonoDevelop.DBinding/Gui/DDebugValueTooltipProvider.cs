@@ -39,7 +39,7 @@ using D_Parser.Resolver;
 
 namespace MonoDevelop.D.Gui
 {
-	public class DDebugValueTooltipProvider: ITooltipProvider, IDisposable
+	public class DDebugValueTooltipProvider: TooltipProvider, IDisposable
 	{
 		Dictionary<string,ObjectValue> cachedValues = new Dictionary<string,ObjectValue> ();
 		
@@ -56,7 +56,7 @@ namespace MonoDevelop.D.Gui
 		
 		#region ITooltipProvider implementation 
 		
-		public TooltipItem GetItem (Mono.TextEditor.TextEditor editor, int offset)
+		public override TooltipItem GetItem (Mono.TextEditor.TextEditor editor, int offset)
 		{
 			if (offset >= editor.Document.TextLength)
 				return null;
@@ -113,18 +113,12 @@ namespace MonoDevelop.D.Gui
 			return new TooltipItem (val, startOffset, length);
 		}
 		
-		public Gtk.Window CreateTooltipWindow (Mono.TextEditor.TextEditor editor, int offset, Gdk.ModifierType modifierState, TooltipItem item)
+		protected override Gtk.Window CreateTooltipWindow (Mono.TextEditor.TextEditor editor, int offset, Gdk.ModifierType modifierState, TooltipItem item)
 		{
 			return new DebugValueWindow (editor, offset, DebuggingService.CurrentFrame, (ObjectValue) item.Item, null);
 		}
 		
-		public void GetRequiredPosition (Mono.TextEditor.TextEditor editor, Gtk.Window tipWindow, out int requiredWidth, out double xalign)
-		{
-			xalign = 0.1;
-			requiredWidth = tipWindow.SizeRequest ().Width;
-		}
-		
-		public bool IsInteractive (Mono.TextEditor.TextEditor editor, Gtk.Window tipWindow)
+		public override bool IsInteractive (Mono.TextEditor.TextEditor editor, Gtk.Window tipWindow)
 		{
 			return true;
 		}

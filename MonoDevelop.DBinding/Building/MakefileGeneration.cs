@@ -5,6 +5,7 @@ using MonoDevelop.Components.Commands;
 using MonoDevelop.Ide;
 using MonoDevelop.Ide.Gui.Pads.ProjectPad;
 using MonoDevelop.Projects;
+using MonoDevelop.Ide.Gui.Pads;
 
 namespace MonoDevelop.D.Building
 {
@@ -106,22 +107,26 @@ namespace MonoDevelop.D.Building
 
 	public class MakefileGenerationCommandHandler : CommandHandler
 	{
+		public static Project GetSelectedProject()
+		{
+			foreach (var pad in IdeApp.Workbench.Pads)
+			{
+				var sp = pad.Content as SolutionPad;
+				if (sp != null && sp.GetType().Name == "ProjectSolutionPad")
+				{
+					var i = sp.TreeView.GetSelectedNode();
+					return i.DataItem as Project;
+				}
+			}
+
+			return null;
+		}
+
 		protected override void Run(object dataItem)
 		{
-			var p = Ide.IdeApp.Workbench.GetPad<MonoDevelop.Ide.Gui.Pads.ProjectPad.ProjectSolutionPad>();
-
-			if (p == null && !(p.Content is ProjectSolutionPad))
-				return;
-
-			var psp = (ProjectSolutionPad)p.Content;
-			var selectedItem = psp.TreeView.GetSelectedNode();
-
-			if (selectedItem == null)
-				return;
-
-			if (selectedItem.DataItem is DProject)
+			var prj = GetSelectedProject() as DProject;
+			if (prj != null)
 			{
-				var prj = (DProject)selectedItem.DataItem;
 				var cfg = prj.GetConfiguration(Ide.IdeApp.Workspace.ActiveConfiguration) as DProjectConfiguration;
 
 				if (cfg != null)
@@ -138,22 +143,7 @@ namespace MonoDevelop.D.Building
 
 		protected override void Update(CommandInfo info)
 		{
-			info.Enabled = false;
-			var p=Ide.IdeApp.Workbench.GetPad<MonoDevelop.Ide.Gui.Pads.ProjectPad.ProjectSolutionPad>();
-
-			if (p != null && p.Content is ProjectSolutionPad)
-			{
-				var psp = (ProjectSolutionPad)p.Content;
-				var selectedItem = psp.TreeView.GetSelectedNode();
-
-				if (selectedItem != null)
-				{
-					if (selectedItem.DataItem is DProject)
-					{
-						info.Enabled = true;
-					}
-				}
-			}
+			info.Enabled = GetSelectedProject() is DProject;
 		}
 	}
 }
