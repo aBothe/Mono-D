@@ -9,7 +9,7 @@ namespace MonoDevelop.D.Parser
 {
 	public class ParsedDModule : ParsedDocument
 	{
-		public ParsedDModule(string fileName) : base(fileName) { }
+		public ParsedDModule(string fileName) : base(fileName) { Flags = ParsedDocumentFlags.NonSerializable; }
 
 		IAbstractSyntaxTree _ddom;
 		public IAbstractSyntaxTree DDom {

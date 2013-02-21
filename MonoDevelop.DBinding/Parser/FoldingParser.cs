@@ -7,7 +7,8 @@ namespace MonoDevelop.D.Parser
 	{
 		public ParsedDocument Parse(string fileName, string content)
 		{
-			return DParserWrapper.LastParsedMod = DParserWrapper.Instance.Parse(true, fileName, new StringReader(content));
+			using (var s = new StringReader(content))
+				return DParserWrapper.LastParsedMod = DParserWrapper.Instance.Parse(true, fileName, s);
 		}
 	}
 }
