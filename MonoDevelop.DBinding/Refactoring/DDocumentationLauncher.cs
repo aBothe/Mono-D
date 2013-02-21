@@ -60,11 +60,11 @@ namespace MonoDevelop.D.Refactoring
 			if (result != null) {
 				var n = DResolver.GetResultMember (result);
 
-				if (n != null && n.NodeRoot is IAbstractSyntaxTree) {
-					if (IsPhobosModule (n.NodeRoot as IAbstractSyntaxTree)) {
-						var phobos_url = "phobos/" + (n.NodeRoot as IAbstractSyntaxTree).ModuleName.Replace ('.', '_') + ".html";
+				if (n != null && n.NodeRoot is DModule) {
+					if (IsPhobosModule (n.NodeRoot as DModule)) {
+						var phobos_url = "phobos/" + (n.NodeRoot as DModule).ModuleName.Replace ('.', '_') + ".html";
 
-						if (!(n is IAbstractSyntaxTree))
+						if (!(n is DModule))
 							phobos_url += "#" + n.Name;
 
 						return phobos_url;
@@ -98,7 +98,7 @@ namespace MonoDevelop.D.Refactoring
 			return null;
 		}
 
-		public static bool IsPhobosModule (IAbstractSyntaxTree Module)
+		public static bool IsPhobosModule (DModule Module)
 		{
 			return 
 				Module.FileName.Contains (Path.DirectorySeparatorChar + "phobos" + Path.DirectorySeparatorChar) ||

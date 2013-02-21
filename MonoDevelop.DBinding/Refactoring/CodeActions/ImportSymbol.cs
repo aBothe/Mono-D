@@ -71,7 +71,7 @@ namespace MonoDevelop.D.Refactoring.CodeActions
             if(!req || nodes == null) yield break;
             foreach (var node in nodes)
             {
-                var mod = node.NodeRoot as IAbstractSyntaxTree;
+                var mod = node.NodeRoot as DModule;
                 if (mod != null && mod != edData.SyntaxTree)
                 {
                     yield return mod.ModuleName;

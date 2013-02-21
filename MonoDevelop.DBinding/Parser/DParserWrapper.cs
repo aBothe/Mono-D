@@ -285,7 +285,7 @@ namespace MonoDevelop.D.Parser
 		*/
 		public static string BuildTypeNamespace(D_Parser.Dom.INode n)
 		{
-			return (n.NodeRoot as IAbstractSyntaxTree).ModuleName;
+			return (n.NodeRoot as DModule).ModuleName;
 		}
 
 		/// <summary>

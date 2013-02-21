@@ -54,7 +54,7 @@ namespace MonoDevelop.D.Refactoring
 				ParseCacheList.Create(DCompilerService.Instance.GetDefaultCompiler().ParseCache);
 
 			var modules = project == null ?
-				(IEnumerable<IAbstractSyntaxTree>)new[] { (Ide.IdeApp.Workbench.ActiveDocument.ParsedDocument as ParsedDModule).DDom } :
+				(IEnumerable<DModule>)new[] { (Ide.IdeApp.Workbench.ActiveDocument.ParsedDocument as ParsedDModule).DDom } :
 				project.LocalFileCache;
 
 			var ctxt = ResolutionContext.Create(parseCache, null,null);
@@ -68,7 +68,7 @@ namespace MonoDevelop.D.Refactoring
 				
 				var references = D_Parser.Refactoring.ReferencesFinder.Scan(mod, n, ctxt).ToList();
 
-				if (((IAbstractSyntaxTree)n.NodeRoot).FileName == mod.FileName)
+				if (((DModule)n.NodeRoot).FileName == mod.FileName)
 					references.Insert(0, new IdentifierDeclaration(n.Name) { Location = n.NameLocation });
 
 				if (references.Count < 1)

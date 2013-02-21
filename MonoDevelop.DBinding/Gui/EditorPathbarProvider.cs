@@ -14,7 +14,7 @@ namespace MonoDevelop.D.Gui
 	class EditorPathbarProvider : DropDownBoxListWindow.IListDataProvider
 	{
 		object tag;
-		IAbstractSyntaxTree syntaxTree;
+		DModule syntaxTree;
 		List<D_Parser.Dom.INode> memberList = new List<D_Parser.Dom.INode> ();
 		
 		Document document { get; set; }

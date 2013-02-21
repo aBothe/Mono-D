@@ -62,9 +62,9 @@ namespace MonoDevelop.D.Refactoring
 
 		public static void GotoDeclaration(INode n)
 		{
-			if (n != null && n.NodeRoot is IAbstractSyntaxTree)
+			if (n != null && n.NodeRoot is DModule)
 				IdeApp.Workbench.OpenDocument(
-					((IAbstractSyntaxTree)n.NodeRoot).FileName,
+					((DModule)n.NodeRoot).FileName,
 					n.Location.Line,
 					n.Location.Column);
 		}

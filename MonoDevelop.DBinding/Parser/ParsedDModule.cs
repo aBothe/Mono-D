@@ -11,8 +11,8 @@ namespace MonoDevelop.D.Parser
 	{
 		public ParsedDModule(string fileName) : base(fileName) { Flags = ParsedDocumentFlags.NonSerializable; }
 
-		IAbstractSyntaxTree _ddom;
-		public IAbstractSyntaxTree DDom {
+		DModule _ddom;
+		public DModule DDom {
 			get { 
 				var sln=Ide.IdeApp.ProjectOperations.CurrentSelectedSolution;
 				if(sln!=null)
@@ -99,7 +99,7 @@ namespace MonoDevelop.D.Parser
 			if (block == null)
 				return;
 
-			if (!(block is IAbstractSyntaxTree) && !block.Location.IsEmpty && block.EndLocation > block.Location)
+			if (!(block is DModule) && !block.Location.IsEmpty && block.EndLocation > block.Location)
 			{
 				if (block is DMethod)
 				{

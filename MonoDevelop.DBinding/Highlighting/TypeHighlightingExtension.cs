@@ -20,7 +20,7 @@ namespace MonoDevelop.D.Highlighting
 		#region Properties
 		Thread th;
 
-		public IAbstractSyntaxTree SyntaxTree
+		public DModule SyntaxTree
 		{
 			get { return (Document.ParsedDocument as ParsedDModule).DDom; }
 		}

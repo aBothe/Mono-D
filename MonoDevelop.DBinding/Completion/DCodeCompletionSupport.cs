@@ -80,7 +80,7 @@ namespace MonoDevelop.D.Completion
 		}
 
 		public static void BuildCompletionData(Document EditorDocument, 
-			IAbstractSyntaxTree SyntaxTree, 
+			DModule SyntaxTree, 
 			CodeCompletionContext ctx, 
 			CompletionDataList l, 
 			char triggerChar)
@@ -337,7 +337,7 @@ namespace MonoDevelop.D.Completion
 			CompletionDataList.Add(Text, IconId.Null, Description);
 		}
 		
-		public void AddModule(IAbstractSyntaxTree module, string nameOverride)
+		public void AddModule(DModule module, string nameOverride)
 		{
 			CompletionDataList.Add(new NamespaceCompletionData(module));
 		}
@@ -437,9 +437,9 @@ namespace MonoDevelop.D.Completion
 	public class NamespaceCompletionData : CompletionData
 	{
 		string modName;
-		public readonly IAbstractSyntaxTree Module;
+		public readonly DModule Module;
 
-		public NamespaceCompletionData(IAbstractSyntaxTree mod)
+		public NamespaceCompletionData(DModule mod)
 		{
 			this.Module = mod;
 			DisplayFlags = ICSharpCode.NRefactory.Completion.DisplayFlags.DescriptionHasMarkup;
@@ -572,7 +572,7 @@ namespace MonoDevelop.D.Completion
 					if (realParent == null)
 						return DCodeCompletionSupport.GetNodeImage("local");
 
-                    if (realParent is DClassLike || n.Parent is IAbstractSyntaxTree)
+                    if (realParent is DClassLike || n.Parent is DModule)
 					{
 						return iconIdWithProtectionAttr(n, "field", true);
 					}

@@ -63,7 +63,7 @@ namespace MonoDevelop.D.Refactoring
 				ParseCacheList.Create(DCompilerService.Instance.GetDefaultCompiler().ParseCache);
 
 			var modules = project != null ?
-				project.LocalFileCache as IEnumerable<IAbstractSyntaxTree> :
+				project.LocalFileCache as IEnumerable<DModule> :
 				new[] { (Ide.IdeApp.Workbench.ActiveDocument.ParsedDocument as MonoDevelop.D.Parser.ParsedDModule).DDom };
 
 			if (monitor != null)
@@ -79,7 +79,7 @@ namespace MonoDevelop.D.Refactoring
 					references = ReferencesFinder.Scan(mod, member, ResolutionContext.Create(parseCache, null, null)).ToList();
 
 					if (member != null && member.NodeRoot != null &&
-						(member.NodeRoot as IAbstractSyntaxTree).FileName == mod.FileName)
+						(member.NodeRoot as DModule).FileName == mod.FileName)
 						references.Insert(0, new IdentifierDeclaration(member.Name)
 						{
 							Location = member.NameLocation,

@@ -27,7 +27,7 @@ namespace MonoDevelop.D.Gui
 	public class DModuleOutlineExtension : TextEditorExtension, IOutlinedDocument
 	{
 		#region Properties
-		public IAbstractSyntaxTree SyntaxTree
+		public DModule SyntaxTree
 		{
 			get { return Document.ParsedDocument is ParsedDModule ? ((ParsedDModule)Document.ParsedDocument).DDom : null; }
 		}

@@ -21,7 +21,7 @@ namespace MonoDevelop.D.Highlighting
 	class HighlightUsagesExtension:TextEditorExtension
 	{
 		TextEditorData textEditorData;
-		public IAbstractSyntaxTree SyntaxTree
+		public DModule SyntaxTree
 		{
 			get { return (Document.ParsedDocument as ParsedDModule).DDom; }
 		}
@@ -237,8 +237,8 @@ namespace MonoDevelop.D.Highlighting
 					var references = D_Parser.Refactoring.ReferencesFinder.Scan(dom, referencedNode, ctxt).ToList();
 
 					// Highlight the node's definition location - only if the node is located in the current document
-					if (referencedNode.NodeRoot is IAbstractSyntaxTree &&
-						(referencedNode.NodeRoot as IAbstractSyntaxTree).FileName == dom.FileName)
+					if (referencedNode.NodeRoot is DModule &&
+						(referencedNode.NodeRoot as DModule).FileName == dom.FileName)
 						references.Add(new IdentifierDeclaration(referencedNode.Name)
 						{
 							Location = referencedNode.NameLocation,

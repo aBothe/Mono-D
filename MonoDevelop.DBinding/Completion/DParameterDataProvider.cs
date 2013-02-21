@@ -71,7 +71,7 @@ namespace MonoDevelop.D.Completion
 			return null;
 		}
 
-		public static DParameterDataProvider Create (Document doc, IAbstractSyntaxTree SyntaxTree, CodeCompletionContext ctx)
+		public static DParameterDataProvider Create (Document doc, DModule SyntaxTree, CodeCompletionContext ctx)
 		{
 			var caretLocation = new CodeLocation (ctx.TriggerLineOffset, ctx.TriggerLine);
 

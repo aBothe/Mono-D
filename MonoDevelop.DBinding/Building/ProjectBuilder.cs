@@ -583,7 +583,7 @@ namespace MonoDevelop.D.Building
 						if(resSym is DSymbol)
 						{
 							var ds = resSym as DSymbol;
-							var ast = ds.Definition.NodeRoot as IAbstractSyntaxTree;
+							var ast = ds.Definition.NodeRoot as DModule;
 							if(ast!=null)
 								error.FileName = ast.FileName;
 							error.Line = ds.Definition.Location.Line;
