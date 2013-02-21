@@ -10,20 +10,25 @@
 
 	<!-- Comment & String spans -->
 
-	<EolSpan color = "Comment(Doc)" rule="Comment" tagColor="comment.tag">///</EolSpan>
-	<EolSpan color = "Comment(Line)" rule="Comment" tagColor="comment.tag.line">//</EolSpan>
+	<EolSpan color = "Comment(Doc)" rule="Comment" tagColor="Comment(DocTag)">///</EolSpan>
+	<EolSpan color = "Comment(Line)" rule="Comment" tagColor="Comment(Line)">//</EolSpan>
 
-	<Span color = "Comment(Doc)" rule="Comment" tagColor="comment.tag" >
+	<Span color = "Comment(Doc)" rule="Comment" tagColor="Comment(DocTag)" >
 		<Begin>/**</Begin>
 		<End>*/</End>
 	</Span>
 
-	<Span color = "Comment(Block)" rule="Comment" tagColor="comment.tag.block">
+	<Span color = "Comment(Doc)" rule="Comment" tagColor="Comment(DocTag)" >
+		<Begin>/++</Begin>
+		<End>+/</End>
+	</Span>
+
+	<Span color = "Comment(Block)" rule="Comment" tagColor="Comment(Line)">
 		<Begin>/*</Begin>
 		<End>*/</End>
 	</Span>
 
-	<Span color = "Comment(Block)" rule="Comment" tagColor="comment.tag.block">
+	<Span color = "Comment(Block)" rule="Comment" tagColor="Comment(Line)">
 		<Begin>/+</Begin>
 		<End>+/</End>
 	</Span>

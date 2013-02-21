@@ -35,7 +35,7 @@ namespace MonoDevelop.D.Highlighting
 			this.properties = baseMode.Properties;
 
 			// D Number literals
-			matches.Add(workaroundMatchCtor("constant.digit", @"(?<!\w)(0((x|X)[0-9a-fA-F_]+|(b|B)[0-1_]+)|([0-9]+[_0-9]*)[L|U|u|f|i]*)"));
+			matches.Add(workaroundMatchCtor("Number", @"(?<!\w)(0((x|X)[0-9a-fA-F_]+|(b|B)[0-1_]+)|([0-9]+[_0-9]*)[L|U|u|f|i]*)"));
 			
 			// extern linkages attributes
 			//matches.Add(workaroundMatchCtor("constant.digit", "(?<=extern[\\s]*\\()[\\s]*(C(\\+\\+)?|D|Windows|System|Pascal|Java)[\\s]*(?=\\))"));
