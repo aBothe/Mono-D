@@ -186,13 +186,13 @@ namespace MonoDevelop.D.Completion
 
 				for (int i = 0; i < dm.Parameters.Count; i++)
 				{
-					var p = dm.Parameters[i];
+					var p = dm.Parameters[i] as DNode;
 					if (!args.IsTemplateInstanceArguments && i == currentParameter)
 					{
 						sb.Append("<u>");
 						if(!string.IsNullOrEmpty(p.Description))
 							tti.AddCategory(p.Name, p.Description);
-						sb.Append(p.ToString());
+						sb.Append(p.ToString(true,false));
 						sb.Append("</u>");
 					}
 					else
