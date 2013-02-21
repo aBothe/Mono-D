@@ -14,6 +14,8 @@ using D_Parser.Resolver;
 using D_Parser.Dom.Statements;
 using D_Parser.Resolver.TypeResolution;
 using MonoDevelop.Ide;
+using MonoDevelop.Ide.TypeSystem;
+using System.Text;
 
 namespace MonoDevelop.D.Completion
 {
@@ -309,7 +311,7 @@ namespace MonoDevelop.D.Completion
 			if (Node == null || Node.Name == null)
 				return;
 
-			DCompletionData dc = null;
+			DCompletionData dc;
 			if (overloadCheckDict.TryGetValue(Node.Name, out dc))
 			{
 				dc.AddOverload(Node);
@@ -337,12 +339,12 @@ namespace MonoDevelop.D.Completion
 		
 		public void AddModule(IAbstractSyntaxTree module, string nameOverride)
 		{
-			CompletionDataList.Add(new NamespaceCompletionData(nameOverride ?? module.ModuleName,module) { ExplicitModulePath = module.ModuleName });
+			CompletionDataList.Add(new NamespaceCompletionData(module));
 		}
 		
 		public void AddPackage(string packageName)
 		{
-			CompletionDataList.Add(new NamespaceCompletionData(packageName,null));
+			CompletionDataList.Add(new PackageCompletionData { Path = packageName, Name = ModuleNameHelper.ExtractModuleName(packageName) });
 		}
 	}
 
@@ -354,7 +356,17 @@ namespace MonoDevelop.D.Completion
 		{
 			this.Token = Token;
 			CompletionText = DisplayText = DTokens.GetTokenString(Token);
-			Description = DTokens.GetDescription(Token);
+		}
+
+		public override TooltipInformation CreateTooltipInformation(bool smartWrap)
+		{
+			var tti = new TooltipInformation();
+
+			tti.SignatureMarkup = DisplayText;
+
+			tti.SummaryMarkup = DTokens.GetDescription(Token);
+
+			return tti;
 		}
 
 		public override IconId Icon
@@ -367,41 +379,82 @@ namespace MonoDevelop.D.Completion
 		}
 	}
 
-	public class NamespaceCompletionData : CompletionData
+	public class PackageCompletionData : CompletionData
 	{
-		public string ModuleName { get; private set; }
-		/// <summary>
-		/// Used for building the description.
-		/// </summary>
-		public string ExplicitModulePath { get; set; }
-		public IAbstractSyntaxTree AssociatedModule { get; private set; }
+		public string Path;
+		public string Name;
 
-		public NamespaceCompletionData(string ModuleName, IAbstractSyntaxTree AssocModule = null)
+		public PackageCompletionData()
 		{
-			this.ModuleName = ModuleName;
-			AssociatedModule = AssocModule;
-
-			Init();
+			DisplayFlags = ICSharpCode.NRefactory.Completion.DisplayFlags.DescriptionHasMarkup;
 		}
 
-		void Init()
+		public override string CompletionText
 		{
-			bool IsPackage = AssociatedModule == null;
-
-			var descString = (IsPackage ? "(Package)" : "(Module)");
-
-			if (!string.IsNullOrWhiteSpace(ExplicitModulePath))
-				descString += ExplicitModulePath;
-			else if (AssociatedModule != null)
+			get
 			{
-				descString += " " + AssociatedModule.FileName;
-
-				if (AssociatedModule.Description != null)
-					descString += "\r\n" + AssociatedModule.Description;
+				return Name;
 			}
+			set{}
+		}
 
-			Description = descString;
-			//ToolTipContentHelper.CreateToolTipContent(IsPackage ? ModuleName : AssociatedModule.ModuleName, descString);
+		public override string DisplayDescription
+		{
+			get
+			{
+				return "<i>(Package)</i>";
+			}
+			set{}
+		}
+
+		public override string DisplayText
+		{
+			get
+			{
+				return Name;
+			}
+			set{}
+		}
+
+		public override TooltipInformation CreateTooltipInformation(bool smartWrap)
+		{
+			var tti = new TooltipInformation();
+
+			tti.SignatureMarkup = "<i>(Package)</i> " + Path;
+
+			return tti;
+		}
+
+		public override Core.IconId Icon
+		{
+			get
+			{
+				return new IconId("md-name-space");
+			}
+		}
+	}
+
+	public class NamespaceCompletionData : CompletionData
+	{
+		string modName;
+		public readonly IAbstractSyntaxTree Module;
+
+		public NamespaceCompletionData(IAbstractSyntaxTree mod)
+		{
+			this.Module = mod;
+			DisplayFlags = ICSharpCode.NRefactory.Completion.DisplayFlags.DescriptionHasMarkup;
+			modName = ModuleNameHelper.ExtractModuleName(mod.ModuleName);
+		}
+
+		public override TooltipInformation CreateTooltipInformation(bool smartWrap)
+		{
+			var tti = new TooltipInformation();
+
+			tti.SignatureMarkup = "<i>(Module)</i> " + Module.ModuleName;
+			tti.SummaryMarkup = AmbienceService.EscapeText(Module.Description);
+			tti.FooterMarkup = Module.FileName;
+
+			return tti;
 		}
 
 		public override Core.IconId Icon
@@ -412,14 +465,26 @@ namespace MonoDevelop.D.Completion
 			}
 		}
 
+		
+
 		public override string DisplayText
 		{
-			get { return ModuleName; }
+			get { return modName; }
 		}
 
 		public override string CompletionText
 		{
-			get { return ModuleName; }
+			get { return modName; }
+		}
+
+		public override string DisplayDescription
+		{
+			get
+			{
+				return Module.FileName;
+			}
+			set
+			{}
 		}
 	}
 
@@ -430,6 +495,7 @@ namespace MonoDevelop.D.Completion
 			Node = n;
 
 			Icon = GetNodeIcon(n as DNode);
+			this.DisplayFlags = ICSharpCode.NRefactory.Completion.DisplayFlags.DescriptionHasMarkup;
 		}
 
 		public static Core.IconId GetNodeIcon(DNode n)
@@ -606,16 +672,6 @@ namespace MonoDevelop.D.Completion
 			return iconIdWithProtectionAttr(n, attr + "method", true);
 		}
 
-		public string NodeString
-		{
-			get
-			{
-				if (Node is DNode)
-					return (Node as DNode).ToString();
-				return Node.ToString();
-			}
-		}
-
 		/// <summary>
 		/// Returns node string without attributes and without node path
 		/// </summary>
@@ -624,7 +680,7 @@ namespace MonoDevelop.D.Completion
 			get
 			{
 				if (Node is DNode)
-					return (Node as DNode).ToString(false, false);
+					return (Node as DNode).ToString(true, false);
 				return Node.ToString();
 			}
 		}
@@ -643,20 +699,87 @@ namespace MonoDevelop.D.Completion
 			set { }
 		}
 
-		public override string Description
+		public override TooltipInformation CreateTooltipInformation(bool smartWrap)
 		{
-			// If an empty description was given, do not show an empty decription tool tip
+			var tti = new TooltipInformation();
+
+			var n = Node;
+			var dn = n as DNode;
+
+			var sb = new StringBuilder();
+			sb.Append("<i>(");
+
+			if (dn is DClassLike)
+			{
+				switch ((dn as DClassLike).ClassType)
+				{
+					case DTokens.Class:
+						sb.Append("Class");
+						break;
+					case DTokens.Template:
+						if (dn.ContainsAttribute(DTokens.Mixin))
+							sb.Append("Mixin ");
+						sb.Append("Template");
+						break;
+					case DTokens.Struct:
+						sb.Append("Struct");
+						break;
+					case DTokens.Union:
+						sb.Append("Union");
+						break;
+				}
+			}
+			else if (dn is DEnum)
+			{
+				sb.Append("Enum");
+			}
+			else if (dn is DEnumValue)
+			{
+				sb.Append("Enum Value");
+			}
+			else if (dn is DVariable)
+			{
+				if (dn.Parent is DMethod)
+				{
+					var dm = dn.Parent as DMethod;
+					if (dm.Parameters.Contains(dn))
+						sb.Append("Parameters");
+					else
+						sb.Append("Local");
+				}
+				else if (dn.Parent is DClassLike)
+					sb.Append("Field");
+				else
+					sb.Append("Variable");
+			}
+			else if (dn is DMethod)
+			{
+				sb.Append("Method");
+			}
+			else if (dn is TemplateParameterNode)
+			{
+				sb.Append("Template Parameter");
+			}
+
+			sb.Append(")</i> ");
+
+			tti.SignatureMarkup = sb.Append(AmbienceService.EscapeText(PureNodeString)).ToString();
+
+			
+			if(!string.IsNullOrWhiteSpace(n.Description))
+				tti.SummaryMarkup = AmbienceService.EscapeText(n.Description);
+
+			return tti;
+		}
+
+		public override string DisplayDescription
+		{
 			get
 			{
-				try
-				{
-					return (PureNodeString + Environment.NewLine + Node.Description).TrimEnd();
-				}
-				catch (Exception ex) { LoggingService.LogError("Error while building node string", ex); }
-				return null;
+				return PureNodeString;
 			}
-			//TODO: Make a more smarter tool tip
-			set { }
+			set
+			{}
 		}
 
 		public int CompareTo(ICompletionData other)
