@@ -1,4 +1,4 @@
-﻿<SyntaxMode name = "D" mimeTypes="text/x-d">
+<SyntaxMode name = "D" mimeTypes="text/x-d">
 	
 	<Property name="LineComment">//</Property>
 	<Property name="BlockCommentStart">/*</Property>
@@ -10,90 +10,57 @@
 
 	<!-- Comment & String spans -->
 
-	<EolSpan color = "Comment(Doc)" rule="Comment" tagColor="Comment(DocTag)">///</EolSpan>
-	<EolSpan color = "Comment(Line)" rule="Comment" tagColor="Comment(Line)">//</EolSpan>
+	<EolSpan color = "comment" rule="Comment" tagColor="comment.tag">///</EolSpan>
+	<EolSpan color = "comment.line" rule="Comment" tagColor="comment.tag.line">//</EolSpan>
 
-	<Span color = "Comment(Doc)" rule="Comment" tagColor="Comment(DocTag)" >
+	<Span color = "comment" rule="Comment" tagColor="comment.tag" >
 		<Begin>/**</Begin>
 		<End>*/</End>
 	</Span>
 
-	<Span color = "Comment(Doc)" rule="Comment" tagColor="Comment(DocTag)" >
-		<Begin>/++</Begin>
-		<End>+/</End>
-	</Span>
-
-	<Span color = "Comment(Block)" rule="Comment" tagColor="Comment(Line)">
+	<Span color = "comment.block" rule="Comment" tagColor="comment.tag.block">
 		<Begin>/*</Begin>
 		<End>*/</End>
 	</Span>
 
-	<Span color = "Comment(Block)" rule="Comment" tagColor="Comment(Line)">
+	<Span color = "comment.block" rule="Comment" tagColor="comment.tag.block">
 		<Begin>/+</Begin>
 		<End>+/</End>
 	</Span>
   
-	<Span color = "String(C# @ Verbatim)" rule="VerbatimString" stopateol = "false" escape='""'>
+	<Span color = "string.other" rule="String" stopateol = "false" escape='""'>
 		<Begin>r"</Begin>
 		<End>"</End>
 	</Span>
 
-	<Span color = "String" rule="String" stopateol = "false" escape='\'>
+	<Span color = "string.double" rule="String" stopateol = "false" escape='\'>
 		<Begin>"</Begin>
 		<End>"</End>
 	</Span>
 
-	<Span color = "String(C# @ Verbatim)" rule="VerbatimString2" stopateol = "false">
+	<Span color = "string.other" rule="String" stopateol = "false">
 		<Begin>`</Begin>
 		<End>`</End>
 	</Span>
 
-	<Span color = "String" rule="String" stopateol = "true" escape="\">
+	<Span color = "string.single" rule="String" stopateol = "true" escape="\">
 		<Begin>&apos;</Begin>
 		<End>&apos;</End>
 	</Span>
 
-	<Keywords color = "Punctuation">
-		<Word>+</Word>
-		<Word>-</Word>
-		<Word>*</Word>
-		<Word>/</Word>
-		<Word>%</Word>
-		<Word>^</Word>
-
-		<Word>?</Word>
-		<Word>:</Word>
-
-		<Word>&amp;</Word>
-
-		<Word>=</Word>
-		<Word>;</Word>
-		<Word>,</Word>
-		<Word>.</Word>
-	</Keywords>
-
-	<Keywords color = "Punctuation(Brackets)">
-		<Word>(</Word>
-		<Word>)</Word>
-		<Word>{</Word>
-		<Word>}</Word>
-		<Word>[</Word>
-		<Word>]</Word>
-	</Keywords>
-	
 <!--
 	<Match color = "constant.digit"></Match>-->
 	<!-- @property-like Attributes -->
-	<Match color = "Keyword(Modifiers)">@[\w0-9_]+</Match>
+	<Match color = "keyword.modifier">@[\w0-9_]+</Match>
 
 	<!-- Keywords -->
 
-	<Keywords color = "Keyword(Access)">
+	<Keywords color="keyword.access">
 		<Word>this</Word>
 		<Word>super</Word>
 	</Keywords>
 
-	<Keywords color = "Keyword(Operator)">
+	<Keywords color = "keyword.operator">
 		<Word>cast</Word>
 		<Word>is</Word>
 		<Word>new</Word>
@@ -101,7 +68,7 @@
 		<Word>typeof</Word>
 	</Keywords>
 
-	<Keywords color = "Keyword(Selection)">
+	<Keywords color = "keyword.selection">
 		<Word>else</Word>
 		<Word>if</Word>
 		<Word>switch</Word>
@@ -109,7 +76,7 @@
 		<Word>default</Word>
 	</Keywords>
 
-	<Keywords color = "Keyword(Iteration)">
+	<Keywords color = "keyword.iteration">
 		<Word>do</Word>
 		<Word>for</Word>
 		<Word>foreach</Word>
@@ -117,27 +84,27 @@
 		<Word>while</Word>
 	</Keywords>
 
-	<Keywords color = "Keyword(Jump)">
+	<Keywords color = "keyword.jump">
 		<Word>break</Word>
 		<Word>continue</Word>
 		<Word>goto</Word>
 		<Word>return</Word>
 	</Keywords>
 
-	<Keywords color = "Keyword(Exception)">
+	<Keywords color = "keyword.exceptions">
 		<Word>try</Word>
 		<Word>throw</Word>
 		<Word>catch</Word>
 		<Word>finally</Word>
 	</Keywords>
 
-	<Keywords color = "Keyword(Constants)">
+	<Keywords color = "constant.language">
 		<Word>true</Word>
 		<Word>false</Word>
 		<Word>null</Word>
 	</Keywords>
 
-	<Keywords color = "Keyword(Modifiers)">
+	<Keywords color = "keyword.modifier">
 		<Word>abstract</Word>
 		<Word>const</Word>
 		<Word>export</Word>
@@ -164,7 +131,7 @@
 		<Word>mixin</Word>
 	</Keywords>
 
-	<Keywords color = "Keyword(Other)">
+	<Keywords color = "keyword.misc">
 		<Word>alias</Word>
 		<Word>align</Word>
 		<Word>asm</Word>
@@ -184,7 +151,7 @@
 		<Word>__vector</Word>
 	</Keywords>
 
-	<Keywords color="Keyword(Type)">
+	<Keywords color="keyword.type">
 		<Word>auto</Word>
 		<Word>bool</Word>
 		<Word>byte</Word>
@@ -219,16 +186,16 @@
 		<Word>size_t</Word>
 	</Keywords>
 
-	<Keywords color = "Keyword(Void)">
+	<Keywords color = "constant.language.void">
 		<Word>void</Word>
 	</Keywords>
 
-	<Keywords color = "Keyword(Namespace)">
+	<Keywords color = "keyword.namespace">
 		<Word>import</Word>
 		<Word>module</Word>
 	</Keywords>
 
-	<Keywords color = "Keyword(Declaration)">
+	<Keywords color = "keyword.declaration">
 		<Word>class</Word>
 		<Word>enum</Word>
 		<Word>interface</Word>
@@ -240,7 +207,7 @@
 		<Word>function</Word>
 	</Keywords>
 
-	<Keywords color = "Keyword(Parameter)">
+	<Keywords color = "keyword.parameter">
 		<Word>in</Word>
 		<Word>inout</Word>
 		<Word>ref</Word>
@@ -250,22 +217,9 @@
 	
 	
 	<!-- Style rules -->
-	<Rule name = "String">
-		<Delimiters></Delimiters>
-		<Match color ="String(Escape)">\\(['"\\abfnrtv]|x[0-9a-fA-F]{2,4}|0\d\d)</Match>
-	</Rule>
-
-	<Rule name = "VerbatimString">
-		<Delimiters></Delimiters>
-		<Match color ="String(Escape)">""</Match>
-	</Rule>
-
-	<Rule name = "VerbatimString2">
-		<Delimiters></Delimiters>
-	</Rule>
-	
+	<Rule name = "String"></Rule>
 	<Rule name = "Comment">
-		<Keywords color="Comment Tag" ignorecase="True">
+		<Keywords color="comment.keyword.todo" ignorecase="True">
 			<Word>TODO</Word>
 			<Word>FIXME</Word>
 			<Word>HACK</Word>

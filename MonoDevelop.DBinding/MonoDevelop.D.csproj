@@ -54,7 +54,7 @@
     <BaseAddress>4194304</BaseAddress>
     <FileAlignment>4096</FileAlignment>
     <DebugSymbols>True</DebugSymbols>
-    <DefineConstants>DEBUG</DefineConstants>
+    <DefineConstants>DEBUG;STABLE</DefineConstants>
     <CustomCommands>
       <CustomCommands>
         <Command type="Execute" command="..\..\tutorial.lib\monodevelop\main\build\bin\MonoDevelop.exe" workingdir="..\..\tutorial.lib\monodevelop\main\build\bin" />
@@ -301,11 +301,12 @@
     <EmbeddedResource Include="templates\SharedLibrary.xpt.xml" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="DSyntaxHighlightingMode.xml">
+    <None Include="DSyntaxHighlightingMode.4.0.1.xml">
       <SubType>Designer</SubType>
-    </EmbeddedResource>
+    </None>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="DSyntaxHighlightingMode.xml" />
     <EmbeddedResource Include="templates\EmptyDClass.xft.xml" />
     <EmbeddedResource Include="templates\Win32Project.xpt.xml">
       <SubType>Designer</SubType>

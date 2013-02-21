@@ -1,4 +1,5 @@
-﻿using System;
+﻿#define STABLE
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -176,8 +177,13 @@ namespace MonoDevelop.D.Highlighting
 				to = System.Math.Max(to, editor.TextViewMargin.XOffset);
 				if (@from < to)
 				{
-					cr.DrawLine(editor.ColorStyle.GetChunkStyle(style).Foreground, 
-						@from,
+					cr.DrawLine(
+#if STABLE
+						editor.ColorStyle.GetChunkStyle(style).CairoColor
+#else
+						editor.ColorStyle.GetChunkStyle(style).Foreground
+#endif					
+						,@from,
 						y + editor.LineHeight,
 						to,
 						y + editor.LineHeight);
