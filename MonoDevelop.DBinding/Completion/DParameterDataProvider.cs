@@ -174,7 +174,7 @@ namespace MonoDevelop.D.Completion
 						else
 							sb.Append(p.ToString());
 
-						if (i < dm.Parameters.Count - 1)
+						if (i < dm.TemplateParameters.Length - 1)
 							sb.Append(",");
 					}
 
