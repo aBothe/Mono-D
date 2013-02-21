@@ -114,9 +114,104 @@ namespace MonoDevelop.D.Completion
 					result = "(" + result + ")"; 
 			}
 			return result;
-		}			
-	
+		}
 
+		public override TooltipInformation CreateTooltipInformation(int overload, int currentParameter, bool smartWrap)
+		{
+			selIndex = overload;
+			var tti = new TooltipInformation();
+			var sb = new StringBuilder();
+
+			var t = CurrentResult;
+			var ds = t as DSymbol;
+
+			if (ds is MemberSymbol && ds.Definition is DMethod)
+			{
+				var dm = ds.Definition as DMethod;
+
+				sb.Append("<i>(");
+				string name;
+				switch (dm.SpecialType)
+				{
+					case DMethod.MethodType.Constructor:
+						sb.Append("Constructor");
+						name = dm.Parent.Name;
+						break;
+					case DMethod.MethodType.Destructor:
+						sb.Append("Destructor"); name = dm.Parent.Name;
+						break;
+					case DMethod.MethodType.Allocator:
+						sb.Append("Allocator"); name = dm.Parent.Name;
+						break;
+					default:
+						sb.Append("Method");
+						name = dm.Name;
+						break;
+				}
+				sb.Append(")</i> ");
+				sb.Append(name);
+
+				/*TODO: Show attributes?
+				if (dm.Attributes != null && dm.Attributes.Count > 0)
+					s = dm.AttributeString + ' ';
+				*/
+
+				// Template parameters
+				if (dm.TemplateParameters != null && dm.TemplateParameters.Length > 0)
+				{
+					sb.Append("(");
+
+					for (int i = 0;i < dm.TemplateParameters.Length; i++)
+					{
+						var p= dm.TemplateParameters[i];
+						if (args.IsTemplateInstanceArguments && i == currentParameter)
+						{
+							sb.Append("<u>");
+							tti.AddCategory(p.Name, p.ToString());
+							sb.Append(p.ToString());
+							sb.Append("</u>");
+						}
+						else
+							sb.Append(p.ToString());
+
+						if (i < dm.Parameters.Count - 1)
+							sb.Append(",");
+					}
+
+					sb.Append(")");
+				}
+
+				// Parameters
+				sb.Append("(");
+
+				for (int i = 0; i < dm.Parameters.Count; i++)
+				{
+					var p = dm.Parameters[i];
+					if (!args.IsTemplateInstanceArguments && i == currentParameter)
+					{
+						sb.Append("<u>");
+						if(!string.IsNullOrEmpty(p.Description))
+							tti.AddCategory(p.Name, p.Description);
+						sb.Append(p.ToString());
+						sb.Append("</u>");
+					}
+					else
+						sb.Append(p.ToString());
+
+					if(i < dm.Parameters.Count - 1)
+						sb.Append(",");
+				}
+
+				sb.Append(")");
+				tti.SignatureMarkup = sb.ToString();
+
+				tti.SummaryMarkup = dm.Description;
+				tti.FooterMarkup = dm.ToString();
+				return tti;
+			}
+
+			return base.CreateTooltipInformation(overload, currentParameter, smartWrap);
+		}
 
 
 		#region IParameterDataProvider implementation
@@ -197,7 +292,7 @@ namespace MonoDevelop.D.Completion
 			return null;
 		}
 
-		public string GetHeading(int overload, string[] parameterMarkup, int currentParameter)
+		/*public string GetHeading(int overload, string[] parameterMarkup, int currentParameter)
 		{
 			selIndex = overload;
 
@@ -236,74 +331,8 @@ namespace MonoDevelop.D.Completion
 			}
 
 			return "";
-		}
+		}*/
 
-		string GetMethodMarkup(DMethod dm, string[] parameterMarkup, int currentParameter)
-		{
-			var sb = new StringBuilder();
-
-			switch (dm.SpecialType)
-			{
-				case DMethod.MethodType.Constructor:
-					sb.Append("(Constructor) ");
-					break;
-				case DMethod.MethodType.Destructor:
-					sb.Append("(Destructor) ");
-					break;
-				case DMethod.MethodType.Allocator:
-					sb.Append("(Allocator) ");
-					break;
-			}
-			/*TODO: Show attributes?
-			if (dm.Attributes != null && dm.Attributes.Count > 0)
-				s = dm.AttributeString + ' ';
-			*/
-			sb.Append(dm.Name);
-
-			// Template parameters
-			if (dm.TemplateParameters != null && dm.TemplateParameters.Length > 0)
-			{
-				sb.Append("(");
-
-				if (args.IsTemplateInstanceArguments)
-					sb.Append(string.Join(",", parameterMarkup));
-				else
-					foreach (var p in dm.TemplateParameters)
-						sb.Append(p.ToString()+",");
-
-				if(sb[0] == ',')
-					sb.Remove(0,1);
-				sb.Append(")");
-			}
-
-			// Parameters
-			sb.Append("(");
-			
-			if (!args.IsTemplateInstanceArguments)
-				sb.Append(string.Join(",", parameterMarkup));
-			else
-				foreach (var p in dm.Parameters)
-					sb.Append(p.ToString() + ",");
-
-			if(sb[0] == ',')
-					sb.Remove(0,1);
-			sb.Append(")");
-			return sb.ToString();
-		}
-
-		public string GetParameterDescription(int overload, int paramIndex)
-		{
-			selIndex = overload;
-
-			var param = GetParameterObj(paramIndex);
-
-			if (param is AbstractNode)
-				return ((AbstractNode)param).ToString(false);
-			else if (param is ITemplateParameter)
-				return param.ToString();
-
-			return null;
-		}
 
 		public override int GetParameterCount (int overload)
 		{			
@@ -330,18 +359,6 @@ namespace MonoDevelop.D.Completion
 		public override bool AllowParameterList(int overload)
 		{
 			return true;
-		}
-
-		public string GetDescription(int overload, int currentParameter)
-		{
-			selIndex = overload;
-
-			var param = GetParameterObj(currentParameter);
-
-			if (param is INode)
-				return ((INode)param).Description;
-
-			return null;
 		}
 	}
 }
