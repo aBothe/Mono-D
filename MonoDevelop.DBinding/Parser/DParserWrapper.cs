@@ -142,7 +142,7 @@ namespace MonoDevelop.D.Parser
 					}
 				}
 
-				c.Region = new DomRegion(cm.StartPosition.Line, cm.StartPosition.Column - 2, cm.EndPosition.Line, cm.EndPosition.Column);
+				c.Region = new DomRegion(cm.StartPosition.Line, cm.StartPosition.Column, cm.EndPosition.Line, cm.EndPosition.Column);
 
 				doc.Comments.Add(c);
 
@@ -153,6 +153,18 @@ namespace MonoDevelop.D.Parser
 						doc.Add(new Tag(sct.Tag, c.Text, c.Region));
 						break;
 					}
+			}
+
+			// Workaround for tags not being displayed
+			if (prj != null)
+			{
+				var ctnt = TypeSystemService.GetProjectContentWrapper(prj);
+				if (ctnt != null)
+				{
+					var tags = ctnt.GetExtensionObject<ProjectCommentTags>();
+					if (tags != null)
+						tags.UpdateTags(prj, file, doc.TagComments);
+				}
 			}
 			#endregion
 
