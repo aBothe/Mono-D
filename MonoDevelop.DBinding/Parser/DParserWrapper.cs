@@ -7,6 +7,7 @@ using MonoDevelop.Ide.TypeSystem;
 using MonoDevelop.Projects;
 using System.Collections.Generic;
 using D_Parser.Misc;
+using MonoDevelop.D.Building;
 
 namespace MonoDevelop.D.Parser
 {
@@ -163,6 +164,43 @@ namespace MonoDevelop.D.Parser
 					var tags = ctnt.GetExtensionObject<ProjectCommentTags>();
 					if (tags != null)
 						tags.UpdateTags(prj, file, doc.TagComments);
+				}
+			}
+			else
+			{
+				// If the file is not associated with any project,
+				// check if the file is located in an imported/included directory
+				// and update the respective cache.
+				// Note: ParseCache.Remove() also affects the Ufcs cache,
+				// but when adding it again, the UfcsCache has to be updated manually
+				var caches = new List<ParseCache>();
+
+				foreach(var p in Ide.IdeApp.Workspace.GetAllProjects())
+					if (p is DProject)
+					{
+						dprj = p as DProject;
+						if (dprj.LocalIncludeCache.Remove(file))
+							caches.Add(dprj.LocalIncludeCache);
+						if (dprj.LocalFileCache.Remove(file))
+							caches.Add(dprj.LocalFileCache);
+					}
+
+				foreach (var cmp in DCompilerService.Instance.Compilers)
+				{
+					if (cmp.ParseCache.Remove(file))
+						caches.Add(cmp.ParseCache);
+				}
+
+				if(caches.Count > 0)
+				{
+					var ctxt = Completion.DCodeCompletionSupport.CreateCurrentContext();
+					ctxt.CurrentContext.Set(null);
+					foreach (var cch in caches)
+					{
+						//FIXME: Adjust the target module name and/or copy the ast head
+						cch.AddOrUpdate(ast);
+						cch.UfcsCache.CacheModuleMethods(ast, ctxt);
+					}
 				}
 			}
 			#endregion
