@@ -70,7 +70,6 @@ namespace MonoDevelop.D.Parser
 				if (ast != null)
 				{
 					dprj.LocalFileCache.Remove(ast);
-					dprj.LocalFileCache.UfcsCache.RemoveModuleItems(ast);
 					ast = null;
 				}
 			}

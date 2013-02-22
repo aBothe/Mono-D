@@ -104,8 +104,8 @@ namespace MonoDevelop.D.Building
 		{
 			LoggingService.LogInfo("Finished Ufcs cache preparation in {0}s ({1} parameters parsed, ~{2}ms per resolution)",
 				ParseCache.UfcsCache.CachingDuration.TotalSeconds,
-				ParseCache.UfcsCache.CachedMethods.Count,
-				ParseCache.UfcsCache.CachedMethods.Count==0 ? 0 : Math.Round(ParseCache.UfcsCache.CachingDuration.TotalMilliseconds / ParseCache.UfcsCache.CachedMethods.Count));
+				ParseCache.UfcsCache.MethodCacheCount,
+				ParseCache.UfcsCache.MethodCacheCount == 0 ? 0 : Math.Round(ParseCache.UfcsCache.CachingDuration.TotalMilliseconds / ParseCache.UfcsCache.MethodCacheCount));
 		}
 
 		public static void UpdateParseCacheAsync (ParseCache Cache)

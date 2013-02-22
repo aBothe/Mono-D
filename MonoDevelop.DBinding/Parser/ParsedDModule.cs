@@ -34,7 +34,6 @@ namespace MonoDevelop.D.Parser
 							var oldAst = DDom;
 							if (oldAst != null)
 							{
-								dprj.LocalFileCache.UfcsCache.RemoveModuleItems(oldAst);
 								dprj.LocalFileCache.Remove(oldAst);
 								oldAst = null;
 							}
