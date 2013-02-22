@@ -18,7 +18,7 @@
 		<End>*/</End>
 	</Span>
 
-	<Span color = "Comment(Doc)" rule="Comment" tagColor="Comment(DocTag)" >
+	<Span color = "Comment(Doc)" rule="NestedComment" tagColor="Comment(DocTag)" >
 		<Begin>/++</Begin>
 		<End>+/</End>
 	</Span>
@@ -28,7 +28,7 @@
 		<End>*/</End>
 	</Span>
 
-	<Span color = "Comment(Block)" rule="Comment" tagColor="Comment(Line)">
+	<Span color = "Comment(Block)" rule="NestedComment" tagColor="Comment(Line)">
 		<Begin>/+</Begin>
 		<End>+/</End>
 	</Span>
@@ -271,5 +271,18 @@
 			<Word>HACK</Word>
 			<Word>UNDONE</Word>
 		</Keywords>
+	</Rule>
+
+	<Rule name = "NestedComment">
+		<Keywords color="Comment Tag" ignorecase="True">
+			<Word>TODO</Word>
+			<Word>FIXME</Word>
+			<Word>HACK</Word>
+			<Word>UNDONE</Word>
+		</Keywords>
+		<Span color = "Comment(Block)" rule="NestedComment">
+			<Begin>/+</Begin>
+			<End>+/</End>
+		</Span>
 	</Rule>
 </SyntaxMode>

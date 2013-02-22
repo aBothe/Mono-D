@@ -23,7 +23,7 @@
 		<End>*/</End>
 	</Span>
 
-	<Span color = "comment.block" rule="Comment" tagColor="comment.tag.block">
+	<Span color = "comment.block" rule="NestedComment" tagColor="comment.tag.block">
 		<Begin>/+</Begin>
 		<End>+/</End>
 	</Span>
@@ -225,5 +225,18 @@
 			<Word>HACK</Word>
 			<Word>UNDONE</Word>
 		</Keywords>
+	</Rule>
+
+	<Rule name = "NestedComment">
+		<Keywords color="Comment Tag" ignorecase="True">
+			<Word>TODO</Word>
+			<Word>FIXME</Word>
+			<Word>HACK</Word>
+			<Word>UNDONE</Word>
+		</Keywords>
+		<Span color = "comment.block" rule="NestedComment">
+			<Begin>/+</Begin>
+			<End>+/</End>
+		</Span>
 	</Rule>
 </SyntaxMode>
