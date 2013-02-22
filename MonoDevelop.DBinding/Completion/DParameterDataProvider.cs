@@ -8,6 +8,7 @@ using ICSharpCode.NRefactory.Completion;
 using MonoDevelop.D.Resolver;
 using MonoDevelop.Ide.CodeCompletion;
 using MonoDevelop.Ide.Gui;
+using D_Parser.Parser;
 
 namespace MonoDevelop.D.Completion
 {
@@ -149,6 +150,26 @@ namespace MonoDevelop.D.Completion
 						break;
 				}
 				sb.Append(")</i> ");
+
+				if (dm.Type != null)
+				{
+					sb.Append(dm.Type.ToString(true));
+					sb.Append(" ");
+				}
+				else if (dm.Attributes != null && dm.Attributes.Count != 0)
+				{
+					foreach (var attr in dm.Attributes)
+					{
+						var m = attr as Modifier;
+						if (m != null && DTokens.StorageClass[m.Token])
+						{
+							sb.Append(DTokens.GetTokenString(m.Token));
+							sb.Append(" ");
+							break;
+						}
+					}
+				}
+
 				sb.Append(name);
 
 				/*TODO: Show attributes?
