@@ -140,31 +140,6 @@ namespace MonoDevelop.D
 			DCompilerConfiguration.UpdateParseCacheAsync (LocalIncludeCache);
 		}
 
-		public void ReparseModule (ProjectFile pf, bool doUfcsCache = true)
-		{
-			if (pf == null || !DLanguageBinding.IsDFile (pf.FilePath.FileName))
-				return;
-
-			try {
-				var ddom = DParser.ParseFile (pf.FilePath.ToAbsolute (BaseDirectory));
-
-				// Update relative module name
-				ddom.ModuleName = DParserWrapper.BuildModuleName (pf);
-
-				LocalFileCache.UfcsCache.RemoveModuleItems(LocalFileCache.GetModuleByFileName(pf.FilePath, BaseDirectory));
-				LocalFileCache.AddOrUpdate (ddom);
-				if(doUfcsCache)
-					LocalFileCache.UfcsCache.CacheModuleMethods(ddom, ResolutionContext.Create(ParseCache, null, ddom));
-			} catch (Exception ex) {
-				LoggingService.LogError ("Error while parsing " + pf.FilePath.ToString (), ex);
-			}
-		}
-
-		public void ReparseModule (string file)
-		{
-			ReparseModule (GetProjectFile (file));
-		}
-
 		/// <summary>
 		/// Updates the project's parse cache and reparses all of its D sources
 		/// </summary>
