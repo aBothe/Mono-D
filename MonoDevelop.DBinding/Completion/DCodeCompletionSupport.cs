@@ -679,6 +679,8 @@ namespace MonoDevelop.D.Completion
 		{
 			get
 			{
+				if (Node is DVariable)
+					return (Node as DVariable).ToString(true,false,false);
 				if (Node is DNode)
 					return (Node as DNode).ToString(true, false);
 				return Node.ToString();
@@ -776,7 +778,10 @@ namespace MonoDevelop.D.Completion
 		{
 			get
 			{
-				return PureNodeString;
+				var s = PureNodeString;
+				if (s.Length > 40)
+					return s.Substring(0, 40) + "...";
+				return s;
 			}
 			set
 			{}
