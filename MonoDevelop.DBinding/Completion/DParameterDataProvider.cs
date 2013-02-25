@@ -251,7 +251,11 @@ namespace MonoDevelop.D.Completion
 						return i+1;
 				}
 			}*/
-			return args.CurrentlyTypedArgumentIndex;
+			var idx = args.CurrentlyTypedArgumentIndex;
+			var ms = CurrentResult as MemberSymbol;
+			if (ms != null && ms.IsUFCSResult)
+				idx++;
+			return idx;
 		}
 		
 		public int GetCurrentParameterIndex (ICompletionWidget widget, CodeCompletionContext ctx)
