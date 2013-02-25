@@ -217,7 +217,7 @@ namespace MonoDevelop.D.Completion
 						sb.Append("</u>");
 					}
 					else
-						sb.Append(p.ToString());
+						sb.Append(p.ToString(true,false));
 
 					if(i < dm.Parameters.Count - 1)
 						sb.Append(",");

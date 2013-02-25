@@ -595,9 +595,8 @@ namespace MonoDevelop.D.Completion
 						return DCodeCompletionSupport.GetNodeImage("local");
 					}
 
-					// FIXME: looks like this is supposed to handle template parameters, but
-					// it doesn't seem to work
-					if (realParent.ContainsTemplateParameter(n.Name))
+					ITemplateParameter tpar;
+					if (realParent.TryGetTemplateParameter(n.Name, out tpar))
 						return DCodeCompletionSupport.GetNodeImage("parameter");
 				}
 			}
