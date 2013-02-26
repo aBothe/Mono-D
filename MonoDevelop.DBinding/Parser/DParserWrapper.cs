@@ -194,7 +194,7 @@ namespace MonoDevelop.D.Parser
 				if(caches.Count > 0)
 				{
 					var ctxt = Completion.DCodeCompletionSupport.CreateCurrentContext();
-					ctxt.CurrentContext.Set(null);
+					ctxt.CurrentContext.Set((IBlockNode)null);
 					foreach (var cch in caches)
 					{
 						//FIXME: Adjust the target module name and/or copy the ast head
