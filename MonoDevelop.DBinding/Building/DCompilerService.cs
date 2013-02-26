@@ -79,7 +79,6 @@ namespace MonoDevelop.D.Building
 
 			if (_instance == null || _instance.Compilers.Count == 0) {
 				_instance = new DCompilerService ();
-				_instance.CompletionOptions = CompletionOptions.Default;
 				CompilerPresets.PresetLoader.LoadPresets (_instance);
 			}
 
@@ -115,7 +114,6 @@ namespace MonoDevelop.D.Building
 		public DDocumentOutlineOptions Outline = new DDocumentOutlineOptions();
 
 		public string DefaultCompiler;
-		public CompletionOptions CompletionOptions;
 
 		public static bool IsInitialized { get { return _instance != null; } }
 		
@@ -188,7 +186,7 @@ namespace MonoDevelop.D.Building
 					break;
 					
 				case "CompletionOptions":
-					CompletionOptions.Load (x.ReadSubtree ());
+					CompletionOptions.Instance.Load (x.ReadSubtree ());
 					break;
 					
 				case "FormattingCorrectsIndentOnly":
@@ -224,7 +222,7 @@ namespace MonoDevelop.D.Building
 			x.WriteEndElement ();
 			
 			x.WriteStartElement ("CompletionOptions");
-			CompletionOptions.Save (x);
+			CompletionOptions.Instance.Save (x);
 			x.WriteEndElement ();
 
 			x.WriteStartElement("DocumentOutline");

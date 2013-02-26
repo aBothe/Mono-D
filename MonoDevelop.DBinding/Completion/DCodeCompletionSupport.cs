@@ -48,8 +48,7 @@ namespace MonoDevelop.D.Completion
 				CaretOffset=caretOffset,
 				ModuleCode=removeChar ? EditorDocument.Editor.Text.Remove(ctx.TriggerOffset-1,1) : EditorDocument.Editor.Text,
 				SyntaxTree=Ast,
-				ParseCache=codeCache,
-				Options = DCompilerService.Instance.CompletionOptions
+				ParseCache=codeCache
 			};
 			
 			if(EditorDocument.HasProject)

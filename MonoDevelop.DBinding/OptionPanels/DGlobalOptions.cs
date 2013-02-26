@@ -3,6 +3,7 @@
 using MonoDevelop.Ide.Gui.Dialogs;
 using MonoDevelop.D.Building;
 using MonoDevelop.D.Formatting;
+using D_Parser.Misc;
 
 namespace MonoDevelop.D.OptionPanels
 {
@@ -18,9 +19,9 @@ namespace MonoDevelop.D.OptionPanels
 	
 		public void Load ()
 		{
-
 			text_ManualBaseUrl.Text = D.Refactoring.DDocumentationLauncher.DigitalMarsUrl;
-			check_EnableUFCSCompletion.Active = DCompilerService.Instance.CompletionOptions.ShowUFCSItems;
+			check_EnableUFCSCompletion.Active = CompletionOptions.Instance.ShowUFCSItems;
+			check_EnableMixinAnalysis.Active = !CompletionOptions.Instance.DisableMixinAnalysis;
 
 			var outline = DCompilerService.Instance.Outline;
 			check_ShowFunctionParams.Active = outline.ShowFuncParams;
@@ -51,7 +52,8 @@ namespace MonoDevelop.D.OptionPanels
 		{
 			Refactoring.DDocumentationLauncher.DigitalMarsUrl = text_ManualBaseUrl.Text;
 
-			DCompilerService.Instance.CompletionOptions.ShowUFCSItems = check_EnableUFCSCompletion.Active;
+			CompletionOptions.Instance.ShowUFCSItems = check_EnableUFCSCompletion.Active;
+			CompletionOptions.Instance.DisableMixinAnalysis = !check_EnableMixinAnalysis.Active;
 
 			var outline = DCompilerService.Instance.Outline;
 			outline.ShowFuncParams = check_ShowFunctionParams.Active;
