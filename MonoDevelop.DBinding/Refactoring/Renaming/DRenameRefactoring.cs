@@ -75,8 +75,13 @@ namespace MonoDevelop.D.Refactoring
 					continue;
 
 				var txt = TextFileProvider.Instance.GetEditableTextFile(new FilePath(mod.FileName));
+				var prevReplacement = CodeLocation.Empty;
 				foreach (ISyntaxRegion reference in references)
 				{
+					if (prevReplacement == reference.Location)
+						continue;
+					
+					prevReplacement = reference.Location;
 					changes.Add(new TextReplaceChange { 
 						FileName = mod.FileName,
 						InsertedText = renameProperties.NewName,
