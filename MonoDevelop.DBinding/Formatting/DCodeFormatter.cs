@@ -52,7 +52,10 @@ namespace MonoDevelop.D.Formatting
 			if(IndentCorrectionOnly)
 			{
 				using(var r = doc.CreateReader())
-					D_Parser.Formatting.Indent.IndentEngineWrapper.CorrectIndent(r, startOffset, endOffset, doc.Replace, policy.Options, new TextStyleAdapter(textStyle));
+					D_Parser.Formatting.Indent.IndentEngineWrapper.CorrectIndent(r, 
+						startOffset, endOffset, 
+						doc.Replace, policy.Options, 
+						new TextStyleAdapter(textStyle) { KeepAlignmentSpaces = policy.KeepAlignmentSpaces });
 				return;
 			}
 			
@@ -116,6 +119,12 @@ namespace MonoDevelop.D.Formatting
 				get {
 					return textStyle.IndentWidth;
 				}
+			}
+
+			public bool KeepAlignmentSpaces
+			{
+				get;
+				set;
 			}
 		}
 		
@@ -181,7 +190,10 @@ namespace MonoDevelop.D.Formatting
 			{
 				using(var s = data.OpenStream())
 					using(var r = new StreamReader(s))
-						D_Parser.Formatting.Indent.IndentEngineWrapper.CorrectIndent(r, startOffset, endOffset, data.Document.Replace, policy.Options, new TextStyleAdapter(textPolicy));
+						D_Parser.Formatting.Indent.IndentEngineWrapper.CorrectIndent(r,
+							startOffset, endOffset,
+							data.Document.Replace, policy.Options,
+							new TextStyleAdapter(textPolicy) { KeepAlignmentSpaces = policy.KeepAlignmentSpaces });
 				return data.Text;
 			}
 			

@@ -5,6 +5,7 @@ namespace MonoDevelop.D.Formatting
 	public partial class FormattingPanelWidget
 	{
 		private global::Gtk.Table table1;
+		private global::Gtk.CheckButton check_KeepAlignmentSpaces;
 		private global::Gtk.CheckButton chk_CommentOutStdHeaders;
 		private global::Gtk.CheckButton chk_InsertStarAtCommentNewLine;
 		
@@ -15,10 +16,26 @@ namespace MonoDevelop.D.Formatting
 			global::Stetic.BinContainer.Attach (this);
 			this.Name = "MonoDevelop.D.Formatting.FormattingPanelWidget";
 			// Container child MonoDevelop.D.Formatting.FormattingPanelWidget.Gtk.Container+ContainerChild
-			this.table1 = new global::Gtk.Table (((uint)(3)), ((uint)(2)), false);
+			this.table1 = new global::Gtk.Table (((uint)(4)), ((uint)(2)), false);
 			this.table1.Name = "table1";
 			this.table1.RowSpacing = ((uint)(6));
 			this.table1.ColumnSpacing = ((uint)(6));
+			// Container child table1.Gtk.Table+TableChild
+			this.check_KeepAlignmentSpaces = new global::Gtk.CheckButton ();
+			this.check_KeepAlignmentSpaces.TooltipMarkup = "If unchecked, spaces that are not used for indentation but for final code alignme" +
+				"nt will be converted to tabs, too.";
+			this.check_KeepAlignmentSpaces.CanFocus = true;
+			this.check_KeepAlignmentSpaces.Name = "check_KeepAlignmentSpaces";
+			this.check_KeepAlignmentSpaces.Label = global::Mono.Unix.Catalog.GetString ("Keep spaces for code aligment");
+			this.check_KeepAlignmentSpaces.DrawIndicator = true;
+			this.check_KeepAlignmentSpaces.UseUnderline = true;
+			this.table1.Add (this.check_KeepAlignmentSpaces);
+			global::Gtk.Table.TableChild w1 = ((global::Gtk.Table.TableChild)(this.table1 [this.check_KeepAlignmentSpaces]));
+			w1.TopAttach = ((uint)(2));
+			w1.BottomAttach = ((uint)(3));
+			w1.LeftAttach = ((uint)(1));
+			w1.RightAttach = ((uint)(2));
+			w1.YOptions = ((global::Gtk.AttachOptions)(4));
 			// Container child table1.Gtk.Table+TableChild
 			this.chk_CommentOutStdHeaders = new global::Gtk.CheckButton ();
 			this.chk_CommentOutStdHeaders.CanFocus = true;
@@ -27,10 +44,10 @@ namespace MonoDevelop.D.Formatting
 			this.chk_CommentOutStdHeaders.DrawIndicator = true;
 			this.chk_CommentOutStdHeaders.UseUnderline = true;
 			this.table1.Add (this.chk_CommentOutStdHeaders);
-			global::Gtk.Table.TableChild w1 = ((global::Gtk.Table.TableChild)(this.table1 [this.chk_CommentOutStdHeaders]));
-			w1.LeftAttach = ((uint)(1));
-			w1.RightAttach = ((uint)(2));
-			w1.YOptions = ((global::Gtk.AttachOptions)(4));
+			global::Gtk.Table.TableChild w2 = ((global::Gtk.Table.TableChild)(this.table1 [this.chk_CommentOutStdHeaders]));
+			w2.LeftAttach = ((uint)(1));
+			w2.RightAttach = ((uint)(2));
+			w2.YOptions = ((global::Gtk.AttachOptions)(4));
 			// Container child table1.Gtk.Table+TableChild
 			this.chk_InsertStarAtCommentNewLine = new global::Gtk.CheckButton ();
 			this.chk_InsertStarAtCommentNewLine.CanFocus = true;
@@ -39,12 +56,12 @@ namespace MonoDevelop.D.Formatting
 			this.chk_InsertStarAtCommentNewLine.DrawIndicator = true;
 			this.chk_InsertStarAtCommentNewLine.UseUnderline = true;
 			this.table1.Add (this.chk_InsertStarAtCommentNewLine);
-			global::Gtk.Table.TableChild w2 = ((global::Gtk.Table.TableChild)(this.table1 [this.chk_InsertStarAtCommentNewLine]));
-			w2.TopAttach = ((uint)(1));
-			w2.BottomAttach = ((uint)(2));
-			w2.LeftAttach = ((uint)(1));
-			w2.RightAttach = ((uint)(2));
-			w2.YOptions = ((global::Gtk.AttachOptions)(4));
+			global::Gtk.Table.TableChild w3 = ((global::Gtk.Table.TableChild)(this.table1 [this.chk_InsertStarAtCommentNewLine]));
+			w3.TopAttach = ((uint)(1));
+			w3.BottomAttach = ((uint)(2));
+			w3.LeftAttach = ((uint)(1));
+			w3.RightAttach = ((uint)(2));
+			w3.YOptions = ((global::Gtk.AttachOptions)(4));
 			this.Add (this.table1);
 			if ((this.Child != null)) {
 				this.Child.ShowAll ();

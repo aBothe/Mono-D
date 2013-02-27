@@ -2,4 +2,5 @@
 <DFormattingPolicy scope="text/x-d" allowDiffSerialize="True">
 	<CommentOutStandardHeaders>True</CommentOutStandardHeaders>
 	<InsertStarAtCommentNewLine>True</InsertStarAtCommentNewLine>
+	<KeepAlignmentSpaces>True</KeepAlignmentSpaces>
 </DFormattingPolicy>

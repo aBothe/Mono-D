@@ -2372,7 +2372,7 @@ This is mainly activated when using the gdc compiler.</property>
     <child>
       <widget class="Gtk.Table" id="table1">
         <property name="MemberName" />
-        <property name="NRows">3</property>
+        <property name="NRows">4</property>
         <property name="NColumns">2</property>
         <property name="RowSpacing">6</property>
         <property name="ColumnSpacing">6</property>
@@ -2387,6 +2387,34 @@ This is mainly activated when using the gdc compiler.</property>
         </child>
         <child>
           <placeholder />
+        </child>
+        <child>
+          <placeholder />
+        </child>
+        <child>
+          <widget class="Gtk.CheckButton" id="check_KeepAlignmentSpaces">
+            <property name="MemberName" />
+            <property name="Tooltip" translatable="yes">If unchecked, spaces that are not used for indentation but for final code alignment will be converted to tabs, too.</property>
+            <property name="CanFocus">True</property>
+            <property name="Label" translatable="yes">Keep spaces for code aligment</property>
+            <property name="DrawIndicator">True</property>
+            <property name="HasLabel">True</property>
+            <property name="UseUnderline">True</property>
+          </widget>
+          <packing>
+            <property name="TopAttach">2</property>
+            <property name="BottomAttach">3</property>
+            <property name="LeftAttach">1</property>
+            <property name="RightAttach">2</property>
+            <property name="AutoSize">True</property>
+            <property name="YOptions">Fill</property>
+            <property name="XExpand">True</property>
+            <property name="XFill">True</property>
+            <property name="XShrink">False</property>
+            <property name="YExpand">False</property>
+            <property name="YFill">True</property>
+            <property name="YShrink">False</property>
+          </packing>
         </child>
         <child>
           <widget class="Gtk.CheckButton" id="chk_CommentOutStdHeaders">

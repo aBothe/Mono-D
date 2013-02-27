@@ -11,7 +11,7 @@ namespace MonoDevelop.D.Formatting.Indentation
 		TextStylePolicy textStyle;
 		
 		public DIndentEngine(DFormattingPolicy policy, TextStylePolicy textStyle)
-			: base(policy.Options, textStyle.TabsToSpaces, textStyle.IndentWidth)
+			: base(policy.Options, textStyle.TabsToSpaces, textStyle.IndentWidth, policy.KeepAlignmentSpaces)
 		{
 			this.policy = policy;
 			this.textStyle = textStyle;
