@@ -18,6 +18,12 @@ namespace MonoDevelop.D.Resolver
 	{
 		public static EditorData CreateEditorData(Document EditorDocument)
 		{
+			if (EditorDocument == null)
+				EditorDocument = IdeApp.Workbench.ActiveDocument;
+
+			if (EditorDocument == null)
+				return new EditorData();
+
 			var dpd = EditorDocument.ParsedDocument as ParsedDModule;
 			var ctx = new CodeCompletionContext();
 
