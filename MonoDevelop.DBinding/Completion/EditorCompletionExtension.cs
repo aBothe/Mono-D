@@ -62,11 +62,13 @@ namespace MonoDevelop.D
 
 			var l = new CompletionDataList();
 
-			if(D_Parser.Misc.CompletionOptions.Instance.EnableSuggestionMode)
+			if (D_Parser.Misc.CompletionOptions.Instance.EnableSuggestionMode)
 			{
 				l.AddKeyHandler(new SuggestionKeyHandler());
 				l.AutoSelect = l.AutoCompleteEmptyMatch = false;
 			}
+			else
+				l.AddKeyHandler(new DoubleUnderScoreWorkaroundHandler());
 
 			lock(dom.DDom)
 				DCodeCompletionSupport.BuildCompletionData(
@@ -77,6 +79,33 @@ namespace MonoDevelop.D
 					triggerChar);
 
 			return l.Count != 0 ? l : null;
+		}
+
+		class DoubleUnderScoreWorkaroundHandler : ICompletionKeyHandler
+		{
+			public bool PostProcessKey(CompletionListWindow listWindow, Gdk.Key key, char keyChar, Gdk.ModifierType modifier, out KeyActions keyAction)
+			{
+				keyAction = KeyActions.None;
+				if (keyChar == '_')
+				{
+					listWindow.PostProcessKey(key, keyChar, modifier);
+					return true;
+				}
+
+				return false;
+			}
+
+			public bool PreProcessKey(CompletionListWindow listWindow, Gdk.Key key, char keyChar, Gdk.ModifierType modifier, out KeyActions keyAction)
+			{
+				keyAction = KeyActions.None;
+				if (keyChar == '_')
+				{
+					listWindow.PreProcessKey(key, keyChar, modifier);
+					return true;
+				}
+
+				return false;
+			}
 		}
 
 		class SuggestionKeyHandler : ICompletionKeyHandler
