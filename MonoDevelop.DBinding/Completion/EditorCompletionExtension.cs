@@ -1,5 +1,6 @@
 using D_Parser.Dom;
 using ICSharpCode.NRefactory.Completion;
+using MonoDevelop.Core;
 using MonoDevelop.D.Completion;
 using MonoDevelop.D.Parser;
 using MonoDevelop.Ide.CodeCompletion;
@@ -60,7 +61,12 @@ namespace MonoDevelop.D
 				return null;
 
 			var l = new CompletionDataList();
-			l.AutoSelect = true;
+
+			if(D_Parser.Misc.CompletionOptions.Instance.EnableSuggestionMode)
+			{
+				l.AddKeyHandler(new SuggestionKeyHandler());
+				l.AutoSelect = l.AutoCompleteEmptyMatch = false;
+			}
 
 			lock(dom.DDom)
 				DCodeCompletionSupport.BuildCompletionData(
@@ -71,6 +77,33 @@ namespace MonoDevelop.D
 					triggerChar);
 
 			return l.Count != 0 ? l : null;
+		}
+
+		class SuggestionKeyHandler : ICompletionKeyHandler
+		{
+			public bool PostProcessKey(CompletionListWindow listWindow, Gdk.Key key, char keyChar, Gdk.ModifierType modifier, out KeyActions keyAction)
+			{
+				if (key == Gdk.Key.Return)
+					keyAction = KeyActions.Complete;
+				else if (key == Gdk.Key.BackSpace)
+				{
+					keyAction = KeyActions.None;
+					return false;
+				}
+				else if (!D_Parser.Parser.Lexer.IsIdentifierPart(keyChar))
+					keyAction = KeyActions.CloseWindow;
+				else
+					keyAction = KeyActions.None;
+
+				listWindow.PostProcessKey(key, keyChar, modifier);
+				return true;
+			}
+
+			public bool PreProcessKey(CompletionListWindow listWindow, Gdk.Key key, char keyChar, Gdk.ModifierType modifier, out KeyActions keyAction)
+			{
+				keyAction = KeyActions.None;
+				return false;
+			}
 		}
 		#endregion
 

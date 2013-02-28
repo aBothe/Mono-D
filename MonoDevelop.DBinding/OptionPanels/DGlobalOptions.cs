@@ -22,6 +22,7 @@ namespace MonoDevelop.D.OptionPanels
 			text_ManualBaseUrl.Text = D.Refactoring.DDocumentationLauncher.DigitalMarsUrl;
 			check_EnableUFCSCompletion.Active = CompletionOptions.Instance.ShowUFCSItems;
 			check_EnableMixinAnalysis.Active = !CompletionOptions.Instance.DisableMixinAnalysis;
+			check_EnableSuggestionMode.Active = CompletionOptions.Instance.EnableSuggestionMode;
 
 			var outline = DCompilerService.Instance.Outline;
 			check_ShowFunctionParams.Active = outline.ShowFuncParams;
@@ -54,6 +55,7 @@ namespace MonoDevelop.D.OptionPanels
 
 			CompletionOptions.Instance.ShowUFCSItems = check_EnableUFCSCompletion.Active;
 			CompletionOptions.Instance.DisableMixinAnalysis = !check_EnableMixinAnalysis.Active;
+			CompletionOptions.Instance.EnableSuggestionMode = check_EnableSuggestionMode.Active;
 
 			var outline = DCompilerService.Instance.Outline;
 			outline.ShowFuncParams = check_ShowFunctionParams.Active;
