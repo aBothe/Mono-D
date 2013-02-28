@@ -26,29 +26,44 @@ namespace MonoDevelop.D
 		public override ICompletionDataList CodeCompletionCommand(CodeCompletionContext completionContext)
 		{
 			int i = 0;
-			return HandleCodeCompletion(completionContext,'\0',ref i);
+			char ch = completionContext.TriggerOffset > 0 ? document.Editor.GetCharAt(completionContext.TriggerOffset - 1) : '\0';
+			return HandleCodeCompletion(completionContext, ch, ref i);
 		}
 
 		public override ICompletionDataList HandleCodeCompletion(CodeCompletionContext completionContext, char triggerChar, ref int triggerWordLength)
 		{
-			var l = new CompletionDataList();
+			if (!EnableCodeCompletion)
+				return null;
+			if (!EnableAutoCodeCompletion && char.IsLetter(triggerChar))
+				return null;
 
-			if (!(triggerChar==' ' || 
-				char.IsLetter(triggerChar) || 
+			if (char.IsLetterOrDigit(triggerChar) || triggerChar == '_')
+			{
+				if (completionContext.TriggerOffset > 1){
+					var prevChar = document.Editor.GetCharAt(completionContext.TriggerOffset - 2);
+					if(char.IsLetterOrDigit(prevChar) || prevChar == '"') // Don't trigger if we're already typing an identifier or if we're typing a string suffix (kinda hacky though)
+						return null;
+				}
+			}
+			else if (!(triggerChar==' ' ||
 				triggerChar == '@' ||
 				triggerChar == '(' ||
-				triggerChar == '_' || 
 				triggerChar == '.' || 
 				triggerChar == '\0'))
-				return l;
-							
+				return null;
+			
 			triggerWordLength = (char.IsLetter(triggerChar) || triggerChar=='_' || triggerChar=='@') ? 1 : 0;
 
 			// Require a parsed D source
 			
 			var dom = base.Document.ParsedDocument as ParsedDModule;
-			if (dom != null && dom.DDom!=null)
-				lock(dom.DDom)
+			if (dom == null || dom.DDom == null)
+				return null;
+
+			var l = new CompletionDataList();
+			l.AutoSelect = true;
+
+			lock(dom.DDom)
 				DCodeCompletionSupport.BuildCompletionData(
 					Document,
 					dom.DDom,
@@ -56,7 +71,7 @@ namespace MonoDevelop.D
 					l,
 					triggerChar);
 
-			return l;
+			return l.Count != 0 ? l : null;
 		}
 		#endregion
 
@@ -85,7 +100,7 @@ namespace MonoDevelop.D
 		{
 			if (this.CompletionWidget != null && (keyChar == ')' || keyChar == ';'))
 				ParameterInformationWindowManager.HideWindow(this, CompletionWidget);
-			
+
 			return base.KeyPress(key, keyChar, modifier);
 		}
 		
