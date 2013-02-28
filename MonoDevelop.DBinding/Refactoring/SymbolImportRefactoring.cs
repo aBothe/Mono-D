@@ -13,7 +13,7 @@ namespace MonoDevelop.D.Refactoring
 		public static void CreateImportStatementForCurrentCodeContext()
 		{
 			var doc = IdeApp.Workbench.ActiveDocument;
-			var edData = DResolverWrapper.GetEditorData(doc);
+			var edData = DResolverWrapper.CreateEditorData(doc);
 
 			try
 			{

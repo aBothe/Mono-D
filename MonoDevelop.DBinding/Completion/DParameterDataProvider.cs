@@ -77,7 +77,7 @@ namespace MonoDevelop.D.Completion
 			var caretLocation = new CodeLocation (ctx.TriggerLineOffset, ctx.TriggerLine);
 
 			try {
-				var edData = DResolverWrapper.GetEditorData(doc);
+				var edData = DResolverWrapper.CreateEditorData(doc);
 
 				edData.CaretLocation=caretLocation;
 				edData.CaretOffset=ctx.TriggerOffset;

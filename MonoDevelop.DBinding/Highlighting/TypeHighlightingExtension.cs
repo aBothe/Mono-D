@@ -13,6 +13,7 @@ using MonoDevelop.D.Completion;
 using D_Parser.Resolver.ASTScanner;
 using MonoDevelop.Ide.Gui;
 using D_Parser.Refactoring;
+using MonoDevelop.D.Resolver;
 
 namespace MonoDevelop.D.Highlighting
 {
@@ -62,7 +63,7 @@ namespace MonoDevelop.D.Highlighting
 			TypeReferencesResult res=null;
 			try
 			{
-				var ParseCache = DCodeCompletionSupport.EnumAvailableModules(Document);
+				var ParseCache = DResolverWrapper.CreateCacheList(Document);
 
 				res = TypeReferenceFinder.Scan(SyntaxTree, ParseCache);
 

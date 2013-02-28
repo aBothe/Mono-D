@@ -59,7 +59,7 @@ namespace MonoDevelop.D.Refactoring.CodeActions
 
             INode[] nodes;
             bool req;
-            var edData = DResolverWrapper.GetEditorData(doc);
+            var edData = DResolverWrapper.CreateEditorData(doc);
             try
             {
                 nodes = ImportDirectiveCreator.TryFindingSelectedIdImportIndependently(edData, out req);
@@ -85,7 +85,7 @@ namespace MonoDevelop.D.Refactoring.CodeActions
         /// </summary>
         static void ApplySolution(string import, Document doc)
         {
-            var eData = DResolverWrapper.GetEditorData(doc);
+            var eData = DResolverWrapper.CreateEditorData(doc);
             var loc = new CodeLocation(0, DParser.FindLastImportStatementEndLocation(eData.SyntaxTree, eData.ModuleCode).Line + 1);
             doc.Editor.Insert(doc.Editor.GetLine(loc.Line).Offset, import.Trim() + doc.Editor.EolMarker);
             

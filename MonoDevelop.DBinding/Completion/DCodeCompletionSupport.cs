@@ -16,68 +16,12 @@ using D_Parser.Resolver.TypeResolution;
 using MonoDevelop.Ide;
 using MonoDevelop.Ide.TypeSystem;
 using System.Text;
+using MonoDevelop.D.Resolver;
 
 namespace MonoDevelop.D.Completion
 {
 	public class DCodeCompletionSupport
 	{
-		public static EditorData CreateEditorData (Document EditorDocument)
-		{
-			var dpd = EditorDocument.ParsedDocument as ParsedDModule;
-			var ctx = new CodeCompletionContext();
-
-			ctx.TriggerLine = EditorDocument.Editor.Caret.Line;
-			ctx.TriggerLineOffset = EditorDocument.Editor.Caret.Column;
-			ctx.TriggerOffset = EditorDocument.Editor.Caret.Offset;
-
-			return CreateEditorData(EditorDocument, dpd.DDom as DModule, ctx);
-		}
-
-		public static EditorData CreateEditorData (Document EditorDocument, DModule Ast, CodeCompletionContext ctx, char triggerChar = '\0')
-		{
-			bool removeChar = char.IsLetter(triggerChar) || triggerChar == '_' || triggerChar == '@';
-			
-			var deltaOffset = 0;//removeChar ? 1 : 0;
-			
-			var caretOffset = ctx.TriggerOffset - (removeChar ? 1 : 0);
-			var caretLocation = new CodeLocation(ctx.TriggerLineOffset-deltaOffset, ctx.TriggerLine);
-			var codeCache = EnumAvailableModules(EditorDocument);
-			
-			var ed=new EditorData {
-				CaretLocation=caretLocation,
-				CaretOffset=caretOffset,
-				ModuleCode=removeChar ? EditorDocument.Editor.Text.Remove(ctx.TriggerOffset-1,1) : EditorDocument.Editor.Text,
-				SyntaxTree=Ast,
-				ParseCache=codeCache
-			};
-			
-			if(EditorDocument.HasProject)
-			{
-				var cfg = EditorDocument.Project.GetConfiguration(Ide.IdeApp.Workspace.ActiveConfiguration) as DProjectConfiguration;
-				
-				if(cfg!=null)
-				{
-					ed.GlobalDebugIds = cfg.CustomDebugIdentifiers;
-					ed.IsDebug = cfg.DebugMode;
-					ed.DebugLevel = cfg.DebugLevel;
-					ed.GlobalVersionIds = cfg.GlobalVersionIdentifiers;
-					double d;
-					int v;
-					if(Double.TryParse(EditorDocument.Project.Version, out d))
-						ed.VersionNumber = (int)d;
-					else if(Int32.TryParse(EditorDocument.Project.Version, out v))
-						ed.VersionNumber = v;
-				}
-			}
-			
-			if(ed.GlobalVersionIds == null)
-			{
-				ed.GlobalVersionIds = VersionIdEvaluation.GetOSAndCPUVersions();
-			}
-
-			return ed;
-		}
-
 		public static void BuildCompletionData(Document EditorDocument, 
 			DModule SyntaxTree, 
 			CodeCompletionContext ctx, 
@@ -86,7 +30,7 @@ namespace MonoDevelop.D.Completion
 		{
 			AbstractCompletionProvider.BuildCompletionData(
 				new CompletionDataGenerator { CompletionDataList = l },
-				CreateEditorData(EditorDocument, SyntaxTree as DModule, ctx, triggerChar), 
+				DResolverWrapper.CreateEditorData(EditorDocument, SyntaxTree as DModule, ctx, triggerChar), 
 				triggerChar=='\0'?null:triggerChar.ToString());
 		}
 
@@ -123,38 +67,14 @@ namespace MonoDevelop.D.Completion
 							}
 						}
 
-						var ed = Completion.DCodeCompletionSupport.CreateEditorData(doc);
+						var ed = DResolverWrapper.CreateEditorData(doc);
 						return new ResolutionContext(ed.ParseCache, new ConditionalCompilationFlags(ed), bn, stmt);
 					}
 				}
 			}
-			return new ResolutionContext(Completion.DCodeCompletionSupport.EnumAvailableModules(),
+			return new ResolutionContext(DResolverWrapper.CreateCacheList(),
 					new ConditionalCompilationFlags(VersionIdEvaluation.GetOSAndCPUVersions(), 1, true), null);
 		}
-
-		#region Module enumeration helper
-		public static ParseCacheList EnumAvailableModules(Document Editor)
-		{
-			return EnumAvailableModules(Editor.HasProject ? Editor.Project as DProject : null);
-		}
-
-		public static ParseCacheList EnumAvailableModules(DProject Project=null)
-		{
-			if (Project != null)
-			{
-				var pcl= ParseCacheList.Create(Project.LocalFileCache, Project.LocalIncludeCache, Project.Compiler.ParseCache);
-
-				// Automatically include dep projects' caches
-				foreach (var dep in Project.DependingProjects)
-					if(dep!=null)
-						pcl.Add(dep.LocalFileCache);
-
-				return pcl;
-			}
-			else
-				return ParseCacheList.Create(DCompilerService.Instance.GetDefaultCompiler().ParseCache);
-		}
-		#endregion
 
 		#region Image helper
 		static readonly Dictionary<string, Core.IconId> images = new Dictionary<string, IconId>();

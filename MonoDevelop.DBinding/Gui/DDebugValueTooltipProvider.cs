@@ -36,6 +36,7 @@ using MonoDevelop.D.Parser;
 using D_Parser.Resolver.TypeResolution;
 using MonoDevelop.D.Completion;
 using D_Parser.Resolver;
+using MonoDevelop.D.Resolver;
 
 namespace MonoDevelop.D.Gui
 {
@@ -82,7 +83,7 @@ namespace MonoDevelop.D.Gui
 				if(doc == null)
 					return null;
 
-				var editorData = DCodeCompletionSupport.CreateEditorData(doc);
+				var editorData = DResolverWrapper.CreateEditorData(doc);
 				editorData.CaretOffset = offset;
 				var edLoc = ed.OffsetToLocation(offset);
 				editorData.CaretLocation = new D_Parser.Dom.CodeLocation(edLoc.Column,edLoc.Line);

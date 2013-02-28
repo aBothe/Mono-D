@@ -19,6 +19,7 @@ using MonoDevelop.D.Profiler;
 using MonoDevelop.Ide.Gui;
 using MonoDevelop.Components.Commands;
 using MonoDevelop.D.Profiler.Commands;
+using MonoDevelop.D.Resolver;
 
 namespace MonoDevelop.D
 {
@@ -90,7 +91,7 @@ namespace MonoDevelop.D
 
 		public ParseCacheList ParseCache {
 			get {
-				return DCodeCompletionSupport.EnumAvailableModules (this);
+				return DResolverWrapper.CreateCacheList(this);
 			}
 		}
 

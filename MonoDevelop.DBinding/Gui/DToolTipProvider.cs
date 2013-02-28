@@ -5,6 +5,7 @@ using Mono.TextEditor;
 using MonoDevelop.Components;
 using MonoDevelop.D.Completion;
 using MonoDevelop.D.Parser;
+using MonoDevelop.D.Resolver;
 using MonoDevelop.Ide;
 using Pango;
 
@@ -30,7 +31,7 @@ namespace MonoDevelop.D.Gui
 				return null;
 
 			// Get code cache
-			var codeCache = DCodeCompletionSupport.EnumAvailableModules(doc);
+			var codeCache = DResolverWrapper.CreateCacheList(doc);
 
 			// Create editor context
 			var line=editor.GetLineByOffset(offset);
