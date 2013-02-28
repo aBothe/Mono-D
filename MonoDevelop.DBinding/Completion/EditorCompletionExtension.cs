@@ -26,8 +26,7 @@ namespace MonoDevelop.D
 		public override ICompletionDataList CodeCompletionCommand(CodeCompletionContext completionContext)
 		{
 			int i = 0;
-			char ch = completionContext.TriggerOffset > 0 ? document.Editor.GetCharAt(completionContext.TriggerOffset - 1) : '\0';
-			return HandleCodeCompletion(completionContext, ch, ref i);
+			return HandleCodeCompletion(completionContext, '\0', ref i);
 		}
 
 		public override ICompletionDataList HandleCodeCompletion(CodeCompletionContext completionContext, char triggerChar, ref int triggerWordLength)
