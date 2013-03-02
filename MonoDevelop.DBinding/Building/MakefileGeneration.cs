@@ -44,7 +44,7 @@ namespace MonoDevelop.D.Building
 				if (pf.BuildAction != BuildAction.Compile)
 					continue;
 				
-				var obj = ProjectBuilder.GetRelativeObjectFileName(cfg.ObjectDirectory, pf, DCompilerService.ObjectExtension);
+				var obj = ProjectBuilder.GetRelativeObjectFileName(ProjectBuilder.EnsureCorrectPathSeparators(cfg.ObjectDirectory), pf, DCompilerService.ObjectExtension);
 
 				objs.Add(obj);
 				srcObjPairs[pf.FilePath.ToRelative(Project.BaseDirectory)] = obj;

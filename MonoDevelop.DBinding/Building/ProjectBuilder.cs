@@ -32,7 +32,20 @@ namespace MonoDevelop.D.Building
 
 		DProject Project;
 		DProjectConfiguration BuildConfig;
-		string AbsoluteObjectDirectory;
+
+		string ObjectDirectory
+		{
+			get{ return EnsureCorrectPathSeparators(BuildConfig.ObjectDirectory); }
+		}
+
+		string AbsoluteObjectDirectory{
+			get{
+				if (Path.IsPathRooted (BuildConfig.ObjectDirectory))
+					return ObjectDirectory;
+				else
+					return Path.Combine (Project.BaseDirectory, ObjectDirectory);
+			}
+		}
 		IArgumentMacroProvider commonMacros;
 		IProgressMonitor monitor;
 		List<string> BuiltObjects = new List<string> ();
@@ -81,11 +94,6 @@ namespace MonoDevelop.D.Building
 				return targetBuildResult;
 			}
 
-			if (Path.IsPathRooted (BuildConfig.ObjectDirectory))
-				AbsoluteObjectDirectory = EnsureCorrectPathSeparators(BuildConfig.ObjectDirectory);
-			else
-				AbsoluteObjectDirectory = Path.Combine (Project.BaseDirectory, EnsureCorrectPathSeparators (BuildConfig.ObjectDirectory));
-
 			if (!Directory.Exists (AbsoluteObjectDirectory))
 				Directory.CreateDirectory (AbsoluteObjectDirectory);
 
@@ -130,7 +138,7 @@ namespace MonoDevelop.D.Building
                 Libraries = GetLibraries(BuildConfig,Compiler),
 
                 RelativeTargetDirectory = BuildConfig.OutputDirectory,
-                ObjectsDirectory = BuildConfig.ObjectDirectory,
+                ObjectsDirectory = ObjectDirectory,
                 TargetFile = target,
             }, commonMacros);
 
@@ -222,7 +230,7 @@ namespace MonoDevelop.D.Building
 			if (File.Exists (f.LastGenOutput))
 				File.Delete (f.LastGenOutput);
 
-			var obj = GetRelativeObjectFileName (BuildConfig.ObjectDirectory,f, DCompilerService.ObjectExtension);
+			var obj = GetRelativeObjectFileName (ObjectDirectory,f, DCompilerService.ObjectExtension);
 
 			// Create argument string for source file compilation.
 			var dmdArgs = FillInMacros((string.IsNullOrEmpty(AdditionalCompilerAttributes) ? string.Empty : (AdditionalCompilerAttributes.Trim() + " ")) +
@@ -270,7 +278,7 @@ namespace MonoDevelop.D.Building
 
 		bool CompileResourceScript (BuildResult targetBuildResult, ProjectFile f)
 		{
-			var res = GetRelativeObjectFileName (BuildConfig.ObjectDirectory, f, ".res");
+			var res = GetRelativeObjectFileName (ObjectDirectory, f, ".res");
 
 			// Build argument string
 			var resCmpArgs = FillInMacros (Win32ResourceCompiler.Instance.Arguments,
