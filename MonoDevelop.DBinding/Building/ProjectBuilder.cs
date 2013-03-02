@@ -67,8 +67,8 @@ namespace MonoDevelop.D.Building
 		{
 			this.Project = Project;
 			BuildConfig = Project.GetConfiguration (BuildConfigurationSelector) as DProjectConfiguration;
-			commonMacros = new PrjPathMacroProvider { 
-				slnPath = Project.ParentSolution.BaseDirectory
+			commonMacros = new PrjPathMacroProvider {
+				slnPath = EnsureCorrectPathSeparators(Project.ParentSolution.BaseDirectory)
 			};
 			BuiltObjects.Clear ();
 
@@ -82,7 +82,7 @@ namespace MonoDevelop.D.Building
 			}
 
 			if (Path.IsPathRooted (BuildConfig.ObjectDirectory))
-				AbsoluteObjectDirectory = BuildConfig.ObjectDirectory;
+				AbsoluteObjectDirectory = EnsureCorrectPathSeparators(BuildConfig.ObjectDirectory);
 			else
 				AbsoluteObjectDirectory = Path.Combine (Project.BaseDirectory, EnsureCorrectPathSeparators (BuildConfig.ObjectDirectory));
 
