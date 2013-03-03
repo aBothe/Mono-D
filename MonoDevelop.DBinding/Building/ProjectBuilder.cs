@@ -81,7 +81,7 @@ namespace MonoDevelop.D.Building
 			this.Project = Project;
 			BuildConfig = Project.GetConfiguration (BuildConfigurationSelector) as DProjectConfiguration;
 			commonMacros = new PrjPathMacroProvider {
-				slnPath = EnsureCorrectPathSeparators(Project.ParentSolution.BaseDirectory)
+				slnPath = Project.ParentSolution != null ? EnsureCorrectPathSeparators(Project.ParentSolution.BaseDirectory) : ""
 			};
 			BuiltObjects.Clear ();
 
@@ -122,48 +122,49 @@ namespace MonoDevelop.D.Building
 			// Build argument string
 			var target = Project.GetOutputFileName (BuildConfig.Selector);
 
-		
 
-			var argumentString = FillInMacros ((string.IsNullOrEmpty(AdditionalCompilerAttributes) ? string.Empty : (AdditionalCompilerAttributes.Trim() + " ")) +
-                BuildArguments.OneStepBuildArguments.Trim () + 
-                (string.IsNullOrEmpty(BuildConfig.ExtraCompilerArguments) ? string.Empty : (" " +BuildConfig.ExtraCompilerArguments.Trim ())) +
-                (string.IsNullOrEmpty(BuildConfig.ExtraLinkerArguments) ? string.Empty : (" "+BuildConfig.ExtraLinkerArguments.Trim ())),
-            new OneStepBuildArgumentMacroProvider
-            {
-                ObjectsStringPattern = Compiler.ArgumentPatterns.ObjectFileLinkPattern,
+			var argumentString = FillInMacros((string.IsNullOrEmpty(AdditionalCompilerAttributes) ? string.Empty : (AdditionalCompilerAttributes.Trim() + " ")) +
+				BuildArguments.OneStepBuildArguments.Trim() +
+				(string.IsNullOrEmpty(BuildConfig.ExtraCompilerArguments) ? string.Empty : (" " + BuildConfig.ExtraCompilerArguments.Trim())) +
+				(string.IsNullOrEmpty(BuildConfig.ExtraLinkerArguments) ? string.Empty : (" " + BuildConfig.ExtraLinkerArguments.Trim())),
+			new OneStepBuildArgumentMacroProvider
+			{
+				ObjectsStringPattern = Compiler.ArgumentPatterns.ObjectFileLinkPattern,
 				IncludesStringPattern = Compiler.ArgumentPatterns.IncludePathPattern,
 
-                SourceFiles = BuiltObjects,
-                Includes = FillCommonMacros(Project.IncludePaths),
-                Libraries = GetLibraries(BuildConfig,Compiler),
+				SourceFiles = BuiltObjects,
+				Includes = FillCommonMacros(Project.IncludePaths),
+				Libraries = GetLibraries(BuildConfig, Compiler),
 
-                RelativeTargetDirectory = BuildConfig.OutputDirectory,
-                ObjectsDirectory = ObjectDirectory,
-                TargetFile = target,
-            }, commonMacros);
+				RelativeTargetDirectory = BuildConfig.OutputDirectory,
+				ObjectsDirectory = ObjectDirectory,
+				TargetFile = target,
+			}, commonMacros);
+
 
 			// Execute the compiler
 			var stdOut = "";
 			var stdError = "";
 
 			var linkerExecutable = Compiler.SourceCompilerCommand;
-			if (!Path.IsPathRooted (linkerExecutable) && !string.IsNullOrEmpty(Compiler.BinPath)) {
-				linkerExecutable = Path.Combine (Compiler.BinPath, LinkTargetCfg.Linker);
+			if (!Path.IsPathRooted(linkerExecutable) && !string.IsNullOrEmpty(Compiler.BinPath))
+			{
+				linkerExecutable = Path.Combine(Compiler.BinPath, LinkTargetCfg.Linker);
 
-				if (!File.Exists (linkerExecutable))
+				if (!File.Exists(linkerExecutable))
 					linkerExecutable = LinkTargetCfg.Linker;
 			}
 
-            monitor.Log.WriteLine("Current dictionary: " + Project.BaseDirectory);
+			monitor.Log.WriteLine("Current dictionary: " + Project.BaseDirectory);
 
-			int exitCode = ExecuteCommand (linkerExecutable, argumentString, Project.BaseDirectory, monitor,
-                out stdError,
-                out stdOut);
+			int exitCode = ExecuteCommand(linkerExecutable, argumentString, Project.BaseDirectory, monitor,
+				out stdError,
+				out stdOut);
 
-			HandleCompilerOutput (br, stdError);
-			HandleCompilerOutput (br, stdOut);
-			HandleOptLinkOutput (br, stdOut);
-			HandleReturnCode (br, linkerExecutable, exitCode);
+			HandleCompilerOutput(br, stdError);
+			HandleCompilerOutput(br, stdOut);
+			HandleOptLinkOutput(br, stdOut);
+			HandleReturnCode(br, linkerExecutable, exitCode);
 
 			return br;
 		}
@@ -454,7 +455,7 @@ namespace MonoDevelop.D.Building
 		public static IEnumerable<string> GetLibraries(DProjectConfiguration projCfg, DCompilerConfiguration compiler)
 		{
 			var libraries = (IEnumerable<string>)FillInMacros(projCfg.GetReferencedLibraries(projCfg.Selector),
-				new PrjPathMacroProvider { slnPath = projCfg.Project.ParentSolution.BaseDirectory });
+				new PrjPathMacroProvider { slnPath = projCfg.Project.ParentSolution != null ? projCfg.Project.ParentSolution.BaseDirectory.ToString() : "" });
 
 			if (compiler.EnableGDCLibPrefixing)
 				libraries = HandleGdcSpecificLibraryReferencing(libraries, projCfg.Project.BaseDirectory);
