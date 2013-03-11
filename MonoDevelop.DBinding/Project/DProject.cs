@@ -432,7 +432,7 @@ namespace MonoDevelop.D
 			var cfg = GetConfiguration (configuration) as DProjectConfiguration;
 			
 			if (!EnableIncrementalLinking || 
-				!File.Exists (cfg.CompiledOutputName))
+				!File.Exists (GetOutputFileName(configuration)))
 				return true;
 
 			foreach (var f in Files) {
