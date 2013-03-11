@@ -106,11 +106,20 @@ namespace MonoDevelop.D.Building
 		BuildResult DoOneStepBuild ()
 		{
 			var br = new BuildResult ();
-            
+
+			bool filesModified = false;
+
 			// Enum files & build resource files
 			foreach (var pf in Project.Files) {
 				if (pf.BuildAction != BuildAction.Compile || pf.Subtype == Subtype.Directory)
 					continue;
+
+				DateTime dt;
+				if (Project.LastModificationTimes.TryGetValue(pf, out dt))
+					filesModified |= File.GetLastWriteTime(pf.FilePath) != dt;
+				else
+					filesModified = true;
+				Project.LastModificationTimes[pf] = File.GetLastWriteTime(pf.FilePath);
 
 				if (pf.FilePath.Extension.EndsWith (".rc", StringComparison.OrdinalIgnoreCase)) {
 					if (!CompileResourceScript (br, pf))
@@ -122,6 +131,13 @@ namespace MonoDevelop.D.Building
 			// Build argument string
 			var target = Project.GetOutputFileName (BuildConfig.Selector);
 
+			if (!filesModified && Project.EnableIncrementalLinking &&
+				File.Exists(target))
+			{
+				monitor.ReportSuccess("Build successful! - No new linkage needed");
+				monitor.Step(1);
+				return br;
+			}
 
 			var argumentString = FillInMacros((string.IsNullOrEmpty(AdditionalCompilerAttributes) ? string.Empty : (AdditionalCompilerAttributes.Trim() + " ")) +
 				BuildArguments.OneStepBuildArguments.Trim() +
