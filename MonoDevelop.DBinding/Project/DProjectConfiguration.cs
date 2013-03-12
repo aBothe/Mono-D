@@ -103,11 +103,6 @@ namespace MonoDevelop.D
 		}
 		#endregion
 
-		public DProjectConfiguration ()
-		{
-			this.ExternalConsole = true;
-		}
-
 		public event EventHandler Changed;
 		
 		public override void CopyFrom (ItemConfiguration configuration)

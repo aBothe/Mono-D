@@ -323,6 +323,7 @@ namespace MonoDevelop.D
 			// Prepare all configurations
 			foreach (DProjectConfiguration c in Configurations) {
 
+				c.ExternalConsole = true;
 				c.CompileTarget = compTarget;
 				c.OutputDirectory = Path.Combine (this.GetRelativeChildPath (binPath), c.Id);
 				c.ObjectDirectory += Path.DirectorySeparatorChar + c.Id;
