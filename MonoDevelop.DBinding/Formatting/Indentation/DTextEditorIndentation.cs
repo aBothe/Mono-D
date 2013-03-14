@@ -104,11 +104,15 @@ namespace MonoDevelop.D.Formatting.Indentation
 		
 		void HandleTextPaste (int insertionOffset, string text, int insertedChars)
 		{
-			var documentLine = Editor.GetLineByOffset (insertionOffset + insertedChars);
-			while (documentLine != null && insertionOffset < documentLine.EndOffset) {
-				stateTracker.UpdateEngine (documentLine.Offset);
-				DoReSmartIndent (documentLine.Offset);
-				documentLine = documentLine.PreviousLine;
+			using (Editor.OpenUndoGroup())
+			{
+				var documentLine = Editor.GetLineByOffset(insertionOffset + insertedChars);
+				while (documentLine != null && insertionOffset < documentLine.EndOffset)
+				{
+					stateTracker.UpdateEngine(documentLine.Offset);
+					DoReSmartIndent(documentLine.Offset);
+					documentLine = documentLine.PreviousLine;
+				}
 			}
 		}
 

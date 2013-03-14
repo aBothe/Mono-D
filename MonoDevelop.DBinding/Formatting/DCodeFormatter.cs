@@ -51,6 +51,7 @@ namespace MonoDevelop.D.Formatting
 			
 			if(IndentCorrectionOnly)
 			{
+				using(doc.OpenUndoGroup())
 				using(var r = doc.CreateReader())
 					D_Parser.Formatting.Indent.IndentEngineWrapper.CorrectIndent(r, 
 						startOffset, endOffset, 
@@ -74,7 +75,8 @@ namespace MonoDevelop.D.Formatting
 			
 			formattingVisitor.WalkThroughAst();
 			
-			formattingVisitor.ApplyChanges(doc.Replace);
+			using(doc.OpenUndoGroup())
+				formattingVisitor.ApplyChanges(doc.Replace);
 		}
 		
 		public class TextStyleAdapter : D_Parser.Formatting.ITextEditorOptions{
@@ -188,6 +190,7 @@ namespace MonoDevelop.D.Formatting
 			
 			if(IndentCorrectionOnly)
 			{
+				using (data.Document.OpenUndoGroup())
 				using(var s = data.OpenStream())
 					using(var r = new StreamReader(s))
 						D_Parser.Formatting.Indent.IndentEngineWrapper.CorrectIndent(r,
@@ -211,8 +214,9 @@ namespace MonoDevelop.D.Formatting
 			}
 			
 			formattingVisitor.WalkThroughAst();
-			
-			formattingVisitor.ApplyChanges(data.Document.Replace);
+
+			using (data.Document.OpenUndoGroup())
+				formattingVisitor.ApplyChanges(data.Document.Replace);
 			
 			return data.Text;
 		}
