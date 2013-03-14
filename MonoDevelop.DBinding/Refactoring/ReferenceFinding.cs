@@ -78,15 +78,6 @@ namespace MonoDevelop.D.Refactoring
 				{
 					references = ReferencesFinder.Scan(mod, member, ResolutionContext.Create(parseCache, null, null)).ToList();
 
-					if (member != null && member.NodeRoot != null &&
-						(member.NodeRoot as DModule).FileName == mod.FileName)
-						references.Insert(0, new IdentifierDeclaration(member.Name)
-						{
-							Location = member.NameLocation,
-							EndLocation = new CodeLocation(member.NameLocation.Column + member.Name.Length,
-								member.NameLocation.Line)
-						});
-
 					if (references.Count < 1)
 					{
 						if (monitor != null)
