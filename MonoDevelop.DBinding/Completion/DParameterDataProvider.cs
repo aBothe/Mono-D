@@ -121,24 +121,7 @@ namespace MonoDevelop.D.Completion
 		public override TooltipInformation CreateTooltipInformation(int overload, int currentParameter, bool smartWrap)
 		{
 			selIndex = overload;
-			var sb = new StringBuilder();
-
-			var t = CurrentResult;
-			var ms = t as MemberSymbol;
-			if (ms == null)
-				return new TooltipInformation();
-
-			if (ms.Definition is DVariable)
-			{
-				var bt = DResolver.StripAliasSymbol(ms.Base);
-				if (bt is DelegateType)
-					return TooltipInfoGenerator.Generate(bt as DelegateType, currentParameter);
-			}
-
-			else if (ms.Definition is DMethod)
-				return TooltipInfoGenerator.Generate(ms.Definition as DMethod, args.IsTemplateInstanceArguments, currentParameter);
-
-			return new TooltipInformation();
+			return TooltipInfoGenerator.Generate(CurrentResult, currentParameter, args.IsTemplateInstanceArguments);
 		}
 
 		

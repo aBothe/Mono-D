@@ -1,6 +1,7 @@
 ﻿using D_Parser.Dom;
 using D_Parser.Parser;
 using D_Parser.Resolver;
+using D_Parser.Resolver.TypeResolution;
 using MonoDevelop.Ide.CodeCompletion;
 using System;
 using System.Collections.Generic;
@@ -11,6 +12,26 @@ namespace MonoDevelop.D.Completion
 {
 	class TooltipInfoGenerator
 	{
+		public static TooltipInformation Generate(AbstractType t, int currentParameter = -1, bool isInTemplateArgInsight = false)
+		{
+			var ms = t as MemberSymbol;
+			if (ms != null)
+			{
+				if (ms.Definition is DVariable)
+				{
+					var bt = DResolver.StripAliasSymbol(ms.Base);
+					if (bt is DelegateType)
+						return TooltipInfoGenerator.Generate(bt as DelegateType, currentParameter);
+				}
+				else if (ms.Definition is DMethod)
+					return TooltipInfoGenerator.Generate(ms.Definition as DMethod, isInTemplateArgInsight, currentParameter);
+			}
+			else if (t is TemplateIntermediateType)
+				return Generate(t as TemplateIntermediateType, currentParameter);
+
+			return new TooltipInformation();
+		}
+
 		public static TooltipInformation Generate(DelegateType dt, int currentParam = -1)
 		{
 			var dd = dt.TypeDeclarationOf as DelegateDeclaration;
@@ -163,5 +184,46 @@ namespace MonoDevelop.D.Completion
 			return tti;
 		}
 
+		public static TooltipInformation Generate(TemplateIntermediateType tit, int currentParam = -1)
+		{
+			var sb = new StringBuilder("(");
+
+			if (tit is ClassType)
+				sb.Append("Class");
+			else if (tit is InterfaceType)
+				sb.Append("Interface");
+			else if (tit is TemplateType)
+				sb.Append("Template");
+			else if (tit is StructType)
+				sb.Append("Struct");
+			else if (tit is UnionType)
+				sb.Append("Union");
+
+			sb.Append(") ").Append(tit.Name);
+			var dc =tit.Definition;
+			if (dc.TemplateParameters != null && dc.TemplateParameters.Length != 0)
+			{
+				sb.Append('(');
+				for (int i = 0; i < dc.TemplateParameters.Length; i++)
+				{
+					if (i == currentParam)
+						sb.Append("<i>");
+
+					sb.Append(dc.TemplateParameters[i].ToString());
+
+					if (i == currentParam)
+						sb.Append("</i>");
+					sb.Append(',');
+				}
+				sb.Remove(sb.Length -1, 1).Append(')');
+			}
+
+			var tti = new TooltipInformation { 
+				SignatureMarkup = sb.ToString(),
+				FooterMarkup = dc.ToString(false)
+			};
+
+			return tti;
+		}
 	}
 }
