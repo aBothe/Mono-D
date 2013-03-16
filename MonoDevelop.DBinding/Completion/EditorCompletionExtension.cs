@@ -1,4 +1,6 @@
 using D_Parser.Dom;
+using D_Parser.Dom.Statements;
+using D_Parser.Resolver.TypeResolution;
 using ICSharpCode.NRefactory.Completion;
 using MonoDevelop.Core;
 using MonoDevelop.D.Completion;
@@ -13,13 +15,12 @@ namespace MonoDevelop.D
 	{
 		#region Properties / Init
 		int lastTriggerOffset;
-		private Mono.TextEditor.TextEditorData documentEditor;
-		
+		AstUpdater updater;
+
 		public override void Initialize()
 		{
 			base.Initialize();
-			
-			documentEditor = Document.Editor;	
+			updater = new AstUpdater(document, document.Editor);
 		}
 		#endregion
 
@@ -32,6 +33,8 @@ namespace MonoDevelop.D
 
 		public override ICompletionDataList HandleCodeCompletion(CodeCompletionContext completionContext, char triggerChar, ref int triggerWordLength)
 		{
+			updater.FinishUpdate();
+
 			if (!EnableCodeCompletion)
 				return null;
 			if (!EnableAutoCodeCompletion && char.IsLetter(triggerChar))
@@ -159,10 +162,13 @@ namespace MonoDevelop.D
 
 		public override bool KeyPress(Gdk.Key key, char keyChar, Gdk.ModifierType modifier)
 		{
+			updater.BeginUpdate();
 			if (this.CompletionWidget != null && (keyChar == ')' || keyChar == ';'))
 				ParameterInformationWindowManager.HideWindow(this, CompletionWidget);
 
-			return base.KeyPress(key, keyChar, modifier);
+			var ret = base.KeyPress(key, keyChar, modifier);
+			updater.FinishUpdate();
+			return ret;
 		}
 		
 		public override ParameterDataProvider HandleParameterCompletion(CodeCompletionContext completionContext, char completionChar)

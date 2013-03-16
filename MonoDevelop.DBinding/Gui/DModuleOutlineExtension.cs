@@ -280,7 +280,8 @@ namespace MonoDevelop.D.Gui
 			if (clickedOnOutlineItem || SyntaxTree == null || TreeStore == null)
 				return;
 
-			IStatement stmt = null;
+			IStatement stmt;
+			
 			var caretLocation = Document.Editor.Caret.Location;
 			var caretLocationD = new CodeLocation(caretLocation.Column, caretLocation.Line);
 
