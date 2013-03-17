@@ -147,51 +147,6 @@ namespace MonoDevelop.D.Completion
 				idx++;
 			return idx;
 		}
-		
-		public int GetCurrentParameterIndex (ICompletionWidget widget, CodeCompletionContext ctx)
-		{
-			/*
-			int cursor = widget.CurrentCodeCompletionContext.TriggerOffset;
-			var loc=new CodeLocation(ctx.TriggerLineOffset,ctx.TriggerLine);
-
-			if (args.IsTemplateInstanceArguments)
-			{
-
-			}
-			else
-			{
-				var firstArgLocation = CodeLocation.Empty;
-
-				if (args.ParsedExpression is PostfixExpression_MethodCall)
-					firstArgLocation = (args.ParsedExpression as PostfixExpression_MethodCall).Arguments[0].Location;
-				else if (args.ParsedExpression is NewExpression)
-					firstArgLocation = (args.ParsedExpression as NewExpression).Arguments[0].Location;
-				else
-					return -1;
-
-				if (loc < firstArgLocation)
-					loc = firstArgLocation;
-
-				var code = doc.Editor.Document.GetTextBetween(firstArgLocation.Line,firstArgLocation.Column, scopeMethod.EndLocation.Line, scopeMethod.EndLocation.Column);
-
-				var tr = new StringReader(code);
-				var parser = new DParser(new Lexer(tr));
-				parser.Lexer.SetInitialLocation(firstArgLocation);
-				parser.Step();
-
-				var updatedArguments = parser.ArgumentList();
-				tr.Close();
-
-				var lastArg = updatedArguments[updatedArguments.Count - 1];
-
-				for (int i = 0; i < updatedArguments.Count; i++)
-					if ((loc >= updatedArguments[i].Location && loc <= updatedArguments[i].EndLocation) ||
-						(i==updatedArguments.Count-1 && loc <= updatedArguments[i].EndLocation))
-						return i + 1;
-			}
-			*/
-			return args.CurrentlyTypedArgumentIndex;
-		}
 
 		public override string GetParameterName(int overload, int currentParameter)
 		{
@@ -206,48 +161,6 @@ namespace MonoDevelop.D.Completion
 
 			return null;
 		}
-
-		/*public string GetHeading(int overload, string[] parameterMarkup, int currentParameter)
-		{
-			selIndex = overload;
-
-			if (CurrentResult is DSymbol)
-			{
-				var s = "";
-				var tir = (DSymbol)CurrentResult;
-
-				var dm = tir.Definition as DMethod;
-				if (dm != null)
-				{
-					s = GetMethodMarkup(dm, parameterMarkup, currentParameter);
-				}
-				else if (tir.Definition is DClassLike)
-				{
-					s = tir.Definition.Name + "(" + string.Join(",", parameterMarkup) + ")";
-				}
-
-				// Optional: description
-				if (tir.Definition != null && !string.IsNullOrWhiteSpace(tir.Definition.Description))
-					s += "\n\n " + tir.Definition.Description;
-
-				return s;
-			}
-			else if (CurrentResult is DelegateType)
-			{
-				var dr = (DelegateType)CurrentResult;
-
-				if (dr.IsFunctionLiteral && dr.DeclarationOrExpressionBase is FunctionLiteral)
-					return GetMethodMarkup(((FunctionLiteral)dr.DeclarationOrExpressionBase).AnonymousMethod, parameterMarkup, currentParameter);
-				else if(dr.DeclarationOrExpressionBase is DelegateDeclaration)
-				{
-					var dg = (DelegateDeclaration)dr.DeclarationOrExpressionBase;
-					return dg.ReturnType.ToString() + " " + (dg.IsFunction?"function":"delegate") + "(" + string.Join(",", parameterMarkup) + ")";
-				}
-			}
-
-			return "";
-		}*/
-
 
 		public override int GetParameterCount (int overload)
 		{			
