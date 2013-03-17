@@ -51,12 +51,10 @@ namespace MonoDevelop.D.OptionPanels
 			foreach (var cmp in DCompilerService.Instance.Compilers) {
 				var virtCopy = new DCompilerConfiguration ();
 				virtCopy.AssignFrom (cmp);
-				compilerStore.AppendValues (cmp.Vendor, virtCopy);
+				var iter = compilerStore.AppendValues (cmp.Vendor, virtCopy);
+				if (cmp.Vendor == defaultCompilerVendor)
+					cmbCompilers.SetActiveIter(iter);
 			}
-
-			Gtk.TreeIter iter;
-			if (compilerStore.GetIterFirst (out iter))
-				cmbCompilers.SetActiveIter (iter);
 		}
 
 		string ComboBox_CompilersLabel {
