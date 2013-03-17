@@ -15,6 +15,7 @@
 		<ddFlag>-D</ddFlag>
 		<ddMacroDefinition>"{0}"</ddMacroDefinition>
 		<ddDir>"-Dd{0}"</ddDir>
+		<linkerRedirectFlag>-L</linkerRedirectFlag>
 	</Patterns>
 
 	<TargetConfiguration Target="Executable">

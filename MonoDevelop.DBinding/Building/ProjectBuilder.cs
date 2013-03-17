@@ -139,10 +139,16 @@ namespace MonoDevelop.D.Building
 				return br;
 			}
 
-			var argumentString = FillInMacros((string.IsNullOrEmpty(AdditionalCompilerAttributes) ? string.Empty : (AdditionalCompilerAttributes.Trim() + " ")) +
-				BuildArguments.OneStepBuildArguments.Trim() +
-				(string.IsNullOrEmpty(BuildConfig.ExtraCompilerArguments) ? string.Empty : (" " + BuildConfig.ExtraCompilerArguments.Trim())) +
-				(string.IsNullOrEmpty(BuildConfig.ExtraLinkerArguments) ? string.Empty : (" " + BuildConfig.ExtraLinkerArguments.Trim())),
+			var rawArgumentString = new StringBuilder();
+			if(!string.IsNullOrEmpty(AdditionalCompilerAttributes) )
+				rawArgumentString.Append(AdditionalCompilerAttributes.Trim()).Append(' ');
+			rawArgumentString.Append(BuildArguments.OneStepBuildArguments.Trim());
+			if(!string.IsNullOrEmpty(BuildConfig.ExtraCompilerArguments))
+				rawArgumentString.Append(' ').Append(BuildConfig.ExtraCompilerArguments.Trim());
+			if (!string.IsNullOrEmpty(BuildConfig.ExtraLinkerArguments))
+				rawArgumentString.Append(' ').Append(PrefixedExtraLinkerFlags);
+
+			var argumentString = FillInMacros(rawArgumentString.ToString(),
 			new OneStepBuildArgumentMacroProvider
 			{
 				ObjectsStringPattern = Compiler.ArgumentPatterns.ObjectFileLinkPattern,
@@ -407,6 +413,44 @@ namespace MonoDevelop.D.Building
         #endregion
 
         #region Build argument creation
+
+		public string PrefixedExtraLinkerFlags
+		{
+			get
+			{
+				var linkerRedirectPrefix = Compiler.ArgumentPatterns.LinkerRedirectPrefix;
+				if (string.IsNullOrWhiteSpace(BuildConfig.ExtraLinkerArguments))
+					return string.Empty;
+
+				var sb = new StringBuilder(BuildConfig.ExtraLinkerArguments);
+				int lastArgStart = -1;
+				bool isInString = false;
+				for (int i = 0; i < sb.Length; i++)
+				{
+					switch(sb[i])
+					{
+						case '\t':
+						case ' ':
+							if(isInString)
+								continue;
+							lastArgStart = -1;
+							break;
+						case '"':
+							isInString = !isInString;
+							goto default;
+						default:
+							if (lastArgStart == -1)
+							{
+								lastArgStart = i;
+								sb.Insert(i, linkerRedirectPrefix);
+								i += linkerRedirectPrefix.Length;
+							}
+							break;
+					}
+				}
+				return sb.ToString();
+			}
+		}
 
 		/// <summary>
 		/// Scans through RawArgumentString for macro uses (e.g. -of"$varname") and replace found variable matches with values provided by MacroProvider

@@ -15,6 +15,7 @@
 		<ddFlag></ddFlag>
 		<ddMacroDefinition>"-fdoc-inc={0}"</ddMacroDefinition>
 		<ddDir>"-fdoc-dir={0}"</ddDir>
+		<linkerRedirectFlag>-L</linkerRedirectFlag>
 	</Patterns>
 
 	<TargetConfiguration Target="Executable">

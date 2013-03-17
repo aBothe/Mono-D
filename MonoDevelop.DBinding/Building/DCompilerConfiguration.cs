@@ -355,7 +355,8 @@ namespace MonoDevelop.D.Building
 		/// <summary>
 		/// Describes how each include path shall be enumerated in the $includes compiling macro
 		/// </summary>
-		public string IncludePathPattern = "-I\"{0}\"";
+		public string IncludePathPattern = "\"-I{0}\"";
+		public string LinkerRedirectPrefix = "-L";
 		public string VersionDefinition = "-version";
 		public string DebugDefinition = "-debug";
 		public string UnittestFlag = "-unittest";
@@ -416,6 +417,10 @@ namespace MonoDevelop.D.Building
 			x.WriteStartElement("ddDir");
 			x.WriteCData(DDocExportDirectory);
 			x.WriteEndElement();
+
+			x.WriteStartElement("linkerRedirectFlag");
+			x.WriteCData(LinkerRedirectPrefix);
+			x.WriteEndElement();
 		}
 
 		public void ReadFrom(XmlReader x)
@@ -439,9 +444,9 @@ namespace MonoDevelop.D.Building
 					case "unittest":
 						UnittestFlag = x.ReadString();
 						break;
-				case "profile":
-					ProfileFlag = x.ReadString();
-					break;
+					case "profile":
+						ProfileFlag = x.ReadString();
+						break;
 					case "ddFlag":
 						EnableDDocFlag = x.ReadString();
 						break;
@@ -450,6 +455,9 @@ namespace MonoDevelop.D.Building
 						break;
 					case "ddDir":
 						DDocExportDirectory = x.ReadString();
+						break;
+					case "linkerRedirectFlag":
+						LinkerRedirectPrefix = x.ReadString();
 						break;
 				}
 			}
