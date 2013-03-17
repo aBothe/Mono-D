@@ -220,6 +220,7 @@ namespace MonoDevelop.D.Completion
 
 			var tti = new TooltipInformation { 
 				SignatureMarkup = sb.ToString(),
+				SummaryMarkup = dc.Description,
 				FooterMarkup = dc.ToString(false)
 			};
 
