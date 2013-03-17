@@ -68,7 +68,9 @@ namespace MonoDevelop.D
 			if (D_Parser.Misc.CompletionOptions.Instance.EnableSuggestionMode)
 			{
 				l.AddKeyHandler(new SuggestionKeyHandler());
-				l.AutoSelect = l.AutoCompleteEmptyMatch = false;
+				l.AutoCompleteUniqueMatch = false;
+				l.AutoCompleteEmptyMatch = false;
+				l.AutoSelect = true;
 			}
 			else
 				l.AddKeyHandler(new DoubleUnderScoreWorkaroundHandler());
@@ -122,11 +124,11 @@ namespace MonoDevelop.D
 					keyAction = KeyActions.None;
 					return false;
 				}
-				else if (!D_Parser.Parser.Lexer.IsIdentifierPart(keyChar))
+				else if (keyChar != '\0' && !D_Parser.Parser.Lexer.IsIdentifierPart(keyChar))
 					keyAction = KeyActions.CloseWindow;
 				else
 					keyAction = KeyActions.None;
-
+				
 				listWindow.PostProcessKey(key, keyChar, modifier);
 				return true;
 			}
