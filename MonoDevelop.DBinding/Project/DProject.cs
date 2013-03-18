@@ -32,9 +32,7 @@ namespace MonoDevelop.D
 		/// </summary>
 		public readonly Dictionary<ProjectFile, DateTime> LastModificationTimes = new Dictionary<ProjectFile, DateTime> ();
 		public readonly List<string> BuiltObjects = new List<string> ();
-		[ItemProperty("PreferOneStepBuild")]
-		public bool PreferOneStepBuild = true;
-
+		
 		public override string ProjectType	{ get { return "Native"; } }
 
 		public override string[] SupportedLanguages	{ get { return new[]{"D",""}; } }
@@ -335,9 +333,6 @@ namespace MonoDevelop.D
 					// Set extra compiler&linker args
 					if (projectOptions.Attributes ["CompilerArgs"].InnerText != null) {
 						c.ExtraCompilerArguments += projectOptions.Attributes ["CompilerArgs"].InnerText;
-					}
-					if (projectOptions.Attributes ["LinkerArgs"].InnerText != null) {
-						c.ExtraLinkerArguments += projectOptions.Attributes ["LinkerArgs"].InnerText;
 					}
 
 					if (projectOptions.GetAttribute ("ExternalConsole") == "True") {

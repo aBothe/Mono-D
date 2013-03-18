@@ -48,8 +48,7 @@ namespace MonoDevelop.D.OptionPanels
 			configuration = config;
 			
 			cbUseDefaultCompiler.Active = proj.UseDefaultCompilerVendor;
-			cbPreferOneStepCompilation.Active = proj.PreferOneStepBuild;
-			
+
 			OnUseDefaultCompilerChanged ();
 			Gtk.TreeIter iter;
 			if (cmbCompiler.Model.GetIterFirst (out iter))
@@ -61,8 +60,7 @@ namespace MonoDevelop.D.OptionPanels
 				} while (cmbCompiler.Model.IterNext (ref iter));
 			
 			extraCompilerTextView.Buffer.Text = config.ExtraCompilerArguments;
-			extraLinkerTextView.Buffer.Text = config.ExtraLinkerArguments;
-			
+
 			text_BinDirectory.Text = config.OutputDirectory;
 			text_TargetFile.Text = config.Output;
 			text_ObjectsDirectory.Text = config.ObjectDirectory;
@@ -130,16 +128,14 @@ namespace MonoDevelop.D.OptionPanels
 			
 			// Store used compiler vendor
 			project.UseDefaultCompilerVendor = cbUseDefaultCompiler.Active;
-			project.PreferOneStepBuild = cbPreferOneStepCompilation.Active;
-			
+
 			Gtk.TreeIter iter;
 			if (cmbCompiler.GetActiveIter (out iter))
 				project.UsedCompilerVendor = cmbCompiler.Model.GetValue (iter, 0) as string;
 			
 			// Store args			
 			configuration.ExtraCompilerArguments = extraCompilerTextView.Buffer.Text;
-			configuration.ExtraLinkerArguments = extraLinkerTextView.Buffer.Text;
-			
+
 			configuration.OutputDirectory = text_BinDirectory.Text;
 			configuration.Output = text_TargetFile.Text;
 			configuration.ObjectDirectory = text_ObjectsDirectory.Text;

@@ -36,8 +36,6 @@ namespace MonoDevelop.D
 		public bool UnittestMode = false;
 		[ItemProperty("ExtraCompilerArguments", DefaultValue = "")]
 		public string ExtraCompilerArguments = "";
-		[ItemProperty("ExtraLinkerArguments", DefaultValue = "")]
-		public string ExtraLinkerArguments = "";
 		[ItemProperty("Libs")]
 		[ItemProperty("Lib", Scope = "*")]
 		public List<string> ExtraLibraries = new List<string> ();
@@ -116,7 +114,6 @@ namespace MonoDevelop.D
 			ObjectDirectory = conf.ObjectDirectory;
 			Output = conf.Output;
 			ExtraCompilerArguments = conf.ExtraCompilerArguments;
-			ExtraLinkerArguments = conf.ExtraLinkerArguments;
 			CompileTarget = conf.CompileTarget;
 			CustomVersionIdentifiers = conf.CustomVersionIdentifiers;
 			CustomDebugIdentifiers = conf.CustomDebugIdentifiers;
@@ -175,7 +172,7 @@ namespace MonoDevelop.D
 			var buildCfg = cmp.GetOrCreateTargetConfiguration(this.CompileTarget);
 			var buildArgs = buildCfg.GetArguments(this.DebugMode);
 			var cmpArgs = (buildArgs.OneStepBuildArguments ?? buildArgs.CompilerArguments) + " " +
-				ExtraCompilerArguments + " " + ExtraLinkerArguments;
+				ExtraCompilerArguments;
 
 			//TODO: Distinguish between D1/D2 and probably later versions?
 			var a = D_Parser.Misc.VersionIdEvaluation.GetVersionIds(cmp.PredefinedVersionConstant,cmpArgs, UnittestMode);

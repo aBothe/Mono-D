@@ -9,10 +9,7 @@ namespace MonoDevelop.D.Building.CompilerPresets
 	public class PresetLoader
 	{
 		static Dictionary<string, string> presetFileContents = new Dictionary<string, string> {
-			{"DMD2", ConfigPresets.dmd}, //TODO: Make specific preset for dmd2/1
-			{"DMD", ConfigPresets.dmd},
-			{"GDC", ConfigPresets.gdc},
-			{"ldc2", ConfigPresets.ldc2}
+			{"DMD", ConfigPresets.dmd}
 		};
 
 		public static void LoadPresets(DCompilerService svc)

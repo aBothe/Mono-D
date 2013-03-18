@@ -19,42 +19,30 @@
 	<TargetConfiguration Target="Executable">
 		<LinkerCommand>dmd</LinkerCommand>
 		<DebugArgs>
-			<CompilerArg>-c "$src" "-of$obj" $includes -gc</CompilerArg>
-			<LinkerArgs>-gc "-of$target" $objs $libs</LinkerArgs>
-      		<OneStepBuildArgs>-gc $sources $libs $includes "-od$objectsDirectory" "-of$exe"</OneStepBuildArgs>
+			<OneStepBuildArgs>-gc $sources $libs $includes "-od$objectsDirectory" "-of$exe"</OneStepBuildArgs>
 		</DebugArgs>
 		<ReleaseArgs>
-			<CompilerArg>-c "$src" "-of$obj" $includes -O -release</CompilerArg>
-			<LinkerArgs>-O -release "-of$target" $objs $libs</LinkerArgs>
-      		<OneStepBuildArgs>-O -release $sources $libs $includes "-od$objectsDirectory" "-of$exe"</OneStepBuildArgs>
+			<OneStepBuildArgs>-O -release $sources $libs $includes "-od$objectsDirectory" "-of$exe"</OneStepBuildArgs>
 		</ReleaseArgs>
 	</TargetConfiguration>
 	
 	<TargetConfiguration Target="SharedLibrary">
 		<LinkerCommand>dmd</LinkerCommand>
 		<DebugArgs>
-			<CompilerArg>-c "$src" "-of$obj" $includes -gc</CompilerArg>
-			<LinkerArgs>-gc "-of$target" $objs $libs "-L/IMPLIB:$lib"</LinkerArgs>
-      		<OneStepBuildArgs>-gc $sources $libs $includes "-L/IMPLIB:$lib" "-od$objectsDirectory" "-of$dll"</OneStepBuildArgs>
+			<OneStepBuildArgs>-gc $sources $libs $includes "-L/IMPLIB:$lib" "-od$objectsDirectory" "-of$dll"</OneStepBuildArgs>
 		</DebugArgs>
 		<ReleaseArgs>
-			<CompilerArg>-c "$src" "-of$obj" $includes -O -release</CompilerArg>
-			<LinkerArgs>-O -release "-of$target" $objs $libs "-L/IMPLIB:$lib"</LinkerArgs>
-      		<OneStepBuildArgs>-O -release $sources $libs $includes "-L/IMPLIB:$lib" "-od$objectsDirectory" "-of$dll"</OneStepBuildArgs>
+			<OneStepBuildArgs>-O -release $sources $libs $includes "-L/IMPLIB:$lib" "-od$objectsDirectory" "-of$dll"</OneStepBuildArgs>
 		</ReleaseArgs>
 	</TargetConfiguration>
 	
 	<TargetConfiguration Target="StaticLibrary">
 		<LinkerCommand>dmd</LinkerCommand>
 		<DebugArgs>
-			<CompilerArg>-c "$src" "-of$obj" $includes -gc</CompilerArg>
-			<LinkerArgs>-lib "-of$target" $objs</LinkerArgs>
-      		<OneStepBuildArgs>-gc $sources $libs $includes -lib "-od$objectsDirectory" "-of$lib"</OneStepBuildArgs>
+			<OneStepBuildArgs>-gc $sources $libs $includes -lib "-od$objectsDirectory" "-of$lib"</OneStepBuildArgs>
 		</DebugArgs>
 		<ReleaseArgs>
-			<CompilerArg>-c "$src" "-of$obj" $includes -O -release</CompilerArg>
-			<LinkerArgs>-lib "-of$target" $objs</LinkerArgs>
-      		<OneStepBuildArgs>-O $sources $libs $includes -lib "-od$objectsDirectory" "-of$lib" -release</OneStepBuildArgs>
+			<OneStepBuildArgs>-O $sources $libs $includes -lib "-od$objectsDirectory" "-of$lib" -release</OneStepBuildArgs>
 		</ReleaseArgs>
 	</TargetConfiguration>
 </Compiler>

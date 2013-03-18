@@ -121,10 +121,4 @@
   <data name="dmd" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>dmd.xml;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
-  <data name="gdc" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>gdc.xml;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
-  </data>
-  <data name="ldc2" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>ldc2.xml;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
-  </data>
 </root>

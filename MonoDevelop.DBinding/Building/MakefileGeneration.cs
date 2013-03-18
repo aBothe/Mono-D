@@ -61,7 +61,7 @@ namespace MonoDevelop.D.Building
 
 			var linkArgs = ProjectBuilder.FillInMacros (
 				ProjectBuilder.GenAdditionalAttributes(compiler, cfg) + 
-				Arguments.LinkerArguments + " " + cfg.ExtraLinkerArguments,
+				Arguments.LinkerArguments,
                 new DLinkerMacroProvider
                 {
                     ObjectsStringPattern = "{0}",

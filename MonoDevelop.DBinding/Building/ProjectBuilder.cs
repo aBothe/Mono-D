@@ -49,18 +49,6 @@ namespace MonoDevelop.D.Building
 		IArgumentMacroProvider commonMacros;
 		IProgressMonitor monitor;
 		List<string> BuiltObjects = new List<string> ();
-
-		/// <summary>
-		/// In this list, all directories of files that are 'linked' to the project are put in.
-		/// Used for multiple-step building only.
-		/// </summary>
-		List<string> FileLinkDirectories = new List<string>();
-
-		public bool CanDoOneStepBuild {
-			get {
-				return Project.PreferOneStepBuild && BuildArguments.SupportsOneStepBuild;
-			}
-		}
         #endregion
 
 		protected ProjectBuilder (IProgressMonitor monitor)
@@ -97,10 +85,7 @@ namespace MonoDevelop.D.Building
 			if (!Directory.Exists (AbsoluteObjectDirectory))
 				Directory.CreateDirectory (AbsoluteObjectDirectory);
 
-			if (CanDoOneStepBuild)
-				return DoOneStepBuild ();
-			else
-				return DoStepByStepBuild ();
+			return DoOneStepBuild ();
 		}
 
 		BuildResult DoOneStepBuild ()
@@ -145,8 +130,6 @@ namespace MonoDevelop.D.Building
 			rawArgumentString.Append(BuildArguments.OneStepBuildArguments.Trim());
 			if(!string.IsNullOrEmpty(BuildConfig.ExtraCompilerArguments))
 				rawArgumentString.Append(' ').Append(BuildConfig.ExtraCompilerArguments.Trim());
-			if (!string.IsNullOrEmpty(BuildConfig.ExtraLinkerArguments))
-				rawArgumentString.Append(' ').Append(PrefixedExtraLinkerFlags);
 
 			var argumentString = FillInMacros(rawArgumentString.ToString(),
 			new OneStepBuildArgumentMacroProvider
@@ -189,114 +172,6 @@ namespace MonoDevelop.D.Building
 			HandleReturnCode(br, linkerExecutable, exitCode);
 
 			return br;
-		}
-
-		BuildResult DoStepByStepBuild ()
-		{
-			monitor.BeginTask ("Build Project", Project.Files.Count + 1);
-
-            monitor.Log.WriteLine("Current dictionary: "+Project.BaseDirectory);
-
-			var br = new BuildResult ();
-			var modificationsDone = false;
-
-			FileLinkDirectories.Clear();
-			foreach (var f in Project.Files)
-			{
-				if (!f.IsLink || !f.IsExternalToProject || f.BuildAction != BuildAction.Compile)
-					continue;
-
-				FileLinkDirectories.Add(f.FilePath.ParentDirectory);
-			}
-
-			foreach (var f in Project.Files) {
-				if (monitor.IsCancelRequested)
-					return br;
-
-				// If not compilable, skip it
-				if (f.BuildAction != BuildAction.Compile || !File.Exists (f.FilePath))
-					continue;
-				
-				// a.Check if source file was modified and if object file still exists
-				if (Project.EnableIncrementalLinking &&
-                    !string.IsNullOrEmpty (f.LastGenOutput) && 
-                    File.Exists (Path.IsPathRooted(f.LastGenOutput) ? f.LastGenOutput : Project.BaseDirectory.Combine(f.LastGenOutput).ToString()) &&
-                    Project.LastModificationTimes.ContainsKey (f) &&
-                    Project.LastModificationTimes [f] == File.GetLastWriteTime (f.FilePath)) {
-					// File wasn't edited since last build
-					// but add the built object to the objs array
-					BuiltObjects.Add (f.LastGenOutput);
-					monitor.Step (1);
-					continue;
-				}
-
-				modificationsDone = true;
-
-				if (f.Name.EndsWith (".rc", StringComparison.OrdinalIgnoreCase))
-					CompileResourceScript (br, f);
-				else
-					CompileSource (br, f);
-
-				monitor.Step (1);
-			}
-
-			if (br.FailedBuildCount == 0) 
-				LinkToTarget (br, !Project.EnableIncrementalLinking || modificationsDone);
-
-			monitor.EndTask ();
-
-			return br;
-		}
-
-		bool CompileSource (BuildResult targetBuildResult, ProjectFile f)
-		{
-			if (File.Exists (f.LastGenOutput))
-				File.Delete (f.LastGenOutput);
-
-			var obj = GetRelativeObjectFileName (ObjectDirectory,f, DCompilerService.ObjectExtension);
-
-			// Create argument string for source file compilation.
-			var dmdArgs = FillInMacros((string.IsNullOrEmpty(AdditionalCompilerAttributes) ? string.Empty : (AdditionalCompilerAttributes.Trim() + " ")) +
-			                           BuildArguments.CompilerArguments.Trim() + 
-			                           (string.IsNullOrEmpty(BuildConfig.ExtraCompilerArguments) ? string.Empty : (" " + BuildConfig.ExtraCompilerArguments.Trim())),
-			new DCompilerMacroProvider
-            {
-                IncludePathConcatPattern = Compiler.ArgumentPatterns.IncludePathPattern,
-                SourceFile = f.FilePath.ToRelative(Project.BaseDirectory),
-                ObjectFile = obj,
-				Includes = FillCommonMacros(Project.IncludePaths).Union(FileLinkDirectories),
-            },commonMacros);
-
-			// b.Execute compiler
-			string stdError;
-			string stdOutput;
-
-			var compilerExecutable = Compiler.SourceCompilerCommand;
-			if (!Path.IsPathRooted (compilerExecutable) && !string.IsNullOrEmpty(Compiler.BinPath)) {
-				compilerExecutable = Path.Combine (Compiler.BinPath, Compiler.SourceCompilerCommand);
-
-				if (!File.Exists (compilerExecutable))
-					compilerExecutable = Compiler.SourceCompilerCommand;
-			}
-
-			int exitCode = ExecuteCommand (compilerExecutable, dmdArgs, Project.BaseDirectory, monitor, out stdError, out stdOutput);
-
-			HandleCompilerOutput (targetBuildResult, stdError);
-			HandleCompilerOutput (targetBuildResult, stdOutput);
-			HandleReturnCode (targetBuildResult, compilerExecutable, exitCode);
-
-			if (exitCode != 0) {
-				targetBuildResult.FailedBuildCount++;
-				return false;
-			} else {
-				f.LastGenOutput = obj;
-
-				targetBuildResult.BuildCount++;
-				Project.LastModificationTimes [f] = File.GetLastWriteTime (f.FilePath);
-
-				BuiltObjects.Add (obj);
-				return true;
-			}
 		}
 
 		bool CompileResourceScript (BuildResult targetBuildResult, ProjectFile f)
@@ -344,50 +219,6 @@ namespace MonoDevelop.D.Building
 			}
 		}
 
-		void LinkToTarget (BuildResult br, bool modificationsDone)
-		{
-			/// The target file to which all objects will be linked to
-			var LinkTargetFile = Project.GetOutputFileName (BuildConfig.Selector);
-
-			if (!modificationsDone &&
-                File.Exists (LinkTargetFile)) {
-				monitor.ReportSuccess ("Build successful! - No new linkage needed");
-				monitor.Step (1);
-				return;
-			}
-
-			// b.Build linker argument string
-			// Build argument preparation
-			var linkArgs = FillInMacros (BuildArguments.LinkerArguments.Trim() + 
-			                             (string.IsNullOrEmpty(BuildConfig.ExtraLinkerArguments) ? string.Empty : (" " + BuildConfig.ExtraLinkerArguments.Trim())),
-                new DLinkerMacroProvider
-                {
-                    ObjectsStringPattern = Compiler.ArgumentPatterns.ObjectFileLinkPattern,
-                    Objects = BuiltObjects.ToArray (),
-                    TargetFile = LinkTargetFile,
-                    RelativeTargetDirectory = BuildConfig.OutputDirectory.ToRelative (Project.BaseDirectory),
-                    Libraries = GetLibraries(BuildConfig, Compiler)
-                },commonMacros);
-
-			var linkerOutput = "";
-			var linkerErrorOutput = "";
-
-			var linkerExecutable = LinkTargetCfg.Linker;
-			if (!Path.IsPathRooted (linkerExecutable) && !string.IsNullOrEmpty(Compiler.BinPath)) {
-				linkerExecutable = Path.Combine (Compiler.BinPath, LinkTargetCfg.Linker);
-
-				if (!File.Exists (linkerExecutable))
-					linkerExecutable = LinkTargetCfg.Linker;
-			}
-
-			int exitCode = ExecuteCommand (linkerExecutable, linkArgs, Project.BaseDirectory, monitor,
-                out linkerErrorOutput,
-                out linkerOutput);
-
-			HandleOptLinkOutput (br, linkerOutput);
-			HandleReturnCode (br, linkerExecutable, exitCode);
-		}
-
         #region File naming
 		public static string EnsureCorrectPathSeparators (string file)
 		{
@@ -413,45 +244,6 @@ namespace MonoDevelop.D.Building
         #endregion
 
         #region Build argument creation
-
-		public string PrefixedExtraLinkerFlags
-		{
-			get
-			{
-				var linkerRedirectPrefix = Compiler.ArgumentPatterns.LinkerRedirectPrefix;
-				if (string.IsNullOrWhiteSpace(BuildConfig.ExtraLinkerArguments))
-					return string.Empty;
-
-				var sb = new StringBuilder(BuildConfig.ExtraLinkerArguments);
-				int lastArgStart = -1;
-				bool isInString = false;
-				for (int i = 0; i < sb.Length; i++)
-				{
-					switch(sb[i])
-					{
-						case '\t':
-						case ' ':
-							if(isInString)
-								continue;
-							lastArgStart = -1;
-							break;
-						case '"':
-							isInString = !isInString;
-							goto default;
-						default:
-							if (lastArgStart == -1)
-							{
-								lastArgStart = i;
-								sb.Insert(i, linkerRedirectPrefix);
-								i += linkerRedirectPrefix.Length;
-							}
-							break;
-					}
-				}
-				return sb.ToString();
-			}
-		}
-
 		/// <summary>
 		/// Scans through RawArgumentString for macro uses (e.g. -of"$varname") and replace found variable matches with values provided by MacroProvider
 		/// </summary>
