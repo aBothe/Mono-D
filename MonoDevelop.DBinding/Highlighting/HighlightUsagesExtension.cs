@@ -1,5 +1,4 @@
-﻿#define STABLE
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using D_Parser.Dom;
@@ -146,13 +145,8 @@ namespace MonoDevelop.D.Highlighting
 			{
 				drawBg = false;
 				
-#if STABLE
-				var color_Bg = (HslColor)editor.ColorStyle.BracketHighlightRectangle.BackgroundColor;
-				var color_Rect=(HslColor)editor.ColorStyle.BracketHighlightRectangle.Color;
-#else
 				var color_Bg = (HslColor)editor.ColorStyle.UsagesRectangle.GetColor("secondcolor");
 				var color_Rect = (HslColor)editor.ColorStyle.UsagesRectangle.GetColor("color");
-#endif
 
 				if (selectionStart >= 0 || editor.CurrentMode is TextLinkEditMode || editor.TextViewMargin.SearchResultMatchCount > 0)
 					return true;

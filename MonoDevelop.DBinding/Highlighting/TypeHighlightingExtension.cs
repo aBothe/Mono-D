@@ -1,5 +1,4 @@
-﻿#define STABLE
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -179,11 +178,7 @@ namespace MonoDevelop.D.Highlighting
 				if (@from < to)
 				{
 					cr.DrawLine(
-#if STABLE
-						editor.ColorStyle.GetChunkStyle(style).CairoColor
-#else
-						editor.ColorStyle.GetChunkStyle(style).Foreground
-#endif					
+						editor.ColorStyle.GetChunkStyle(style).Foreground				
 						,@from,
 						y + editor.LineHeight,
 						to,

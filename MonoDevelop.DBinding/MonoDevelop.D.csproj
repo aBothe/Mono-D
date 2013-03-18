@@ -303,14 +303,11 @@
     <EmbeddedResource Include="templates\SharedLibrary.xpt.xml" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="DSyntaxHighlightingMode.4.0.1.xml">
-      <SubType>Designer</SubType>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="DSyntaxHighlightingMode.xml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
     <EmbeddedResource Include="templates\EmptyDClass.xft.xml" />
     <EmbeddedResource Include="templates\Win32Project.xpt.xml">
       <SubType>Designer</SubType>

@@ -1,5 +1,4 @@
-﻿#define STABLE
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
 using Mono.TextEditor;
@@ -18,18 +17,11 @@ namespace MonoDevelop.D.Highlighting
 
 			if (baseMode == null)
 			{
-#if STABLE
-				var provider = new ResourceXmlProvider(typeof(DSyntaxMode).Assembly,
-					typeof(DSyntaxMode).Assembly.GetManifestResourceNames().First(s => s.Contains("MonoDevelop.D.DSyntaxHighlightingMode")));
-				using (XmlReader reader = provider.Open())
-					baseMode = SyntaxMode.Read(reader);
-#else
 				var provider = new ResourceStreamProvider(
 					typeof(DSyntaxMode).Assembly,
 					typeof(DSyntaxMode).Assembly.GetManifestResourceNames().First(s => s.Contains("DSyntaxHighlightingMode")));
 				using (Stream s = provider.Open())
 					baseMode = SyntaxMode.Read(s);
-#endif
 			}
 
 			this.rules = new List<Rule>(baseMode.Rules);
@@ -44,11 +36,7 @@ namespace MonoDevelop.D.Highlighting
 
 			// D Number literals
 			matches.Add(workaroundMatchCtor(
-#if STABLE
-				"constant.digit"
-#else
-				"Number"
-#endif			
+				"Number"			
 				, @"(?<!\w)(0((x|X)[0-9a-fA-F_]+|(b|B)[0-1_]+)|([0-9]+[_0-9]*)[L|U|u|f|i]*)"));
 			
 			// extern linkages attributes
