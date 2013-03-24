@@ -116,11 +116,11 @@ namespace MonoDevelop.D.Parser
 			#region Provide comment fold support by addin them to the IDE document object
 			foreach (var cm in parser.TrackerVariables.Comments)
 			{
-				var c = new MonoDevelop.Ide.TypeSystem.Comment(cm.CommentText);
-
-				c.CommentType = cm.CommentType.HasFlag(D_Parser.Parser.Comment.Type.Block) ? CommentType.Block : CommentType.SingleLine;
-				c.IsDocumentation = cm.CommentType.HasFlag(D_Parser.Parser.Comment.Type.Documentation);
-
+				var c = new MonoDevelop.Ide.TypeSystem.Comment(cm.CommentText){
+					CommentStartsLine = cm.CommentStartsLine,
+					CommentType = (cm.CommentType & D_Parser.Parser.Comment.Type.Block) != 0 ? CommentType.Block : CommentType.SingleLine,
+					IsDocumentation = cm.CommentType.HasFlag(D_Parser.Parser.Comment.Type.Documentation),
+				};
 				if (c.CommentType == CommentType.SingleLine)
 				{
 					if (c.IsDocumentation)
@@ -147,10 +147,10 @@ namespace MonoDevelop.D.Parser
 				doc.Comments.Add(c);
 
 				// Enlist TODO/FIXME/HACK etc. stuff in the IDE's project task list
-				foreach (var sct in CommentTag.SpecialCommentTags)
-					if (c.Text.StartsWith(sct.Tag))
+				for (int i = CommentTag.SpecialCommentTags.Count-1; i >= 0 ; i--)
+					if (c.Text.StartsWith(CommentTag.SpecialCommentTags[i].Tag))
 					{
-						doc.Add(new Tag(sct.Tag, c.Text, c.Region));
+						doc.Add(new Tag(CommentTag.SpecialCommentTags[i].Tag, c.Text, c.Region));
 						break;
 					}
 			}

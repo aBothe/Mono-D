@@ -66,26 +66,48 @@ namespace MonoDevelop.D.Parser
 				GenerateFoldsInternal(l, DDom);
 
 				// Get member block regions
-				var memberRegions = new List<DomRegion>();
-				foreach (var i in l)
-					if (i.Type == FoldType.Member)
-						memberRegions.Add(i.Region);
-
+				var memberRegions = new List<FoldingRegion>();
+				for (int i = l.Count-1; i >= 0; i--)
+					if (l[i].Type == FoldType.Member)
+						memberRegions.Add(l[i]);
+				
 				// Add multiline comment folds
-				foreach (var c in Comments)
+				for(int i = 0; i < Comments.Count; i++)
 				{
-					if (c.CommentType == CommentType.SingleLine)
-						continue;
+					var c = Comments[i];
 
 					bool IsMemberComment = false;
-
-					foreach (var i in memberRegions)
-						if (i.IsInside(c.Region.Begin))
+					for (int k = memberRegions.Count-1; k >= 0; k--)
+						if (memberRegions[k].Region.IsInside(c.Region.Begin))
 						{
 							IsMemberComment = true;
 							break;
 						}
 
+					if (c.CommentType == CommentType.SingleLine)
+					{
+						int nextIndex = i + 1;
+						Comment lastComment = null;
+						for (int j=i+1; j < Comments.Count; j++)
+						{
+							lastComment = Comments[j];
+							if (lastComment.CommentType != c.CommentType || 
+								lastComment.Region.BeginColumn != c.Region.BeginColumn ||
+								lastComment.Region.BeginLine != Comments[j-1].Region.BeginLine + 1)
+							{
+								lastComment = j == nextIndex ? null : Comments[j - 1];
+								break;
+							}
+							i++;
+						}
+
+						if (lastComment == null)
+							continue;
+
+						l.Add(new FoldingRegion(new DomRegion(c.Region.BeginLine, c.Region.BeginColumn, lastComment.Region.BeginLine, lastComment.Region.EndColumn+1), 
+							IsMemberComment ? FoldType.CommentInsideMember : FoldType.Comment));
+					}
+					else
 					l.Add(new FoldingRegion(c.Region, IsMemberComment ? FoldType.CommentInsideMember : FoldType.Comment));
 				}
 
