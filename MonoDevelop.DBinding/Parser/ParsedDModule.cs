@@ -140,6 +140,24 @@ namespace MonoDevelop.D.Parser
 			if (block.Count > 0)
 				foreach (var n in block)
 					GenerateFoldsInternal(l,n as IBlockNode);
+
+			if (block is DBlockNode)
+			{
+				var dbn = block as DBlockNode;
+				if (dbn.MetaBlocks != null)
+				{
+					for (int i = dbn.MetaBlocks.Count - 1; i >= 0; i--)
+					{
+						var mdb = dbn.MetaBlocks[i] as IMetaDeclarationBlock;
+						if (mdb != null)
+						{
+							l.Add(new FoldingRegion(
+								new DomRegion(mdb.BlockStartLocation.Line, mdb.BlockStartLocation.Column, mdb.EndLocation.Line, mdb.EndLocation.Column),
+								FoldType.Undefined));
+						}
+					}
+				}
+			}
 		}
 
 		public static DomRegion GetBlockBodyRegion(IBlockNode n)
