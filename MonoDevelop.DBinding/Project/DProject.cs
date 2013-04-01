@@ -20,6 +20,7 @@ using MonoDevelop.Ide.Gui;
 using MonoDevelop.Components.Commands;
 using MonoDevelop.D.Profiler.Commands;
 using MonoDevelop.D.Resolver;
+using MonoDevelop.D.Tools;
 
 namespace MonoDevelop.D
 {
@@ -27,6 +28,9 @@ namespace MonoDevelop.D
 	public class DProject:Project, ICustomDataItem
 	{
 		#region Properties
+
+		ProjectTools hooks;
+
 		/// <summary>
 		/// Used for incremental compiling&linking
 		/// </summary>
@@ -241,6 +245,7 @@ namespace MonoDevelop.D
 		#region Init
 		void Init ()
 		{
+			hooks = new ProjectTools(this);
 			LocalFileCache.FinishedParsing += new D_Parser.Misc.ParseCache.ParseFinishedHandler(LocalFileCache_FinishedParsing);
 			LocalIncludeCache.FinishedParsing += new D_Parser.Misc.ParseCache.ParseFinishedHandler(LocalIncludeCache_FinishedParsing);
 		}

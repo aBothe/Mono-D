@@ -81,6 +81,9 @@
       <HintPath>..\ext\Mono.Addins.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\ext\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Data" />
@@ -228,6 +231,7 @@
     <Compile Include="Gui\ExpressionEvaluationWidget.cs" />
     <Compile Include="Gui\MixinInsightExtension.cs" />
     <Compile Include="Gui\DDebugValueTooltipProvider.cs" />
+    <Compile Include="Tools\ToolManager.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
