@@ -228,6 +228,12 @@ namespace MonoDevelop.D.OptionPanels
 		{
 			OnUseDefaultCompilerChanged ();
 		}
+
+		protected void OnCheckEnableBuildCmdOverrideToggled (object sender, EventArgs e)
+		{
+			table_CompilingTab.Sensitive = table_LinkingTab.Sensitive = !check_EnableBuildCmdOverride.Active;
+			table_CustomBuildTools.Sensitive = check_EnableBuildCmdOverride.Active;
+		}
 	}
 	
 	public class ProjectOptionsBinding : MultiConfigItemOptionsPanel
