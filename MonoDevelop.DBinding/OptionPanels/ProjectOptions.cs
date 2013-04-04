@@ -90,7 +90,6 @@ namespace MonoDevelop.D.OptionPanels
 				} while (model_compileTarget.IterNext (ref iter));
 			
 			text_Libraries.Buffer.Text = string.Join ("\n", config.ExtraLibraries);
-			text_Includes.Buffer.Text = string.Join ("\n", proj.LocalIncludeCache.ParsedDirectories);
 		}
 		
 		public bool Store ()
@@ -125,56 +124,10 @@ namespace MonoDevelop.D.OptionPanels
 			// Store libs
 			configuration.ExtraLibraries.Clear ();
 			configuration.ExtraLibraries.AddRange (text_Libraries.Buffer.Text.Split (new[]{'\n'}, StringSplitOptions.RemoveEmptyEntries));
-			
-			// Store includes
-			#region Store new include paths
-			var paths = text_Includes.Buffer.Text.Split (new[]{'\n'}, StringSplitOptions.RemoveEmptyEntries);
 
-			// Remove trailing / and \
-			for (int i = 0; i < paths.Length; i++)
-				paths[i] = paths[i].TrimEnd('\\','/');
-
-			if (project.LocalIncludeCache.UpdateRequired (paths)) {
-				project.LocalIncludeCache.ParsedDirectories.Clear ();
-				project.LocalIncludeCache.ParsedDirectories.AddRange (paths);
-
-				try {
-					// Update parse cache immediately
-					DCompilerConfiguration.UpdateParseCacheAsync (project.LocalIncludeCache);
-				} catch (Exception ex) {
-					LoggingService.LogError ("Include path analysis error", ex);
-				}
-			}
-			#endregion
-			
 			return true;
 		}
 		
-		protected void OnButtonAddIncludeClicked (object sender, System.EventArgs e)
-		{
-			var dialog = new Gtk.FileChooserDialog (
-				"Select D Source Folder",
-				Ide.IdeApp.Workbench.RootWindow,
-				Gtk.FileChooserAction.SelectFolder,
-				"Cancel",
-				Gtk.ResponseType.Cancel,
-				"Ok",
-				Gtk.ResponseType.Ok) 
-			{ 
-				TransientFor=Toplevel as Gtk.Window,
-				WindowPosition = Gtk.WindowPosition.Center
-			};
-
-			try {
-                if (dialog.Run() == (int)Gtk.ResponseType.Ok)
-                {
-                    text_Includes.Buffer.Text += (text_Includes.Buffer.CharCount==0?"":"\n") + string.Join("\n", dialog.Filenames);
-                }
-			} finally {
-				dialog.Destroy ();
-			}
-		}
-			
 		protected virtual void OnUseDefaultCompilerChanged ()
 		{
 			cmbCompiler.Sensitive = (!cbUseDefaultCompiler.Active);	

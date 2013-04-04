@@ -8,316 +8,318 @@
 	category="Language bindings"
 	version="0.5.2.1">
 
-  <!-- Resources -->
+	<!-- Resources -->
 
-  <Dependencies>
-	<Addin id="Ide" version="4.0" />
-	<Addin id="Core" version="4.0" />
-	<Addin id="SourceEditor2" version = "4.0" />
-	<Addin id="DesignerSupport" version = "4.0" />
-  <Addin id="Refactoring" version="4.0"/>
-  </Dependencies>
+	<Dependencies>
+		<Addin id="Ide" version="4.0" />
+		<Addin id="Core" version="4.0" />
+		<Addin id="SourceEditor2" version = "4.0" />
+		<Addin id="DesignerSupport" version = "4.0" />
+		<Addin id="Refactoring" version="4.0"/>
+	</Dependencies>
 
-  <Runtime>
-	<Import assembly="D_Parser.dll"/>
-  </Runtime>
+	<Runtime>
+		<Import assembly="D_Parser.dll"/>
+	</Runtime>
 
-  <Extension path = "/MonoDevelop/Core/StockIcons">
-	<!-- File/Project icons -->
-	<StockIcon stockid = "d-file" resource = "dfile16.png" />
-	<StockIcon stockid = "d-project" resource = "dproj16.png" />
-	<StockIcon stockid = "d-file32" resource = "MonoDevelop.D.icons.dfile32.png" />
-	<StockIcon stockid = "d-project32" resource = "MonoDevelop.D.icons.dproj32.png" />
+	<Extension path = "/MonoDevelop/Core/StockIcons">
+		<!-- File/Project icons -->
+		<StockIcon stockid = "d-file" resource = "dfile16.png" />
+		<StockIcon stockid = "d-project" resource = "dproj16.png" />
+		<StockIcon stockid = "d-file32" resource = "MonoDevelop.D.icons.dfile32.png" />
+		<StockIcon stockid = "d-project32" resource = "MonoDevelop.D.icons.dproj32.png" />
 
-	<!-- Class-like -->
-	<StockIcon stockid = "md-template" icon = "res:code-template-16.png" size="Menu"/>
-	<StockIcon stockid = "md-private-template" icon = "res:code-template-16.png|res:visibility-private-16.png" size="Menu"/>
-	<StockIcon stockid = "md-protected-template" icon = "res:code-template-16.png|res:visibility-protected-16.png" size="Menu"/>
-	<StockIcon stockid = "md-internal-template" icon = "res:code-template-16.png|res:visibility-internal-16.png" size="Menu"/>
+		<!-- Class-like -->
+		<StockIcon stockid = "md-template" icon = "res:code-template-16.png" size="Menu"/>
+		<StockIcon stockid = "md-private-template" icon = "res:code-template-16.png|res:visibility-private-16.png" size="Menu"/>
+		<StockIcon stockid = "md-protected-template" icon = "res:code-template-16.png|res:visibility-protected-16.png" size="Menu"/>
+		<StockIcon stockid = "md-internal-template" icon = "res:code-template-16.png|res:visibility-internal-16.png" size="Menu"/>
 
-	<StockIcon stockid = "md-union" icon = "res:MonoDevelop.D.icons.element-union-16.png" size="Menu"/>
-	<StockIcon stockid = "md-private-union" icon = "res:MonoDevelop.D.icons.element-union-16.png|res:visibility-private-16.png" size="Menu"/>
-	<StockIcon stockid = "md-protected-union" icon = "res:MonoDevelop.D.icons.element-union-16.png|res:visibility-protected-16.png" size="Menu"/>
-	<StockIcon stockid = "md-internal-union" icon = "res:MonoDevelop.D.icons.element-union-16.png|res:visibility-internal-16.png" size="Menu"/>
+		<StockIcon stockid = "md-union" icon = "res:MonoDevelop.D.icons.element-union-16.png" size="Menu"/>
+		<StockIcon stockid = "md-private-union" icon = "res:MonoDevelop.D.icons.element-union-16.png|res:visibility-private-16.png" size="Menu"/>
+		<StockIcon stockid = "md-protected-union" icon = "res:MonoDevelop.D.icons.element-union-16.png|res:visibility-protected-16.png" size="Menu"/>
+		<StockIcon stockid = "md-internal-union" icon = "res:MonoDevelop.D.icons.element-union-16.png|res:visibility-internal-16.png" size="Menu"/>
 
-	<StockIcon stockid = "md-class-static" icon = "res:element-class-16.png|res:static-16.png" size="Menu"/>
-	<StockIcon stockid = "md-private-class-static" icon = "res:element-class-16.png|res:visibility-private-16.png|res:static-16.png" size="Menu"/>
-	<StockIcon stockid = "md-protected-class-static" icon = "res:element-class-16.png|res:visibility-protected-16.png|res:static-16.png" size="Menu"/>
-	<StockIcon stockid = "md-internal-class-static" icon = "res:element-class-16.png|res:visibility-internal-16.png|res:static-16.png" size="Menu"/>
+		<StockIcon stockid = "md-class-static" icon = "res:element-class-16.png|res:static-16.png" size="Menu"/>
+		<StockIcon stockid = "md-private-class-static" icon = "res:element-class-16.png|res:visibility-private-16.png|res:static-16.png" size="Menu"/>
+		<StockIcon stockid = "md-protected-class-static" icon = "res:element-class-16.png|res:visibility-protected-16.png|res:static-16.png" size="Menu"/>
+		<StockIcon stockid = "md-internal-class-static" icon = "res:element-class-16.png|res:visibility-internal-16.png|res:static-16.png" size="Menu"/>
 
-	<StockIcon stockid = "md-class-abstract" icon = "res:element-abstract-class-16.png" size="Menu"/>
-	<StockIcon stockid = "md-private-class-abstract" icon = "res:element-abstract-class-16.png|res:visibility-private-16.png" size="Menu"/>
-	<StockIcon stockid = "md-protected-class-abstract" icon = "res:element-abstract-class-16.png|res:visibility-protected-16.png" size="Menu"/>
-	<StockIcon stockid = "md-internal-class-abstract" icon = "res:element-abstract-class-16.png|res:visibility-internal-16.png" size="Menu"/>
+		<StockIcon stockid = "md-class-abstract" icon = "res:element-abstract-class-16.png" size="Menu"/>
+		<StockIcon stockid = "md-private-class-abstract" icon = "res:element-abstract-class-16.png|res:visibility-private-16.png" size="Menu"/>
+		<StockIcon stockid = "md-protected-class-abstract" icon = "res:element-abstract-class-16.png|res:visibility-protected-16.png" size="Menu"/>
+		<StockIcon stockid = "md-internal-class-abstract" icon = "res:element-abstract-class-16.png|res:visibility-internal-16.png" size="Menu"/>
 
-	<StockIcon stockid = "md-class-static-abstract" icon = "res:element-abstract-class-16.png|res:static-16.png" size="Menu"/>
-	<StockIcon stockid = "md-private-class-static-abstract" icon = "res:element-abstract-class-16.png|res:visibility-private-16.png|res:static-16.png" size="Menu"/>
-	<StockIcon stockid = "md-protected-class-static-abstract" icon = "res:element-abstract-class-16.png|res:visibility-protected-16.png|res:static-16.png" size="Menu"/>
-	<StockIcon stockid = "md-internal-class-static-abstract" icon = "res:element-abstract-class-16.png|res:visibility-internal-16.png|res:static-16.png" size="Menu"/>
-
-
-	<!-- Methods -->
-	<StockIcon stockid = "md-method-static" icon = "res:element-method-16.png|res:static-16.png" size="Menu"/>
-	<StockIcon stockid = "md-private-method-static" icon = "res:element-method-16.png|res:visibility-private-16.png|res:static-16.png" size="Menu"/>
-	<StockIcon stockid = "md-protected-method-static" icon = "res:element-method-16.png|res:visibility-protected-16.png|res:static-16.png" size="Menu"/>
-	<StockIcon stockid = "md-internal-method-static" icon = "res:element-method-16.png|res:visibility-internal-16.png|res:static-16.png" size="Menu"/>
-
-	<StockIcon stockid = "md-method-abstract" icon = "res:element-abstract-method-16.png" size="Menu"/>
-	<StockIcon stockid = "md-protected-method-abstract" icon = "res:element-abstract-method-16.png|res:visibility-protected-16.png" size="Menu"/>
-	<StockIcon stockid = "md-internal-method-abstract" icon = "res:element-abstract-method-16.png|res:visibility-internal-16.png" size="Menu"/>
-
-	<StockIcon stockid = "md-method-override" icon = "res:element-extensionmethod-16.png" size="Menu"/>
-	<StockIcon stockid = "md-protected-method-override" icon = "res:element-extensionmethod-16.png|res:visibility-protected-16.png" size="Menu"/>
-	<StockIcon stockid = "md-internal-method-override" icon = "res:element-extensionmethod-16.png|res:visibility-internal-16.png" size="Menu"/>
-
-	
-	<!-- Variables -->
-	<StockIcon stockid = "d-parameter" icon = "res:element-parameter-16.png" size="Menu"/>
-	<StockIcon stockid = "d-ref-parameter" icon = "res:element-parameter-16.png|res:ref-16.png" size="Menu"/>
-	<StockIcon stockid = "d-out-parameter" icon = "res:element-parameter-16.png|res:out-16.png" size="Menu"/>
-	<StockIcon stockid = "d-lazy-parameter" icon = "res:element-parameter-16.png|res:lazy-16.png" size="Menu"/>
-
-	<StockIcon stockid = "d-alias" resource="MonoDevelop.D.icons.element-alias-16.png" size="Menu"/>
-	<StockIcon stockid = "d-private-alias" icon = "res:MonoDevelop.D.icons.element-alias-16.png|res:visibility-private-16.png" size="Menu"/>
-	<StockIcon stockid = "d-protected-alias" icon = "res:MonoDevelop.D.icons.element-alias-16.png|res:visibility-protected-16.png" size="Menu"/>
-	<StockIcon stockid = "d-internal-alias" icon = "res:MonoDevelop.D.icons.element-alias-16.png|res:visibility-internal-16.png" size="Menu"/>
-
-	<StockIcon stockid = "md-private-literal" icon = "res:element-literal-16.png|res:visibility-private-16.png" size="Menu"/>
-	<StockIcon stockid = "md-protected-literal" icon = "res:element-literal-16.png|res:visibility-protected-16.png" size="Menu"/>
-	<StockIcon stockid = "md-internal-literal" icon = "res:element-literal-16.png|res:visibility-internal-16.png" size="Menu"/>
-
-	<StockIcon stockid = "md-literal-static" icon = "res:element-literal-16.png|res:static-16.png" size="Menu"/>
-	<StockIcon stockid = "md-private-literal-static" icon = "res:element-literal-16.png|res:visibility-private-16.png|res:static-16.png" size="Menu"/>
-	<StockIcon stockid = "md-protected-literal-static" icon = "res:element-literal-16.png|res:visibility-protected-16.png|res:static-16.png" size="Menu"/>
-	<StockIcon stockid = "md-internal-literal-static" icon = "res:element-literal-16.png|res:visibility-internal-16.png|res:static-16.png" size="Menu"/>
-
-	<StockIcon stockid = "md-field-static" icon = "res:element-field-16.png|res:static-16.png" size="Menu"/>
-	<StockIcon stockid = "md-private-field-static" icon = "res:element-field-16.png|res:visibility-private-16.png|res:static-16.png" size="Menu"/>
-	<StockIcon stockid = "md-protected-field-static" icon = "res:element-field-16.png|res:visibility-protected-16.png|res:static-16.png" size="Menu"/>
-	<StockIcon stockid = "md-internal-field-static" icon = "res:element-field-16.png|res:visibility-internal-16.png|res:static-16.png" size="Menu"/>
-	
-  </Extension>
-
-  <Extension path = "/MonoDevelop/Ide/FileFilters">
-	<FileFilter id = "D"
-				insertbefore="AllFiles"
-				_label = "D Files"
-							extensions = "*.d,*.di"/>
-
-	<FileFilter id="RC"
-							insertbefore="AllFiles"
-							_label="Resource Scripts"
-							extensions="*.rc"/>
-  </Extension>
-
-  <Extension path = "/MonoDevelop/Core/MimeTypes">
-	<MimeType id="text/x-d" _description="D source code" icon="d-file" isText="true">
-	  <File pattern="*.d" />
-	  <File pattern="*.di" />
-	</MimeType>
-
-	<MimeType id="text/x-d" _description="Resource script code" icon="md-resource-file-icon" isText="true">
-	  <File pattern="*.rc" />
-	</MimeType>
-  </Extension>
-
-  <Extension path = "/MonoDevelop/ProjectModel/Gui/MimeTypePolicyPanels">
-	<Panel id = "DFormatting" _label = "D Format" mimeType="text/x-d" class="MonoDevelop.D.Formatting.FormattingPanel" />
-  </Extension>
-
-  <Extension path = "/MonoDevelop/ProjectModel/PolicySets/Mono" >
-	<Policies resource="MonoDevelop.D.Formatting.DPolicy.xml" />
-  </Extension>
-
-  <!-- Language Binding -->
-
-  <Extension path = "/MonoDevelop/ProjectModel/LanguageBindings">
-	<LanguageBinding id    = "D"
-					 supportedextensions = ".d,.di,.rc"
-					 class = "MonoDevelop.D.DLanguageBinding" />
-  </Extension>
+		<StockIcon stockid = "md-class-static-abstract" icon = "res:element-abstract-class-16.png|res:static-16.png" size="Menu"/>
+		<StockIcon stockid = "md-private-class-static-abstract" icon = "res:element-abstract-class-16.png|res:visibility-private-16.png|res:static-16.png" size="Menu"/>
+		<StockIcon stockid = "md-protected-class-static-abstract" icon = "res:element-abstract-class-16.png|res:visibility-protected-16.png|res:static-16.png" size="Menu"/>
+		<StockIcon stockid = "md-internal-class-static-abstract" icon = "res:element-abstract-class-16.png|res:visibility-internal-16.png|res:static-16.png" size="Menu"/>
 
 
-  <!-- File and Project Templates -->
+		<!-- Methods -->
+		<StockIcon stockid = "md-method-static" icon = "res:element-method-16.png|res:static-16.png" size="Menu"/>
+		<StockIcon stockid = "md-private-method-static" icon = "res:element-method-16.png|res:visibility-private-16.png|res:static-16.png" size="Menu"/>
+		<StockIcon stockid = "md-protected-method-static" icon = "res:element-method-16.png|res:visibility-protected-16.png|res:static-16.png" size="Menu"/>
+		<StockIcon stockid = "md-internal-method-static" icon = "res:element-method-16.png|res:visibility-internal-16.png|res:static-16.png" size="Menu"/>
 
-  <Extension path = "/MonoDevelop/Ide/FileTemplates">
-	<FileTemplate id = "DEmptyFile" resource = "EmptyDFile.xft.xml"/>
-	<FileTemplate id = "DNewClass" resource = "MonoDevelop.D.templates.EmptyDClass.xft.xml"/>
-	<FileTemplate id = "RCEmptyFile" resource = "MonoDevelop.D.templates.EmptyRCFile.xft.xml"/>
-  </Extension>
+		<StockIcon stockid = "md-method-abstract" icon = "res:element-abstract-method-16.png" size="Menu"/>
+		<StockIcon stockid = "md-protected-method-abstract" icon = "res:element-abstract-method-16.png|res:visibility-protected-16.png" size="Menu"/>
+		<StockIcon stockid = "md-internal-method-abstract" icon = "res:element-abstract-method-16.png|res:visibility-internal-16.png" size="Menu"/>
 
-  <Extension path="/MonoDevelop/Ide/FileTemplateTypes">
-	<FileTemplateType name = "DFile" class = "MonoDevelop.D.templates.DFileDescriptionTemplate"/>
-  </Extension>
-
-  <Extension path = "/MonoDevelop/Ide/ProjectTemplates">
-	<ProjectTemplate id = "DConsoleProject" resource = "ConsoleProject.xpt.xml"/>
-	<ProjectTemplate id = "DEmptyProject" resource = "EmptyProject.xpt.xml"/>
-	<ProjectTemplate id = "DSharedLibrary" resource = "MonoDevelop.D.templates.SharedLibrary.xpt.xml"/>
-	<ProjectTemplate id = "DStaticLibrary" resource = "MonoDevelop.D.templates.StaticLibrary.xpt.xml"/>
-	<ProjectTemplate id = "DWin32Project" resource = "MonoDevelop.D.templates.Win32Project.xpt.xml"/>
-  </Extension>
+		<StockIcon stockid = "md-method-override" icon = "res:element-extensionmethod-16.png" size="Menu"/>
+		<StockIcon stockid = "md-protected-method-override" icon = "res:element-extensionmethod-16.png|res:visibility-protected-16.png" size="Menu"/>
+		<StockIcon stockid = "md-internal-method-override" icon = "res:element-extensionmethod-16.png|res:visibility-internal-16.png" size="Menu"/>
 
 
-  <!-- Project Binding -->
+		<!-- Variables -->
+		<StockIcon stockid = "d-parameter" icon = "res:element-parameter-16.png" size="Menu"/>
+		<StockIcon stockid = "d-ref-parameter" icon = "res:element-parameter-16.png|res:ref-16.png" size="Menu"/>
+		<StockIcon stockid = "d-out-parameter" icon = "res:element-parameter-16.png|res:out-16.png" size="Menu"/>
+		<StockIcon stockid = "d-lazy-parameter" icon = "res:element-parameter-16.png|res:lazy-16.png" size="Menu"/>
 
-  <Extension path = "/MonoDevelop/ProjectModel/ProjectBindings">
-	<ProjectBinding id = "DProject" class = "MonoDevelop.D.DProjectBinding"/>
-  </Extension>
+		<StockIcon stockid = "d-alias" resource="MonoDevelop.D.icons.element-alias-16.png" size="Menu"/>
+		<StockIcon stockid = "d-private-alias" icon = "res:MonoDevelop.D.icons.element-alias-16.png|res:visibility-private-16.png" size="Menu"/>
+		<StockIcon stockid = "d-protected-alias" icon = "res:MonoDevelop.D.icons.element-alias-16.png|res:visibility-protected-16.png" size="Menu"/>
+		<StockIcon stockid = "d-internal-alias" icon = "res:MonoDevelop.D.icons.element-alias-16.png|res:visibility-internal-16.png" size="Menu"/>
 
-  <Extension path = "/MonoDevelop/ProjectModel/MSBuildItemTypes">
-	<SolutionItem type="MonoDevelop.D.DProject" extension="dproj" guid="{3947E667-4C90-4C3A-BEB9-7148D6FE0D7C}"/>
-  </Extension>
+		<StockIcon stockid = "md-private-literal" icon = "res:element-literal-16.png|res:visibility-private-16.png" size="Menu"/>
+		<StockIcon stockid = "md-protected-literal" icon = "res:element-literal-16.png|res:visibility-protected-16.png" size="Menu"/>
+		<StockIcon stockid = "md-internal-literal" icon = "res:element-literal-16.png|res:visibility-internal-16.png" size="Menu"/>
+
+		<StockIcon stockid = "md-literal-static" icon = "res:element-literal-16.png|res:static-16.png" size="Menu"/>
+		<StockIcon stockid = "md-private-literal-static" icon = "res:element-literal-16.png|res:visibility-private-16.png|res:static-16.png" size="Menu"/>
+		<StockIcon stockid = "md-protected-literal-static" icon = "res:element-literal-16.png|res:visibility-protected-16.png|res:static-16.png" size="Menu"/>
+		<StockIcon stockid = "md-internal-literal-static" icon = "res:element-literal-16.png|res:visibility-internal-16.png|res:static-16.png" size="Menu"/>
+
+		<StockIcon stockid = "md-field-static" icon = "res:element-field-16.png|res:static-16.png" size="Menu"/>
+		<StockIcon stockid = "md-private-field-static" icon = "res:element-field-16.png|res:visibility-private-16.png|res:static-16.png" size="Menu"/>
+		<StockIcon stockid = "md-protected-field-static" icon = "res:element-field-16.png|res:visibility-protected-16.png|res:static-16.png" size="Menu"/>
+		<StockIcon stockid = "md-internal-field-static" icon = "res:element-field-16.png|res:visibility-internal-16.png|res:static-16.png" size="Menu"/>
+
+	</Extension>
+
+	<Extension path = "/MonoDevelop/Ide/FileFilters">
+		<FileFilter id = "D"
+					insertbefore="AllFiles"
+					_label = "D Files"
+								extensions = "*.d,*.di"/>
+
+		<FileFilter id="RC"
+								insertbefore="AllFiles"
+								_label="Resource Scripts"
+								extensions="*.rc"/>
+	</Extension>
+
+	<Extension path = "/MonoDevelop/Core/MimeTypes">
+		<MimeType id="text/x-d" _description="D source code" icon="d-file" isText="true">
+			<File pattern="*.d" />
+			<File pattern="*.di" />
+		</MimeType>
+
+		<MimeType id="text/x-d" _description="Resource script code" icon="md-resource-file-icon" isText="true">
+			<File pattern="*.rc" />
+		</MimeType>
+	</Extension>
+
+	<Extension path = "/MonoDevelop/ProjectModel/Gui/MimeTypePolicyPanels">
+		<Panel id = "DFormatting" _label = "D Format" mimeType="text/x-d" class="MonoDevelop.D.Formatting.FormattingPanel" />
+	</Extension>
+
+	<Extension path = "/MonoDevelop/ProjectModel/PolicySets/Mono" >
+		<Policies resource="MonoDevelop.D.Formatting.DPolicy.xml" />
+	</Extension>
+
+	<!-- Language Binding -->
+
+	<Extension path = "/MonoDevelop/ProjectModel/LanguageBindings">
+		<LanguageBinding id    = "D"
+						 supportedextensions = ".d,.di,.rc"
+						 class = "MonoDevelop.D.DLanguageBinding" />
+	</Extension>
 
 
-  <!-- Project File Serialization Support -->
+	<!-- File and Project Templates -->
 
-  <Extension path = "/MonoDevelop/ProjectModel/MD1SerializationMaps">
-	<SerializationMap resource="MonoDevelop.D.ProjectFormats.xml" />
-  </Extension>
+	<Extension path = "/MonoDevelop/Ide/FileTemplates">
+		<FileTemplate id = "DEmptyFile" resource = "EmptyDFile.xft.xml"/>
+		<FileTemplate id = "DNewClass" resource = "MonoDevelop.D.templates.EmptyDClass.xft.xml"/>
+		<FileTemplate id = "RCEmptyFile" resource = "MonoDevelop.D.templates.EmptyRCFile.xft.xml"/>
+	</Extension>
 
-  <Extension path = "/MonoDevelop/ProjectModel/SerializableClasses">
-	<DataType class = "MonoDevelop.D.DProject" />
-	<DataType class = "MonoDevelop.D.DProjectConfiguration" />
+	<Extension path="/MonoDevelop/Ide/FileTemplateTypes">
+		<FileTemplateType name = "DFile" class = "MonoDevelop.D.templates.DFileDescriptionTemplate"/>
+	</Extension>
 
-	<DataType class = "MonoDevelop.D.Building.DCompilerConfiguration" />
-	<DataType class = "MonoDevelop.D.Building.DArgumentConfiguration" />
-	<DataType class = "MonoDevelop.D.Building.DCompiler" />
-  </Extension>
+	<Extension path = "/MonoDevelop/Ide/ProjectTemplates">
+		<ProjectTemplate id = "DConsoleProject" resource = "ConsoleProject.xpt.xml"/>
+		<ProjectTemplate id = "DEmptyProject" resource = "EmptyProject.xpt.xml"/>
+		<ProjectTemplate id = "DSharedLibrary" resource = "MonoDevelop.D.templates.SharedLibrary.xpt.xml"/>
+		<ProjectTemplate id = "DStaticLibrary" resource = "MonoDevelop.D.templates.StaticLibrary.xpt.xml"/>
+		<ProjectTemplate id = "DWin32Project" resource = "MonoDevelop.D.templates.Win32Project.xpt.xml"/>
+	</Extension>
 
 
-  <!-- Option panels -->
-  <Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Preferences">
-	<Section
-		id = "DGlobalOptions"
-		_label = "D"
-		class = "MonoDevelop.D.OptionPanels.DGlobalOptionsBinding"/>
-  </Extension>
+	<!-- Project Binding -->
 
-  <Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Preferences/DGlobalOptions">
-	<Section
-		id = "DCompilerOptions"
-		_label = "Compiler toolchains"
-		class = "MonoDevelop.D.OptionPanels.DCompilerOptionsBinding"/>
-  </Extension>
+	<Extension path = "/MonoDevelop/ProjectModel/ProjectBindings">
+		<ProjectBinding id = "DProject" class = "MonoDevelop.D.DProjectBinding"/>
+	</Extension>
 
-  <Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Preferences/DGlobalOptions">
-	<Section
-		id = "ResCompilerOptions"
-		_label = "Win32 Resource Compiler"
-		class = "MonoDevelop.D.ResourceCompilerOptionsBinding"/>
-  </Extension>
+	<Extension path = "/MonoDevelop/ProjectModel/MSBuildItemTypes">
+		<SolutionItem type="MonoDevelop.D.DProject" extension="dproj" guid="{3947E667-4C90-4C3A-BEB9-7148D6FE0D7C}"/>
+	</Extension>
 
-  <Extension path = "/MonoDevelop/ProjectModel/Gui/ItemOptionPanels/Build">
-	<Condition id = "ItemType" value = "MonoDevelop.D.DProject">
-	<Section id = "ProjDepPanel" _label = "Dependencies" insertafter = "Compile"
-		  class = "MonoDevelop.D.OptionsPanels.ProjectDependencyPanelBinding"/>
-	  <Section id = "DProjectOptions" _label = "Compiling" insertafter = "Dependencies"
-		  class = "MonoDevelop.D.OptionPanels.ProjectOptionsBinding"/>
-	</Condition>
-  </Extension>
 
-  <!-- Syntax Highlighting and Formatting -->
+	<!-- Project File Serialization Support -->
 
-  <Extension path = "/MonoDevelop/SourceEditor2/CustomModes">
-	<SyntaxMode mimeTypes="text/x-d" class="MonoDevelop.D.Highlighting.DSyntaxMode"/>
-  </Extension>
+	<Extension path = "/MonoDevelop/ProjectModel/MD1SerializationMaps">
+		<SerializationMap resource="MonoDevelop.D.ProjectFormats.xml" />
+	</Extension>
 
-  <Extension path = "/MonoDevelop/Ide/CodeFormatters">
-	<Formatter mimeType="text/x-d" class="MonoDevelop.D.Formatting.DCodeFormatter" />
-  </Extension>
+	<Extension path = "/MonoDevelop/ProjectModel/SerializableClasses">
+		<DataType class = "MonoDevelop.D.DProject" />
+		<DataType class = "MonoDevelop.D.DProjectConfiguration" />
 
-  <!-- Code Completion -->
+		<DataType class = "MonoDevelop.D.Building.DCompilerConfiguration" />
+		<DataType class = "MonoDevelop.D.Building.DArgumentConfiguration" />
+		<DataType class = "MonoDevelop.D.Building.DCompiler" />
+	</Extension>
 
-  <Extension path = "/MonoDevelop/Ide/TextEditorExtensions">
-	<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.Formatting.Indentation.DTextEditorIndentation" />
-  	<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.DEditorCompletionExtension" />
-	<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.Refactoring.RefactoringCommandsExtension" />
 
-	<!-- D Document Outline Provider -->
-	<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.Gui.DModuleOutlineExtension" />
+	<!-- Option panels -->
+	<Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Preferences">
+		<Section
+			id = "DGlobalOptions"
+			_label = "D"
+			class = "MonoDevelop.D.OptionPanels.DGlobalOptionsBinding"/>
+	</Extension>
 
-	<!-- Document path bar extension -->
-	<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.Gui.EditorPathBarExtension" />
-	
-	<Class mimeTypes ="text/x-d" class = "MonoDevelop.D.Gui.MixinInsightExtension" />
+	<Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Preferences/DGlobalOptions">
+		<Section
+			id = "DCompilerOptions"
+			_label = "Compiler toolchains"
+			class = "MonoDevelop.D.OptionPanels.DCompilerOptionsBinding"/>
+	</Extension>
 
-	<!-- Usages highlighting -->
-	<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.Highlighting.HighlightUsagesExtension" />
-	<!--<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.Highlighting.TypeHighlightingExtension" />-->
-  </Extension>
+	<Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Preferences/DGlobalOptions">
+		<Section
+			id = "ResCompilerOptions"
+			_label = "Win32 Resource Compiler"
+			class = "MonoDevelop.D.ResourceCompilerOptionsBinding"/>
+	</Extension>
 
-  <Extension path = "/MonoDevelop/SourceEditor2/TooltipProviders">
-    <Class mimeTypes="text/x-d" id="DDebugTooltips" class="MonoDevelop.D.Gui.DDebugValueTooltipProvider" />
-	<Class mimeTypes="text/x-d" id="DToolTipProvider" class="MonoDevelop.D.Gui.DToolTipProvider" />
-  </Extension>
+	<Extension path = "/MonoDevelop/ProjectModel/Gui/ItemOptionPanels/Build">
+		<Condition id = "ItemType" value = "MonoDevelop.D.DProject">
+			<Section id = "ProjDepPanel" _label = "Project Dependencies" icon = "md-reference-project"
+				  class = "MonoDevelop.D.OptionsPanels.ProjectDependencyPanelBinding"/>
+			<Section id = "ProjIncludePanel" _label = "Includes" icon = "md-reference-folder"
+				  class = "MonoDevelop.D.OptionsPanels.ProjectIncludesWidgetBinding"/>
+			<Section id = "DProjectOptions" _label = "Compiling" insertafter="ProjectConfigurations" icon = "md-build-current-selected-project"
+				class = "MonoDevelop.D.OptionPanels.ProjectOptionsBinding"/>
+		</Condition>
+	</Extension>
 
-  <!-- Code Parsing, Refactoring, Resolving -->
+	<!-- Syntax Highlighting and Formatting -->
 
-  <Extension path = "/MonoDevelop/TypeSystem/Parser">
-	<Parser class = "MonoDevelop.D.Parser.DParserWrapper" mimeType = "text/x-d" />
-  </Extension>
+	<Extension path = "/MonoDevelop/SourceEditor2/CustomModes">
+		<SyntaxMode mimeTypes="text/x-d" class="MonoDevelop.D.Highlighting.DSyntaxMode"/>
+	</Extension>
 
-  <Extension path = "/MonoDevelop/TypeSystem/FoldingParser">
-	<Parser class = "MonoDevelop.D.Parser.FoldingParser" mimeType = "text/x-d" />
-  </Extension>
+	<Extension path = "/MonoDevelop/Ide/CodeFormatters">
+		<Formatter mimeType="text/x-d" class="MonoDevelop.D.Formatting.DCodeFormatter" />
+	</Extension>
 
-  <!-- Context menu extensions -->
-  <Extension path = "/MonoDevelop/Ide/Commands">
-	<Command id = "MonoDevelop.D.Refactoring.Commands.ContextMenuRefactoringCommands"
-				defaultHandler = "MonoDevelop.D.Refactoring.ContextMenuRefactoringCommandHandler"
-				_label="Refactoring Commands"
-					 type="array" />
+	<!-- Code Completion -->
 
-	<Command id="MonoDevelop.D.Refactoring.Commands.OpenDDocumentation"
-					 _label="Open D Documentation"
-					 shortcut="F1"/>
+	<Extension path = "/MonoDevelop/Ide/TextEditorExtensions">
+		<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.Formatting.Indentation.DTextEditorIndentation" />
+		<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.DEditorCompletionExtension" />
+		<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.Refactoring.RefactoringCommandsExtension" />
 
-	<Command id = "MonoDevelop.D.Refactoring.Commands.GenerateMakefile"
-				defaultHandler = "MonoDevelop.D.Building.MakefileGenerationCommandHandler"
-				_label="Generate Makefile"/>
-  </Extension>
+		<!-- D Document Outline Provider -->
+		<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.Gui.DModuleOutlineExtension" />
 
-  <Extension path = "/MonoDevelop/Ide/ContextMenu/ProjectPad">
-	<Condition id="ItemType" value="MonoDevelop.D.DProject">
-		<CommandItem id = "MonoDevelop.D.Refactoring.Commands.GenerateMakefile"/>
-	</Condition>
-  </Extension>
+		<!-- Document path bar extension -->
+		<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.Gui.EditorPathBarExtension" />
 
-  <Extension path = "/MonoDevelop/SourceEditor2/ContextMenu/Editor">
-	<Condition id="FileType" fileExtensions=".d,.di">
-	  <CommandItem id = "MonoDevelop.D.Refactoring.Commands.ContextMenuRefactoringCommands"  insertafter="MonoDevelop.SourceEditor.SourceEditorCommands.MarkerOperations"/>
-	</Condition>
-  </Extension>
+		<Class mimeTypes ="text/x-d" class = "MonoDevelop.D.Gui.MixinInsightExtension" />
 
-  <Extension path = "/MonoDevelop/Refactoring/CodeActionSource">
-    <Source class ="MonoDevelop.D.Refactoring.CodeActions.DCodeActionSource"/>
-  </Extension>
-	
-	<!-- Profiler -->
-	
+		<!-- Usages highlighting -->
+		<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.Highlighting.HighlightUsagesExtension" />
+		<!--<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.Highlighting.TypeHighlightingExtension" />-->
+	</Extension>
+
+	<Extension path = "/MonoDevelop/SourceEditor2/TooltipProviders">
+		<Class mimeTypes="text/x-d" id="DDebugTooltips" class="MonoDevelop.D.Gui.DDebugValueTooltipProvider" />
+		<Class mimeTypes="text/x-d" id="DToolTipProvider" class="MonoDevelop.D.Gui.DToolTipProvider" />
+	</Extension>
+
+	<!-- Code Parsing, Refactoring, Resolving -->
+
+	<Extension path = "/MonoDevelop/TypeSystem/Parser">
+		<Parser class = "MonoDevelop.D.Parser.DParserWrapper" mimeType = "text/x-d" />
+	</Extension>
+
+	<Extension path = "/MonoDevelop/TypeSystem/FoldingParser">
+		<Parser class = "MonoDevelop.D.Parser.FoldingParser" mimeType = "text/x-d" />
+	</Extension>
+
+	<!-- Context menu extensions -->
 	<Extension path = "/MonoDevelop/Ide/Commands">
-        <Command id = "MonoDevelop.D.Profiler.Commands.ProfilerCommands.AnalyseTaceLog"
-                 defaultHandler = "MonoDevelop.D.Profiler.Commands.ProfilerCommandHandler" 
+		<Command id = "MonoDevelop.D.Refactoring.Commands.ContextMenuRefactoringCommands"
+					defaultHandler = "MonoDevelop.D.Refactoring.ContextMenuRefactoringCommandHandler"
+					_label="Refactoring Commands"
+						 type="array" />
+
+		<Command id="MonoDevelop.D.Refactoring.Commands.OpenDDocumentation"
+						 _label="Open D Documentation"
+						 shortcut="F1"/>
+
+		<Command id = "MonoDevelop.D.Refactoring.Commands.GenerateMakefile"
+					defaultHandler = "MonoDevelop.D.Building.MakefileGenerationCommandHandler"
+					_label="Generate Makefile"/>
+	</Extension>
+
+	<Extension path = "/MonoDevelop/Ide/ContextMenu/ProjectPad">
+		<Condition id="ItemType" value="MonoDevelop.D.DProject">
+			<CommandItem id = "MonoDevelop.D.Refactoring.Commands.GenerateMakefile"/>
+		</Condition>
+	</Extension>
+
+	<Extension path = "/MonoDevelop/SourceEditor2/ContextMenu/Editor">
+		<Condition id="FileType" fileExtensions=".d,.di">
+			<CommandItem id = "MonoDevelop.D.Refactoring.Commands.ContextMenuRefactoringCommands"  insertafter="MonoDevelop.SourceEditor.SourceEditorCommands.MarkerOperations"/>
+		</Condition>
+	</Extension>
+
+	<Extension path = "/MonoDevelop/Refactoring/CodeActionSource">
+		<Source class ="MonoDevelop.D.Refactoring.CodeActions.DCodeActionSource"/>
+	</Extension>
+
+	<!-- Profiler -->
+
+	<Extension path = "/MonoDevelop/Ide/Commands">
+		<Command id = "MonoDevelop.D.Profiler.Commands.ProfilerCommands.AnalyseTaceLog"
+                 defaultHandler = "MonoDevelop.D.Profiler.Commands.ProfilerCommandHandler"
                  _label = "Analyse Tace Log" />
-        <Command id = "MonoDevelop.D.Profiler.Commands.ProfilerCommands.SwitchProfilerMode" 
+		<Command id = "MonoDevelop.D.Profiler.Commands.ProfilerCommands.SwitchProfilerMode"
         		 type = "check"
         		 defaultHandler = "MonoDevelop.D.Profiler.Commands.ProfilerModeHandler"
 				 _description = "enable/disable profiling mode"
                  _label = "Activate Profiling" />
-    </Extension>
+	</Extension>
 
 	<Extension path = "/MonoDevelop/Ide/MainMenu/Tools">
 		<ItemSet id = "D" _label = "D">
 			<CommandItem id = "MonoDevelop.D.Profiler.Commands.ProfilerCommands.SwitchProfilerMode" />
 		</ItemSet>
 	</Extension>
-    
-    
+
+
 	<Extension path = "/MonoDevelop/Ide/Pads">
 		<SolutionPad id = "MonoDevelop.D.Profiler.DProfilerPad" class = "MonoDevelop.D.Profiler.Gui.DProfilerPad" defaultPlacement = "Bottom" defaultStatus="AutoHide" _label = "D Profiler"></SolutionPad>
 		<Pad id = "MonoDevelop.D.Gui.MixinInsightPad" class = "MonoDevelop.D.Gui.MixinInsightPad" defaultPlacement = "Bottom" defaultStatus="AutoHide" _label = "Mixin Insight"></Pad>
 		<Pad id = "MonoDevelop.D.ExpressionEvaluationPad" class = "MonoDevelop.D.ExpressionEvaluationPad" defaultPlacement = "Right" defaultStatus="AutoHide" _label = "Expression Evaluation"></Pad>
 	</Extension>
-    
+
 </Addin>

@@ -221,6 +221,9 @@
     <Compile Include="OptionPanels\ProjectDependencyPanelBinding.cs" />
     <Compile Include="OptionPanels\ProjectDependenciesWidget.cs" />
     <Compile Include="gtk-gui\MonoDevelop.D.ProjectDependenciesWidget.cs" />
+    <Compile Include="OptionPanels\ProjectIncludesWidget.cs" />
+    <Compile Include="gtk-gui\MonoDevelop.D.ProjectIncludesWidget.cs" />
+    <Compile Include="OptionPanels\ProjectIncludesWidgetBinding.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
