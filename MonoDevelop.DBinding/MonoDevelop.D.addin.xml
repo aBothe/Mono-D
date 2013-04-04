@@ -210,10 +210,9 @@
 
   <Extension path = "/MonoDevelop/ProjectModel/Gui/ItemOptionPanels/Build">
 	<Condition id = "ItemType" value = "MonoDevelop.D.DProject">
-	  <Section
-		  id = "DProjectOptions"
-		  _label = "Compiling"
-		  insertafter = "Compile"
+	<Section id = "ProjDepPanel" _label = "Dependencies" insertafter = "Compile"
+		  class = "MonoDevelop.D.OptionPanels.ProjectDependencyPanelBinding"/>
+	  <Section id = "DProjectOptions" _label = "Compiling" insertafter = "Dependencies"
 		  class = "MonoDevelop.D.OptionPanels.ProjectOptionsBinding"/>
 	</Condition>
   </Extension>

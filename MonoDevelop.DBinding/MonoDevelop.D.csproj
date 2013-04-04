@@ -232,6 +232,7 @@
     <Compile Include="Gui\MixinInsightExtension.cs" />
     <Compile Include="Gui\DDebugValueTooltipProvider.cs" />
     <Compile Include="Tools\ToolManager.cs" />
+    <Compile Include="OptionPanels\ProjectDependencyPanelBinding.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
