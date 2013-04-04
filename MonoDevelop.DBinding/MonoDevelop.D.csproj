@@ -54,7 +54,7 @@
     <BaseAddress>4194304</BaseAddress>
     <FileAlignment>4096</FileAlignment>
     <DebugSymbols>True</DebugSymbols>
-    <DefineConstants>DEBUG;STABLE</DefineConstants>
+    <DefineConstants>DEBUG</DefineConstants>
     <CustomCommands>
       <CustomCommands>
         <Command type="Execute" command="..\..\tutorial.lib\monodevelop\main\build\bin\MonoDevelop.exe" workingdir="..\..\tutorial.lib\monodevelop\main\build\bin" />
@@ -88,24 +88,12 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Data" />
     <Reference Include="Mono.Cairo" />
-    <Reference Include="gdk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
-      <Package>gtk-sharp-2.0</Package>
-    </Reference>
-    <Reference Include="gtk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
-      <Package>gtk-sharp-2.0</Package>
-    </Reference>
-    <Reference Include="gtk-dotnet, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
-      <Package>gtk-dotnet-2.0</Package>
-    </Reference>
-    <Reference Include="atk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
-      <Package>gtk-sharp-2.0</Package>
-    </Reference>
-    <Reference Include="glib-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
-      <Package>glib-sharp-2.0</Package>
-    </Reference>
-    <Reference Include="pango-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
-      <Package>gtk-sharp-2.0</Package>
-    </Reference>
+    <Reference Include="gdk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
+    <Reference Include="gtk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
+    <Reference Include="gtk-dotnet, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
+    <Reference Include="atk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
+    <Reference Include="glib-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
+    <Reference Include="pango-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
     <Reference Include="ICSharpCode.NRefactory">
       <HintPath>..\ext\ICSharpCode.NRefactory.dll</HintPath>
       <Private>False</Private>
@@ -138,12 +126,10 @@
     <Reference Include="MonoDevelop.Debugger">
       <Private>False</Private>
       <HintPath>..\ext\MonoDevelop.Debugger.dll</HintPath>
-      <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="Mono.Debugging">
       <Private>False</Private>
       <HintPath>..\ext\Mono.Debugging.dll</HintPath>
-      <SpecificVersion>False</SpecificVersion>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -233,6 +219,8 @@
     <Compile Include="Gui\DDebugValueTooltipProvider.cs" />
     <Compile Include="Tools\ToolManager.cs" />
     <Compile Include="OptionPanels\ProjectDependencyPanelBinding.cs" />
+    <Compile Include="OptionPanels\ProjectDependenciesWidget.cs" />
+    <Compile Include="gtk-gui\MonoDevelop.D.ProjectDependenciesWidget.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>

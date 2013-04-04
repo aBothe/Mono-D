@@ -1,27 +1,29 @@
 using System;
 using MonoDevelop.Ide.Gui.Dialogs;
+using Gtk;
 
-namespace MonoDevelop.D
+namespace MonoDevelop.D.OptionsPanels
 {
 	public class ProjectDependencyPanelBinding : MultiConfigItemOptionsPanel
 	{
-		public ProjectDependencyPanelBinding ()
-		{
-		}
+		ProjectDependenciesWidget w;
 		
 		public override Widget CreatePanelWidget ()
 		{
-			throw new NotImplementedException ();
+			if(w==null)
+				w = new ProjectDependenciesWidget(ConfiguredProject as DProject, CurrentConfiguration as DProjectConfiguration);
+
+			return w;
 		}
 
 		public override void ApplyChanges ()
 		{
-			throw new NotImplementedException ();
+			w.Store();
 		}
 		
 		public override void LoadConfigData ()
 		{
-			throw new NotImplementedException ();
+			w.Load();
 		}
 	}
 }

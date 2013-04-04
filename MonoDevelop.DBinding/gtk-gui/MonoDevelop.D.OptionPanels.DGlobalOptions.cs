@@ -124,8 +124,8 @@ namespace MonoDevelop.D.OptionPanels
 			this.check_IndentInsteadFormatCode = new global::Gtk.CheckButton ();
 			this.check_IndentInsteadFormatCode.CanFocus = true;
 			this.check_IndentInsteadFormatCode.Name = "check_IndentInsteadFormatCode";
-			this.check_IndentInsteadFormatCode.Label = global::Mono.Unix.Catalog.GetString ("Only indent code lines instead of rearrange code parts\n(because the actual format" +
-				"ter isn\'t finished currently)");
+			this.check_IndentInsteadFormatCode.Label = global::Mono.Unix.Catalog.GetString ("Only indent code lines instead of rearrange code parts\r\n(because the actual forma" +
+				"tter isn\'t finished currently)");
 			this.check_IndentInsteadFormatCode.Active = true;
 			this.check_IndentInsteadFormatCode.DrawIndicator = true;
 			this.check_IndentInsteadFormatCode.UseUnderline = true;
@@ -199,8 +199,8 @@ namespace MonoDevelop.D.OptionPanels
 			w10.Fill = false;
 			// Container child hbox2.Gtk.Box+BoxChild
 			this.combo_ExpansionBehaviour = global::Gtk.ComboBox.NewText ();
-			this.combo_ExpansionBehaviour.AppendText (global::Mono.Unix.Catalog.GetString ("Collapse All"));
-			this.combo_ExpansionBehaviour.AppendText (global::Mono.Unix.Catalog.GetString ("Leave expanded nodes expanded"));
+			this.combo_ExpansionBehaviour.AppendText (global::Mono.Unix.Catalog.GetString ("Collapse All\r"));
+			this.combo_ExpansionBehaviour.AppendText (global::Mono.Unix.Catalog.GetString ("Leave expanded nodes expanded\r"));
 			this.combo_ExpansionBehaviour.AppendText (global::Mono.Unix.Catalog.GetString ("Expand All"));
 			this.combo_ExpansionBehaviour.Name = "combo_ExpansionBehaviour";
 			this.hbox2.Add (this.combo_ExpansionBehaviour);

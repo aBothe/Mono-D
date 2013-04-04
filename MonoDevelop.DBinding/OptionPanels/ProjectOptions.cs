@@ -91,36 +91,6 @@ namespace MonoDevelop.D.OptionPanels
 			
 			text_Libraries.Buffer.Text = string.Join ("\n", config.ExtraLibraries);
 			text_Includes.Buffer.Text = string.Join ("\n", proj.LocalIncludeCache.ParsedDirectories);
-
-			// Remove old children list
-			var depsChildren = ((ArrayList)vbox_ProjectDeps.AllChildren);
-			for (int k = depsChildren.Count - 1; k >= 0; k--)
-				vbox_ProjectDeps.Remove((Widget)depsChildren[k]);
-
-			// Init new project dep list
-			int i = 0;
-			foreach(var prj in proj.ParentSolution.GetAllProjects())
-			{
-				if (prj == proj)
-					continue;
-
-				var cb = new Gtk.CheckButton(prj.Name){
-					CanFocus=true,
-					DrawIndicator=true,
-					UseUnderline=false,
-					Active = proj.ProjectDependencies.Contains(prj.ItemId)
-				};
-
-				cb.Data.Add("prj", prj);
-
-				vbox_ProjectDeps.Add(cb);
-				
-				var bc=(Box.BoxChild)vbox_ProjectDeps[cb];
-				bc.Expand=false;
-				bc.Fill=false;
-				bc.Position=i++;
-			}
-			vbox_ProjectDeps.ShowAll();
 		}
 		
 		public bool Store ()
@@ -176,20 +146,6 @@ namespace MonoDevelop.D.OptionPanels
 				}
 			}
 			#endregion
-
-			// Store project deps
-			project.ProjectDependencies.Clear();
-			foreach (var i in vbox_ProjectDeps)
-			{
-				var cb = i as CheckButton;
-
-				if (cb == null || !cb.Active)
-					continue;
-
-				var prj = cb.Data["prj"] as Project;
-				if(prj!=null)
-					project.ProjectDependencies.Add(prj.ItemId);
-			}
 			
 			return true;
 		}
@@ -238,11 +194,11 @@ namespace MonoDevelop.D.OptionPanels
 	
 	public class ProjectOptionsBinding : MultiConfigItemOptionsPanel
 	{
-		private ProjectOptions panel;
+		private ProjectOptions panel = new ProjectOptions();
 
 		public override Gtk.Widget CreatePanelWidget ()
 		{
-			return panel = new ProjectOptions ();
+			return panel;
 		}
 		
 		public override void LoadConfigData ()
