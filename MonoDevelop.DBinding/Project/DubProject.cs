@@ -3,50 +3,124 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Runtime.Serialization;
+using Newtonsoft.Json;
 
 namespace MonoDevelop.D.Dub
 {
-	public class DubProject : WorkspaceItem
+	public class DubProject : DProject
 	{
-		string name;
-		string description;
-		string homepage;
-		string copyright;
 		List<string> authors = new List<string>();
 		Dictionary<string, DubProjectDependency> dependencies = new Dictionary<string, DubProjectDependency>();
-		/*
-		{
-			set {
-				var deps = new Dictionary<string, DubProjectDependency>();
+		public readonly DubBuildSettings GlobalBuildSettings = new DubBuildSettings();
 
-				if (value != null)
-					foreach (var kv in value)
-						deps[kv.Key] = new DubProjectDependency(kv.Key,kv.Value);
-
-				Dependencies = deps;
-			}
-		}*/
-
-		public override string Name { get { return name; } set { name = value; } }
-		public string Description { get { return description; } set { description = value; } }
-		public string Homepage { get { return homepage; } set { homepage = value; } }
-		public string Copyright { get { return copyright; } set { copyright = value; } }
+		public string Description;
+		public string Homepage;
+		public string Copyright;
 		public List<string> Authors { get { return authors; } }
 		public Dictionary<string, DubProjectDependency> Dependencies
 		{
 			get { return dependencies; }
 		}
+
+		public bool TryPopulateProperty(string propName,JsonReader j)
+		{
+			switch (propName)
+			{
+				case "name":
+					Name = j.ReadAsString();
+					break;
+				case "description":
+					Description = j.ReadAsString();
+					break;
+				case "copyright":
+					Copyright = j.ReadAsString();
+					break;
+				case "homepage":
+					Homepage = j.ReadAsString();
+					break;
+				case "authors":
+					if (!j.Read() || j.TokenType != JsonToken.StartArray)
+						throw new JsonReaderException("Expected [ when parsing Authors");
+					authors.Clear();
+					while (j.Read() && j.TokenType != JsonToken.EndArray)
+						if (j.TokenType == JsonToken.String)
+							authors.Add(j.Value as string);
+					break;
+				case "dependencies":
+					if (!j.Read() || j.TokenType != JsonToken.StartObject)
+						throw new JsonReaderException("Expected { when parsing Authors");
+					dependencies.Clear();
+					while (j.Read() && j.TokenType != JsonToken.EndObject)
+					{
+						if(j.TokenType == JsonToken.PropertyName)
+							DeserializeDubPrjDependency(j);
+					}
+					break;
+
+
+				default:
+					return false;
+			}
+
+			return true;
+		}
+
+		void DeserializeDubPrjDependency(JsonReader j)
+		{
+			var depName = j.Value as string;
+			string depVersion = null;
+			string depPath = null;
+
+			if (!j.Read())
+				throw new JsonReaderException("Found EOF when parsing project dependency");
+
+			if (j.TokenType == JsonToken.StartObject)
+			{
+				while (j.Read() && j.TokenType != JsonToken.EndObject)
+				{
+					if (j.TokenType == JsonToken.PropertyName)
+					{
+						switch (j.Value as string)
+						{
+							case "version":
+								depVersion = j.ReadAsString();
+								break;
+							case "path":
+								depPath = j.ReadAsString();
+								break;
+						}
+					}
+				}
+			}
+			else if (j.TokenType == JsonToken.String)
+			{
+				depVersion = j.Value as string;
+			}
+
+			dependencies[depName] = new DubProjectDependency { Name = depName, Version=depVersion, Path = depPath };
+		}
 	}
 
-	public class DubProjectDependency
+	public class DubBuildSettings : Dictionary<string, DubBuildSetting>
 	{
-		string name;
-		string version;
-		string path;
+		
+	}
 
-		public string Name { get { return name; } set { name = value; } }
-		public string Version { get { return version; } set { version = value; } }
-		public string Path { get { return path; } set { path = value; } }
+	public struct DubBuildSetting
+	{
+		public string Name;
+		public string OperatingSystem;
+		public string Architecture;
+		public string Compiler;
+		public string[] Flags;
+	}
+
+	
+
+	public struct DubProjectDependency
+	{
+		public string Name;
+		public string Version;
+		public string Path;
 	}
 }

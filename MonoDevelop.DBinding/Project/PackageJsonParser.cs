@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using System.IO;
+using Newtonsoft.Json.Converters;
 
 namespace MonoDevelop.D.Dub
 {
@@ -18,12 +19,12 @@ namespace MonoDevelop.D.Dub
 
 		public bool CanWriteFile(object obj)
 		{
-			throw new NotImplementedException();
+			return obj is DubProject;
 		}
 
 		public void ConvertToFormat(object obj)
 		{
-			throw new NotImplementedException();
+			
 		}
 
 		public IEnumerable<string> GetCompatibilityWarnings(object obj)
@@ -41,7 +42,7 @@ namespace MonoDevelop.D.Dub
 			throw new NotImplementedException();
 		}
 
-		class DepConverter : Newtonsoft.Json.Converters.CustomCreationConverter<DubProjectDependency>
+		class DepConverter : CustomCreationConverter<DubProjectDependency>
 		{
 			bool isReading = false;
 
@@ -85,15 +86,31 @@ namespace MonoDevelop.D.Dub
 			}
 		}
 
+		class BuildConfigRes : Newtonsoft.Json.Serialization.DefaultContractResolver
+		{
+			protected override string ResolvePropertyName(string propertyName)
+			{
+				return base.ResolvePropertyName(propertyName);
+			}
+		}
+
 		public object ReadFile(FilePath file, Type expectedType, IProgressMonitor monitor)
 		{
-			var settings = new JsonSerializerSettings();
-			var json = File.ReadAllText(file);
-			
-			settings.Converters.Add(new DepConverter());
-			
-			var dp = JsonConvert.DeserializeObject<DubProject>(json, settings);
-			
+			var serializer = new JsonSerializer();
+			var dp = new DubProject();
+
+			using (var s = File.OpenText(file))
+			using(var rdr = new JsonTextReader(s))
+			{
+				while (rdr.Read())
+				{
+					if (rdr.TokenType == JsonToken.PropertyName)
+						dp.TryPopulateProperty(rdr.Value as string, rdr);
+					else if (rdr.TokenType == JsonToken.EndObject)
+						break;
+				}
+			}
+
 			return dp;
 		}
 
@@ -109,7 +126,8 @@ namespace MonoDevelop.D.Dub
 
 		public void WriteFile(Core.FilePath file, object obj, Core.IProgressMonitor monitor)
 		{
-			throw new NotImplementedException();
+			var json = JsonConvert.SerializeObject(obj, new DepConverter());
+			File.WriteAllText(file, json);
 		}
 	}
 }
