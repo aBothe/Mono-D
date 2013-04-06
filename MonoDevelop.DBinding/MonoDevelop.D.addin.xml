@@ -172,6 +172,11 @@
 
 	<!-- Project File Serialization Support -->
 
+	<Extension path = "/MonoDevelop/ProjectModel/FileFormats">
+		<FileFormat id ="DubPackageDefinition" class = "MonoDevelop.D.Dub.PackageJsonParser" />
+	</Extension>
+
+
 	<Extension path = "/MonoDevelop/ProjectModel/MD1SerializationMaps">
 		<SerializationMap resource="MonoDevelop.D.ProjectFormats.xml" />
 	</Extension>

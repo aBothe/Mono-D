@@ -185,6 +185,8 @@
     <Compile Include="OptionPanels\DCompilerOptions.cs" />
     <Compile Include="OptionPanels\ResourcesCompilerOptions.cs" />
     <Compile Include="gtk-gui\MonoDevelop.D.ResourcesCompilerOptionsPanel.cs" />
+    <Compile Include="Project\DubProject.cs" />
+    <Compile Include="Project\PackageJsonParser.cs" />
     <Compile Include="Refactoring\CodeActions\DCodeActionSource.cs" />
     <Compile Include="Refactoring\CodeActions\ImportSymbol.cs" />
     <Compile Include="Refactoring\Commands.cs" />
