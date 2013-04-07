@@ -19,7 +19,7 @@ namespace MonoDevelop.D.Dub
 
 		public bool CanWriteFile(object obj)
 		{
-			return obj is DubProject;
+			return false; // Everything has to be manipulated manually!
 		}
 
 		public void ConvertToFormat(object obj)
@@ -32,14 +32,20 @@ namespace MonoDevelop.D.Dub
 			throw new NotImplementedException();
 		}
 
-		public List<Core.FilePath> GetItemFiles(object obj)
+		public List<FilePath> GetItemFiles(object obj)
 		{
-			throw new NotImplementedException();
+			var prj = obj as DubProject;
+			var files = new List<FilePath>();
+
+			foreach (var f in Directory.GetFiles(prj.BaseDirectory.Combine("source"), "*", SearchOption.AllDirectories))
+				files.Add(new FilePath(f));
+
+			return files;
 		}
 
 		public Core.FilePath GetValidFormatName(object obj, Core.FilePath fileName)
 		{
-			throw new NotImplementedException();
+			return fileName.ParentDirectory.Combine("package.json");
 		}
 
 		class DepConverter : CustomCreationConverter<DubProjectDependency>
@@ -97,7 +103,7 @@ namespace MonoDevelop.D.Dub
 		public object ReadFile(FilePath file, Type expectedType, IProgressMonitor monitor)
 		{
 			var serializer = new JsonSerializer();
-			var dp = new DubProject();
+			var dp = new DubProject { FileName = file, BaseDirectory = file.ParentDirectory };
 
 			using (var s = File.OpenText(file))
 			using(var rdr = new JsonTextReader(s))
