@@ -4,17 +4,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
+using System.Collections.ObjectModel;
+using MonoDevelop.Core;
 
-namespace MonoDevelop.D.Projects
+namespace MonoDevelop.D.Projects.Dub
 {
-	public class DubProjectDefinitionFile : WorkspaceItem
+	public class DubProjectDefinitionFile : Solution
 	{
 		#region Properties
 		List<string> authors = new List<string>();
 		Dictionary<string, DubProjectDependency> dependencies = new Dictionary<string, DubProjectDependency>();
 		public readonly DubBuildSettings GlobalBuildSettings = new DubBuildSettings();
 
-		public string Description;
+		public override string Name	{ get; set; }
 		public string Homepage;
 		public string Copyright;
 		public List<string> Authors { get { return authors; } }
@@ -22,7 +24,17 @@ namespace MonoDevelop.D.Projects
 		{
 			get { return dependencies; }
 		}
+
+		DubProject mainProject = new DubProject();
 		#endregion
+
+		public DubProjectDefinitionFile(FilePath packageJson)
+		{
+			FileName = packageJson;
+			mainProject.BaseDirectory = 
+				BaseDirectory = 
+				packageJson.ParentDirectory;
+		}
 
 		#region Serialize & Deserialize
 		public bool TryPopulateProperty(string propName,JsonReader j)
@@ -201,9 +213,16 @@ namespace MonoDevelop.D.Projects
 
 			return true;
 		}
+
+		void HandleProjectConfigurationCreation()
+		{
+			
+
+
+		}
 		#endregion
 
-		public override Project GetProjectContainingFile(Core.FilePath fileName)
+		public override Project GetProjectContainingFile(FilePath fileName)
 		{
 			return null;
 		}
@@ -213,29 +232,59 @@ namespace MonoDevelop.D.Projects
 			return base.FindSolutionItem(fileName);
 		}
 
-		public override System.Collections.ObjectModel.ReadOnlyCollection<T> GetAllItems<T>()
+		public override ReadOnlyCollection<T> GetAllItems<T>()
 		{
-			return base.GetAllItems<T>();
+			return new ReadOnlyCollection<T>(new[]{mainProject as T});
 		}
 
-		public override System.Collections.ObjectModel.ReadOnlyCollection<T> GetAllSolutionItems<T>()
+		public override ReadOnlyCollection<T> GetAllSolutionItems<T>()
 		{
-			return base.GetAllSolutionItems<T>();
+			var l = new List<T>();
+
+			if (mainProject is T)
+				l.Add(mainProject as T);
+
+			return new ReadOnlyCollection<T>(l);
 		}
 
-		public override System.Collections.ObjectModel.ReadOnlyCollection<Solution> GetAllSolutions()
+		public override ReadOnlyCollection<Solution> GetAllSolutions()
 		{
 			return base.GetAllSolutions();
 		}
 
-		public override System.Collections.ObjectModel.ReadOnlyCollection<string> GetConfigurations()
+		public override ReadOnlyCollection<string> GetConfigurations()
 		{
 			return base.GetConfigurations();
 		}
 
 		public override bool SupportsFormat(FileFormat format)
 		{
-			return format.Name.Contains("MSBuild");
+			return true;// format.Name.Contains("MSBuild");
+		}
+
+		protected override BuildResult OnBuild(IProgressMonitor monitor, ConfigurationSelector configuration)
+		{
+			throw new NotImplementedException();
+		}
+
+		protected override void OnClean(IProgressMonitor monitor, ConfigurationSelector configuration)
+		{
+			throw new NotImplementedException();
+		}
+
+		protected override void OnExecute(IProgressMonitor monitor, ExecutionContext context, ConfigurationSelector configuration)
+		{
+			throw new NotImplementedException();
+		}
+
+		protected override bool OnGetNeedsBuilding(ConfigurationSelector configuration)
+		{
+			return true;
+		}
+
+		protected override void OnSetNeedsBuilding(bool val, ConfigurationSelector configuration)
+		{
+			
 		}
 	}
 

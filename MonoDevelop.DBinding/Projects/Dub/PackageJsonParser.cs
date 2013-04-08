@@ -34,13 +34,7 @@ namespace MonoDevelop.D.Projects.Dub
 
 		public List<FilePath> GetItemFiles(object obj)
 		{
-			var prj = obj as DubProjectDefinitionFile;
-			var files = new List<FilePath>();
-
-			foreach (var f in Directory.GetFiles(prj.BaseDirectory.Combine("source"), "*", SearchOption.AllDirectories))
-				files.Add(new FilePath(f));
-
-			return files;
+			return new List<FilePath>();
 		}
 
 		public Core.FilePath GetValidFormatName(object obj, Core.FilePath fileName)
@@ -92,18 +86,10 @@ namespace MonoDevelop.D.Projects.Dub
 			}
 		}
 
-		class BuildConfigRes : Newtonsoft.Json.Serialization.DefaultContractResolver
-		{
-			protected override string ResolvePropertyName(string propertyName)
-			{
-				return base.ResolvePropertyName(propertyName);
-			}
-		}
-
 		public object ReadFile(FilePath file, Type expectedType, IProgressMonitor monitor)
 		{
 			var serializer = new JsonSerializer();
-			var dp = new DubProjectDefinitionFile { FileName = file, BaseDirectory = file.ParentDirectory };
+			var dp = new DubProjectDefinitionFile(file);
 
 			using (var s = File.OpenText(file))
 			using(var rdr = new JsonTextReader(s))
