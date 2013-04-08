@@ -89,7 +89,7 @@ namespace MonoDevelop.D.Projects.Dub
 		public object ReadFile(FilePath file, Type expectedType, IProgressMonitor monitor)
 		{
 			var serializer = new JsonSerializer();
-			var dp = new DubProjectDefinitionFile(file);
+			var dp = new DubSolution(file);
 
 			using (var s = File.OpenText(file))
 			using(var rdr = new JsonTextReader(s))
@@ -102,6 +102,8 @@ namespace MonoDevelop.D.Projects.Dub
 						break;
 				}
 			}
+
+			dp.FinalizeDeserialization();
 
 			return dp;
 		}

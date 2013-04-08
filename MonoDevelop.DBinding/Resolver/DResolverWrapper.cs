@@ -83,19 +83,19 @@ namespace MonoDevelop.D.Resolver
 
 		public static ParseCacheList CreateCacheList(Document Editor)
 		{
-			return CreateCacheList(Editor.HasProject ? Editor.Project as DProject : null);
+			return CreateCacheList(Editor.HasProject ? Editor.Project as AbstractDProject : null);
 		}
 
-		public static ParseCacheList CreateCacheList(DProject Project = null)
+		public static ParseCacheList CreateCacheList(AbstractDProject Project = null)
 		{
 			if (Project != null)
 			{
 				var pcl = ParseCacheList.Create(Project.LocalFileCache, Project.LocalIncludeCache, Project.Compiler.ParseCache);
 
 				// Automatically include dep projects' caches
-				foreach (var dep in Project.DependingProjects)
-					if (dep != null)
-						pcl.Add(dep.LocalFileCache);
+				foreach (var dep in Project.GetReferencedItems(IdeApp.Workspace.ActiveConfiguration))
+					if (dep is AbstractDProject)
+						pcl.Add((dep as AbstractDProject).LocalFileCache);
 
 				return pcl;
 			}

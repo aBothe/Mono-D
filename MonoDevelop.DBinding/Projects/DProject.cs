@@ -24,7 +24,7 @@ using MonoDevelop.D.Resolver;
 namespace MonoDevelop.D.Projects
 {
 	[DataInclude(typeof(DProjectConfiguration))]
-	public class DProject:Project, ICustomDataItem
+	public class DProject : AbstractDProject, ICustomDataItem
 	{
 		#region Properties
 		/// <summary>
@@ -35,21 +35,20 @@ namespace MonoDevelop.D.Projects
 		[ItemProperty("PreferOneStepBuild")]
 		public bool PreferOneStepBuild = true;
 
-		public override string ProjectType	{ get { return "Native"; } }
-
-		public override string[] SupportedLanguages	{ get { return new[]{"D",""}; } }
-		
-		/// <summary>
-		/// Stores parse information from project-wide includes
-		/// </summary>
-		public readonly ParseCache LocalIncludeCache = new ParseCache { EnableUfcsCaching = false };
-
 		/// <summary>
 		/// List of GUIDs that identify project items within their solution.
 		/// Used to store project dependencies.
 		/// </summary>
 		[ItemProperty("DependentProjectIds")]
 		public List<string> ProjectDependencies = new List<string>();
+
+		public override IEnumerable<SolutionItem> GetReferencedItems(ConfigurationSelector configuration)
+		{
+			SolutionItem p;
+			foreach (var dep in ProjectDependencies)
+				if ((p = ParentSolution.GetSolutionItem(dep)) != null)
+					yield return p;
+		}
 
 		public IEnumerable<DProject> DependingProjects
 		{
@@ -68,36 +67,6 @@ namespace MonoDevelop.D.Projects
 						if(dep!=this && dep!=null)
 							ProjectDependencies.Add(dep.ItemId);
 			}
-		}
-
-		public IEnumerable<string> IncludePaths
-		{
-			get {
-				foreach (var p in Compiler.ParseCache.ParsedDirectories)
-					yield return p;
-				foreach (var p in LocalIncludeCache.ParsedDirectories)
-					yield return p;
-				foreach (var dep in DependingProjects)
-					if(dep!=null)
-						yield return dep.BaseDirectory;
-			}
-		}
-
-		/// <summary>
-		/// Stores parse information from files inside the project's base directory
-		/// </summary>
-		public readonly ParseCache LocalFileCache = new ParseCache { EnableUfcsCaching = false };
-		readonly List<DModule> _filelinkModulesToInsert = new List<DModule>();
-
-		public ParseCacheList ParseCache {
-			get {
-				return DResolverWrapper.CreateCacheList(this);
-			}
-		}
-
-		protected override void OnDefaultConfigurationChanged (ConfigurationEventArgs args)
-		{
-			base.OnDefaultConfigurationChanged (args);
 		}
 		
 		[ItemProperty("UseDefaultCompiler")]
@@ -122,7 +91,8 @@ namespace MonoDevelop.D.Projects
 		/// <summary>
 		/// Returns the actual compiler configuration used by this project
 		/// </summary>
-		public DCompilerConfiguration Compiler {
+		public override DCompilerConfiguration Compiler
+		{
 			get {
 				return string.IsNullOrEmpty (UsedCompilerVendor) ? 
 					DCompilerService.Instance.GetDefaultCompiler () : 
@@ -132,128 +102,11 @@ namespace MonoDevelop.D.Projects
 		}
 		#endregion
 
-		#region Parsed project modules
-		public void UpdateLocalIncludeCache ()
-		{
-			analysisFinished_LocalIncludes = false;
-			LocalIncludeCache.SolutionPath = ParentSolution==null ? "" : ParentSolution.BaseDirectory.ToString();
-			LocalIncludeCache.FallbackPath = BaseDirectory;
-			DCompilerConfiguration.UpdateParseCacheAsync (LocalIncludeCache);
-		}
-
-		/// <summary>
-		/// Updates the project's parse cache and reparses all of its D sources
-		/// </summary>
-		public void UpdateParseCache ()
-		{
-			analysisFinished_LocalCache = analysisFinished_FileLinks = false;
-
-			var hasFileLinks = new List<ProjectFile>();
-			foreach (var f in Files)
-				if ((f.IsLink || f.IsExternalToProject) && File.Exists(f.ToString()))
-					hasFileLinks.Add(f);
-
-			// To prevent race condition bugs, test if links exist _before_ the actual local file parse procedure starts.
-			if (hasFileLinks.Count == 0)
-				analysisFinished_FileLinks = true;
-
-			LocalFileCache.BeginParse (new[] { BaseDirectory.ToString () }, BaseDirectory);
-			//LocalFileCache.WaitForParserFinish();
-
-			/*
-			 * Since we don't want to include all link files' directories for performance reasons,
-			 * parse them separately and let the entire reparsing procedure wait for them to be successfully parsed.
-			 * Ufcs completion preparation will be done afterwards in the TryBuildUfcsCache() method.
-			 */
-			if (hasFileLinks.Count != 0)
-				new System.Threading.Thread((object o) =>
-				{
-					foreach (var f in (List<ProjectFile>)o)
-					{
-						_filelinkModulesToInsert.Add(DParser.ParseFile(f.FilePath) as DModule);
-					}
-
-					analysisFinished_FileLinks = true;
-					_InsertFileLinkModulesIntoLocalCache();
-					TryBuildUfcsCache();
-				}) { IsBackground = true }.Start(hasFileLinks);
-		}
-
-		bool analysisFinished_GlobalCache, analysisFinished_LocalIncludes, analysisFinished_LocalCache, analysisFinished_FileLinks;
-
-		void _InsertFileLinkModulesIntoLocalCache()
-		{
-			if (analysisFinished_FileLinks && analysisFinished_LocalCache)
-			{
-				lock (_filelinkModulesToInsert)
-					foreach (var mod in _filelinkModulesToInsert)
-						LocalFileCache.AddOrUpdate(mod);
-
-				_filelinkModulesToInsert.Clear();
-			}
-		}
-
-		void LocalIncludeCache_FinishedParsing(ParsePerformanceData[] PerformanceData)
-		{
-			analysisFinished_LocalIncludes = true;
-			TryBuildUfcsCache();
-		}
-
-		void LocalFileCache_FinishedParsing(ParsePerformanceData[] PerformanceData)
-		{
-			analysisFinished_LocalCache = true;
-			_InsertFileLinkModulesIntoLocalCache();
-			TryBuildUfcsCache();
-		}
-
-		void GlobalParseCache_FinishedParsing(ParsePerformanceData[] PerformanceData)
-		{
-			analysisFinished_GlobalCache = true;
-			TryBuildUfcsCache();
-		}
-
-		void TryBuildUfcsCache()
-		{
-			if (analysisFinished_GlobalCache && !Compiler.ParseCache.IsParsing &&
-				analysisFinished_LocalCache && analysisFinished_LocalIncludes &&
-				analysisFinished_FileLinks)
-			{
-				LocalIncludeCache.UfcsCache.Update(ParseCacheList.Create(Compiler.ParseCache, LocalIncludeCache), null, LocalIncludeCache);
-				LocalFileCache.UfcsCache.Update(ParseCache, null, LocalFileCache);
-			}
-		}
-
-		protected override void OnFileRemovedFromProject (ProjectFileEventArgs e)
-		{
-			UpdateParseCache ();
-
-			base.OnFileRemovedFromProject (e);
-		}
-
-		protected override void OnFileRenamedInProject (ProjectFileRenamedEventArgs e)
-		{
-			UpdateParseCache ();
-
-			base.OnFileRenamedInProject (e);
-		}
-		#endregion
-
 		#region Init
-		void Init ()
-		{
-			LocalFileCache.FinishedParsing += new D_Parser.Misc.ParseCache.ParseFinishedHandler(LocalFileCache_FinishedParsing);
-			LocalIncludeCache.FinishedParsing += new D_Parser.Misc.ParseCache.ParseFinishedHandler(LocalIncludeCache_FinishedParsing);
-		}
-
-		public DProject ()
-		{
-			Init ();
-		}
+		public DProject (){}
 
 		public DProject (ProjectCreateInformation info, XmlElement projectOptions)
-		{			
-			Init ();
-            
+		{
 			string binPath = ".";
 			
 			if (info != null) {
@@ -355,11 +208,6 @@ namespace MonoDevelop.D.Projects
 		#endregion
 
 		#region Build Configurations
-		public override IEnumerable<SolutionItem> GetReferencedItems(ConfigurationSelector configuration)
-		{
-			return GetSortedProjectDependencies(this);
-		}
-		
 		protected override void PopulateSupportFileList(FileCopySet list, ConfigurationSelector configuration)
 		{
 			base.PopulateSupportFileList(list, configuration);
@@ -619,15 +467,6 @@ namespace MonoDevelop.D.Projects
 
 			base.OnModified(args);
 		}*/
-
-		protected override void OnEndLoad ()
-		{
-			Compiler.ParseCache.FinishedParsing += new D_Parser.Misc.ParseCache.ParseFinishedHandler(GlobalParseCache_FinishedParsing);
-			UpdateLocalIncludeCache ();
-			UpdateParseCache ();
-
-			base.OnEndLoad ();
-		}
 
 		[ItemProperty("Includes")]
 		[ItemProperty("Path", Scope = "*")]

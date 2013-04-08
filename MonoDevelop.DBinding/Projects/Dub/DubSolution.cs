@@ -1,22 +1,20 @@
-﻿using MonoDevelop.Projects;
+﻿using MonoDevelop.Core;
+using MonoDevelop.Projects;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Newtonsoft.Json;
 using System.Collections.ObjectModel;
-using MonoDevelop.Core;
 
 namespace MonoDevelop.D.Projects.Dub
 {
-	public class DubProjectDefinitionFile : Solution
+	public class DubSolution : Solution
 	{
 		#region Properties
 		List<string> authors = new List<string>();
 		Dictionary<string, DubProjectDependency> dependencies = new Dictionary<string, DubProjectDependency>();
 		public readonly DubBuildSettings GlobalBuildSettings = new DubBuildSettings();
 
-		public override string Name	{ get; set; }
+		public override string Name { get; set; } // override because the name is normally derived from the file name -- package.json is not the project's file name!
 		public string Homepage;
 		public string Copyright;
 		public List<string> Authors { get { return authors; } }
@@ -25,16 +23,26 @@ namespace MonoDevelop.D.Projects.Dub
 			get { return dependencies; }
 		}
 
-		DubProject mainProject = new DubProject();
+		public readonly DubProject MainProject;
 		#endregion
 
-		public DubProjectDefinitionFile(FilePath packageJson)
+		#region Constructor & Init
+		public DubSolution(FilePath packageJson)
 		{
 			FileName = packageJson;
-			mainProject.BaseDirectory = 
-				BaseDirectory = 
-				packageJson.ParentDirectory;
+			BaseDirectory = packageJson.ParentDirectory;
+			MainProject = new DubProject(this);
+
+			AddConfiguration("Default", true);
 		}
+
+		public void FinalizeDeserialization()
+		{
+			// Add configurations for each parsed configuration etc.
+
+			MainProject.UpdateFilelist();
+		}
+		#endregion
 
 		#region Serialize & Deserialize
 		public bool TryPopulateProperty(string propName,JsonReader j)
@@ -222,9 +230,10 @@ namespace MonoDevelop.D.Projects.Dub
 		}
 		#endregion
 
+		#region Solution items
 		public override Project GetProjectContainingFile(FilePath fileName)
 		{
-			return null;
+			return MainProject.GetProjectFile(fileName) != null ? MainProject : null;
 		}
 
 		public override SolutionEntityItem FindSolutionItem(string fileName)
@@ -234,47 +243,51 @@ namespace MonoDevelop.D.Projects.Dub
 
 		public override ReadOnlyCollection<T> GetAllItems<T>()
 		{
-			return new ReadOnlyCollection<T>(new[]{mainProject as T});
+			return new ReadOnlyCollection<T>(new[]{MainProject as T});
 		}
 
 		public override ReadOnlyCollection<T> GetAllSolutionItems<T>()
 		{
-			var l = new List<T>();
-
-			if (mainProject is T)
-				l.Add(mainProject as T);
-
-			return new ReadOnlyCollection<T>(l);
+			return new ReadOnlyCollection<T>(new[] { MainProject as T });
 		}
 
 		public override ReadOnlyCollection<Solution> GetAllSolutions()
 		{
-			return base.GetAllSolutions();
-		}
-
-		public override ReadOnlyCollection<string> GetConfigurations()
-		{
-			return base.GetConfigurations();
+			return new ReadOnlyCollection<Solution>(new[]{this});
 		}
 
 		public override bool SupportsFormat(FileFormat format)
 		{
 			return true;// format.Name.Contains("MSBuild");
 		}
+		#endregion
 
+		#region Build Configurations
+		public override ReadOnlyCollection<string> GetConfigurations()
+		{
+			return base.GetConfigurations();
+		}
+
+		public override SolutionConfiguration GetConfiguration(ConfigurationSelector configuration)
+		{
+			return base.GetConfiguration(configuration);
+		}
+		#endregion
+
+		#region Building & Executing
 		protected override BuildResult OnBuild(IProgressMonitor monitor, ConfigurationSelector configuration)
 		{
-			throw new NotImplementedException();
+			return MainProject.Build(monitor, configuration);
 		}
 
 		protected override void OnClean(IProgressMonitor monitor, ConfigurationSelector configuration)
 		{
-			throw new NotImplementedException();
+			MainProject.Clean(monitor, configuration);
 		}
 
 		protected override void OnExecute(IProgressMonitor monitor, ExecutionContext context, ConfigurationSelector configuration)
 		{
-			throw new NotImplementedException();
+			MainProject.Execute(monitor, context, configuration);
 		}
 
 		protected override bool OnGetNeedsBuilding(ConfigurationSelector configuration)
@@ -284,8 +297,9 @@ namespace MonoDevelop.D.Projects.Dub
 
 		protected override void OnSetNeedsBuilding(bool val, ConfigurationSelector configuration)
 		{
-			
+
 		}
+		#endregion
 	}
 
 	public class DubBuildSettings : Dictionary<string, List<DubBuildSetting>>

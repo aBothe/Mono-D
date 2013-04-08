@@ -214,7 +214,7 @@
 	</Extension>
 
 	<Extension path = "/MonoDevelop/ProjectModel/Gui/ItemOptionPanels/Build">
-		<Condition id = "ItemType" value = "MonoDevelop.D.DProject">
+		<Condition id = "ItemType" value = "MonoDevelop.D.Projects.DProject">
 			<Section id = "ProjDepPanel" _label = "Project Dependencies" icon = "md-reference-project"
 				  class = "MonoDevelop.D.OptionsPanels.ProjectDependencyPanelBinding"/>
 			<Section id = "ProjIncludePanel" _label = "Includes" icon = "md-reference-folder"
@@ -286,7 +286,7 @@
 	</Extension>
 
 	<Extension path = "/MonoDevelop/Ide/ContextMenu/ProjectPad">
-		<Condition id="ItemType" value="MonoDevelop.D.DProject">
+		<Condition id="ItemType" value="MonoDevelop.D.Projects.DProject">
 			<CommandItem id = "MonoDevelop.D.Refactoring.Commands.GenerateMakefile"/>
 		</Condition>
 	</Extension>

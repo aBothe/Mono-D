@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
-using D_Parser.Dom;
+﻿using D_Parser.Dom;
 using D_Parser.Dom.Statements;
-using ICSharpCode.NRefactory.TypeSystem;
-using MonoDevelop.Ide.TypeSystem;
 using D_Parser.Resolver;
+using ICSharpCode.NRefactory.TypeSystem;
 using MonoDevelop.D.Projects;
+using MonoDevelop.Ide.TypeSystem;
+using System.Collections.Generic;
 
 namespace MonoDevelop.D.Parser
 {
@@ -18,8 +18,8 @@ namespace MonoDevelop.D.Parser
 				var sln=Ide.IdeApp.ProjectOperations.CurrentSelectedSolution;
 				if(sln!=null)
 					foreach (var prj in sln.GetAllProjects())
-						if (prj is DProject && prj.IsFileInProject(FileName))
-							return ((DProject)prj).LocalFileCache.GetModuleByFileName(FileName, prj.BaseDirectory) ?? _ddom;
+						if (prj is AbstractDProject && prj.IsFileInProject(FileName))
+							return ((AbstractDProject)prj).LocalFileCache.GetModuleByFileName(FileName, prj.BaseDirectory) ?? _ddom;
 				
 				return _ddom;
 			}
@@ -28,9 +28,9 @@ namespace MonoDevelop.D.Parser
 				var sln = Ide.IdeApp.ProjectOperations.CurrentSelectedSolution;
 				if (sln != null)
 					foreach(var prj in sln.GetAllProjects())
-						if (prj is DProject && prj.IsFileInProject(FileName))
+						if (prj is AbstractDProject && prj.IsFileInProject(FileName))
 						{
-							var dprj = (DProject)prj;
+							var dprj = prj as AbstractDProject;
 
 							var oldAst = DDom;
 							if (oldAst != null)
