@@ -6,7 +6,7 @@ using MonoDevelop.Projects;
 using System.Xml;
 using System.IO;
 
-namespace MonoDevelop.D
+namespace MonoDevelop.D.Projects
 {
 	public class DProjectBinding:IProjectBinding
 	{

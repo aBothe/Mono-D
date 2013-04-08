@@ -13,6 +13,7 @@ using MonoDevelop.D.Refactoring;
 using MonoDevelop.D.Resolver;
 using MonoDevelop.Ide.Gui.Content;
 using ICSharpCode.NRefactory.Editor;
+using MonoDevelop.D.Projects;
 
 // Code taken and modified from MonoDevelop.CSharp.Highlighting.HighlightUsagesExtension.cs
 

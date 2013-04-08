@@ -1,6 +1,7 @@
 using System;
 using MonoDevelop.D.Building;
 using MonoDevelop.Core;
+using MonoDevelop.D.Projects;
 
 namespace MonoDevelop.D
 {

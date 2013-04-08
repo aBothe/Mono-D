@@ -10,6 +10,7 @@ using MonoDevelop.D.Building;
 using D_Parser.Dom;
 using MonoDevelop.Core;
 using MonoDevelop.Ide;
+using MonoDevelop.D.Projects;
 
 namespace MonoDevelop.D.Refactoring
 {

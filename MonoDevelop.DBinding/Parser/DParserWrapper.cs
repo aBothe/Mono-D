@@ -8,6 +8,7 @@ using MonoDevelop.Projects;
 using System.Collections.Generic;
 using D_Parser.Misc;
 using MonoDevelop.D.Building;
+using MonoDevelop.D.Projects;
 
 namespace MonoDevelop.D.Parser
 {

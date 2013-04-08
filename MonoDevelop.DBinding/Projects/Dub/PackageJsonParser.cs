@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 using System.IO;
 using Newtonsoft.Json.Converters;
 
-namespace MonoDevelop.D.Dub
+namespace MonoDevelop.D.Projects.Dub
 {
 	public class PackageJsonParser : IFileFormat
 	{
@@ -34,7 +34,7 @@ namespace MonoDevelop.D.Dub
 
 		public List<FilePath> GetItemFiles(object obj)
 		{
-			var prj = obj as DubProject;
+			var prj = obj as DubProjectDefinitionFile;
 			var files = new List<FilePath>();
 
 			foreach (var f in Directory.GetFiles(prj.BaseDirectory.Combine("source"), "*", SearchOption.AllDirectories))
@@ -103,7 +103,7 @@ namespace MonoDevelop.D.Dub
 		public object ReadFile(FilePath file, Type expectedType, IProgressMonitor monitor)
 		{
 			var serializer = new JsonSerializer();
-			var dp = new DubProject { FileName = file, BaseDirectory = file.ParentDirectory };
+			var dp = new DubProjectDefinitionFile { FileName = file, BaseDirectory = file.ParentDirectory };
 
 			using (var s = File.OpenText(file))
 			using(var rdr = new JsonTextReader(s))

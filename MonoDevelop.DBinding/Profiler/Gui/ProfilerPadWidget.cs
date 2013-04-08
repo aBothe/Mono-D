@@ -9,6 +9,7 @@ using D_Parser.Parser;
 using D_Parser.Dom;
 using MonoDevelop.D.Profiler.Commands;
 using MonoDevelop.Core;
+using MonoDevelop.D.Projects;
 
 namespace MonoDevelop.D.Profiler.Gui
 {

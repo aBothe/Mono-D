@@ -14,6 +14,7 @@ using MonoDevelop.Core;
 using MonoDevelop.Core.ProgressMonitoring;
 using MonoDevelop.D.Profiler.Commands;
 using MonoDevelop.Projects;
+using MonoDevelop.D.Projects;
 
 namespace MonoDevelop.D.Building
 {

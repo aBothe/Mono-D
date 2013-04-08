@@ -13,7 +13,7 @@ namespace MonoDevelop.D.templates
 	{
 		bool addStdHeader = true;
 
-		public override string CreateContent(Projects.Project project, Dictionary<string, string> tags, string language)
+		public override string CreateContent(MonoDevelop.Projects.Project project, Dictionary<string, string> tags, string language)
 		{
 			var cc = base.CreateContent(project, tags, language);
 
@@ -52,8 +52,8 @@ namespace MonoDevelop.D.templates
 		}
 
 		public override void ModifyTags(
-			Projects.SolutionItem policyParent, 
-			Projects.Project project, 
+			MonoDevelop.Projects.SolutionItem policyParent,
+			MonoDevelop.Projects.Project project, 
 			string language, 
 			string identifier, 
 			string fileName, 

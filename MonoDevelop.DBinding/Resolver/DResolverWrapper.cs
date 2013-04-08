@@ -6,6 +6,7 @@ using D_Parser.Resolver.TypeResolution;
 using MonoDevelop.Core;
 using MonoDevelop.D.Building;
 using MonoDevelop.D.Parser;
+using MonoDevelop.D.Projects;
 using MonoDevelop.Ide;
 using MonoDevelop.Ide.CodeCompletion;
 using MonoDevelop.Ide.Gui;

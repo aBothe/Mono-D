@@ -6,6 +6,7 @@ using MonoDevelop.Ide;
 using MonoDevelop.Ide.Gui.Pads.ProjectPad;
 using MonoDevelop.Projects;
 using MonoDevelop.Ide.Gui.Pads;
+using MonoDevelop.D.Projects;
 
 namespace MonoDevelop.D.Building
 {

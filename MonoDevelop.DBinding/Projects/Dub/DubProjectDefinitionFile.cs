@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 
-namespace MonoDevelop.D.Dub
+namespace MonoDevelop.D.Projects
 {
-	public class DubProject : WorkspaceItem
+	public class DubProjectDefinitionFile : WorkspaceItem
 	{
 		#region Properties
 		List<string> authors = new List<string>();

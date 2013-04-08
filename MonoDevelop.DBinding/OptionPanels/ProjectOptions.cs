@@ -6,6 +6,7 @@ using MonoDevelop.Projects;
 using System.Linq;
 using Gtk;
 using System.Collections;
+using MonoDevelop.D.Projects;
 
 namespace MonoDevelop.D.OptionPanels
 {

@@ -13,6 +13,7 @@ using MonoDevelop.D.Building;
 using MonoDevelop.D.Profiler.Commands;
 using MonoDevelop.D.Profiler.Gui;
 using MonoDevelop.D.Refactoring;
+using MonoDevelop.D.Projects;
 
 namespace MonoDevelop.D.Profiler
 {

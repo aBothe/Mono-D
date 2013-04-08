@@ -167,9 +167,10 @@
     <Compile Include="Parser\DParserWrapper.cs" />
     <Compile Include="Parser\FoldingParser.cs" />
     <Compile Include="Parser\ParsedDModule.cs" />
-    <Compile Include="Project\DProjectBinding.cs" />
-    <Compile Include="Project\DProject.cs" />
-    <Compile Include="Project\DProjectConfiguration.cs" />
+    <Compile Include="Projects\AbstractDProject.cs" />
+    <Compile Include="Projects\DProjectBinding.cs" />
+    <Compile Include="Projects\DProject.cs" />
+    <Compile Include="Projects\DProjectConfiguration.cs" />
     <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.ProjectOptions.cs" />
     <Compile Include="Gui\AddLibraryDialog.cs" />
     <Compile Include="Gui\AddPathDialog.cs" />
@@ -185,8 +186,9 @@
     <Compile Include="OptionPanels\DCompilerOptions.cs" />
     <Compile Include="OptionPanels\ResourcesCompilerOptions.cs" />
     <Compile Include="gtk-gui\MonoDevelop.D.ResourcesCompilerOptionsPanel.cs" />
-    <Compile Include="Project\DubProject.cs" />
-    <Compile Include="Project\PackageJsonParser.cs" />
+    <Compile Include="Projects\Dub\DubProject.cs" />
+    <Compile Include="Projects\Dub\DubProjectDefinitionFile.cs" />
+    <Compile Include="Projects\Dub\PackageJsonParser.cs" />
     <Compile Include="Refactoring\CodeActions\DCodeActionSource.cs" />
     <Compile Include="Refactoring\CodeActions\ImportSymbol.cs" />
     <Compile Include="Refactoring\Commands.cs" />
@@ -219,7 +221,6 @@
     <Compile Include="Gui\ExpressionEvaluationWidget.cs" />
     <Compile Include="Gui\MixinInsightExtension.cs" />
     <Compile Include="Gui\DDebugValueTooltipProvider.cs" />
-    <Compile Include="Tools\ToolManager.cs" />
     <Compile Include="OptionPanels\ProjectDependencyPanelBinding.cs" />
     <Compile Include="OptionPanels\ProjectDependenciesWidget.cs" />
     <Compile Include="gtk-gui\MonoDevelop.D.ProjectDependenciesWidget.cs" />

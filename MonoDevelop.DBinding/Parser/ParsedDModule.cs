@@ -4,6 +4,7 @@ using D_Parser.Dom.Statements;
 using ICSharpCode.NRefactory.TypeSystem;
 using MonoDevelop.Ide.TypeSystem;
 using D_Parser.Resolver;
+using MonoDevelop.D.Projects;
 
 namespace MonoDevelop.D.Parser
 {

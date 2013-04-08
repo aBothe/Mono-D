@@ -8,7 +8,7 @@ using MonoDevelop.Core;
 using MonoDevelop.D.Profiler;
 using MonoDevelop.D.Profiler.Commands;
 
-namespace MonoDevelop.D
+namespace MonoDevelop.D.Projects
 {
 	public class DProjectConfiguration:ProjectConfiguration
 	{

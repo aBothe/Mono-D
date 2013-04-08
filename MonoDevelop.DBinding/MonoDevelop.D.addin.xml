@@ -162,18 +162,18 @@
 	<!-- Project Binding -->
 
 	<Extension path = "/MonoDevelop/ProjectModel/ProjectBindings">
-		<ProjectBinding id = "DProject" class = "MonoDevelop.D.DProjectBinding"/>
+		<ProjectBinding id = "DProject" class = "MonoDevelop.D.Projects.DProjectBinding"/>
 	</Extension>
 
 	<Extension path = "/MonoDevelop/ProjectModel/MSBuildItemTypes">
-		<SolutionItem type="MonoDevelop.D.DProject" extension="dproj" guid="{3947E667-4C90-4C3A-BEB9-7148D6FE0D7C}"/>
+		<SolutionItem type="MonoDevelop.D.Projects.DProject" extension="dproj" guid="{3947E667-4C90-4C3A-BEB9-7148D6FE0D7C}"/>
 	</Extension>
 
 
 	<!-- Project File Serialization Support -->
 
 	<Extension path = "/MonoDevelop/ProjectModel/FileFormats">
-		<FileFormat id ="DubPackageDefinition" class = "MonoDevelop.D.Dub.PackageJsonParser" />
+		<FileFormat id ="DubPackageDefinition" class = "MonoDevelop.D.Projects.Dub.PackageJsonParser" />
 	</Extension>
 
 
@@ -182,8 +182,8 @@
 	</Extension>
 
 	<Extension path = "/MonoDevelop/ProjectModel/SerializableClasses">
-		<DataType class = "MonoDevelop.D.DProject" />
-		<DataType class = "MonoDevelop.D.DProjectConfiguration" />
+		<DataType class = "MonoDevelop.D.Projects.DProject" />
+		<DataType class = "MonoDevelop.D.Projects.DProjectConfiguration" />
 
 		<DataType class = "MonoDevelop.D.Building.DCompilerConfiguration" />
 		<DataType class = "MonoDevelop.D.Building.DArgumentConfiguration" />

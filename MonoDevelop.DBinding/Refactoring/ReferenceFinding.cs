@@ -11,6 +11,7 @@ using MonoDevelop.Ide;
 using MonoDevelop.Ide.FindInFiles;
 using D_Parser.Resolver;
 using D_Parser.Refactoring;
+using MonoDevelop.D.Projects;
 
 namespace MonoDevelop.D.Refactoring
 {

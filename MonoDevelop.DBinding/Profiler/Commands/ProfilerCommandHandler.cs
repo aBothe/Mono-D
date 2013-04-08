@@ -4,6 +4,7 @@ using MonoDevelop.Ide;
 using MonoDevelop.Projects;
 using MonoDevelop.Ide.Gui;
 using MonoDevelop.D.Profiler.Gui;
+using MonoDevelop.D.Projects;
 
 namespace MonoDevelop.D.Profiler.Commands
 {
@@ -13,7 +14,7 @@ namespace MonoDevelop.D.Profiler.Commands
 		{
 			MessageHandler guiRun = delegate
 			{
-				DProject project = IdeApp.ProjectOperations.CurrentSelectedProject as DProject;
+				var project = IdeApp.ProjectOperations.CurrentSelectedProject as DProject;
 				if(project == null)
 					return;
 				
