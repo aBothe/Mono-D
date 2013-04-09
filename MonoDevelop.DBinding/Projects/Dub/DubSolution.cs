@@ -33,7 +33,7 @@ namespace MonoDevelop.D.Projects.Dub
 			BaseDirectory = packageJson.ParentDirectory;
 			MainProject = new DubProject(this);
 
-			AddConfiguration("Default", true);
+			MainProject.AddProjectAndSolutionConfiguration(new DubProjectConfiguration { Name = "Standard", Id = "Std" });
 		}
 
 		public void FinalizeDeserialization()
@@ -79,9 +79,18 @@ namespace MonoDevelop.D.Projects.Dub
 							DeserializeDubPrjDependency(j);
 					}
 					break;
+				case "configurations":
+					if (!j.Read() || j.TokenType != JsonToken.StartArray)
+						throw new JsonReaderException("Expected [ when parsing Configurations");
+					Configurations.Clear();
+					MainProject.Configurations.Clear();
+					
+					while (j.Read() && j.TokenType != JsonToken.EndArray)
+						MainProject.AddProjectAndSolutionConfiguration(DubProjectConfiguration.DeserializeFromPackageJson(j));
+					break;
 
 				default:
-					return TryHandleBuildSetting(j,GlobalBuildSettings);
+					return TryDeserializeBuildSetting(j,GlobalBuildSettings);
 			}
 
 			return true;
@@ -143,7 +152,7 @@ namespace MonoDevelop.D.Projects.Dub
 			"sourceFiles","sourcePaths","excludedSourceFiles","versions","importPaths","stringImportPaths"
 		};
 
-		bool TryHandleBuildSetting(JsonReader j,DubBuildSettings settings)
+		public static bool TryDeserializeBuildSetting(JsonReader j,DubBuildSettings settings)
 		{
 			if (!(j.Value is string))
 				return false;

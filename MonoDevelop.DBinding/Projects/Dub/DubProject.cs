@@ -48,5 +48,15 @@ namespace MonoDevelop.D.Projects.Dub
 				Items.Add(new ProjectFile(f));
 		}
 		#endregion
+
+		public void AddProjectAndSolutionConfiguration(DubProjectConfiguration cfg)
+		{
+			var slnCfg = ParentSolution.AddConfiguration(cfg.Name, false);
+			slnCfg.AddItem(this, true, "");
+			slnCfg.Id = cfg.Id;
+			slnCfg.Platform = cfg.Platform;
+
+			Configurations.Add(cfg);
+		}
 	}
 }

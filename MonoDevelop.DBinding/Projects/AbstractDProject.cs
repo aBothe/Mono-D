@@ -70,7 +70,7 @@ namespace MonoDevelop.D.Projects
 		public void UpdateLocalIncludeCache()
 		{
 			analysisFinished_LocalIncludes = false;
-			LocalIncludeCache.SolutionPath = ParentSolution == null ? "" : ParentSolution.BaseDirectory.ToString();
+			LocalIncludeCache.SolutionPath = ParentSolution == null ? BaseDirectory.ToString() : ParentSolution.BaseDirectory.ToString();
 			LocalIncludeCache.FallbackPath = BaseDirectory;
 			DCompilerConfiguration.UpdateParseCacheAsync(LocalIncludeCache);
 		}
@@ -91,7 +91,7 @@ namespace MonoDevelop.D.Projects
 			if (hasFileLinks.Count == 0)
 				analysisFinished_FileLinks = true;
 
-			LocalFileCache.BeginParse(new[] { BaseDirectory.ToString() }, BaseDirectory);
+			LocalFileCache.BeginParse(GetSourcePaths(Ide.IdeApp.Workspace.ActiveConfiguration), BaseDirectory);
 			//LocalFileCache.WaitForParserFinish();
 
 			/*
