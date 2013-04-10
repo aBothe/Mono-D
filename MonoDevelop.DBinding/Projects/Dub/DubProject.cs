@@ -236,5 +236,22 @@ namespace MonoDevelop.D.Projects.Dub
 				DefaultConfigurationId = cfg.Id;
 		}
 		#endregion
+
+		#region Building
+		protected override BuildResult DoBuild(IProgressMonitor monitor, ConfigurationSelector configuration)
+		{
+			return DubBuilder.BuildProject(this, monitor, configuration);			
+		}
+
+		protected override bool OnGetCanExecute(ExecutionContext context, ConfigurationSelector configuration)
+		{
+			return !context.ExecutionHandler.GetType().Name.StartsWith("Debug");
+		}
+
+		protected override void DoExecute(IProgressMonitor monitor, ExecutionContext context, ConfigurationSelector configuration)
+		{
+			DubBuilder.ExecuteProject(this,monitor, context, configuration);
+		}
+		#endregion
 	}
 }

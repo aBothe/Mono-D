@@ -29,7 +29,7 @@ namespace MonoDevelop.D.Projects.Dub
 
 		public IEnumerable<string> GetCompatibilityWarnings(object obj)
 		{
-			throw new NotImplementedException();
+			yield return string.Empty;
 		}
 
 		public List<FilePath> GetItemFiles(object obj)
@@ -71,7 +71,7 @@ namespace MonoDevelop.D.Projects.Dub
 
 		public bool SupportsMixedFormats
 		{
-			get { return false; }
+			get { return true; }
 		}
 
 		public void WriteFile(Core.FilePath file, object obj, Core.IProgressMonitor monitor)

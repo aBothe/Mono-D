@@ -7,6 +7,10 @@ using System.IO;
 using System.CodeDom.Compiler;
 using MonoDevelop.Core;
 using MonoDevelop.Projects;
+using MonoDevelop.D.Projects;
+using D_Parser.Misc;
+using D_Parser.Resolver;
+using D_Parser.Dom;
 
 namespace MonoDevelop.D.Building
 {
@@ -36,6 +40,54 @@ namespace MonoDevelop.D.Building
         private static Regex gcclinkerRegex = new Regex(
             @"^\s*(?<file>.*):(?<line>\d*):((?<column>\d*):)?\s*(?<level>.*)\s*:\s(?<message>.*)",
             RegexOptions.Compiled | RegexOptions.ExplicitCapture);
+
+		/// <summary>
+		/// Checks a compilation return code, 
+		/// and adds an error result if the compiler results
+		/// show no errors.
+		/// </summary>
+		/// <param name="returnCode">
+		/// A <see cref="System.Int32"/>: A process return code
+		/// </param>
+		/// <param name="cr">
+		/// A <see cref="CompilerResults"/>: The return code from a compilation run
+		/// </param>
+		public static bool HandleReturnCode(IProgressMonitor monitor, BuildResult br, int returnCode)
+		{
+			if (returnCode != 0)
+			{
+				if (monitor != null)
+					monitor.Log.WriteLine("Exit code " + returnCode.ToString());
+
+				br.AddError(string.Empty, 0, 0, string.Empty,
+					GettextCatalog.GetString("Build failed - check build output for details"));
+				return false;
+			}
+			return true;
+		}
+
+		/// <summary>
+		/// Scans errorString line-wise for filename-line-message patterns (e.g. "myModule(1): Something's wrong here") and add these error locations to the CompilerResults cr.
+		/// </summary>
+		public static void HandleCompilerOutput(AbstractDProject Project, BuildResult br, string errorString)
+		{
+			var reader = new StringReader(errorString);
+			string next;
+
+			while ((next = reader.ReadLine()) != null)
+			{
+				var error = ErrorExtracting.FindError(next, reader);
+				if (error != null)
+				{
+					if (!Path.IsPathRooted(error.FileName))
+						error.FileName = Project.GetAbsoluteChildPath(error.FileName);
+
+					br.Append(error);
+				}
+			}
+
+			reader.Close();
+		}
 
         public static BuildError FindError(string errorString, TextReader reader)
         {
@@ -101,13 +153,16 @@ namespace MonoDevelop.D.Building
             if (match.Success)
             {
                 error.FileName = match.Groups["file"].Value;
-                error.Line = int.Parse(match.Groups["line"].Value);
+				int i;
+				int.TryParse(match.Groups["line"].Value, out i);
+				error.Line = i;
 
                 error.IsWarning = (match.Groups["level"].Value.Equals(warning, StringComparison.Ordinal) ||
                                    match.Groups["level"].Value.Equals(note, StringComparison.Ordinal));
                 error.ErrorText = match.Groups["message"].Value;
 
-                return error;
+				if(error.FileName.Length > 0 || error.ErrorText.Length > 0)
+					return error;
             }
 
             match = gcclinkerRegex.Match(errorString);
@@ -127,5 +182,84 @@ namespace MonoDevelop.D.Building
 
             return null;
         }
+
+		/// <summary>
+		/// Default OptLink regex for recognizing errors and their origins
+		/// </summary>
+		static Regex optlinkRegex = new Regex(
+			@"\n(?<obj>[a-zA-Z0-9/\\.]+)\((?<module>[a-zA-Z0-9]+)\) (?<offset>[a-zA-Z0-9 ]+)?(\r)?\n Error (?<code>\d*): (?<message>[a-zA-Z0-9_ :]+)",
+			RegexOptions.Compiled | RegexOptions.ExplicitCapture);
+
+		static Regex symbolUndefRegex = new Regex(
+			@"Symbol Undefined (?<mangle>[a-zA-Z0-9_]+)",
+			RegexOptions.Compiled | RegexOptions.ExplicitCapture);
+
+		public static void HandleOptLinkOutput(AbstractDProject Project,BuildResult br, string linkerOutput)
+		{
+			var matches = optlinkRegex.Matches(linkerOutput);
+
+			var ctxt = ResolutionContext.Create(Project == null ?
+												ParseCacheList.Create(DCompilerService.Instance.GetDefaultCompiler().ParseCache) :
+												Project.ParseCache, null, null);
+
+			ctxt.ContextIndependentOptions =
+				ResolutionOptions.IgnoreAllProtectionAttributes |
+				ResolutionOptions.DontResolveBaseTypes |
+				ResolutionOptions.DontResolveBaseClasses |
+				ResolutionOptions.DontResolveAliases;
+
+			foreach (Match match in matches)
+			{
+				var error = new BuildError();
+
+				// Get associated D source file
+				if (match.Groups["obj"].Success)
+				{
+					var obj = Project.GetAbsoluteChildPath(new FilePath(match.Groups["obj"].Value)).ChangeExtension(".d");
+
+					foreach (var pf in Project.Files)
+						if (pf.FilePath == obj)
+						{
+							error.FileName = pf.FilePath;
+							break;
+						}
+				}
+
+				var msg = match.Groups["message"].Value;
+
+				var symUndefMatch = symbolUndefRegex.Match(msg);
+
+				if (symUndefMatch.Success && symUndefMatch.Groups["mangle"].Success)
+				{
+					var mangledSymbol = symUndefMatch.Groups["mangle"].Value;
+					ITypeDeclaration qualifier;
+					try
+					{
+						var resSym = D_Parser.Misc.Mangling.Demangler.DemangleAndResolve(mangledSymbol, ctxt, out qualifier);
+						if (resSym is DSymbol)
+						{
+							var ds = resSym as DSymbol;
+							var ast = ds.Definition.NodeRoot as DModule;
+							if (ast != null)
+								error.FileName = ast.FileName;
+							error.Line = ds.Definition.Location.Line;
+							error.Column = ds.Definition.Location.Column;
+							msg = ds.Definition.ToString(false, true);
+						}
+						else
+							msg = qualifier.ToString();
+					}
+					catch (Exception ex)
+					{
+						msg = "<log analysis error> " + ex.Message;
+					}
+					error.ErrorText = msg + " could not be resolved - library reference missing?";
+				}
+				else
+					error.ErrorText = "Linker error " + match.Groups["code"].Value + " - " + msg;
+
+				br.Append(error);
+			}
+		}
     }
 }

@@ -184,10 +184,10 @@ namespace MonoDevelop.D.Building
 				out stdError,
 				out stdOut);
 
-			HandleCompilerOutput(br, stdError);
-			HandleCompilerOutput(br, stdOut);
-			HandleOptLinkOutput(br, stdOut);
-			HandleReturnCode(br, linkerExecutable, exitCode);
+			ErrorExtracting.HandleCompilerOutput(Project,br, stdError);
+			ErrorExtracting.HandleCompilerOutput(Project,br, stdOut);
+			ErrorExtracting.HandleOptLinkOutput(Project, br, stdOut);
+			ErrorExtracting.HandleReturnCode(monitor, br, exitCode);
 
 			return br;
 		}
@@ -282,9 +282,9 @@ namespace MonoDevelop.D.Building
 
 			int exitCode = ExecuteCommand (compilerExecutable, dmdArgs, Project.BaseDirectory, monitor, out stdError, out stdOutput);
 
-			HandleCompilerOutput (targetBuildResult, stdError);
-			HandleCompilerOutput (targetBuildResult, stdOutput);
-			HandleReturnCode (targetBuildResult, compilerExecutable, exitCode);
+			ErrorExtracting.HandleCompilerOutput(Project,targetBuildResult, stdError);
+			ErrorExtracting.HandleCompilerOutput(Project,targetBuildResult, stdOutput);
+			ErrorExtracting.HandleReturnCode (monitor,targetBuildResult, exitCode);
 
 			if (exitCode != 0) {
 				targetBuildResult.FailedBuildCount++;
@@ -329,7 +329,7 @@ namespace MonoDevelop.D.Building
 			if (!string.IsNullOrEmpty (stdOutput))
 				targetBuildResult.AddError (f.FilePath, 0, 0, "", stdOutput);
 
-			HandleReturnCode (targetBuildResult, Win32ResourceCompiler.Instance.Executable, _exitCode);
+			ErrorExtracting.HandleReturnCode (monitor,targetBuildResult, _exitCode);
 
 			if (_exitCode != 0) {
 				targetBuildResult.FailedBuildCount++;
@@ -385,8 +385,8 @@ namespace MonoDevelop.D.Building
                 out linkerErrorOutput,
                 out linkerOutput);
 
-			HandleOptLinkOutput (br, linkerOutput);
-			HandleReturnCode (br, linkerExecutable, exitCode);
+			ErrorExtracting.HandleOptLinkOutput (Project,br, linkerOutput);
+			ErrorExtracting.HandleReturnCode(monitor,br, exitCode);
 		}
 
         #region File naming
@@ -600,131 +600,10 @@ namespace MonoDevelop.D.Building
 
         #endregion
 
-        #region Compiler Error Parsing
-		/// <summary>
-		/// Default OptLink regex for recognizing errors and their origins
-		/// </summary>
-		static Regex optlinkRegex = new Regex (
-            @"\n(?<obj>[a-zA-Z0-9/\\.]+)\((?<module>[a-zA-Z0-9]+)\) (?<offset>[a-zA-Z0-9 ]+)?(\r)?\n Error (?<code>\d*): (?<message>[a-zA-Z0-9_ :]+)",
-            RegexOptions.Compiled | RegexOptions.ExplicitCapture);
-		
-		static Regex symbolUndefRegex = new Regex (
-            @"Symbol Undefined (?<mangle>[a-zA-Z0-9_]+)",
-            RegexOptions.Compiled | RegexOptions.ExplicitCapture);
-
-		private void HandleOptLinkOutput (BuildResult br, string linkerOutput)
-		{
-			var matches = optlinkRegex.Matches (linkerOutput);
-			
-			var ctxt = ResolutionContext.Create(Project == null ? 
-			                                    ParseCacheList.Create(DCompilerService.Instance.GetDefaultCompiler().ParseCache) : 
-			                                    Project.ParseCache, null, null);
-			
-			ctxt.ContextIndependentOptions = 
-				ResolutionOptions.IgnoreAllProtectionAttributes | 
-				ResolutionOptions.DontResolveBaseTypes |
-				ResolutionOptions.DontResolveBaseClasses | 
-				ResolutionOptions.DontResolveAliases;
-
-			foreach (Match match in matches) {
-				var error = new BuildError ();
-
-				// Get associated D source file
-				if (match.Groups ["obj"].Success) {
-					var obj = Project.GetAbsoluteChildPath (new FilePath (match.Groups ["obj"].Value)).ChangeExtension (".d");
-
-					foreach (var pf in Project.Files)
-						if (pf.FilePath == obj) {
-							error.FileName = pf.FilePath;
-							break;
-						}
-				}
-				
-				var msg = match.Groups ["message"].Value;
-				
-				var symUndefMatch = symbolUndefRegex.Match(msg);
-				
-				if(symUndefMatch.Success && symUndefMatch.Groups["mangle"].Success)
-				{
-					var mangledSymbol = symUndefMatch.Groups["mangle"].Value;
-					ITypeDeclaration qualifier;
-					try{
-						var resSym = D_Parser.Misc.Mangling.Demangler.DemangleAndResolve(mangledSymbol, ctxt, out qualifier);
-						if(resSym is DSymbol)
-						{
-							var ds = resSym as DSymbol;
-							var ast = ds.Definition.NodeRoot as DModule;
-							if(ast!=null)
-								error.FileName = ast.FileName;
-							error.Line = ds.Definition.Location.Line;
-							error.Column = ds.Definition.Location.Column;
-							msg = ds.Definition.ToString(false, true);
-						}
-						else
-							msg = qualifier.ToString();
-					}catch(Exception ex)
-					{
-						msg = "<log analysis error> "+ex.Message;
-					}
-					error.ErrorText = msg + " could not be resolved - library reference missing?";
-				}
-				else
-					error.ErrorText = "Linker error " + match.Groups ["code"].Value + " - " + msg;
-
-				br.Append (error);
-			}
-		}
-
-		/// <summary>
-		/// Scans errorString line-wise for filename-line-message patterns (e.g. "myModule(1): Something's wrong here") and add these error locations to the CompilerResults cr.
-		/// </summary>
-		protected void HandleCompilerOutput (BuildResult br, string errorString)
-		{
-			var reader = new StringReader (errorString);
-			string next;
-
-			while ((next = reader.ReadLine()) != null) {
-				var error = ErrorExtracting.FindError (next, reader);
-				if (error != null) {
-					if (!Path.IsPathRooted (error.FileName))
-						error.FileName = Project.GetAbsoluteChildPath (error.FileName);
-
-					br.Append (error);
-				}
-			}
-
-			reader.Close ();
-		}
-
-		/// <summary>
-		/// Checks a compilation return code, 
-		/// and adds an error result if the compiler results
-		/// show no errors.
-		/// </summary>
-		/// <param name="returnCode">
-		/// A <see cref="System.Int32"/>: A process return code
-		/// </param>
-		/// <param name="cr">
-		/// A <see cref="CompilerResults"/>: The return code from a compilation run
-		/// </param>
-		void HandleReturnCode (BuildResult br, string executable, int returnCode)
-		{
-			if (returnCode != 0) {
-				if (monitor != null)
-					monitor.Log.WriteLine ("Exit code " + returnCode.ToString ());
-
-				br.AddError (string.Empty, 0, 0, string.Empty,
-                    GettextCatalog.GetString ("Build failed - check build output for details"));
-			}
-		}
-        #endregion
-
-
-
 		/// <summary>
 		/// Executes a file and reports events related to the execution to the 'monitor' passed in the parameters.
 		/// </summary>
-		static int ExecuteCommand (
+		public static int ExecuteCommand (
             string command,
             string args,
             string baseDirectory,
