@@ -41,6 +41,7 @@ namespace MonoDevelop.D.Projects.Dub
 			// Add configurations for each parsed configuration etc.
 
 			MainProject.UpdateFilelist();
+			LoadUserProperties();
 		}
 		#endregion
 
