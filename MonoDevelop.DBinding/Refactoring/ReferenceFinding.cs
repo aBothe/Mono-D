@@ -53,7 +53,7 @@ namespace MonoDevelop.D.Refactoring
 		}
 
 		static IEnumerable<SearchResult> FindReferences(
-			DProject project,
+			AbstractDProject project,
 			INode member,
 			ISearchProgressMonitor monitor = null)
 		{

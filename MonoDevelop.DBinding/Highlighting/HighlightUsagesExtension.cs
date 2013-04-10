@@ -221,7 +221,7 @@ namespace MonoDevelop.D.Highlighting
 					return false;
 
 				var parseCache = Document.HasProject ?
-						(Document.Project as DProject).ParseCache :
+						(Document.Project as AbstractDProject).ParseCache :
 						ParseCacheList.Create( DCompilerService.Instance.GetDefaultCompiler().ParseCache);
 
 				var mr = rr[0] as DSymbol;

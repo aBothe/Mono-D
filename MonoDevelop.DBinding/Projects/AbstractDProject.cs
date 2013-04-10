@@ -30,7 +30,7 @@ namespace MonoDevelop.D.Projects
 		public readonly ParseCache LocalFileCache = new ParseCache { EnableUfcsCaching = false };
 		protected readonly List<DModule> _filelinkModulesToInsert = new List<DModule>();
 
-		public ParseCacheList ParseCache
+		public virtual ParseCacheList ParseCache
 		{
 			get
 			{
@@ -43,7 +43,7 @@ namespace MonoDevelop.D.Projects
 			yield return BaseDirectory;
 		}
 
-		public IEnumerable<string> IncludePaths
+		public virtual IEnumerable<string> IncludePaths
 		{
 			get
 			{
