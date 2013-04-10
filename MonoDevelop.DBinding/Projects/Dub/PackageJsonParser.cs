@@ -53,7 +53,7 @@ namespace MonoDevelop.D.Projects.Dub
 				while (rdr.Read())
 				{
 					if (rdr.TokenType == JsonToken.PropertyName)
-						dp.TryPopulateProperty(rdr.Value as string, rdr);
+						dp.MainProject.TryPopulateProperty(rdr.Value as string, rdr);
 					else if (rdr.TokenType == JsonToken.EndObject)
 						break;
 				}

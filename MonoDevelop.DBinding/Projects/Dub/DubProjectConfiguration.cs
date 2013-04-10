@@ -35,7 +35,7 @@ namespace MonoDevelop.D.Projects.Dub
 							c.Platform = string.Join("|",srz.Deserialize<string[]>(j));
 							break;
 						default:
-							if (!DubSolution.TryDeserializeBuildSetting(j, c.BuildSettings))
+							if (!c.BuildSettings.TryDeserializeBuildSetting(j))
 								j.Skip();
 							break;
 					}
