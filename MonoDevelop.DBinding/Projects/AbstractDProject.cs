@@ -91,7 +91,8 @@ namespace MonoDevelop.D.Projects
 			if (hasFileLinks.Count == 0)
 				analysisFinished_FileLinks = true;
 
-			LocalFileCache.BeginParse(GetSourcePaths(Ide.IdeApp.Workspace.ActiveConfiguration), BaseDirectory);
+			var paths = GetSourcePaths(Ide.IdeApp.Workspace.ActiveConfiguration);
+			LocalFileCache.BeginParse(paths, paths.FirstOrDefault());
 			//LocalFileCache.WaitForParserFinish();
 
 			/*

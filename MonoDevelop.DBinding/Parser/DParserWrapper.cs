@@ -61,7 +61,7 @@ namespace MonoDevelop.D.Parser
 			else
 				LastParsedMod = null;
 
-			var dprj = prj as DProject;
+			var dprj = prj as AbstractDProject;
 
 			// Remove obsolete ast from cache
 			DModule ast = null;
@@ -177,9 +177,9 @@ namespace MonoDevelop.D.Parser
 				var caches = new List<ParseCache>();
 
 				foreach(var p in Ide.IdeApp.Workspace.GetAllProjects())
-					if (p is DProject)
+					if (p is AbstractDProject)
 					{
-						dprj = p as DProject;
+						dprj = p as AbstractDProject;
 						if (dprj.LocalIncludeCache.Remove(file))
 							caches.Add(dprj.LocalIncludeCache);
 						if (dprj.LocalFileCache.Remove(file))
@@ -243,7 +243,13 @@ namespace MonoDevelop.D.Parser
 			if (pf.IsLink || pf.IsExternalToProject)
 				return pf.FilePath.FileNameWithoutExtension;
 
-			return pf.ProjectVirtualPath.ChangeExtension(null).ToString().Replace(Path.DirectorySeparatorChar, '.');
+			var dprj = pf.Project as AbstractDProject;
+
+			var sourcePaths = dprj.GetSourcePaths(Ide.IdeApp.Workspace.ActiveConfiguration);
+			foreach(var path in sourcePaths)
+				if(pf.FilePath.IsChildPathOf(path))
+					return pf.FilePath.ToRelative(path).ChangeExtension(null).ToString().Replace(Path.DirectorySeparatorChar, '.');
+			return "";
 		}
 
 		#region Converter methods
@@ -395,7 +401,7 @@ namespace MonoDevelop.D.Parser
 			return Parse(true, fileName, prj);
 		}
 		
-		public ParsedDocument Parse(bool storeAst, string fileName, Project project = null)
+		public override ParsedDocument Parse(bool storeAst, string fileName, Project project = null)
 		{
 			using (var sr = new StreamReader(fileName))
 				return Parse(storeAst, fileName, sr, project);
