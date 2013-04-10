@@ -2,6 +2,7 @@
 using MonoDevelop.Projects;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -51,12 +52,13 @@ namespace MonoDevelop.D.Projects.Dub
 
 		public void AddProjectAndSolutionConfiguration(DubProjectConfiguration cfg)
 		{
-			var slnCfg = ParentSolution.AddConfiguration(cfg.Name, false);
-			slnCfg.AddItem(this, true, "");
-			slnCfg.Id = cfg.Id;
-			slnCfg.Platform = cfg.Platform;
-
+			var slnCfg = new SolutionConfiguration(cfg.Name, cfg.Platform);
+			ParentSolution.Configurations.Add(slnCfg);
+			slnCfg.AddItem(this).Build = true;			
 			Configurations.Add(cfg);
+
+			if (Configurations.Count == 1)
+				DefaultConfigurationId = cfg.Id;
 		}
 	}
 }
