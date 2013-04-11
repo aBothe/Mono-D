@@ -7,6 +7,7 @@ using System.Text;
 using Newtonsoft.Json;
 using System.IO;
 using Newtonsoft.Json.Converters;
+using MonoDevelop.Projects;
 
 namespace MonoDevelop.D.Projects.Dub
 {
@@ -14,7 +15,9 @@ namespace MonoDevelop.D.Projects.Dub
 	{
 		public bool CanReadFile(FilePath file, Type expectedObjectType)
 		{
-			return file.FileName == "package.json";
+			return file.FileName == "package.json" &&
+				(expectedObjectType.Equals(typeof(WorkspaceItem)) ||
+				expectedObjectType.Equals(typeof(SolutionEntityItem)));
 		}
 
 		public bool CanWriteFile(object obj)
@@ -44,8 +47,24 @@ namespace MonoDevelop.D.Projects.Dub
 
 		public object ReadFile(FilePath file, Type expectedType, IProgressMonitor monitor)
 		{
+			object ret;
 			var serializer = new JsonSerializer();
-			var dp = new DubSolution(file);
+
+			DubSolution sln;
+			var dp = new DubProject { FileName = file, BaseDirectory = file.ParentDirectory };
+			if (expectedType.Equals(typeof(SolutionEntityItem))){
+				ret = dp;
+				sln = null;
+			}
+			else if(expectedType.Equals(typeof(WorkspaceItem)))
+			{
+				ret = sln = new DubSolution();
+				sln.RootFolder.AddItem(dp, false);
+				sln.StartupItem = dp;
+				dp.AddProjectAndSolutionConfiguration(new DubProjectConfiguration { Name = "Default", Id = "Default" });
+			}
+			else
+				return null;
 
 			using (var s = File.OpenText(file))
 			using(var rdr = new JsonTextReader(s))
@@ -53,15 +72,17 @@ namespace MonoDevelop.D.Projects.Dub
 				while (rdr.Read())
 				{
 					if (rdr.TokenType == JsonToken.PropertyName)
-						dp.MainProject.TryPopulateProperty(rdr.Value as string, rdr);
+						dp.TryPopulateProperty(rdr.Value as string, rdr);
 					else if (rdr.TokenType == JsonToken.EndObject)
 						break;
 				}
 			}
 
-			dp.FinalizeDeserialization();
+			dp.UpdateFilelist();
+			if (sln != null)
+				sln.LoadUserProperties();
 
-			return dp;
+			return ret;
 		}
 
 		public bool SupportsFramework(Core.Assemblies.TargetFramework framework)

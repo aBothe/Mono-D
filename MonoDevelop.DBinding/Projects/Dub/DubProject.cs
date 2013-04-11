@@ -18,6 +18,7 @@ namespace MonoDevelop.D.Projects.Dub
 		public readonly DubBuildSettings GlobalBuildSettings = new DubBuildSettings();
 
 		public override string Name { get; set; } // override because the name is normally derived from the file name -- package.json is not the project's file name!
+		public override FilePath FileName { get; set; }
 		public string Homepage;
 		public string Copyright;
 		public List<string> Authors { get { return authors; } }
@@ -65,11 +66,12 @@ namespace MonoDevelop.D.Projects.Dub
 			var settingsToScan = new List<DubBuildSettings>(4);
 			settingsToScan.Add(GlobalBuildSettings);
 
-			if (sel == null)
+			DubProjectConfiguration pcfg;
+			if (sel == null || (pcfg = GetConfiguration(sel) as DubProjectConfiguration) == null)
 				foreach (DubProjectConfiguration cfg in Configurations)
 					settingsToScan.Add(cfg.BuildSettings);
 			else
-				settingsToScan.Add((GetConfiguration(sel) as DubProjectConfiguration).BuildSettings);
+				settingsToScan.Add(pcfg.BuildSettings);
 
 			return settingsToScan;
 		}
@@ -111,12 +113,6 @@ namespace MonoDevelop.D.Projects.Dub
 		#endregion
 
 		#region Constructor & Init
-		public DubProject(DubSolution solution)
-		{
-			BaseDirectory = solution.BaseDirectory;
-			solution.RootFolder.AddItem(this, false);
-		}
-
 		public void UpdateFilelist()
 		{
 			LocalIncludeCache.ParsedDirectories.AddRange(PhysicalDependencyPaths);
@@ -176,7 +172,8 @@ namespace MonoDevelop.D.Projects.Dub
 				case "configurations":
 					if (!j.Read() || j.TokenType != JsonToken.StartArray)
 						throw new JsonReaderException("Expected [ when parsing Configurations");
-					ParentSolution.Configurations.Clear();
+					if(ParentSolution != null)
+						ParentSolution.Configurations.Clear();
 					Configurations.Clear();
 
 					while (j.Read() && j.TokenType != JsonToken.EndArray)
@@ -227,9 +224,12 @@ namespace MonoDevelop.D.Projects.Dub
 
 		public void AddProjectAndSolutionConfiguration(DubProjectConfiguration cfg)
 		{
-			var slnCfg = new SolutionConfiguration(cfg.Name, cfg.Platform);
-			ParentSolution.Configurations.Add(slnCfg);
-			slnCfg.AddItem(this).Build = true;
+			if (ParentSolution != null)
+			{
+				var slnCfg = new SolutionConfiguration(cfg.Name, cfg.Platform);
+				ParentSolution.Configurations.Add(slnCfg);
+				slnCfg.AddItem(this).Build = true;
+			}
 			Configurations.Add(cfg);
 
 			if (Configurations.Count == 1)
