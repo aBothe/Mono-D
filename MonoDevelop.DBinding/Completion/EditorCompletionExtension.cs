@@ -44,7 +44,7 @@ namespace MonoDevelop.D
 			{
 				if (completionContext.TriggerOffset > 1){
 					var prevChar = document.Editor.GetCharAt(completionContext.TriggerOffset - 2);
-					if(char.IsLetterOrDigit(prevChar) || prevChar == '"') // Don't trigger if we're already typing an identifier or if we're typing a string suffix (kinda hacky though)
+					if(char.IsLetterOrDigit(prevChar) || prevChar == '"' || prevChar == '#') // Don't trigger if we're already typing an identifier or if we're typing a string suffix (kinda hacky though)
 						return null;
 				}
 			}
