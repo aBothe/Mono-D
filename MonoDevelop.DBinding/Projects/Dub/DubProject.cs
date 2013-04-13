@@ -102,7 +102,13 @@ namespace MonoDevelop.D.Projects.Dub
 					for (int i = l.Count - 1; i >= 0; i--) // Ignore architecture/os/compiler restrictions for now
 						for (int j = l[i].Flags.Length - 1; j >= 0; j--)
 						{
-							yield return l[i].Flags[j];
+							var d = l[i].Flags[j];
+							if (!Path.IsPathRooted(d))
+								d = BaseDirectory.Combine(d).ToString();
+
+							if (!Directory.Exists(d))
+								continue;
+
 							returnedOneItem = true;
 						}
 				}
