@@ -24,11 +24,16 @@ namespace MonoDevelop.D.Projects.Dub
 		{
 			get
 			{
-				return StartupItem != null ? StartupItem.Name : base.Name;
+				return StartupItem != null ? StartupItem.FileName : base.FileName;
 			}
 			set
 			{
 			}
+		}
+
+		public DubSolution(Core.FilePath slnPath)
+		{
+			base.FileName = slnPath;
 		}
 	}
 }

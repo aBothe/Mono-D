@@ -58,7 +58,7 @@ namespace MonoDevelop.D.Projects.Dub
 			}
 			else if(expectedType.Equals(typeof(WorkspaceItem)))
 			{
-				ret = sln = new DubSolution();
+				ret = sln = new DubSolution(file);
 				sln.RootFolder.AddItem(dp, false);
 				sln.StartupItem = dp;
 				dp.AddProjectAndSolutionConfiguration(new DubProjectConfiguration { Name = "Default", Id = "Default" });
