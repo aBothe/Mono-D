@@ -20,6 +20,7 @@ using MonoDevelop.Ide.Gui;
 using MonoDevelop.Components.Commands;
 using MonoDevelop.D.Profiler.Commands;
 using MonoDevelop.D.Resolver;
+using Newtonsoft.Json;
 
 namespace MonoDevelop.D.Projects
 {
@@ -34,6 +35,9 @@ namespace MonoDevelop.D.Projects
 		public readonly List<string> BuiltObjects = new List<string> ();
 		[ItemProperty("PreferOneStepBuild")]
 		public bool PreferOneStepBuild = true;
+
+		public const string ConfigJson = "projectconfig.json";
+		public ExtendedProjectConfig ExtendedConfiguration;
 
 		/// <summary>
 		/// List of GUIDs that identify project items within their solution.
@@ -400,25 +404,31 @@ namespace MonoDevelop.D.Projects
 
 		protected override void DoExecute (IProgressMonitor monitor, ExecutionContext context, ConfigurationSelector configuration)
 		{
+			bool executeCustomCommand = 
+				ExtendedConfiguration != null && 
+				!string.IsNullOrWhiteSpace(ExtendedConfiguration.RunCommand);
+
 			var conf = GetConfiguration (configuration) as DProjectConfiguration;
 
 			if (conf == null)
 				return;
 
-			bool pause = conf.PauseConsoleOutput;
-			IConsole console;
-
-			if (conf.CompileTarget != DCompileTarget.Executable) {
+			if (conf.CompileTarget != DCompileTarget.Executable || executeCustomCommand) {
 				MessageService.ShowMessage ("Compile target is not an executable!");
 				return;
 			}
 
-			monitor.Log.WriteLine ("Running project...");
+			bool pause = conf.PauseConsoleOutput;
+			IConsole console;
 
 			if (conf.ExternalConsole)
 				console = context.ExternalConsoleFactory.CreateConsole (!pause);
 			else
 				console = context.ConsoleFactory.CreateConsole (!pause);
+
+			monitor.Log.WriteLine("Running project...");
+
+			
 
 			var operationMonitor = new AggregatedOperationMonitor (monitor);
 
@@ -489,6 +499,41 @@ namespace MonoDevelop.D.Projects
 			var ret = handler.Serialize (this);
 			
 			return ret;
+		}
+
+		protected override void OnSaved(SolutionItemEventArgs args)
+		{
+			base.OnSaved(args);
+
+			if (ExtendedConfiguration != null)
+			{
+				try
+				{
+					var json = JsonConvert.SerializeObject(ExtendedConfiguration, Newtonsoft.Json.Formatting.Indented);
+					File.WriteAllText(BaseDirectory.Combine(ConfigJson), json);
+				}
+				catch 
+				{ 
+				}
+			}
+		}
+
+		protected override void OnEndLoad()
+		{
+			var configJson = BaseDirectory.Combine(ConfigJson);
+			if (File.Exists(configJson))
+			{
+				try
+				{
+					var contents = File.ReadAllText(configJson);
+					ExtendedConfiguration = JsonConvert.DeserializeObject<ExtendedProjectConfig>(contents);
+				}
+				catch 
+				{
+				}
+			}
+
+			base.OnEndLoad();
 		}
 		#endregion
 	}

@@ -192,6 +192,7 @@
     <Compile Include="Projects\Dub\DubProject.cs" />
     <Compile Include="Projects\Dub\DubProjectConfiguration.cs" />
     <Compile Include="Projects\Dub\PackageJsonParser.cs" />
+    <Compile Include="Projects\ProjectJsonConfig.cs" />
     <Compile Include="Refactoring\CodeActions\DCodeActionSource.cs" />
     <Compile Include="Refactoring\CodeActions\ImportSymbol.cs" />
     <Compile Include="Refactoring\Commands.cs" />

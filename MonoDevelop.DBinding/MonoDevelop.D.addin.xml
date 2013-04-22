@@ -6,7 +6,7 @@
 	copyright=""
 	description="D Language Binding"
 	category="Language bindings"
-	version="0.5.2.1">
+	version="0.5.2.2">
 
 	<!-- Resources -->
 
@@ -103,6 +103,7 @@
 					insertbefore="AllFiles"
 					_label = "D Files"
 								extensions = "*.d,*.di"/>
+		<FileFilter id ="dubPrj" insertafter="D" _label ="Dub projects" extensions ="package.json"/>
 
 		<FileFilter id="RC"
 								insertbefore="AllFiles"

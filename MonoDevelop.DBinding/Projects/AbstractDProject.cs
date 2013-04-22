@@ -4,11 +4,9 @@ using D_Parser.Parser;
 using MonoDevelop.D.Building;
 using MonoDevelop.D.Resolver;
 using MonoDevelop.Projects;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace MonoDevelop.D.Projects
 {
@@ -175,11 +173,12 @@ namespace MonoDevelop.D.Projects
 
 		protected override void OnEndLoad()
 		{
+			base.OnEndLoad();
+
 			Compiler.ParseCache.FinishedParsing += new D_Parser.Misc.ParseCache.ParseFinishedHandler(GlobalParseCache_FinishedParsing);
+
 			UpdateLocalIncludeCache();
 			UpdateParseCache();
-
-			base.OnEndLoad();
 		}
 		#endregion
 	}
