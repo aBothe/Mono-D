@@ -6,7 +6,7 @@
 	copyright=""
 	description="D Language Binding"
 	category="Language bindings"
-	version="0.5.2.2">
+	version="0.5.2.3">
 
 	<!-- Resources -->
 
@@ -20,6 +20,7 @@
 
 	<Runtime>
 		<Import assembly="D_Parser.dll"/>
+		<Import assembly="Newtonsoft.Json.dll"/>
 	</Runtime>
 
 	<Extension path = "/MonoDevelop/Core/StockIcons">
