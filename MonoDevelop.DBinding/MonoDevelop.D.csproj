@@ -57,7 +57,7 @@
     <DefineConstants>DEBUG</DefineConstants>
     <CustomCommands>
       <CustomCommands>
-        <Command type="Execute" command="..\..\tutorial.lib\monodevelop\main\build\bin\MonoDevelop.exe" workingdir="..\..\tutorial.lib\monodevelop\main\build\bin" />
+        <Command type="Execute" command="/opt/xs-4.0.2-mono-d/monodevelop" workingdir="" />
       </CustomCommands>
     </CustomCommands>
   </PropertyGroup>
@@ -88,12 +88,24 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Data" />
     <Reference Include="Mono.Cairo" />
-    <Reference Include="gdk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
-    <Reference Include="gtk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
-    <Reference Include="gtk-dotnet, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
-    <Reference Include="atk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
-    <Reference Include="glib-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
-    <Reference Include="pango-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
+    <Reference Include="gdk-sharp">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="gtk-sharp">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="gtk-dotnet">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="atk-sharp">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="glib-sharp">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="pango-sharp">
+      <Private>False</Private>
+    </Reference>
     <Reference Include="ICSharpCode.NRefactory">
       <HintPath>..\ext\ICSharpCode.NRefactory.dll</HintPath>
       <Private>False</Private>
