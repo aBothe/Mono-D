@@ -39,6 +39,7 @@
     <RunCodeAnalysis>False</RunCodeAnalysis>
     <RunSourceAnalysis>False</RunSourceAnalysis>
     <OutputPath>bin\Debug\</OutputPath>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>full</DebugType>
@@ -57,9 +58,14 @@
     <DefineConstants>DEBUG</DefineConstants>
     <CustomCommands>
       <CustomCommands>
-        <Command type="Execute" command="/opt/xs-4.0.2-mono-d/monodevelop" workingdir="" />
+        <Command type="Execute" command="/opt/mono/lib/monodevelop/bin/MonoDevelop.exe" workingdir="" />
       </CustomCommands>
     </CustomCommands>
+    <EnvironmentVariables>
+      <EnvironmentVariables>
+        <Variable name="LD_LIBRARY_PATH" value="/opt/mono/lib:$LD_LIBRARY_PATH" />
+      </EnvironmentVariables>
+    </EnvironmentVariables>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>full</DebugType>
