@@ -19,7 +19,9 @@ namespace MonoDevelop.D.Completion
 
 		public DModule Ast
 		{
-			get { return (Document.ParsedDocument as ParsedDModule).DDom; }
+			get { 
+				var doc = Document.ParsedDocument as ParsedDModule;
+				return doc != null ? doc.DDom : null; }
 		}
 
 		public AstUpdater(Document doc, TextEditorData ed) { Document = doc; Editor = ed; }
