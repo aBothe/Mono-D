@@ -9,7 +9,7 @@ namespace MonoDevelop.D
 		private global::Gtk.Label label4;
 		private global::Gtk.Entry text_BuildArgs;
 		private global::Gtk.Entry text_CompilerExecutable;
-		
+
 		protected virtual void Build ()
 		{
 			global::Stetic.Gui.Initialize (this);

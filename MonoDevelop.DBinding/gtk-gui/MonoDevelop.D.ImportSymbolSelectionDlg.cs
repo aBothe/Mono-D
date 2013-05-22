@@ -8,7 +8,7 @@ namespace MonoDevelop.D
 		private global::Gtk.TreeView list;
 		private global::Gtk.Button buttonCancel;
 		private global::Gtk.Button buttonOk;
-		
+
 		protected virtual void Build ()
 		{
 			global::Stetic.Gui.Initialize (this);

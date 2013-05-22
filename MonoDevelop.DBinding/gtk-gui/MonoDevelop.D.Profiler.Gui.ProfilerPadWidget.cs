@@ -14,7 +14,7 @@ namespace MonoDevelop.D.Profiler.Gui
 		private global::Gtk.Toolbar toolbar2;
 		private global::Gtk.ScrolledWindow GtkScrolledWindow;
 		private global::Gtk.NodeView nodeView;
-		
+
 		protected virtual void Build ()
 		{
 			global::Stetic.Gui.Initialize (this);

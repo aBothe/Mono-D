@@ -7,7 +7,7 @@ namespace MonoDevelop.D
 		private global::Gtk.FileChooserWidget file_chooser_widget;
 		private global::Gtk.Button buttonCancel;
 		private global::Gtk.Button buttonOk;
-		
+
 		protected virtual void Build ()
 		{
 			global::Stetic.Gui.Initialize (this);
@@ -23,7 +23,6 @@ namespace MonoDevelop.D
 			// Container child dialog1_VBox.Gtk.Box+BoxChild
 			this.file_chooser_widget = new global::Gtk.FileChooserWidget (((global::Gtk.FileChooserAction)(0)));
 			this.file_chooser_widget.Name = "file_chooser_widget";
-			this.file_chooser_widget.ShowHidden = true;
 			w1.Add (this.file_chooser_widget);
 			global::Gtk.Box.BoxChild w2 = ((global::Gtk.Box.BoxChild)(w1 [this.file_chooser_widget]));
 			w2.Position = 0;
