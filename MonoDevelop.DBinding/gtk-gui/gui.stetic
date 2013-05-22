@@ -2,9 +2,10 @@
 <stetic-interface>
   <configuration>
     <images-root-path>..</images-root-path>
-    <target-gtk-version>2.12</target-gtk-version>
+    <target-gtk-version>2.4</target-gtk-version>
   </configuration>
   <import>
+    <widget-library name="glade-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
     <widget-library name="../../ext/Mono.TextEditor.dll" />
     <widget-library name="../../ext/MonoDevelop.DesignerSupport.dll" />
     <widget-library name="../../ext/MonoDevelop.Ide.dll" />
@@ -2499,7 +2500,7 @@ This is mainly activated when using the gdc compiler.</property>
     <child>
       <widget class="Gtk.Table" id="table1">
         <property name="MemberName" />
-        <property name="NRows">4</property>
+        <property name="NRows">5</property>
         <property name="NColumns">2</property>
         <property name="RowSpacing">6</property>
         <property name="ColumnSpacing">6</property>
@@ -2517,6 +2518,33 @@ This is mainly activated when using the gdc compiler.</property>
         </child>
         <child>
           <placeholder />
+        </child>
+        <child>
+          <placeholder />
+        </child>
+        <child>
+          <widget class="Gtk.CheckButton" id="check_IndentPastedCodeLines">
+            <property name="MemberName" />
+            <property name="CanFocus">True</property>
+            <property name="Label" translatable="yes">Automatically indent pasted code lines</property>
+            <property name="DrawIndicator">True</property>
+            <property name="HasLabel">True</property>
+            <property name="UseUnderline">True</property>
+          </widget>
+          <packing>
+            <property name="TopAttach">3</property>
+            <property name="BottomAttach">4</property>
+            <property name="LeftAttach">1</property>
+            <property name="RightAttach">2</property>
+            <property name="AutoSize">True</property>
+            <property name="YOptions">Fill</property>
+            <property name="XExpand">True</property>
+            <property name="XFill">True</property>
+            <property name="XShrink">False</property>
+            <property name="YExpand">False</property>
+            <property name="YFill">True</property>
+            <property name="YShrink">False</property>
+          </packing>
         </child>
         <child>
           <widget class="Gtk.CheckButton" id="check_KeepAlignmentSpaces">

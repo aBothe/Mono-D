@@ -13,6 +13,7 @@ namespace MonoDevelop.D.Formatting
 			p.CommentOutStandardHeaders = chk_CommentOutStdHeaders.Active;
 			p.InsertStarAtCommentNewLine = chk_InsertStarAtCommentNewLine.Active;
 			p.KeepAlignmentSpaces = check_KeepAlignmentSpaces.Active;
+			p.IndentPastedCodeLines = check_IndentPastedCodeLines.Active;
 		}
 
 		public void Load(DFormattingPolicy p)
@@ -23,6 +24,7 @@ namespace MonoDevelop.D.Formatting
 			chk_CommentOutStdHeaders.Active = p.CommentOutStandardHeaders;
 			chk_InsertStarAtCommentNewLine.Active = p.InsertStarAtCommentNewLine;
 			check_KeepAlignmentSpaces.Active = p.KeepAlignmentSpaces;
+			check_IndentPastedCodeLines.Active = p.IndentPastedCodeLines;
 		}
 
 		public FormattingPanelWidget ()
