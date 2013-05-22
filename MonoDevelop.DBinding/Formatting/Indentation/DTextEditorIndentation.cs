@@ -104,6 +104,9 @@ namespace MonoDevelop.D.Formatting.Indentation
 		
 		void HandleTextPaste (int insertionOffset, string text, int insertedChars)
 		{
+			if (!Policy.IndentPastedCodeLines)
+				return;
+
 			using (Editor.OpenUndoGroup())
 			{
 				var documentLine = Editor.GetLineByOffset(insertionOffset + insertedChars);

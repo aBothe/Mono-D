@@ -16,6 +16,7 @@ namespace MonoDevelop.D.Formatting
 			IndentSwitchBody = true;
 			LabelIndentStyle = GotoLabelIndentStyle.OneLess;
 			KeepAlignmentSpaces = true;
+			IndentPastedCodeLines = true;
 		}
 
 		public bool Equals (DFormattingPolicy other)
@@ -61,6 +62,8 @@ namespace MonoDevelop.D.Formatting
 		}
 		[ItemProperty]
 		public bool KeepAlignmentSpaces { get; set; }
+		[ItemProperty]
+		public bool IndentPastedCodeLines {	get; set; }
 		#endregion
 	}
 }
