@@ -157,6 +157,7 @@
     <Compile Include="Completion\EditorCompletionExtension.cs" />
     <Compile Include="DLanguageBinding.cs" />
     <Compile Include="Formatting\DCodeFormatter.cs" />
+    <Compile Include="Projects\ProjectPad\AbstractDProjectNodeBuilder.cs" />
     <Compile Include="Gui\DModuleOutlineExtension.cs" />
     <Compile Include="Gui\DToolTipProvider.cs" />
     <Compile Include="Gui\DToolTipWindow.cs" />
@@ -194,7 +195,9 @@
     <Compile Include="Projects\Dub\DubProject.cs" />
     <Compile Include="Projects\Dub\DubProjectConfiguration.cs" />
     <Compile Include="Projects\Dub\PackageJsonParser.cs" />
+    <Compile Include="Projects\MonoDevelop.Ide.Gui.Pads.ProjectPad\FolderNodeBuilder.cs" />
     <Compile Include="Projects\ProjectJsonConfig.cs" />
+    <Compile Include="Projects\ProjectPad\DProjectReferenceNodeBuilder.cs" />
     <Compile Include="Refactoring\CodeActions\DCodeActionSource.cs" />
     <Compile Include="Refactoring\CodeActions\ImportSymbol.cs" />
     <Compile Include="Refactoring\Commands.cs" />
