@@ -21,6 +21,7 @@ namespace MonoDevelop.D.Projects
 		/// Stores parse information from project-wide includes
 		/// </summary>
 		public readonly ParseCache LocalIncludeCache = new ParseCache { EnableUfcsCaching = false };
+		public readonly DProjectReferenceCollection References = new DProjectReferenceCollection ();
 
 		/// <summary>
 		/// Stores parse information from files inside the project's base directory

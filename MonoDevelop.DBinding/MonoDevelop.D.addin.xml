@@ -287,6 +287,12 @@
 					_label="Generate Makefile"/>
 	</Extension>
 
+	<Extension path = "/MonoDevelop/Ide/Pads/ProjectPad">
+		<NodeBuilder id = "DPrjNodeExtension" class = "MonoDevelop.D.Projects.ProjectPad.DProjectNodeExtension"/>
+		<NodeBuilder id = "DPrjRefFolderNodeExtension" class = "MonoDevelop.D.Projects.ProjectPad.DProjectReferenceFolderNodeBuilder"/>
+		<NodeBuilder id = "DPrjRefNodeExtension" class = "MonoDevelop.D.Projects.ProjectPad.DProjectReferenceNodeBuilder"/>
+	</Extension>
+
 	<Extension path = "/MonoDevelop/Ide/ContextMenu/ProjectPad">
 		<Condition id="ItemType" value="MonoDevelop.D.Projects.DProject">
 			<CommandItem id = "MonoDevelop.D.Refactoring.Commands.GenerateMakefile"/>
