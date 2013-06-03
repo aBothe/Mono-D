@@ -2,6 +2,8 @@ using Gtk;
 using MonoDevelop.D.Projects;
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using MonoDevelop.Projects;
 
 namespace MonoDevelop.D
 {
@@ -28,6 +30,9 @@ namespace MonoDevelop.D
 			
 			// Init new project dep list
 			int i = 0;
+			var refs_ = Project.References.ReferencedProjectIds;
+			var refs = refs_ as IList<string> ?? new List<string>(refs_);
+
 			foreach(var prj in Project.ParentSolution.GetAllProjects())
 			{
 				if (prj == Project)
@@ -37,7 +42,7 @@ namespace MonoDevelop.D
 					CanFocus=true,
 					DrawIndicator=true,
 					UseUnderline=false,
-					Active = Project.ProjectDependencies.Contains(prj.ItemId)
+					Active = refs.Contains(prj.ItemId)
 				};
 				
 				cb.Data.Add("prj", prj);
@@ -54,18 +59,37 @@ namespace MonoDevelop.D
 
 		public void Store()
 		{
-			Project.ProjectDependencies.Clear();
+			var tbl = new List<string>(Project.References.ReferencedProjectIds);
+			var refs = Project.References as DProject.DefaultReferenceCollection;
+
 			foreach (var i in vbox_ProjectDeps)
 			{
 				var cb = i as CheckButton;
 				
-				if (cb == null || !cb.Active)
+				if (cb == null)
 					continue;
-				
+
 				var prj = cb.Data["prj"] as DProject;
-				if(prj!=null)
-					Project.ProjectDependencies.Add(prj.ItemId);
+				if (prj == null)
+					continue;
+
+				var id = prj.ItemId;
+
+				if (cb.Active) {
+					if (!tbl.Contains (id))
+						refs.ProjectDependencies.Add(id);
+					else
+						tbl.Remove (id);
+				} else {
+					if (tbl.Contains (id)) {
+						refs.ProjectDependencies.Remove (id);
+						tbl.Remove (id);
+					}
+				}
 			}
+
+			foreach (var id in tbl)
+				refs.ProjectDependencies.Remove (id);
 		}
 	}
 }

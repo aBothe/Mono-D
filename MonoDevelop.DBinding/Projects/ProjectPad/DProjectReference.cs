@@ -28,36 +28,86 @@ using System.Collections.Generic;
 using D_Parser.Misc;
 using MonoDevelop.D.Projects;
 using System.ComponentModel;
+using MonoDevelop.Projects;
+using System.IO;
 
-namespace MonoDevelop.D
+namespace MonoDevelop.D.Projects.ProjectPad
 {
-	public enum ReferenceType
-	{
-		Project,
-		Package,
-	}
-
-	public class DProjectReference : INotifyPropertyChanged
+	class DProjectReference : INotifyPropertyChanged
 	{
 		public readonly AbstractDProject OwnerProject;
 		public readonly ReferenceType ReferenceType;
 
-		public virtual string Name {get{return "";}}
-		public virtual bool IsValid {get{return false;}}
-		public virtual string ValidationErrorMessage{get{return "Invalid reference";}}
-
-		public virtual IEnumerable<string> GetIncludePaths() {
-			return new[]{string.Empty};
+		string reference;
+		public string Reference
+		{
+			get{return reference;}
+			set{
+				reference = value;
+				PropChanged ("Reference");
+			}
 		}
 
-		public virtual IEnumerable<ParseCache> GetParseCaches() {
-			return new[]{new ParseCache()};
+		public Project ReferencedProject
+		{
+			get{
+				if (ReferenceType != ReferenceType.Project)
+					return null;
+
+				foreach (var prj in Ide.IdeApp.Workspace.GetAllProjects())
+					if (prj.ItemId == reference)
+						return prj;
+
+				return new UnknownProject ();
+			}
 		}
 
-		public DProjectReference (AbstractDProject Owner, ReferenceType refType)
+		public virtual string Name {
+			get{ 
+				switch (ReferenceType) {
+					case ReferenceType.Package:
+						return reference;
+					case ReferenceType.Project:
+						var prj = ReferencedProject;
+						return prj == null ? "<No Project specified>" : prj.Name;
+					default:
+						throw new InvalidDataException ("Invalid case");
+				}
+			}
+		}
+
+		public virtual bool IsValid {
+			get{
+				switch (ReferenceType) {
+					case ReferenceType.Package:
+						return Directory.Exists (reference);
+					case ReferenceType.Project:
+						var prj = ReferencedProject;
+						return prj != null && !(prj is UnknownProject);
+					default:
+						throw new InvalidDataException ("Invalid case");
+				}
+			}
+		}
+
+		public virtual string ValidationErrorMessage{
+			get{
+				switch (ReferenceType) {
+					case ReferenceType.Package:
+						return "Directory '"+reference+"' not found";
+					case ReferenceType.Project:
+						return "Invalid or unknown project";
+					default:
+						throw new InvalidDataException ("Invalid case");
+				}
+			}
+		}
+
+		public DProjectReference (AbstractDProject Owner, ReferenceType refType, string reference)
 		{
 			OwnerProject = Owner;
 			ReferenceType = refType;
+			this.reference = reference;
 		}
 
 		protected void PropChanged(string n)

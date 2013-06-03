@@ -57,7 +57,7 @@ namespace MonoDevelop.D.Projects
 				yield return i;
 			
 			bool takeDefSelector = configSelector == null;
-			foreach (var dep in DProject.GetSortedProjectDependencies(Project))
+			foreach (var dep in Project.ParentSolution.GetAllProjectsWithTopologicalSort(configSelector))
 			{
 				if(takeDefSelector)
 					configSelector = dep.DefaultConfiguration.Selector;

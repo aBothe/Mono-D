@@ -44,7 +44,9 @@ namespace MonoDevelop.D.Projects.ProjectPad
 		{
 			var project = dataObject as AbstractDProject;
 
-			builder.AddChild (project.References);
+			var refs = project.References;
+			if(refs != null)
+				builder.AddChild (refs);
 
 			base.BuildChildNodes(builder, dataObject);
 		}

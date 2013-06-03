@@ -63,15 +63,21 @@ namespace MonoDevelop.D.Projects.ProjectPad
 
 		public override void BuildChildNodes (ITreeBuilder ctx, object dataObject)
 		{
-			var refs = (DProjectReferenceCollection) dataObject;
-			refs.CollectionChanged += ProjectReferences_CollectionChanged;
-			foreach (DProjectReference pref in refs)
-				ctx.AddChild (pref);
+			var refs = dataObject as DProjectReferenceCollection;
+			refs.Update += ProjectReferences_CollectionChanged;
+
+			if (refs.HasReferences)
+			{
+				foreach (var incl in refs.Includes)
+					ctx.AddChild (new DProjectReference(refs.Owner, ReferenceType.Package, incl));
+				foreach(var p in refs.ReferencedProjectIds)
+					ctx.AddChild(new DProjectReference(refs.Owner, ReferenceType.Project, p));
+			}
 		}
 
 		public override bool HasChildNodes (ITreeBuilder builder, object dataObject)
 		{
-			return ((DProjectReferenceCollection) dataObject).Count > 0;
+			return ((DProjectReferenceCollection) dataObject).HasReferences;
 		}
 
 		public override int CompareObjects (ITreeNavigator thisNode, ITreeNavigator otherNode)
@@ -79,9 +85,10 @@ namespace MonoDevelop.D.Projects.ProjectPad
 			return -1;
 		}
 
-		void ProjectReferences_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+		void ProjectReferences_CollectionChanged(object sender, EventArgs e)
 		{
-			var pref = sender as DProjectReference;
+			Context.GetTreeBuilder ().UpdateChildren ();
+			/*var pref = sender as DProjectReference;
 			if (pref == null)
 				return;
 
@@ -105,7 +112,7 @@ namespace MonoDevelop.D.Projects.ProjectPad
 				break;
 			default:
 				throw new InvalidOperationException ("Invalid collection-changed action type");
-			}
+			}*/
 		} 
 
 		void OnRemoveReference (object sender, ProjectReferenceEventArgs e)
@@ -214,12 +221,12 @@ namespace MonoDevelop.D.Projects.ProjectPad
 		public void AddReferenceToProject ()
 		{
 			var p = (AbstractDProject) CurrentNode.GetParentDataItem (typeof(AbstractDProject), false);
-			if (p.References.AddReference()) {
+			if (p.References.CanAdd && p.References.AddReference()) {
 				IdeApp.ProjectOperations.Save (p);
 				CurrentNode.Expanded = true;
 			}
 		}
-
+		/*
 		bool HasCircularReference (AbstractDProject project, string targetProject)
 		{
 			bool result = ProjectReferencesProject (project, targetProject);
@@ -228,20 +235,24 @@ namespace MonoDevelop.D.Projects.ProjectPad
 			return result;
 		}
 
-		bool ProjectReferencesProject (AbstractDProject project, string targetProject)
+		bool ProjectReferencesProject (Project project, string targetProject)
 		{
 			if (project.Name == targetProject)
 				return true;
 
-			foreach (DProjectReference pr in project.References) {
-				if (pr.ReferenceType != ReferenceType.Project)
-					continue;
+			var prjs = project.ParentSolution.GetAllProjects ();
+			var dprj = project as AbstractDProject;
 
-				var pref = project.ParentSolution.FindProjectByName (pr.Name) as AbstractDProject;
-				if (pref != null && ProjectReferencesProject (pref, targetProject))
-					return true;
-			}
+			if(dprj != null)
+				foreach (string prjId in dprj.References.ReferencedProjectIds) {
+					foreach (var prj in prjs)
+						if (prj.ItemId == prjId) {
+							if (ProjectReferencesProject (prj, targetProject))
+								return true;
+							break;
+						}
+				}
 			return false;
-		}
+		}*/
 	}
 }

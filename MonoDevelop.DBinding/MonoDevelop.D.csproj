@@ -234,10 +234,10 @@
     <Compile Include="gtk-gui\MonoDevelop.D.ProjectIncludesWidget.cs" />
     <Compile Include="OptionPanels\ProjectIncludesWidgetBinding.cs" />
     <Compile Include="Projects\DProjectReferenceCollection.cs" />
-    <Compile Include="Projects\DProjectReference.cs" />
     <Compile Include="Projects\ProjectPad\DPrjRefNode.cs" />
     <Compile Include="Projects\ProjectPad\DProjectReferenceFolderNodeBuilder.cs" />
     <Compile Include="Projects\ProjectPad\DProjectNodeExtension.cs" />
+    <Compile Include="Projects\ProjectPad\DProjectReference.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
@@ -245,8 +245,6 @@
       <Properties>
         <Policies>
           <DotNetNamingPolicy DirectoryNamespaceAssociation="None" ResourceNamePolicy="FileName" />
-          <TextStylePolicy inheritsSet="null" scope="text/x-csharp" />
-          <CSharpFormattingPolicy inheritsSet="Mono" inheritsScope="text/x-csharp" scope="text/x-csharp" />
         </Policies>
       </Properties>
     </MonoDevelop>

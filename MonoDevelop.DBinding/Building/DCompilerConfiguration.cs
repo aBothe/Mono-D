@@ -110,8 +110,8 @@ namespace MonoDevelop.D.Building
 
 		public static void UpdateParseCacheAsync (ParseCache Cache)
 		{
-			if (Cache == null || Cache.ParsedDirectories == null || Cache.ParsedDirectories.Count < 1)
-				return;
+			if (Cache == null)
+				throw new ArgumentNullException ("Cache");
 
 			Cache.BeginParse();
 		}

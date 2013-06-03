@@ -16,12 +16,12 @@ namespace MonoDevelop.D.Projects
 		public virtual DCompilerConfiguration Compiler { get { return DCompilerService.Instance.GetDefaultCompiler(); } set { } }
 		public override string ProjectType { get { return "Native"; } }
 		public override string[] SupportedLanguages { get { return new[] { "D", "" }; } }
+		public virtual DProjectReferenceCollection References { get {return null;} }
 
 		/// <summary>
 		/// Stores parse information from project-wide includes
 		/// </summary>
 		public readonly ParseCache LocalIncludeCache = new ParseCache { EnableUfcsCaching = false };
-		public readonly DProjectReferenceCollection References = new DProjectReferenceCollection ();
 
 		/// <summary>
 		/// Stores parse information from files inside the project's base directory
@@ -129,6 +129,8 @@ namespace MonoDevelop.D.Projects
 
 		void LocalIncludeCache_FinishedParsing(ParsePerformanceData[] PerformanceData)
 		{
+			if (References != null)
+				References.FireUpdate();
 			analysisFinished_LocalIncludes = true;
 			TryBuildUfcsCache();
 		}

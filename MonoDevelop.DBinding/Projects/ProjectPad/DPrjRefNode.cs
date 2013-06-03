@@ -92,8 +92,7 @@ namespace MonoDevelop.D.Projects.ProjectPad
 
 		public override bool HasChildNodes (MonoDevelop.Ide.Gui.Components.ITreeBuilder builder, object dataObject)
 		{
-			var pref = dataObject as DProjectReference;
-			return !pref.IsValid;
+			return !(dataObject as DProjectReference).IsValid;
 		}
 
 		public override void BuildChildNodes (MonoDevelop.Ide.Gui.Components.ITreeBuilder treeBuilder, object dataObject)
@@ -117,7 +116,7 @@ namespace MonoDevelop.D.Projects.ProjectPad
 
 		void ReferenceStatusChanged (object sender, PropertyChangedEventArgs e)
 		{
-			ITreeBuilder tb = Context.GetTreeBuilder (sender);
+			var tb = Context.GetTreeBuilder (sender);
 			if (tb != null)
 				tb.UpdateAll ();
 		}
@@ -134,13 +133,30 @@ namespace MonoDevelop.D.Projects.ProjectPad
 			}*/
 		}
 
+		public override bool CanDeleteItem ()
+		{
+			var pref = CurrentNode.DataItem as DProjectReference;
+			return pref.OwnerProject.References.CanDelete;
+		}
+
 		public override void DeleteMultipleItems ()
 		{
 			var projects = new Dictionary<AbstractDProject,AbstractDProject> ();
 			foreach (ITreeNavigator nav in CurrentNodes) {
 				var pref = (DProjectReference) nav.DataItem;
 				var project = nav.GetParentDataItem (typeof(AbstractDProject), false) as AbstractDProject;
-				project.References.Remove (pref);
+
+				switch (pref.ReferenceType) {
+					case ReferenceType.Package:
+						project.References.DeleteInclude (pref.Reference);
+						break;
+					case ReferenceType.Project:
+						project.References.DeleteProjectRef (pref.Reference);
+						break;
+					default:
+						throw new InvalidOperationException ("Invalid removal operation");
+				}
+
 				projects [project] = project;
 			}
 			foreach (Project p in projects.Values)

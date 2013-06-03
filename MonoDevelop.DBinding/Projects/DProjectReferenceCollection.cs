@@ -27,29 +27,42 @@ using System;
 using MonoDevelop.D.Projects;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using MonoDevelop.Projects;
 
-namespace MonoDevelop.D
+namespace MonoDevelop.D.Projects
 {
-	public delegate void DProjectReferenceHandler(object sender, DProjectReferenceEventArguments args);
-
-	public class DProjectReferenceEventArguments : EventArgs
+	public enum ReferenceType
 	{
-		public readonly AbstractDProject Project;
-		public readonly DProjectReference Reference;
-
-		public DProjectReferenceEventArguments(AbstractDProject prj, DProjectReference reference)
-		{
-			Project = prj;
-			reference = Reference;
-		}
+		Project,
+		Package,
 	}
 
-	public class DProjectReferenceCollection : ObservableCollection<DProjectReference>
+	public abstract class DProjectReferenceCollection
 	{
-		public bool AddReference()
+		public readonly AbstractDProject Owner;
+
+		public virtual bool CanDelete {get{ return true; }}
+		public virtual bool CanAdd{ get {return true;}}
+
+		public virtual IEnumerable<string> Includes {get {return Owner.LocalIncludeCache.ParsedDirectories; }}
+		public virtual IEnumerable<string> ReferencedProjectIds {get { return new string[0];}}
+		public virtual bool HasReferences {get { return Owner.LocalIncludeCache.ParsedDirectories.Count > 0; }}
+
+		public DProjectReferenceCollection(AbstractDProject owner)
 		{
-			return false;
+			Owner = owner;
 		}
+
+		public virtual void DeleteInclude(string path)
+		{
+			Owner.LocalIncludeCache.Remove (path);
+		}
+		public abstract void DeleteProjectRef(string projectId);
+
+		public abstract event EventHandler Update;
+		public abstract void FireUpdate();
+
+		public abstract bool AddReference();
 	}
 }
 

@@ -21,6 +21,7 @@ using MonoDevelop.Components.Commands;
 using MonoDevelop.D.Profiler.Commands;
 using MonoDevelop.D.Resolver;
 using Newtonsoft.Json;
+using System.Collections.ObjectModel;
 
 namespace MonoDevelop.D.Projects
 {
@@ -44,32 +45,23 @@ namespace MonoDevelop.D.Projects
 		/// Used to store project dependencies.
 		/// </summary>
 		[ItemProperty("DependentProjectIds")]
-		public List<string> ProjectDependencies = new List<string>();
+		List<string> tempProjectDependencies = new List<string>();
 
 		public override IEnumerable<SolutionItem> GetReferencedItems(ConfigurationSelector configuration)
 		{
 			SolutionItem p;
-			foreach (var dep in ProjectDependencies)
+			foreach (var dep in References.ReferencedProjectIds)
 				if ((p = ParentSolution.GetSolutionItem(dep)) != null)
 					yield return p;
 		}
 
-		public IEnumerable<DProject> DependingProjects
+		public IEnumerable<Project> DependingProjects
 		{
 			get {
-				DProject p;
-				foreach (var dep in ProjectDependencies)
-					if((p=ParentSolution.GetSolutionItem(dep) as DProject) != null)
+				Project p;
+				foreach (var dep in References.ReferencedProjectIds)
+					if((p=ParentSolution.GetSolutionItem(dep) as Project) != null)
 						yield return p;
-			}
-			set
-			{
-				ProjectDependencies.Clear();
-
-				if(value!=null)
-					foreach (var dep in value)
-						if(dep!=this && dep!=null)
-							ProjectDependencies.Add(dep.ItemId);
 			}
 		}
 		
@@ -104,13 +96,94 @@ namespace MonoDevelop.D.Projects
 			}
 			set { UsedCompilerVendor = value.Vendor; }
 		}
+
+		readonly DefaultReferenceCollection referenceCollection;
+		public override DProjectReferenceCollection References {
+			get {
+				return referenceCollection;
+			}
+		}
 		#endregion
 
+		internal class DefaultReferenceCollection : DProjectReferenceCollection
+		{
+			public ObservableCollection<string> ProjectDependencies;
+
+			public override event EventHandler Update;
+
+			public DefaultReferenceCollection(DProject prj, bool initDepCollection = true)
+				: base(prj)
+			{
+				if(initDepCollection)
+				{
+					ProjectDependencies = new ObservableCollection<string>();
+					ProjectDependencies.CollectionChanged+=OnProjectDepChanged;
+				}
+			}
+
+			internal void InitRefCollection(IEnumerable<string> IDs)
+			{
+				ProjectDependencies = new ObservableCollection<string>(IDs);
+				ProjectDependencies.CollectionChanged+=OnProjectDepChanged;
+			}
+
+			void OnProjectDepChanged(object o, System.Collections.Specialized.NotifyCollectionChangedEventArgs ea)
+			{
+				Update(o, ea);
+			}
+
+			public override void DeleteProjectRef (string projectId)
+			{
+				ProjectDependencies.Remove (projectId);
+			}
+
+			public override bool AddReference ()
+			{
+				throw new NotImplementedException ();
+			}
+
+			public override bool CanDelete {
+				get {
+					return true;
+				}
+			}
+
+			public override bool CanAdd {
+				get {
+					return true;
+				}
+			}
+
+			public override IEnumerable<string> ReferencedProjectIds {
+				get {
+					return ProjectDependencies;
+				}
+			}
+
+			public override bool HasReferences {
+				get {
+					return ProjectDependencies.Count > 0 || base.HasReferences;
+				}
+			}
+
+			public override void FireUpdate ()
+			{
+				if(Update!=null)
+					Update (this, null);
+			}
+		}
+
 		#region Init
-		public DProject (){}
+		public DProject (){
+			referenceCollection = new DefaultReferenceCollection (this);
+			Init ();
+		}
 
 		public DProject (ProjectCreateInformation info, XmlElement projectOptions)
 		{
+			referenceCollection = new DefaultReferenceCollection (this);
+			Init ();
+
 			string binPath = ".";
 			
 			if (info != null) {
@@ -209,6 +282,10 @@ namespace MonoDevelop.D.Projects
 			}
 						
 		}
+
+		void Init()
+		{
+		}
 		#endregion
 
 		#region Build Configurations
@@ -273,7 +350,8 @@ namespace MonoDevelop.D.Projects
 			try{
 				foreach(var prj in DependingProjects)
 					if(prj.NeedsBuilding(configuration))
-						prj.DoBuild(monitor, configuration);
+						if(prj.Build(monitor, configuration).Failed)
+							return new BuildResult{ FailedBuildCount = 1};
 			}finally{
 				alreadyBuiltProjects.Remove(ItemId);
 			}
@@ -332,14 +410,14 @@ namespace MonoDevelop.D.Projects
 
 			monitor.ReportSuccess ("Cleanup successful!");
 		}
-		
+		/*
 		/// <summary>
 		/// Returns dependent projects in a topological order (from least to most dependent)
 		/// </summary>
 		public static List<DProject> GetSortedProjectDependencies(DProject p)
 		{
 			var l = new List<DProject>();
-			
+			p.ParentSolution.GetAllProjectsWithTopologicalSort ();
 			var r = new List<DProject>(p.DependingProjects);
 			var skippedItems = new List<int>();
 			
@@ -378,7 +456,7 @@ namespace MonoDevelop.D.Projects
 			}
 			
 			return l;
-		}
+		}*/
 		#endregion
 
 		#region Execution
@@ -486,6 +564,8 @@ namespace MonoDevelop.D.Projects
 		{
 			handler.Deserialize (this, data);
 
+			referenceCollection.InitRefCollection (tempProjectDependencies);
+
 			foreach (var p in tempIncludes)
 				LocalIncludeCache.ParsedDirectories.Add (ProjectBuilder.EnsureCorrectPathSeparators (p));
 		}
@@ -493,8 +573,10 @@ namespace MonoDevelop.D.Projects
 		public DataCollection Serialize (ITypeSerializer handler)
 		{
 			tempIncludes.Clear ();
-			foreach (var p in LocalIncludeCache.ParsedDirectories)
-				tempIncludes.Add (p);
+			tempProjectDependencies.Clear ();
+
+			tempIncludes.AddRange (LocalIncludeCache.ParsedDirectories);
+			tempProjectDependencies.AddRange (referenceCollection.ProjectDependencies);
 
 			var ret = handler.Serialize (this);
 			
