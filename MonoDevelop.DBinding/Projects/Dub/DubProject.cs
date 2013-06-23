@@ -94,6 +94,7 @@ namespace MonoDevelop.D.Projects.Dub
 
 		public IEnumerable<string> GetSourcePaths(List<DubBuildSettings> settings)
 		{
+			string d;
 			List<DubBuildSetting> l;
 			bool returnedOneItem = false;
 			foreach (var sett in settings)
@@ -102,7 +103,7 @@ namespace MonoDevelop.D.Projects.Dub
 					for (int i = l.Count - 1; i >= 0; i--) // Ignore architecture/os/compiler restrictions for now
 						for (int j = l[i].Flags.Length - 1; j >= 0; j--)
 						{
-							var d = l[i].Flags[j];
+							d = l[i].Flags[j];
 							if (!Path.IsPathRooted(d))
 								d = BaseDirectory.Combine(d).ToString();
 
@@ -113,8 +114,16 @@ namespace MonoDevelop.D.Projects.Dub
 						}
 				}
 
-			if (!returnedOneItem)
-				yield return BaseDirectory.Combine("source").ToString();
+			if (returnedOneItem)
+				yield break;
+
+			d = BaseDirectory.Combine("source").ToString();
+			if (Directory.Exists(d))
+				yield return d;
+
+			d = BaseDirectory.Combine("src").ToString();
+			if (Directory.Exists(d))
+				yield return d;
 		}
 		#endregion
 
