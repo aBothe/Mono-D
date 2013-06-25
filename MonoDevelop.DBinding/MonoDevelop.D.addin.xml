@@ -6,13 +6,13 @@
 	copyright=""
 	description="D Language Binding"
 	category="Language bindings"
-	version="0.5.3.1">
+	version="0.5.3.2">
 
 	<!-- Resources -->
 
 	<Dependencies>
-		<Addin id="Ide" version="4.0" />
-		<Addin id="Core" version="4.0" />
+		<Addin id="Ide" version = "4.0.9" />
+		<Addin id="Core" version = "4.0.9" />
 		<Addin id="SourceEditor2" version = "4.0" />
 		<Addin id="DesignerSupport" version = "4.0" />
 		<Addin id="Refactoring" version="4.0"/>
