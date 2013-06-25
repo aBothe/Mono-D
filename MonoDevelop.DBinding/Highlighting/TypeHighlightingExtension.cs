@@ -14,6 +14,8 @@ using MonoDevelop.Ide.Gui;
 using D_Parser.Refactoring;
 using MonoDevelop.D.Resolver;
 
+TODO: Reimplement type highlighting in semantic highlighting!
+
 namespace MonoDevelop.D.Highlighting
 {
 	public class TypeHighlightingExtension:TextEditorExtension
@@ -26,7 +28,7 @@ namespace MonoDevelop.D.Highlighting
 			get { return (Document.ParsedDocument as ParsedDModule).DDom; }
 		}
 
-		List<HighlightMarker> markers = new List<HighlightMarker>();
+		readonly List<TextSegmentMarker> markers = new List<TextSegmentMarker>();
 		#endregion
 
 		#region Init
@@ -79,8 +81,10 @@ namespace MonoDevelop.D.Highlighting
 					if(ln!=loc.Line)
 						curLine = Document.Editor.GetLine(ln = loc.Line);
 
-					var m = new HighlightMarker(txtDoc, curLine, "keyword.semantic.type", loc.Column, TypeReferenceFinder.ExtractId(id));
-					txtDoc.AddMarker(curLine, m);
+					var segment = new TextSegment(curLine.Offset,len);
+					var m = new UnderlineTextSegmentMarker("keyword.semantic.type", loc.Column, TypeReferenceFinder.ExtractId(id));
+
+					txtDoc.AddMarker(m);
 					markers.Add(m);
 				}
 			}
@@ -105,86 +109,8 @@ namespace MonoDevelop.D.Highlighting
 			markers.Clear();
 		}
 
-
-		public class HighlightMarker : TextLineMarker, IDisposable
+		class MyUnderlineMarker : UnderlineTextSegmentMarker
 		{
-			string text;
-			TextDocument doc;
-			string style;
-			int startColumn;
-			DocumentLine line;
-
-			public HighlightMarker(TextDocument doc,DocumentLine line, string style, int startColumn, string text)
-			{
-				this.doc = doc;
-				this.line = line;
-				this.style = style;
-				this.startColumn = startColumn;
-				this.text = text;
-				doc.LineChanged += HandleDocLineChanged;
-			}
-
-			void HandleDocLineChanged(object sender, LineEventArgs e)
-			{
-				if (line == e.Line)
-					doc.RemoveMarker(this);
-			}
-
-			public void Dispose()
-			{
-				doc.LineChanged -= HandleDocLineChanged;
-			}
-
-			public override void Draw(
-				TextEditor editor, 
-				Cairo.Context cr, 
-				Pango.Layout layout, 
-				bool selected, 
-				int startOffset, 
-				int endOffset, 
-				double y, 
-				double startXPos, 
-				double endXPos)
-			{
-				int markerStart = line.Offset + startColumn - 1;
-				int markerEnd = line.Offset + startColumn - 1 + text.Length;
-
-				if (markerEnd < startOffset || markerStart > endOffset)
-					return;
-				
-				double @from;
-				double to;
-
-				if (markerStart < startOffset && endOffset < markerEnd)
-				{
-					@from = startXPos;
-					to = endXPos;
-				}
-				else
-				{
-					int start = startOffset < markerStart ? markerStart : startOffset;
-					int end = endOffset < markerEnd ? endOffset : markerEnd;
-					int x_pos = layout.IndexToPos(start - startOffset).X;
-
-					@from = startXPos + (int)(x_pos / Pango.Scale.PangoScale);
-
-					x_pos = layout.IndexToPos(end - startOffset).X;
-
-					to = startXPos + (int)(x_pos / Pango.Scale.PangoScale);
-				}
-
-				@from = System.Math.Max(@from, editor.TextViewMargin.XOffset);
-				to = System.Math.Max(to, editor.TextViewMargin.XOffset);
-				if (@from < to)
-				{
-					cr.DrawLine(
-						editor.ColorStyle.GetChunkStyle(style).Foreground				
-						,@from,
-						y + editor.LineHeight,
-						to,
-						y + editor.LineHeight);
-				}
-			}
 		}
 	}
 }

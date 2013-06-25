@@ -103,10 +103,6 @@
       <HintPath>..\ext\MonoDevelop.Core.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="MonoDevelop.DesignerSupport">
-      <HintPath>..\ext\MonoDevelop.DesignerSupport.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="MonoDevelop.Ide">
       <HintPath>..\ext\MonoDevelop.Ide.dll</HintPath>
       <Private>False</Private>
@@ -128,6 +124,10 @@
       <HintPath>..\ext\Mono.Debugging.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Posix" />
+    <Reference Include="MonoDevelop.DesignerSupport">
+      <HintPath>..\ext\MonoDevelop.DesignerSupport.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="gtk-gui\gui.stetic">
@@ -164,7 +164,6 @@
     <Compile Include="Gui\MixinInsightPad.cs" />
     <Compile Include="Highlighting\HighlightUsagesExtension.cs" />
     <Compile Include="Highlighting\DSyntaxMode.cs" />
-    <Compile Include="Highlighting\TypeHighlightingExtension.cs" />
     <Compile Include="OptionPanels\ProjectOptions.cs" />
     <Compile Include="Parser\DParserWrapper.cs" />
     <Compile Include="Parser\FoldingParser.cs" />
@@ -245,6 +244,8 @@
       <Properties>
         <Policies>
           <DotNetNamingPolicy DirectoryNamespaceAssociation="None" ResourceNamePolicy="FileName" />
+          <TextStylePolicy inheritsSet="null" scope="text/x-csharp" />
+          <CSharpFormattingPolicy IndentSwitchBody="True" ElseIfNewLinePlacement="SameLine" AfterDelegateDeclarationParameterComma="True" inheritsSet="Mono" inheritsScope="text/x-csharp" scope="text/x-csharp" />
         </Policies>
       </Properties>
     </MonoDevelop>
@@ -351,6 +352,7 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="Formatting\Indentation\doc.txt" />
+    <None Include="Highlighting\TypeHighlightingExtension.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

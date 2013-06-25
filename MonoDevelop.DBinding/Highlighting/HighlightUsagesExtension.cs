@@ -142,6 +142,11 @@ namespace MonoDevelop.D.Highlighting
 				return usages.Any(u => u.Offset <= offset && offset <= u.EndOffset);
 			}
 
+			public bool DrawBackground (TextEditor editor, Cairo.Context cr, double y, LineMetrics metrics, ref bool drawBg)
+			{
+				return DrawBackground (editor, cr, metrics.Layout, metrics.SelectionStart, metrics.SelectionEnd, metrics.TextStartOffset, metrics.TextEndOffset, y, metrics.TextRenderStartPosition, metrics.TextRenderEndPosition, ref drawBg);
+			}
+
 			public bool DrawBackground(TextEditor editor, Cairo.Context cr, TextViewMargin.LayoutWrapper layout, int selectionStart, int selectionEnd, int startOffset, int endOffset, double y, double startXPos, double endXPos, ref bool drawBg)
 			{
 				drawBg = false;
