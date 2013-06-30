@@ -38,7 +38,7 @@
 		<End>"</End>
 	</Span>
 
-	<Span color = "String" rule="String" stopateol = "false" escape='\'>
+	<Span color = "String" rule="String" stopateol = "false">
 		<Begin>"</Begin>
 		<End>"</End>
 	</Span>
