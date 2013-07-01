@@ -162,16 +162,20 @@ namespace MonoDevelop.D.Projects
 
 		protected override void OnFileRemovedFromProject(ProjectFileEventArgs e)
 		{
-			UpdateParseCache();
-
 			base.OnFileRemovedFromProject(e);
+
+			foreach (var pf in e)
+				LocalFileCache.Remove (pf.ProjectFile.FilePath);
 		}
 
 		protected override void OnFileRenamedInProject(ProjectFileRenamedEventArgs e)
 		{
-			UpdateParseCache();
-
 			base.OnFileRenamedInProject(e);
+
+			foreach (var pf in e){
+				LocalFileCache.Remove (pf.OldName);
+				//FIXME: Re-add new file
+			}
 		}
 
 		protected override void OnEndLoad()
