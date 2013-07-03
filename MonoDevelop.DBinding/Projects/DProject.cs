@@ -103,6 +103,11 @@ namespace MonoDevelop.D.Projects
 				return referenceCollection;
 			}
 		}
+
+		public override string ToString ()
+		{
+			return string.Format ("[DProject: Name={0}]", Name);
+		}
 		#endregion
 
 		internal class DefaultReferenceCollection : DProjectReferenceCollection

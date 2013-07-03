@@ -101,6 +101,11 @@ namespace MonoDevelop.D.Projects
 				return gVersionIds; 
 			}
 		}
+
+		public override string ToString ()
+		{
+			return string.Format ("[DProjectConfiguration: Name={4}, Project={0}, GlobalVersionIdentifiers={1}, CompiledOutputName={2}, IntermediateOutputDirectory={3}]", Project, GlobalVersionIdentifiers, CompiledOutputName, IntermediateOutputDirectory, Name);
+		}
 		#endregion
 
 		public event EventHandler Changed;

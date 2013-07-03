@@ -125,6 +125,11 @@ namespace MonoDevelop.D.Projects.Dub
 			if (Directory.Exists(d))
 				yield return d;
 		}
+
+		public override string ToString ()
+		{
+			return string.Format ("[DubProject: Name={0}]", Name);
+		}
 		#endregion
 
 		#region Constructor & Init
