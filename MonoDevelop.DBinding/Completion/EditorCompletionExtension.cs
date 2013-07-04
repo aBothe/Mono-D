@@ -73,7 +73,7 @@ namespace MonoDevelop.D
 				l.AutoSelect = true;
 			}
 			else
-				l.AddKeyHandler(new DoubleUnderScoreWorkaroundHandler());
+				l.AddKeyHandler(new DoubleUnderScoreWorkaroundHandler(this));
 
 			lock(dom.DDom)
 				DCodeCompletionSupport.BuildCompletionData(
@@ -88,11 +88,26 @@ namespace MonoDevelop.D
 
 		class DoubleUnderScoreWorkaroundHandler : ICompletionKeyHandler
 		{
+			readonly DEditorCompletionExtension ext;
+
+			public DoubleUnderScoreWorkaroundHandler(DEditorCompletionExtension ext)
+			{
+				this.ext = ext;
+			}
+
 			public bool PostProcessKey(CompletionListWindow listWindow, Gdk.Key key, char keyChar, Gdk.ModifierType modifier, out KeyActions keyAction)
 			{
 				keyAction = KeyActions.None;
 				if (keyChar == '_')
 				{
+					listWindow.PostProcessKey(key, keyChar, modifier);
+					return true;
+				}
+
+				Mono.TextEditor.TextEditorData ed;
+				if (keyChar == '.' && (ed = ext.document.Editor).GetCharAt(ed.Caret.Offset-1) == '.') {
+					// optional: Distinguish whether we are in an an index/slice expression and do not close down the completion window if so..
+					keyAction = KeyActions.CloseWindow;
 					listWindow.PostProcessKey(key, keyChar, modifier);
 					return true;
 				}
