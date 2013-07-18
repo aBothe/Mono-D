@@ -353,10 +353,11 @@ namespace MonoDevelop.D.Projects
 			
 			alreadyBuiltProjects.Add(ItemId);
 			try{
+				BuildResult bs;
 				foreach(var prj in DependingProjects)
 					if(prj.NeedsBuilding(configuration))
-						if(prj.Build(monitor, configuration).Failed)
-							return new BuildResult{ FailedBuildCount = 1};
+						if((bs=prj.Build(monitor, configuration)).Failed)
+							return bs ?? new BuildResult{ FailedBuildCount = 1};
 			}finally{
 				alreadyBuiltProjects.Remove(ItemId);
 			}
@@ -415,53 +416,6 @@ namespace MonoDevelop.D.Projects
 
 			monitor.ReportSuccess ("Cleanup successful!");
 		}
-		/*
-		/// <summary>
-		/// Returns dependent projects in a topological order (from least to most dependent)
-		/// </summary>
-		public static List<DProject> GetSortedProjectDependencies(DProject p)
-		{
-			var l = new List<DProject>();
-			p.ParentSolution.GetAllProjectsWithTopologicalSort ();
-			var r = new List<DProject>(p.DependingProjects);
-			var skippedItems = new List<int>();
-			
-			for(int i = r.Count - 1; i >= 0; i--)
-				if(r[i].ProjectDependencies.Count == 0)
-				{
-					l.Add(r[i]);
-					r.RemoveAt(i);
-				}
-			
-			// If l.count == 0, there is at least one cycle..
-			
-			while(r.Count != 0)
-			{
-				for(int i = r.Count -1 ; i>=0; i--)
-				{
-					bool hasNotYetEnlistedChild = true;
-					foreach(var ch in r[i].DependingProjects)
-						if(!l.Contains(ch))
-						{
-							hasNotYetEnlistedChild = false;
-							break;
-						}
-					
-					if(!hasNotYetEnlistedChild){
-						
-						if(skippedItems.Contains(i))
-							return new List<DProject>();
-						skippedItems.Add(i);
-						continue;
-					}
-					
-					l.Add(r[i]);
-					r.RemoveAt(i);
-				}
-			}
-			
-			return l;
-		}*/
 		#endregion
 
 		#region Execution
