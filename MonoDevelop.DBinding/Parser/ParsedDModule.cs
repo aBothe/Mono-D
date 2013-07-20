@@ -15,11 +15,12 @@ namespace MonoDevelop.D.Parser
 		DModule _ddom;
 		public DModule DDom {
 			get { 
+				DModule t;
 				var sln=Ide.IdeApp.ProjectOperations.CurrentSelectedSolution;
 				if(sln!=null)
 					foreach (var prj in sln.GetAllProjects())
-						if (prj is AbstractDProject && prj.IsFileInProject(FileName))
-							return ((AbstractDProject)prj).LocalFileCache.GetModuleByFileName(FileName, prj.BaseDirectory) ?? _ddom;
+						if (prj is AbstractDProject && (t = ((AbstractDProject)prj).LocalFileCache.GetModuleByFileName(FileName, prj.BaseDirectory)) != null)
+							return t;
 				
 				return _ddom;
 			}

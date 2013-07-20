@@ -7,6 +7,8 @@ using MonoDevelop.Projects;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using MonoDevelop.Core;
+using System.Reflection;
 
 namespace MonoDevelop.D.Projects
 {
@@ -170,12 +172,33 @@ namespace MonoDevelop.D.Projects
 
 		protected override void OnFileRenamedInProject(ProjectFileRenamedEventArgs e)
 		{
-			base.OnFileRenamedInProject(e);
+			//FIXME: Bug when renaming files..the new file won't be reachable somehow.. see https://bugzilla.xamarin.com/show_bug.cgi?id=13360
+			var fi = Files.GetType().GetField("files",BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.GetField);
+			var files = fi.GetValue (Files) as Dictionary<FilePath, ProjectFile>;
 
 			foreach (var pf in e){
-				LocalFileCache.Remove (pf.OldName);
-				//FIXME: Re-add new file
+				// The old file won't be removed from that internal files dictionary - so go enforce this!
+				files.Remove (pf.OldName);
+				var ast = LocalFileCache.GetModuleByFileName (pf.OldName);
+				if (ast == null)
+					continue;
+
+				LocalFileCache.Remove (ast, true);
+				ast.FileName = pf.NewName.ToString ();
+
+				if (ast.OptionalModuleStatement == null) {
+					string parsedDir = null;
+					foreach (var dir in LocalFileCache.ParsedDirectories)
+						if (ast.FileName.StartsWith (dir)) {
+							parsedDir = dir;
+							break;
+						}
+					ast.ModuleName = DModule.GetModuleName (parsedDir, ast);
+				}
+				LocalFileCache.AddOrUpdate (ast);
 			}
+
+			base.OnFileRenamedInProject(e);
 		}
 
 		protected override void OnEndLoad()
