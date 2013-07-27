@@ -11,6 +11,7 @@ using D_Parser.Dom;
 using MonoDevelop.Core;
 using MonoDevelop.Ide;
 using MonoDevelop.D.Projects;
+using MonoDevelop.D.Resolver;
 
 namespace MonoDevelop.D.Refactoring
 {
@@ -50,13 +51,14 @@ namespace MonoDevelop.D.Refactoring
 			
 			var project = doc.HasProject ? doc.Project as DProject : null;
 
-			var parseCache = project != null ?
-				project.ParseCache :
-				ParseCacheList.Create(DCompilerService.Instance.GetDefaultCompiler().ParseCache);
+			var parseCache = DResolverWrapper.CreateCacheList(project);
 
-			var modules = project == null ?
-				(IEnumerable<DModule>)new[] { (Ide.IdeApp.Workbench.ActiveDocument.ParsedDocument as ParsedDModule).DDom } :
-				project.LocalFileCache;
+			var modules = new List<DModule>();
+			if(project == null)
+				modules.Add((Ide.IdeApp.Workbench.ActiveDocument.ParsedDocument as ParsedDModule).DDom);
+			else
+				foreach(var p in project.GetSourcePaths())
+					modules.AddRange(GlobalParseCache.EnumModules(p));
 
 			var ctxt = ResolutionContext.Create(parseCache, null,null);
 			#endregion

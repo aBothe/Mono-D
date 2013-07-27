@@ -2,6 +2,8 @@ using System;
 using MonoDevelop.D.Building;
 using MonoDevelop.Core;
 using MonoDevelop.D.Projects;
+using D_Parser.Misc;
+using System.Linq;
 
 namespace MonoDevelop.D
 {
@@ -20,7 +22,7 @@ namespace MonoDevelop.D
 
 		public void Load()
 		{
-			text_Includes.Buffer.Text = string.Join ("\n", Project.LocalIncludeCache.ParsedDirectories);
+			text_Includes.Buffer.Text = string.Join ("\n", Project.LocalIncludeCache);
 		}
 
 		public void Store()
@@ -31,13 +33,17 @@ namespace MonoDevelop.D
 			for (int i = 0; i < paths.Length; i++)
 				paths[i] = paths[i].TrimEnd('\\','/');
 			
-			if (Project.LocalIncludeCache.UpdateRequired (paths)) {
-				Project.LocalIncludeCache.ParsedDirectories.Clear ();
-				Project.LocalIncludeCache.ParsedDirectories.AddRange (paths);
+			if (GlobalParseCache.UpdateRequired (paths)) {
+				foreach (var p in Project.LocalIncludeCache)
+					GlobalParseCache.RemoveRoot (p);
+				Project.LocalIncludeCache.Clear ();
+
+				foreach(var p in paths)
+					Project.LocalIncludeCache.Add (p);
 				
 				try {
 					// Update parse cache immediately
-					DCompilerConfiguration.UpdateParseCacheAsync (Project.LocalIncludeCache);
+					Project.UpdateLocalIncludeCache();
 				} catch (Exception ex) {
 					LoggingService.LogError ("Include path analysis error", ex);
 				}

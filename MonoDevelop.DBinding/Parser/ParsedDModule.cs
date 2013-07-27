@@ -5,6 +5,7 @@ using ICSharpCode.NRefactory.TypeSystem;
 using MonoDevelop.D.Projects;
 using MonoDevelop.Ide.TypeSystem;
 using System.Collections.Generic;
+using D_Parser.Misc;
 
 namespace MonoDevelop.D.Parser
 {
@@ -15,38 +16,11 @@ namespace MonoDevelop.D.Parser
 		DModule _ddom;
 		public DModule DDom {
 			get { 
-				DModule t;
-				var sln=Ide.IdeApp.ProjectOperations.CurrentSelectedSolution;
-				if(sln!=null)
-					foreach (var prj in sln.GetAllProjects())
-						if (prj is AbstractDProject && (t = ((AbstractDProject)prj).LocalFileCache.GetModuleByFileName(FileName, prj.BaseDirectory)) != null)
-							return t;
-				
-				return _ddom;
+				return GlobalParseCache.GetModule (FileName) ?? _ddom;
 			}
 			set
 			{
-				var sln = Ide.IdeApp.ProjectOperations.CurrentSelectedSolution;
-				if (sln != null)
-					foreach(var prj in sln.GetAllProjects())
-						if (prj is AbstractDProject && prj.IsFileInProject(FileName))
-						{
-							var dprj = prj as AbstractDProject;
-
-							var oldAst = DDom;
-							if (oldAst != null)
-							{
-								dprj.LocalFileCache.Remove(oldAst);
-								oldAst = null;
-							}
-
-							if (value != null)
-							{
-								dprj.LocalFileCache.AddOrUpdate(value);//TODO: Make it apply the current global version/debug conditions
-								dprj.LocalFileCache.UfcsCache.CacheModuleMethods(value, ResolutionContext.Create(dprj.ParseCache, null, null));
-							}
-						}
-				
+				GlobalParseCache.AddOrUpdateModule (value);
 				_ddom=value;
 			}
 		}

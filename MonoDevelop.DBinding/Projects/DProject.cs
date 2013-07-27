@@ -526,7 +526,7 @@ namespace MonoDevelop.D.Projects
 			referenceCollection.InitRefCollection (tempProjectDependencies);
 
 			foreach (var p in tempIncludes)
-				LocalIncludeCache.ParsedDirectories.Add (ProjectBuilder.EnsureCorrectPathSeparators (p));
+				LocalIncludeCache.Add (ProjectBuilder.EnsureCorrectPathSeparators (p));
 		}
 
 		public DataCollection Serialize (ITypeSerializer handler)
@@ -534,7 +534,7 @@ namespace MonoDevelop.D.Projects
 			tempIncludes.Clear ();
 			tempProjectDependencies.Clear ();
 
-			tempIncludes.AddRange (LocalIncludeCache.ParsedDirectories);
+			tempIncludes.AddRange (LocalIncludeCache);
 			tempProjectDependencies.AddRange (referenceCollection.ProjectDependencies);
 
 			var ret = handler.Serialize (this);

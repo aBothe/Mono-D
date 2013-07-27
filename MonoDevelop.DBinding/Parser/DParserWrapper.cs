@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using D_Parser.Misc;
 using MonoDevelop.D.Building;
 using MonoDevelop.D.Projects;
+using D_Parser.Resolver;
 
 namespace MonoDevelop.D.Parser
 {
@@ -64,18 +65,10 @@ namespace MonoDevelop.D.Parser
 			var dprj = prj as AbstractDProject;
 
 			// Remove obsolete ast from cache
-			DModule ast = null;
 			if (dprj != null)
-			{
-				ast = dprj.LocalFileCache.GetModuleByFileName(file, prj.BaseDirectory) as DModule;
+				GlobalParseCache.RemoveModule (file);
 
-				if (ast != null)
-				{
-					dprj.LocalFileCache.Remove(ast);
-					ast = null;
-				}
-			}
-
+			DModule ast;
 			var doc = new ParsedDModule(file);
 
 			var parser = DParser.Create(content);
@@ -169,38 +162,37 @@ namespace MonoDevelop.D.Parser
 			}
 			else
 			{
-				// If the file is not associated with any project,
-				// check if the file is located in an imported/included directory
-				// and update the respective cache.
-				// Note: ParseCache.Remove() also affects the Ufcs cache,
-				// but when adding it again, the UfcsCache has to be updated manually
-				var caches = new List<ParseCache>();
-
-				foreach(var p in Ide.IdeApp.Workspace.GetAllProjects())
-					if (p is AbstractDProject)
-					{
-						dprj = p as AbstractDProject;
-						if (dprj.LocalIncludeCache.Remove(file))
-							caches.Add(dprj.LocalIncludeCache);
-						if (dprj.LocalFileCache.Remove(file))
-							caches.Add(dprj.LocalFileCache);
-					}
-
-				foreach (var cmp in DCompilerService.Instance.Compilers)
+				GlobalParseCache.RemoveModule(file);
+				ModulePackage pack;
+				if(GlobalParseCache.AddOrUpdateModule(ast, out pack))
 				{
-					if (cmp.ParseCache.Remove(file))
-						caches.Add(cmp.ParseCache);
-				}
-
-				if(caches.Count > 0)
-				{
-					var ctxt = Completion.DCodeCompletionSupport.CreateCurrentContext();
-					ctxt.CurrentContext.Set((IBlockNode)null);
-					foreach (var cch in caches)
+					// If the file is not associated with any project,
+					// check if the file is located in an imported/included directory
+					// and update the respective cache.
+					// Note: ParseCache.Remove() also affects the Ufcs cache,
+					// but when adding it again, the UfcsCache has to be updated manually
+					if(pack != null && (pack = pack.Root) != null)
 					{
-						//FIXME: Adjust the target module name and/or copy the ast head
-						cch.AddOrUpdate(ast);
-						cch.UfcsCache.CacheModuleMethods(ast, ctxt);
+						ParseCacheView pcw = null;
+						bool containsPack = false;
+						// Find out which compiler environment fits most
+						foreach(var cmp in DCompilerService.Instance.Compilers)
+						{
+							pcw = cmp.GenParseCacheView();
+							foreach(var r in pack as IEnumerable<ModulePackage>)
+								if(r == pack)
+							{
+								containsPack = true;
+								break;
+							}
+							if(containsPack)
+								break;
+						}
+
+						if(containsPack)
+						{
+							(pack as RootPackage).UfcsCache.CacheModuleMethods(ast, new ResolutionContext(pcw, null, ast));
+						}
 					}
 				}
 			}
@@ -250,6 +242,29 @@ namespace MonoDevelop.D.Parser
 				if(pf.FilePath.IsChildPathOf(path))
 					return pf.FilePath.ToRelative(path).ChangeExtension(null).ToString().Replace(Path.DirectorySeparatorChar, '.');
 			return "";
+		}
+
+		/// <summary>
+		/// Ensures the absolute paths when invoking parse procedures in the GlobalParseCache
+		/// </summary>
+		/// <returns>The absolute paths.</returns>
+		/// <param name="rawPaths">Raw paths.</param>
+		/// <param name="fallbackPath">Fallback path that will be used as absolute base in case of one of the raw paths isn't rooted.</param>
+		/// <param name="solutionPath">Solution path that replaces any occurrency of '$solution' in a raw path.</param>
+		public static List<string> EnsureAbsolutePaths(IEnumerable<string> rawPaths, string fallbackPath, string solutionPath)
+		{
+			var l = new List<string> ();
+
+			foreach (var raw in rawPaths) {
+				var path = raw.Replace("$solution", solutionPath);
+
+				if (Path.IsPathRooted (path))
+					l.Add (path);
+				else
+					l.Add (Path.Combine(fallbackPath, path));
+			}
+
+			return l;
 		}
 
 		#region Converter methods

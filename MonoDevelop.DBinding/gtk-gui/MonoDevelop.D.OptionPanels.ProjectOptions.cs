@@ -143,7 +143,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.label9 = new global::Gtk.Label ();
 			this.label9.Name = "label9";
 			this.label9.Xalign = 0F;
-			this.label9.LabelProp = global::Mono.Unix.Catalog.GetString ("Note: Relative paths will be related to the project\'s base directory!");
+			this.label9.LabelProp = global::Mono.Unix.Catalog.GetString ("Note: Relative paths will be related to the project's base directory!");
 			this.table_LinkingTab.Add (this.label9);
 			global::Gtk.Table.TableChild w7 = ((global::Gtk.Table.TableChild)(this.table_LinkingTab [this.label9]));
 			w7.LeftAttach = ((uint)(1));
@@ -177,9 +177,7 @@ namespace MonoDevelop.D.OptionPanels
 			// Container child scrolledwindow5.Gtk.Container+ContainerChild
 			this.extraLinkerTextView = new global::Gtk.TextView ();
 			global::Gtk.Tooltips w10 = new Gtk.Tooltips ();
-			w10.SetTip (this.extraLinkerTextView, "A newline-separated list of extra options to send to the compiler.\nOne option can" +
-				" be in more than one line.\nExample:\n\t`--pkg\n\tcairo`", "A newline-separated list of extra options to send to the compiler.\nOne option can" +
-				" be in more than one line.\nExample:\n\t`--pkg\n\tcairo`");
+			w10.SetTip (this.extraLinkerTextView, "A newline-separated list of extra options to send to the compiler.\nOne option can be in more than one line.\nExample:\n\t`--pkg\n\tcairo`", "A newline-separated list of extra options to send to the compiler.\nOne option can be in more than one line.\nExample:\n\t`--pkg\n\tcairo`");
 			this.extraLinkerTextView.CanFocus = true;
 			this.extraLinkerTextView.Name = "extraLinkerTextView";
 			this.scrolledwindow5.Add (this.extraLinkerTextView);
@@ -276,7 +274,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.label11 = new global::Gtk.Label ();
 			this.label11.Name = "label11";
 			this.label11.Xalign = 0F;
-			this.label11.LabelProp = global::Mono.Unix.Catalog.GetString ("Note: Relative paths will be related to the project\'s base directory!");
+			this.label11.LabelProp = global::Mono.Unix.Catalog.GetString ("Note: Relative paths will be related to the project's base directory!");
 			this.table_CompilingTab.Add (this.label11);
 			global::Gtk.Table.TableChild w19 = ((global::Gtk.Table.TableChild)(this.table_CompilingTab [this.label11]));
 			w19.LeftAttach = ((uint)(1));
@@ -364,9 +362,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.scrolledwindow4.ShadowType = ((global::Gtk.ShadowType)(1));
 			// Container child scrolledwindow4.Gtk.Container+ContainerChild
 			this.extraCompilerTextView = new global::Gtk.TextView ();
-			w10.SetTip (this.extraCompilerTextView, "A newline-separated list of extra options to send to the compiler.\nOne option can" +
-				" be in more than one line.\nExample:\n\t`--pkg\n\tcairo`", "A newline-separated list of extra options to send to the compiler.\nOne option can" +
-				" be in more than one line.\nExample:\n\t`--pkg\n\tcairo`");
+			w10.SetTip (this.extraCompilerTextView, "A newline-separated list of extra options to send to the compiler.\nOne option can be in more than one line.\nExample:\n\t`--pkg\n\tcairo`", "A newline-separated list of extra options to send to the compiler.\nOne option can be in more than one line.\nExample:\n\t`--pkg\n\tcairo`");
 			this.extraCompilerTextView.CanFocus = true;
 			this.extraCompilerTextView.Name = "extraCompilerTextView";
 			this.scrolledwindow4.Add (this.extraCompilerTextView);
@@ -379,14 +375,12 @@ namespace MonoDevelop.D.OptionPanels
 			w28.XOptions = ((global::Gtk.AttachOptions)(4));
 			w28.YOptions = ((global::Gtk.AttachOptions)(4));
 			// Container child table_CompilingTab.Gtk.Table+TableChild
-			this.spin_debugLevel = new global::Gtk.SpinButton (0D, 100D, 1D);
-			w10.SetTip (this.spin_debugLevel, "The debug level the program is built in.\nA value of zero (0) will not emit a -deb" +
-				"ug flag to the compilation argument string!", "The debug level the program is built in.\nA value of zero (0) will not emit a -deb" +
-				"ug flag to the compilation argument string!");
+			this.spin_debugLevel = new global::Gtk.SpinButton (0, 100, 1);
+			w10.SetTip (this.spin_debugLevel, "The debug level the program is built in.\nA value of zero (0) will not emit a -debug flag to the compilation argument string!", "The debug level the program is built in.\nA value of zero (0) will not emit a -debug flag to the compilation argument string!");
 			this.spin_debugLevel.CanFocus = true;
 			this.spin_debugLevel.Name = "spin_debugLevel";
-			this.spin_debugLevel.Adjustment.PageIncrement = 10D;
-			this.spin_debugLevel.ClimbRate = 1D;
+			this.spin_debugLevel.Adjustment.PageIncrement = 10;
+			this.spin_debugLevel.ClimbRate = 1;
 			this.spin_debugLevel.Numeric = true;
 			this.table_CompilingTab.Add (this.spin_debugLevel);
 			global::Gtk.Table.TableChild w29 = ((global::Gtk.Table.TableChild)(this.table_CompilingTab [this.spin_debugLevel]));
@@ -412,11 +406,7 @@ namespace MonoDevelop.D.OptionPanels
 			w30.YOptions = ((global::Gtk.AttachOptions)(4));
 			// Container child table_CompilingTab.Gtk.Table+TableChild
 			this.text_debugConstants = new global::Gtk.Entry ();
-			w10.SetTip (this.text_debugConstants, "Semicolon (;) separated list of debug constants to define for debug-build compila" +
-				"tion.\nImportant: May affect code completion if omitted/written into extra compil" +
-				"er options field!", "Semicolon (;) separated list of debug constants to define for debug-build compila" +
-				"tion.\nImportant: May affect code completion if omitted/written into extra compil" +
-				"er options field!");
+			w10.SetTip (this.text_debugConstants, "Semicolon (;) separated list of debug constants to define for debug-build compilation.\nImportant: May affect code completion if omitted/written into extra compiler options field!", "Semicolon (;) separated list of debug constants to define for debug-build compilation.\nImportant: May affect code completion if omitted/written into extra compiler options field!");
 			this.text_debugConstants.CanFocus = true;
 			this.text_debugConstants.Name = "text_debugConstants";
 			this.text_debugConstants.IsEditable = true;
@@ -445,11 +435,7 @@ namespace MonoDevelop.D.OptionPanels
 			w32.YOptions = ((global::Gtk.AttachOptions)(4));
 			// Container child table_CompilingTab.Gtk.Table+TableChild
 			this.text_versionConstants = new global::Gtk.Entry ();
-			w10.SetTip (this.text_versionConstants, "Semicolon (;) separated list of version constants to define for compilation.\nImpo" +
-				"rtant: May affect code completion if omitted/written into extra compiler options" +
-				" field!", "Semicolon (;) separated list of version constants to define for compilation.\nImpo" +
-				"rtant: May affect code completion if omitted/written into extra compiler options" +
-				" field!");
+			w10.SetTip (this.text_versionConstants, "Semicolon (;) separated list of version constants to define for compilation.\nImportant: May affect code completion if omitted/written into extra compiler options field!", "Semicolon (;) separated list of version constants to define for compilation.\nImportant: May affect code completion if omitted/written into extra compiler options field!");
 			this.text_versionConstants.CanFocus = true;
 			this.text_versionConstants.Name = "text_versionConstants";
 			this.text_versionConstants.IsEditable = true;
@@ -560,11 +546,7 @@ namespace MonoDevelop.D.OptionPanels
 			w41.RightAttach = ((uint)(2));
 			// Container child table_CustomBuildTools.Gtk.Table+TableChild
 			this.text_BuildCheckCommand = new global::Gtk.Entry ();
-			w10.SetTip (this.text_BuildCheckCommand, "Command that is executed to check whether the project was built well.\nMust return" +
-				" 0 (Zero) if there were no errors and if the run command can be launched.\nIf emp" +
-				"ty, the project will be assumed as being built correctly.", "Command that is executed to check whether the project was built well.\nMust return" +
-				" 0 (Zero) if there were no errors and if the run command can be launched.\nIf emp" +
-				"ty, the project will be assumed as being built correctly.");
+			w10.SetTip (this.text_BuildCheckCommand, "Command that is executed to check whether the project was built well.\nMust return 0 (Zero) if there were no errors and if the run command can be launched.\nIf empty, the project will be assumed as being built correctly.", "Command that is executed to check whether the project was built well.\nMust return 0 (Zero) if there were no errors and if the run command can be launched.\nIf empty, the project will be assumed as being built correctly.");
 			this.text_BuildCheckCommand.CanFocus = true;
 			this.text_BuildCheckCommand.Name = "text_BuildCheckCommand";
 			this.text_BuildCheckCommand.IsEditable = true;

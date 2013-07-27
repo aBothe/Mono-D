@@ -81,26 +81,29 @@ namespace MonoDevelop.D.Resolver
 			return ed;
 		}
 
-		public static ParseCacheList CreateCacheList(Document Editor)
+		public static ParseCacheView CreateCacheList(Document Editor)
 		{
 			return CreateCacheList(Editor.HasProject ? Editor.Project as AbstractDProject : null);
 		}
 
-		public static ParseCacheList CreateCacheList(AbstractDProject Project = null)
+		public static ParseCacheView CreateCacheList(AbstractDProject Project = null)
 		{
 			if (Project != null)
 			{
-				var pcl = ParseCacheList.Create(Project.LocalFileCache, Project.LocalIncludeCache, Project.Compiler.ParseCache);
+				var cfg = IdeApp.Workspace.ActiveConfiguration;
+				var pcl = Project.Compiler.GenParseCacheView();
+				pcl.Add (Project.GetSourcePaths(cfg));
+				pcl.Add(Project.LocalIncludeCache);
 
 				// Automatically include dep projects' caches
-				foreach (var dep in Project.GetReferencedItems(IdeApp.Workspace.ActiveConfiguration))
+				foreach (var dep in Project.GetReferencedItems(cfg))
 					if (dep is AbstractDProject)
-						pcl.Add((dep as AbstractDProject).LocalFileCache);
+						pcl.Add((dep as AbstractDProject).GetSourcePaths(cfg));
 
 				return pcl;
 			}
 			else
-				return ParseCacheList.Create(DCompilerService.Instance.GetDefaultCompiler().ParseCache);
+				return DCompilerService.Instance.GetDefaultCompiler().GenParseCacheView();
 		}
 
 

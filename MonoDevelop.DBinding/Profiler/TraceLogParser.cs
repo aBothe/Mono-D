@@ -62,9 +62,7 @@ namespace MonoDevelop.D.Profiler
 			lastProfiledProject = project;
 			profilerPadWidget.ClearTracedFunctions();
 			
-			var ctxt = ResolutionContext.Create(lastProfiledProject == null ? 
-			                                    ParseCacheList.Create(DCompilerService.Instance.GetDefaultCompiler().ParseCache) : 
-			                                    lastProfiledProject.ParseCache, null, null);
+			var ctxt = ResolutionContext.Create(Resolver.DResolverWrapper.CreateCacheList(lastProfiledProject), null, null);
 			
 			StreamReader reader = File.OpenText(file);
 			string line;

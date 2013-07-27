@@ -60,12 +60,15 @@ namespace MonoDevelop.D.Refactoring
 			var searchResults = new List<SearchResult>();
 
 			var parseCache = project != null ?
-				project.ParseCache :
-				ParseCacheList.Create(DCompilerService.Instance.GetDefaultCompiler().ParseCache);
+				project.ParseCache : DCompilerService.Instance.GetDefaultCompiler().GenParseCacheView();
 
-			var modules = project != null ?
-				project.LocalFileCache as IEnumerable<DModule> :
-				new[] { (Ide.IdeApp.Workbench.ActiveDocument.ParsedDocument as MonoDevelop.D.Parser.ParsedDModule).DDom };
+			var modules = new List<DModule>();
+
+			if (project != null)
+				foreach (var p in project.GetSourcePaths(IdeApp.Workspace.ActiveConfiguration))
+					modules.AddRange (GlobalParseCache.EnumModules (p, null));
+			else
+				modules.Add ((Ide.IdeApp.Workbench.ActiveDocument.ParsedDocument as MonoDevelop.D.Parser.ParsedDModule).DDom);
 
 			if (monitor != null)
 				monitor.BeginStepTask("Scan for references", modules.Count(), 1);

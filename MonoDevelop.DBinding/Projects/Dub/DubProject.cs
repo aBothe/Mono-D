@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
+using MonoDevelop.D.Building;
 
 namespace MonoDevelop.D.Projects.Dub
 {
@@ -135,7 +136,8 @@ namespace MonoDevelop.D.Projects.Dub
 		#region Constructor & Init
 		public void UpdateFilelist()
 		{
-			LocalIncludeCache.ParsedDirectories.AddRange(PhysicalDependencyPaths);
+			foreach (var p in PhysicalDependencyPaths)
+				LocalIncludeCache.Add (p);
 
 			foreach (var settings in GetBuildSettings(null))
 			{
@@ -143,10 +145,10 @@ namespace MonoDevelop.D.Projects.Dub
 				if(settings.TryGetValue(DubBuildSettings.ImportPathsProperty, out l))
 					for (int i = l.Count - 1; i >= 0; i--) // Ignore architecture/os/compiler restrictions for now
 						for (int j = l[i].Flags.Length - 1; j >= 0; j--)
-							LocalIncludeCache.ParsedDirectories.Add(l[i].Flags[j]);
+							LocalIncludeCache.Add(l[i].Flags[j]);
 			}
 
-			LocalIncludeCache.BeginParse();
+			DCompilerConfiguration.UpdateParseCacheAsync (LocalIncludeCache, LocalIncludeCache_FinishedParsing);
 
 			Items.Clear();
 			foreach (var f in GetItemFiles(true))

@@ -8,6 +8,7 @@ using MonoDevelop.Ide;
 using Gtk;
 using MonoDevelop.D.Building.CompilerPresets;
 using System.IO;
+using D_Parser.Misc;
 
 namespace MonoDevelop.D.OptionPanels
 {
@@ -141,7 +142,7 @@ namespace MonoDevelop.D.OptionPanels
 			debugArgumentsDialog.Load (compiler, true);				
 
 			text_DefaultLibraries.Buffer.Text = string.Join ("\n", compiler.DefaultLibraries);
-			text_Includes.Buffer.Text = string.Join ("\n", compiler.ParseCache.ParsedDirectories);
+			text_Includes.Buffer.Text = string.Join ("\n", compiler.ParseCache);
 
 			btnMakeDefault.Active = 
 				configuration.Vendor == defaultCompilerVendor;
@@ -202,10 +203,12 @@ namespace MonoDevelop.D.OptionPanels
 			// Remove trailing / and \
 			for (int i = 0; i < paths.Length; i++)
 				paths[i] = paths[i].TrimEnd('\\', '/');
+			if (GlobalParseCache.UpdateRequired (paths)) {
+				foreach(var bp in configuration.ParseCache)
+					GlobalParseCache.RemoveRoot(bp);
 
-			if (configuration.ParseCache.UpdateRequired (paths)) {
-				configuration.ParseCache.ParsedDirectories.Clear ();
-				configuration.ParseCache.ParsedDirectories.AddRange (paths);
+				configuration.ParseCache.Clear ();
+				configuration.ParseCache.AddRange (paths);
 
 				try {
 					// Update parse cache immediately

@@ -3,6 +3,7 @@ using System;
 using System.Xml;
 using MonoDevelop.Core;
 using D_Parser.Misc;
+using D_Parser.Dom;
 
 namespace MonoDevelop.D.Building
 {
@@ -12,12 +13,8 @@ namespace MonoDevelop.D.Building
 	public class DCompilerConfiguration
 	{
 		#region Properties
-		public readonly ParseCache ParseCache = new ParseCache ();
-		public string BinPath
-		{
-			get { return ParseCache.FallbackPath ?? ""; }
-			set { ParseCache.FallbackPath = value; }
-		}
+		public readonly List<string> ParseCache = new List<string> ();
+		public string BinPath;
 		
 		public string Vendor {get;internal set;}
 		public string SourceCompilerCommand;
@@ -39,17 +36,24 @@ namespace MonoDevelop.D.Building
 		#endregion
 
 		#region Ctor/Init
-		public DCompilerConfiguration()
+		static DCompilerConfiguration()
 		{
-			ParseCache.FinishedParsing += finishedParsing;
-			ParseCache.FinishedUfcsCaching += finishedUfcsAnalysis;
+			GlobalParseCache.ParseTaskFinished+= (ea) => LoggingService.LogInfo(
+				"Parsed {0} files in \"{1}\" in {2}ms (~{3}ms per file)",
+				ea.FileAmount,ea.Directory,ea.Duration,ea.FileDuration);
+			UFCSCache.AnyAnalysisFinished+=(r) => 
+				LoggingService.LogInfo("Finished Ufcs cache preparation in {0}s ({1} parameters parsed, ~{2}ms per resolution)",
+			    r.UfcsCache.CachingDuration.TotalSeconds,
+			    r.UfcsCache.MethodCacheCount,
+			    r.UfcsCache.MethodCacheCount == 0 ? 0 : Math.Round(r.UfcsCache.CachingDuration.TotalMilliseconds / r.UfcsCache.MethodCacheCount));
+		}
+
+		public DCompilerConfiguration() {
 		}
 
 		public DCompilerConfiguration(string vendor)
 		{
 			this.Vendor = vendor;
-			ParseCache.FinishedParsing += finishedParsing;
-			ParseCache.FinishedUfcsCaching += finishedUfcsAnalysis;
 		}
 		#endregion
 
@@ -76,6 +80,11 @@ namespace MonoDevelop.D.Building
 		#endregion
 
 		#region Parsing stuff
+		public ParseCacheView GenParseCacheView()
+		{
+			return new ParseCacheView (ParseCache);
+		}
+
 		/// <summary>
 		/// Updates the configuration's global parse cache
 		/// </summary>
@@ -84,42 +93,28 @@ namespace MonoDevelop.D.Building
 			UpdateParseCacheAsync (ParseCache);
 		}
 
-		void finishedParsing(ParsePerformanceData[] pfd)
-		{
-			foreach (var perfData in pfd)
-			{
-				LoggingService.LogInfo(
-					"Parsed {0} files in \"{1}\" in {2}s (~{3}ms per file)",
-					perfData.AmountFiles,
-					perfData.BaseDirectory,
-					Math.Round(perfData.TotalDuration, 3),
-					Math.Round(perfData.FileDuration * 1000));
-			}
-
-			if (ParseCache.LastParseException != null)
-				LoggingService.LogError("Error while updating parse cache", ParseCache.LastParseException);
-		}
-
-		void finishedUfcsAnalysis()
-		{
-			LoggingService.LogInfo("Finished Ufcs cache preparation in {0}s ({1} parameters parsed, ~{2}ms per resolution)",
-				ParseCache.UfcsCache.CachingDuration.TotalSeconds,
-				ParseCache.UfcsCache.MethodCacheCount,
-				ParseCache.UfcsCache.MethodCacheCount == 0 ? 0 : Math.Round(ParseCache.UfcsCache.CachingDuration.TotalMilliseconds / ParseCache.UfcsCache.MethodCacheCount));
-		}
-
-		public static void UpdateParseCacheAsync (ParseCache Cache)
+		public static void UpdateParseCacheAsync (IEnumerable<string> Cache, string fallBack, string solutionPath, ParseFinishedHandler onfinished = null)
 		{
 			if (Cache == null)
 				throw new ArgumentNullException ("Cache");
 
-			Cache.BeginParse();
+			GlobalParseCache.BeginAddOrUpdatePaths (Parser.DParserWrapper.EnsureAbsolutePaths(Cache, fallBack, solutionPath)
+			                                        , finishedHandler:onfinished);
 		}
 		
-		public static void UpdateParseCacheSync(ParseCache Cache)
+		public static void UpdateParseCacheAsync (IEnumerable<string> Cache, ParseFinishedHandler onfinished = null)
+		{
+			if (Cache == null)
+				throw new ArgumentNullException ("Cache");
+
+			GlobalParseCache.BeginAddOrUpdatePaths (Cache, finishedHandler:onfinished);
+		}
+		
+		public static void UpdateParseCacheSync(List<string> Cache)
 		{
 			UpdateParseCacheAsync(Cache);
-			Cache.WaitForParserFinish();
+			foreach (var p in Cache)
+				GlobalParseCache.WaitForFinish (p);
 		}
 		#endregion
 
@@ -137,11 +132,9 @@ namespace MonoDevelop.D.Building
 			ArgumentPatterns.CopyFrom(o.ArgumentPatterns);
 			EnableGDCLibPrefixing = o.EnableGDCLibPrefixing;
 
-			ParseCache.ParsedDirectories.Clear ();
-			if (o.ParseCache.ParsedDirectories != null)
-				ParseCache.ParsedDirectories.AddRange (o.ParseCache.ParsedDirectories);
-
-			ParseCache.Root = o.ParseCache.Root;
+			ParseCache.Clear ();
+			if (o.ParseCache != null)
+				ParseCache.AddRange (o.ParseCache);
 
 			DefaultLibraries.Clear ();
 			DefaultLibraries.AddRange (o.DefaultLibraries);
@@ -189,7 +182,7 @@ namespace MonoDevelop.D.Building
 
 					while (s.Read())
 						if (s.LocalName == "Path")
-							ParseCache.ParsedDirectories.Add (s.ReadString ());
+							ParseCache.Add (s.ReadString ());
 
 					s.Close ();
 					break;
@@ -253,7 +246,7 @@ namespace MonoDevelop.D.Building
 			x.WriteEndElement ();
 
 			x.WriteStartElement ("Includes");
-			foreach (var inc in ParseCache.ParsedDirectories) {
+			foreach (var inc in ParseCache) {
 				x.WriteStartElement ("Path");
 				x.WriteCData (inc);
 				x.WriteEndElement ();

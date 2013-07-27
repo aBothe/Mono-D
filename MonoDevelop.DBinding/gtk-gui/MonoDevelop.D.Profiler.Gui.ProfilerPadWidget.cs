@@ -41,7 +41,7 @@ namespace MonoDevelop.D.Profiler.Gui
 			this.vbox2.Name = "vbox2";
 			this.vbox2.Spacing = 6;
 			// Container child vbox2.Gtk.Box+BoxChild
-			this.UIManager.AddUiFromString (@"<ui><toolbar name='toolbar2'><toolitem name='switchProfilingModeAction' action='switchProfilingModeAction'/><toolitem name='refreshAction' action='refreshAction'/><toolitem name='openTraceLogAction' action='openTraceLogAction'/><toolitem name='copyRowAction' action='copyRowAction'/><toolitem name='goToFunctionAction' action='goToFunctionAction'/></toolbar></ui>");
+			this.UIManager.AddUiFromString ("<ui><toolbar name='toolbar2'><toolitem name='switchProfilingModeAction' action='switchProfilingModeAction'/><toolitem name='refreshAction' action='refreshAction'/><toolitem name='openTraceLogAction' action='openTraceLogAction'/><toolitem name='copyRowAction' action='copyRowAction'/><toolitem name='goToFunctionAction' action='goToFunctionAction'/></toolbar></ui>");
 			this.toolbar2 = ((global::Gtk.Toolbar)(this.UIManager.GetWidget ("/toolbar2")));
 			this.toolbar2.Name = "toolbar2";
 			this.toolbar2.ShowArrow = false;

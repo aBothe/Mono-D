@@ -44,9 +44,9 @@ namespace MonoDevelop.D.Projects
 		public virtual bool CanDelete {get{ return true; }}
 		public virtual bool CanAdd{ get {return true;}}
 
-		public virtual IEnumerable<string> Includes {get {return Owner.LocalIncludeCache.ParsedDirectories; }}
+		public virtual IEnumerable<string> Includes {get {return Owner.LocalIncludeCache; }}
 		public virtual IEnumerable<string> ReferencedProjectIds {get { return new string[0];}}
-		public virtual bool HasReferences {get { return Owner.LocalIncludeCache.ParsedDirectories.Count > 0; }}
+		public virtual bool HasReferences {get { return Owner.LocalIncludeCache.Count > 0; }}
 
 		public DProjectReferenceCollection(AbstractDProject owner)
 		{
