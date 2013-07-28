@@ -22,7 +22,7 @@ namespace MonoDevelop.D
 
 		public void Load()
 		{
-			text_Includes.Buffer.Text = string.Join ("\n", Project.LocalIncludeCache);
+			text_Includes.Buffer.Text = string.Join ("\n", Project.LocalIncludes);
 		}
 
 		public void Store()
@@ -33,20 +33,19 @@ namespace MonoDevelop.D
 			for (int i = 0; i < paths.Length; i++)
 				paths[i] = paths[i].TrimEnd('\\','/');
 			
-			if (GlobalParseCache.UpdateRequired (paths)) {
-				foreach (var p in Project.LocalIncludeCache)
-					GlobalParseCache.RemoveRoot (p);
-				Project.LocalIncludeCache.Clear ();
+			// Handle removed items
+			foreach (var p in Project.LocalIncludes.Except(paths))
+				GlobalParseCache.RemoveRoot (p);
 
-				foreach(var p in paths)
-					Project.LocalIncludeCache.Add (p);
-				
-				try {
-					// Update parse cache immediately
-					Project.UpdateLocalIncludeCache();
-				} catch (Exception ex) {
-					LoggingService.LogError ("Include path analysis error", ex);
-				}
+			// Handle new items
+			foreach (var p in paths.Except(Project.LocalIncludes))
+				Project.LocalIncludes.Add (p);
+			
+			try {
+				// Update parse cache immediately
+				Project.UpdateLocalIncludeCache();
+			} catch (Exception ex) {
+				LoggingService.LogError ("Include path analysis error", ex);
 			}
 		}
 

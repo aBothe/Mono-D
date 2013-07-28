@@ -203,19 +203,20 @@ namespace MonoDevelop.D.OptionPanels
 			// Remove trailing / and \
 			for (int i = 0; i < paths.Length; i++)
 				paths[i] = paths[i].TrimEnd('\\', '/');
-			if (GlobalParseCache.UpdateRequired (paths)) {
-				foreach(var bp in configuration.IncludePaths)
-					GlobalParseCache.RemoveRoot(bp);
 
-				configuration.IncludePaths.Clear ();
-				configuration.IncludePaths.AddRange (paths);
+			// Handle removed items
+			foreach (var p in configuration.IncludePaths.Except(paths))
+				GlobalParseCache.RemoveRoot (p);
 
-				try {
-					// Update parse cache immediately
-					DCompilerConfiguration.UpdateParseCacheAsync (configuration.IncludePaths);
-				} catch (Exception ex) {
-					LoggingService.LogError ("Include path analysis error", ex);
-				}
+			// Handle new items
+			foreach (var p in paths.Except(configuration.IncludePaths))
+				configuration.IncludePaths.Add (p);
+
+			try {
+				// Update parse cache immediately
+				configuration.UpdateParseCacheAsync();
+			} catch (Exception ex) {
+				LoggingService.LogError ("Include path analysis error", ex);
 			}
 			#endregion
 
