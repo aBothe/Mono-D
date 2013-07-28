@@ -16,7 +16,7 @@ namespace MonoDevelop.D.Projects
 	public abstract class AbstractDProject : Project
 	{
 		#region Properties
-		public virtual DCompilerConfiguration Compiler { get { return DCompilerService.Instance.GetDefaultCompiler(); } set { } }
+		public virtual IEnumerable<string> GlobalIncludes { get { return DCompilerService.Instance.GetDefaultCompiler().IncludePaths; } }
 		public override string ProjectType { get { return "Native"; } }
 		public override string[] SupportedLanguages { get { return new[] { "D", "" }; } }
 		public virtual DProjectReferenceCollection References { get {return null;} }
@@ -24,16 +24,20 @@ namespace MonoDevelop.D.Projects
 		/// <summary>
 		/// Stores parse information from project-wide includes
 		/// </summary>
-		public readonly ObservableCollection<string> LocalIncludeCache = new ObservableCollection<string>();
+		public readonly ObservableCollection<string> LocalIncludes = new ObservableCollection<string>();
 
-		protected readonly List<DModule> _filelinkModulesToInsert = new List<DModule>();
 		protected MutableRootPackage fileLinkModulesRoot;
 
 		public virtual ParseCacheView ParseCache
 		{
 			get
 			{
-				return DResolverWrapper.CreateCacheList(this);
+				var r = new ParseCacheView(IncludePaths);
+
+				if(fileLinkModulesRoot != null)
+					r.Add (fileLinkModulesRoot);
+
+				return r;
 			}
 		}
 
@@ -51,9 +55,9 @@ namespace MonoDevelop.D.Projects
 		{
 			get
 			{
-				foreach (var p in Compiler.IncludePaths)
+				foreach (var p in GlobalIncludes)
 					yield return p;
-				foreach (var p in LocalIncludeCache)
+				foreach (var p in LocalIncludes)
 					yield return p;
 				var sel = Ide.IdeApp.Workspace.ActiveConfiguration;
 				foreach (var dep in GetReferencedItems(sel))
@@ -65,10 +69,16 @@ namespace MonoDevelop.D.Projects
 		#endregion
 
 		#region Parsed project modules
+		protected void InformGlobalParseCacheFilled()
+		{
+			analysisFinished_GlobalCache = true;
+			TryBuildUfcsCache ();
+		}
+
 		public void UpdateLocalIncludeCache()
 		{
 			analysisFinished_LocalIncludes = false;
-			DCompilerConfiguration.UpdateParseCacheAsync(LocalIncludeCache, BaseDirectory,
+			DCompilerConfiguration.UpdateParseCacheAsync(LocalIncludes, BaseDirectory,
 			                                             ParentSolution == null ? 
 			                                             	BaseDirectory.ToString() : 
 			                                             	ParentSolution.BaseDirectory.ToString(), false,
@@ -125,28 +135,44 @@ namespace MonoDevelop.D.Projects
 			TryBuildUfcsCache();
 		}
 
-		protected void LocalFileCache_FinishedParsing(ParsingFinishedEventArgs PerformanceData)
+		void LocalFileCache_FinishedParsing(ParsingFinishedEventArgs PerformanceData)
 		{
 			analysisFinished_LocalCache = true;
 			TryBuildUfcsCache();
 		}
 
-		void GlobalParseCache_FinishedParsing(ParsingFinishedEventArgs PerformanceData)
-		{
-			analysisFinished_GlobalCache = true;
-			TryBuildUfcsCache();
-		}
-
 		void TryBuildUfcsCache()
 		{
-			//TODO: Establish a 'common' includes list.
-			/*if (analysisFinished_GlobalCache && !Compiler.ParseCache.IsParsing &&
-				analysisFinished_LocalCache && analysisFinished_LocalIncludes &&
+			if (analysisFinished_GlobalCache &&
+			    analysisFinished_LocalCache && 
+			    analysisFinished_LocalIncludes &&
 				analysisFinished_FileLinks)
 			{
-				LocalIncludeCache.UfcsCache.Update(ParseCacheList.Create(Compiler.ParseCache, LocalIncludeCache), null, LocalIncludeCache);
-				LocalFileCache.UfcsCache.Update(ParseCache, null, LocalFileCache);
-			}*/
+				var pcw = new ParseCacheView (GlobalIncludes);
+				pcw.Add (LocalIncludes);
+
+				foreach (var p in LocalIncludes) {
+					var r = GlobalParseCache.GetRootPackage (p);
+					if (r == null)
+						continue;
+
+					r.UfcsCache.BeginUpdate (pcw);
+				}
+
+				// Don't reuse the existing view for obvious threading problems!
+				pcw = new ParseCacheView (GlobalIncludes);
+				pcw.Add (LocalIncludes);
+				var src = GetSourcePaths ();
+				pcw.Add (src);
+
+				foreach (var p in src) {
+					var r = GlobalParseCache.GetRootPackage (p);
+					if (r == null)
+						continue;
+
+					r.UfcsCache.BeginUpdate (pcw);
+				}
+			}
 		}
 
 		protected override void OnFileRemovedFromProject(ProjectFileEventArgs e)

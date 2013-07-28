@@ -67,9 +67,9 @@ namespace MonoDevelop.D.Projects
 		
 		[ItemProperty("UseDefaultCompiler")]
 		public bool UseDefaultCompilerVendor = true;
-		[ItemProperty("Compiler")]
 		string _compilerVendor;
 
+		[ItemProperty("Compiler")]
 		public string UsedCompilerVendor {
 			get {
 				if (UseDefaultCompilerVendor)
@@ -77,7 +77,18 @@ namespace MonoDevelop.D.Projects
 				return _compilerVendor;
 			}
 			set {
+				var c = Compiler;
+				if (c != null)
+					c.FinishedParsing -= compilerCacheUpdated;
+
 				_compilerVendor = value;
+
+				c = Compiler;
+				if (c != null) {
+					c.FinishedParsing += compilerCacheUpdated;
+					if (c.HadInitialParse)
+						compilerCacheUpdated (null);
+				}
 			}
 		}
 
@@ -87,14 +98,18 @@ namespace MonoDevelop.D.Projects
 		/// <summary>
 		/// Returns the actual compiler configuration used by this project
 		/// </summary>
-		public override DCompilerConfiguration Compiler
+		public DCompilerConfiguration Compiler
 		{
 			get {
-				return string.IsNullOrEmpty (UsedCompilerVendor) ? 
-					DCompilerService.Instance.GetDefaultCompiler () : 
-					DCompilerService.Instance.GetCompiler (UsedCompilerVendor); 
+				return DCompilerService.Instance.GetCompiler (UsedCompilerVendor); 
 			}
 			set { UsedCompilerVendor = value.Vendor; }
+		}
+
+		public override IEnumerable<string> GlobalIncludes {
+			get {
+				return Compiler.IncludePaths;
+			}
 		}
 
 		readonly DefaultReferenceCollection referenceCollection;
@@ -126,10 +141,13 @@ namespace MonoDevelop.D.Projects
 				}
 			}
 
-			internal void InitRefCollection(IEnumerable<string> IDs)
+			internal void InitRefCollection(IEnumerable<string> IDs, IEnumerable<string> includes)
 			{
 				ProjectDependencies = new ObservableCollection<string>(IDs);
 				ProjectDependencies.CollectionChanged+=OnProjectDepChanged;
+
+				foreach (var p in includes)
+					Owner.LocalIncludes.Add (ProjectBuilder.EnsureCorrectPathSeparators (p));
 			}
 
 			void OnProjectDepChanged(object o, System.Collections.Specialized.NotifyCollectionChangedEventArgs ea)
@@ -285,11 +303,16 @@ namespace MonoDevelop.D.Projects
 					}			
 				}
 			}
-						
 		}
 
 		void Init()
 		{
+			var c = Compiler;
+			if (c != null) {
+				c.FinishedParsing += compilerCacheUpdated;
+				if (c.HadInitialParse)
+					compilerCacheUpdated (null);
+			}
 		}
 		#endregion
 
@@ -523,10 +546,9 @@ namespace MonoDevelop.D.Projects
 		{
 			handler.Deserialize (this, data);
 
-			referenceCollection.InitRefCollection (tempProjectDependencies);
+			Init ();
 
-			foreach (var p in tempIncludes)
-				LocalIncludeCache.Add (ProjectBuilder.EnsureCorrectPathSeparators (p));
+			referenceCollection.InitRefCollection (tempProjectDependencies, tempIncludes);
 		}
 
 		public DataCollection Serialize (ITypeSerializer handler)
@@ -534,7 +556,7 @@ namespace MonoDevelop.D.Projects
 			tempIncludes.Clear ();
 			tempProjectDependencies.Clear ();
 
-			tempIncludes.AddRange (LocalIncludeCache);
+			tempIncludes.AddRange (referenceCollection.Includes);
 			tempProjectDependencies.AddRange (referenceCollection.ProjectDependencies);
 
 			var ret = handler.Serialize (this);
@@ -575,6 +597,11 @@ namespace MonoDevelop.D.Projects
 			}
 
 			base.OnEndLoad();
+		}
+
+		void compilerCacheUpdated(ParsingFinishedEventArgs ea)
+		{
+			base.InformGlobalParseCacheFilled ();
 		}
 		#endregion
 	}

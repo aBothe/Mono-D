@@ -4,6 +4,7 @@ using System.Xml;
 using MonoDevelop.Core;
 using D_Parser.Misc;
 using D_Parser.Dom;
+using System.Threading;
 
 namespace MonoDevelop.D.Building
 {
@@ -15,6 +16,7 @@ namespace MonoDevelop.D.Building
 		#region Properties
 		public readonly List<string> IncludePaths = new List<string> ();
 		public string BinPath;
+		public bool HadInitialParse { get; private set;}
 		public event ParseFinishedHandler FinishedParsing;
 		
 		public string Vendor {get;internal set;}
@@ -101,6 +103,8 @@ namespace MonoDevelop.D.Building
 				r.UfcsCache.BeginUpdate (pcw);
 			}
 
+			HadInitialParse = true;
+
 			if (FinishedParsing != null)
 				FinishedParsing (ea);
 		}
@@ -111,7 +115,8 @@ namespace MonoDevelop.D.Building
 		/// </summary>
 		public void UpdateParseCacheAsync ()
 		{
-			UpdateParseCacheAsync (IncludePaths, BinPath, null, true, FinishedParsing);
+			HadInitialParse = false;
+			UpdateParseCacheAsync (IncludePaths, BinPath, null, true, parsingFinished);
 		}
 
 		public static void UpdateParseCacheAsync (IEnumerable<string> Cache, string fallBack, string solutionPath, bool skipfunctionbodies= false, ParseFinishedHandler onfinished = null)
@@ -158,6 +163,9 @@ namespace MonoDevelop.D.Building
 				newLt.CopyFrom (kv.Value);
 				LinkTargetConfigurations [kv.Key] = newLt;
 			}
+
+			FinishedParsing = o.FinishedParsing;
+			HadInitialParse = o.HadInitialParse;
 		}
 
 		public void ReadFrom (System.Xml.XmlReader x)

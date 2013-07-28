@@ -44,9 +44,9 @@ namespace MonoDevelop.D.Projects
 		public virtual bool CanDelete {get{ return true; }}
 		public virtual bool CanAdd{ get {return true;}}
 
-		public virtual IEnumerable<string> Includes {get {return Owner.LocalIncludeCache; }}
+		public virtual IEnumerable<string> Includes {get {return Owner.LocalIncludes; }}
 		public virtual IEnumerable<string> ReferencedProjectIds {get { return new string[0];}}
-		public virtual bool HasReferences {get { return Owner.LocalIncludeCache.Count > 0; }}
+		public virtual bool HasReferences {get { return Owner.LocalIncludes.Count > 0; }}
 
 		public DProjectReferenceCollection(AbstractDProject owner)
 		{
@@ -55,7 +55,7 @@ namespace MonoDevelop.D.Projects
 
 		public virtual void DeleteInclude(string path)
 		{
-			Owner.LocalIncludeCache.Remove (path);
+			Owner.LocalIncludes.Remove (path);
 		}
 		public abstract void DeleteProjectRef(string projectId);
 

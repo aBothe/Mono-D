@@ -89,19 +89,7 @@ namespace MonoDevelop.D.Resolver
 		public static ParseCacheView CreateCacheList(AbstractDProject Project = null)
 		{
 			if (Project != null)
-			{
-				var cfg = IdeApp.Workspace.ActiveConfiguration;
-				var pcl = Project.Compiler.GenParseCacheView();
-				pcl.Add (Project.GetSourcePaths(cfg));
-				pcl.Add(Project.LocalIncludeCache);
-
-				// Automatically include dep projects' caches
-				foreach (var dep in Project.GetReferencedItems(cfg))
-					if (dep is AbstractDProject)
-						pcl.Add((dep as AbstractDProject).GetSourcePaths(cfg));
-
-				return pcl;
-			}
+				return Project.ParseCache;
 			else
 				return DCompilerService.Instance.GetDefaultCompiler().GenParseCacheView();
 		}
