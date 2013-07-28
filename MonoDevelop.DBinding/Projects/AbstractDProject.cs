@@ -225,6 +225,24 @@ namespace MonoDevelop.D.Projects
 		}
 		#endregion
 
+		public override void Dispose ()
+		{
+			// Remove roots that aren't required anymore!?
+			var g = LocalIncludes.ToList();
+			foreach (var prj in Ide.IdeApp.Workspace.GetAllProjects()) {
+				var p = prj as AbstractDProject;
+				if (p!=null && p != this) {
+					foreach (var g_ in p.LocalIncludes)
+						g.Remove (g_);
+				}
+			}
+
+			foreach (var path in g)
+				GlobalParseCache.RemoveRoot (path);
+
+			base.Dispose ();
+		}
+
 		/// <summary>
 		/// Returns dependent projects in a topological order (from least to most dependent)
 		/// </summary>
