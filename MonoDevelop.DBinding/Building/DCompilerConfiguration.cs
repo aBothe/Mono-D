@@ -13,8 +13,9 @@ namespace MonoDevelop.D.Building
 	public class DCompilerConfiguration
 	{
 		#region Properties
-		public readonly List<string> ParseCache = new List<string> ();
+		public readonly List<string> IncludePaths = new List<string> ();
 		public string BinPath;
+		public event ParseFinishedHandler FinishedParsing;
 		
 		public string Vendor {get;internal set;}
 		public string SourceCompilerCommand;
@@ -82,39 +83,51 @@ namespace MonoDevelop.D.Building
 		#region Parsing stuff
 		public ParseCacheView GenParseCacheView()
 		{
-			return new ParseCacheView (ParseCache);
+			return new ParseCacheView (IncludePaths);
+		}
+
+		void parsingFinished(ParsingFinishedEventArgs ea)
+		{
+			// Update UFCS cache
+			var pcw = GenParseCacheView ();
+			foreach (var path in IncludePaths) {
+				var r = GlobalParseCache.GetRootPackage (path);
+
+				//HACK: Ensure that the includes list won't get changed during parsing
+				if (r == null)
+					throw new ArgumentNullException ("Root package must not be null - either a parse error occurred or the list was changed in between");
+
+				//TODO: Supply global condition flags? -- At least the vendor id
+				r.UfcsCache.BeginUpdate (pcw);
+			}
+
+			if (FinishedParsing != null)
+				FinishedParsing (ea);
 		}
 
 		/// <summary>
-		/// Updates the configuration's global parse cache
+		/// Updates the configuration's global parse cache.
+		/// Use this method only - otherwise there won't be any feedback about parse progresses + paths might be handled wrongly
 		/// </summary>
 		public void UpdateParseCacheAsync ()
 		{
-			UpdateParseCacheAsync (ParseCache);
+			UpdateParseCacheAsync (IncludePaths, BinPath, null, true, FinishedParsing);
 		}
 
-		public static void UpdateParseCacheAsync (IEnumerable<string> Cache, string fallBack, string solutionPath, ParseFinishedHandler onfinished = null)
+		public static void UpdateParseCacheAsync (IEnumerable<string> Cache, string fallBack, string solutionPath, bool skipfunctionbodies= false, ParseFinishedHandler onfinished = null)
 		{
 			if (Cache == null)
 				throw new ArgumentNullException ("Cache");
 
-			GlobalParseCache.BeginAddOrUpdatePaths (Parser.DParserWrapper.EnsureAbsolutePaths(Cache, fallBack, solutionPath)
-			                                        , finishedHandler:onfinished);
+			GlobalParseCache.BeginAddOrUpdatePaths (Parser.DParserWrapper.EnsureAbsolutePaths(Cache, fallBack, solutionPath), skipfunctionbodies, finishedHandler:onfinished);
 		}
 		
-		public static void UpdateParseCacheAsync (IEnumerable<string> Cache, ParseFinishedHandler onfinished = null)
+		public static void UpdateParseCacheAsync (IEnumerable<string> Cache, bool skipfunctionbodies= false, ParseFinishedHandler onfinished = null)
 		{
 			if (Cache == null)
 				throw new ArgumentNullException ("Cache");
 
-			GlobalParseCache.BeginAddOrUpdatePaths (Cache, finishedHandler:onfinished);
-		}
-		
-		public static void UpdateParseCacheSync(List<string> Cache)
-		{
-			UpdateParseCacheAsync(Cache);
-			foreach (var p in Cache)
-				GlobalParseCache.WaitForFinish (p);
+			GlobalParseCache.BeginAddOrUpdatePaths (Cache, skipfunctionbodies, onfinished);
 		}
 		#endregion
 
@@ -132,9 +145,9 @@ namespace MonoDevelop.D.Building
 			ArgumentPatterns.CopyFrom(o.ArgumentPatterns);
 			EnableGDCLibPrefixing = o.EnableGDCLibPrefixing;
 
-			ParseCache.Clear ();
-			if (o.ParseCache != null)
-				ParseCache.AddRange (o.ParseCache);
+			IncludePaths.Clear ();
+			if (o.IncludePaths != null)
+				IncludePaths.AddRange (o.IncludePaths);
 
 			DefaultLibraries.Clear ();
 			DefaultLibraries.AddRange (o.DefaultLibraries);
@@ -182,7 +195,7 @@ namespace MonoDevelop.D.Building
 
 					while (s.Read())
 						if (s.LocalName == "Path")
-							ParseCache.Add (s.ReadString ());
+							IncludePaths.Add (s.ReadString ());
 
 					s.Close ();
 					break;
@@ -246,7 +259,7 @@ namespace MonoDevelop.D.Building
 			x.WriteEndElement ();
 
 			x.WriteStartElement ("Includes");
-			foreach (var inc in ParseCache) {
+			foreach (var inc in IncludePaths) {
 				x.WriteStartElement ("Path");
 				x.WriteCData (inc);
 				x.WriteEndElement ();

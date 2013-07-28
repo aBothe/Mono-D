@@ -148,7 +148,7 @@ namespace MonoDevelop.D.Projects.Dub
 							LocalIncludeCache.Add(l[i].Flags[j]);
 			}
 
-			DCompilerConfiguration.UpdateParseCacheAsync (LocalIncludeCache, LocalIncludeCache_FinishedParsing);
+			DCompilerConfiguration.UpdateParseCacheAsync (LocalIncludeCache, false, LocalIncludeCache_FinishedParsing);
 
 			Items.Clear();
 			foreach (var f in GetItemFiles(true))

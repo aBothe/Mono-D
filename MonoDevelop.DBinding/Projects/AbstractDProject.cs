@@ -27,7 +27,7 @@ namespace MonoDevelop.D.Projects
 		public readonly ObservableCollection<string> LocalIncludeCache = new ObservableCollection<string>();
 
 		protected readonly List<DModule> _filelinkModulesToInsert = new List<DModule>();
-		protected readonly MutableRootPackage fileLinkModulesRoot = new MutableRootPackage();
+		protected MutableRootPackage fileLinkModulesRoot;
 
 		public virtual ParseCacheView ParseCache
 		{
@@ -51,7 +51,7 @@ namespace MonoDevelop.D.Projects
 		{
 			get
 			{
-				foreach (var p in Compiler.ParseCache)
+				foreach (var p in Compiler.IncludePaths)
 					yield return p;
 				foreach (var p in LocalIncludeCache)
 					yield return p;
@@ -71,7 +71,7 @@ namespace MonoDevelop.D.Projects
 			DCompilerConfiguration.UpdateParseCacheAsync(LocalIncludeCache, BaseDirectory,
 			                                             ParentSolution == null ? 
 			                                             	BaseDirectory.ToString() : 
-			                                             	ParentSolution.BaseDirectory.ToString(),
+			                                             	ParentSolution.BaseDirectory.ToString(), false,
 			                                             LocalIncludeCache_FinishedParsing);
 		}
 
@@ -91,9 +91,11 @@ namespace MonoDevelop.D.Projects
 			if (hasFileLinks.Count == 0)
 				analysisFinished_FileLinks = true;
 
-			var paths = GetSourcePaths(Ide.IdeApp.Workspace.ActiveConfiguration);
-			DCompilerConfiguration.UpdateParseCacheAsync (paths, LocalFileCache_FinishedParsing);
-			//LocalFileCache.WaitForParserFinish();
+			DCompilerConfiguration.UpdateParseCacheAsync (GetSourcePaths(), false, LocalFileCache_FinishedParsing);
+
+			//EDIT: What if those file links refer to other project's files? Or what if more than one project reference the same files?
+			//Furthermore, what if those files become edited and reparsed? Will their reference in the projects be updated either?
+			// -> make a root for every file link in the global parse cache and build up a virtual root containing all file links right before a cache view is requested?
 
 			/*
 			 * Since we don't want to include all link files' directories for performance reasons,
@@ -101,31 +103,19 @@ namespace MonoDevelop.D.Projects
 			 * Ufcs completion preparation will be done afterwards in the TryBuildUfcsCache() method.
 			 */
 			if (hasFileLinks.Count != 0)
-				new System.Threading.Thread((object o) =>
+				new System.Threading.Thread(() =>
 				{
-					foreach (var f in (List<ProjectFile>)o)
-					{
-						_filelinkModulesToInsert.Add(DParser.ParseFile(f.FilePath) as DModule);
-					}
+					var r = new MutableRootPackage();
+					foreach (var f in hasFileLinks)
+						r.AddModule(DParser.ParseFile(f.FilePath) as DModule);
+					fileLinkModulesRoot = r;
 
 					analysisFinished_FileLinks = true;
-					_InsertFileLinkModulesIntoLocalCache();
 					TryBuildUfcsCache();
-				}) { IsBackground = true }.Start(hasFileLinks);
+				}) { IsBackground = true }.Start();
 		}
 
 		bool analysisFinished_GlobalCache, analysisFinished_LocalIncludes, analysisFinished_LocalCache, analysisFinished_FileLinks;
-
-		void _InsertFileLinkModulesIntoLocalCache()
-		{
-			if (analysisFinished_FileLinks && analysisFinished_LocalCache)
-			{
-				foreach (var mod in _filelinkModulesToInsert)
-					fileLinkModulesRoot.AddModule (mod);
-
-				_filelinkModulesToInsert.Clear();
-			}
-		}
 
 		protected void LocalIncludeCache_FinishedParsing(ParsingFinishedEventArgs PerformanceData)
 		{
@@ -138,7 +128,6 @@ namespace MonoDevelop.D.Projects
 		protected void LocalFileCache_FinishedParsing(ParsingFinishedEventArgs PerformanceData)
 		{
 			analysisFinished_LocalCache = true;
-			_InsertFileLinkModulesIntoLocalCache();
 			TryBuildUfcsCache();
 		}
 

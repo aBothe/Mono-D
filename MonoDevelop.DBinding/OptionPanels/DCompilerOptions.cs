@@ -142,7 +142,7 @@ namespace MonoDevelop.D.OptionPanels
 			debugArgumentsDialog.Load (compiler, true);				
 
 			text_DefaultLibraries.Buffer.Text = string.Join ("\n", compiler.DefaultLibraries);
-			text_Includes.Buffer.Text = string.Join ("\n", compiler.ParseCache);
+			text_Includes.Buffer.Text = string.Join ("\n", compiler.IncludePaths);
 
 			btnMakeDefault.Active = 
 				configuration.Vendor == defaultCompilerVendor;
@@ -204,15 +204,15 @@ namespace MonoDevelop.D.OptionPanels
 			for (int i = 0; i < paths.Length; i++)
 				paths[i] = paths[i].TrimEnd('\\', '/');
 			if (GlobalParseCache.UpdateRequired (paths)) {
-				foreach(var bp in configuration.ParseCache)
+				foreach(var bp in configuration.IncludePaths)
 					GlobalParseCache.RemoveRoot(bp);
 
-				configuration.ParseCache.Clear ();
-				configuration.ParseCache.AddRange (paths);
+				configuration.IncludePaths.Clear ();
+				configuration.IncludePaths.AddRange (paths);
 
 				try {
 					// Update parse cache immediately
-					DCompilerConfiguration.UpdateParseCacheAsync (configuration.ParseCache);
+					DCompilerConfiguration.UpdateParseCacheAsync (configuration.IncludePaths);
 				} catch (Exception ex) {
 					LoggingService.LogError ("Include path analysis error", ex);
 				}
