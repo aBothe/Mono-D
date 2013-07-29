@@ -68,11 +68,13 @@
     </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\ext\Newtonsoft.Json.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Data" />
-    <Reference Include="Mono.Cairo" />
+    <Reference Include="Mono.Posix, Version=2.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756" />
+    <Reference Include="Mono.Cairo, Version=4.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756" />
     <Reference Include="gtk-sharp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
       <SpecificVersion>False</SpecificVersion>
     </Reference>
@@ -123,7 +125,6 @@
       <Private>False</Private>
       <HintPath>..\ext\Mono.Debugging.dll</HintPath>
     </Reference>
-    <Reference Include="Mono.Posix" />
     <Reference Include="MonoDevelop.DesignerSupport">
       <HintPath>..\ext\MonoDevelop.DesignerSupport.dll</HintPath>
       <Private>False</Private>
