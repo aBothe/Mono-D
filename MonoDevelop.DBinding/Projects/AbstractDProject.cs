@@ -81,7 +81,7 @@ namespace MonoDevelop.D.Projects
 			DCompilerConfiguration.UpdateParseCacheAsync(LocalIncludes, BaseDirectory,
 			                                             ParentSolution == null ? 
 			                                             	BaseDirectory.ToString() : 
-			                                             	ParentSolution.BaseDirectory.ToString(), false,
+			                                             	ParentSolution.BaseDirectory.ToString(), true,
 			                                             LocalIncludeCache_FinishedParsing);
 		}
 

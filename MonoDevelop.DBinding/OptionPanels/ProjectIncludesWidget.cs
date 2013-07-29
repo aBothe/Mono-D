@@ -27,20 +27,10 @@ namespace MonoDevelop.D
 
 		public void Store()
 		{
-			var paths = text_Includes.Buffer.Text.Split (new[]{'\n'}, StringSplitOptions.RemoveEmptyEntries);
-			
-			// Remove trailing / and \
-			for (int i = 0; i < paths.Length; i++)
-				paths[i] = paths[i].TrimEnd('\\','/');
-			
-			// Handle removed items
-			foreach (var p in Project.LocalIncludes.Except(paths))
-				GlobalParseCache.RemoveRoot (p);
+			Project.LocalIncludes.Clear ();
+			foreach(var p in text_Includes.Buffer.Text.Split (new[]{'\n'}, StringSplitOptions.RemoveEmptyEntries))
+				Project.LocalIncludes.Add(p.TrimEnd('\\','/'));
 
-			// Handle new items
-			foreach (var p in paths.Except(Project.LocalIncludes))
-				Project.LocalIncludes.Add (p);
-			
 			try {
 				// Update parse cache immediately
 				Project.UpdateLocalIncludeCache();

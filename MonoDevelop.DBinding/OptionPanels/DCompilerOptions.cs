@@ -198,19 +198,9 @@ namespace MonoDevelop.D.OptionPanels
 			configuration.DefaultLibraries.AddRange (text_DefaultLibraries.Buffer.Text.Split (new[]{'\n'}, StringSplitOptions.RemoveEmptyEntries));
 			
 			#region Store new include paths
-			var paths = text_Includes.Buffer.Text.Split (new[]{'\n'}, StringSplitOptions.RemoveEmptyEntries);
-
-			// Remove trailing / and \
-			for (int i = 0; i < paths.Length; i++)
-				paths[i] = paths[i].TrimEnd('\\', '/');
-
-			// Handle removed items
-			foreach (var p in configuration.IncludePaths.Except(paths))
-				GlobalParseCache.RemoveRoot (p);
-
-			// Handle new items
-			foreach (var p in paths.Except(configuration.IncludePaths))
-				configuration.IncludePaths.Add (p);
+			configuration.IncludePaths.Clear();
+			foreach(var p in text_Includes.Buffer.Text.Split (new[]{'\n'}, StringSplitOptions.RemoveEmptyEntries))
+				configuration.IncludePaths.Add(p.TrimEnd('\\', '/'));
 
 			try {
 				// Update parse cache immediately
