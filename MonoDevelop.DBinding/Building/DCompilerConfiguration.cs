@@ -42,8 +42,9 @@ namespace MonoDevelop.D.Building
 		static DCompilerConfiguration()
 		{
 			GlobalParseCache.ParseTaskFinished+= (ea) => LoggingService.LogInfo(
-				"Parsed {0} files in \"{1}\" in {2}ms (~{3}ms per file)",
-				ea.FileAmount,ea.Directory,ea.Duration,ea.FileDuration);
+				"Parsed {0} files in \"{1}\" in {2}ms ({3}ms;{4}% parse time) (~{5}ms/{6}ms per file)",
+				ea.FileAmount,ea.Directory,ea.Duration, ea.ParseDuration, 
+				Math.Truncate(ea.Duration > 0 ? (double)ea.ParseDuration/(double)ea.Duration * 100.0 : 0.0) ,ea.FileDuration,ea.FileParseDuration);
 			UFCSCache.AnyAnalysisFinished+=(r) => 
 				LoggingService.LogInfo("Finished Ufcs cache preparation in {0}s ({1} parameters parsed, ~{2}ms per resolution)",
 			    r.UfcsCache.CachingDuration.TotalSeconds,
