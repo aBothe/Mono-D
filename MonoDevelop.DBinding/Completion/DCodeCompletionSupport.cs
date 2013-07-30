@@ -514,7 +514,7 @@ namespace MonoDevelop.D.Completion
 						return DCodeCompletionSupport.GetNodeImage("local");
 					}
 
-					ITemplateParameter tpar;
+					TemplateParameter tpar;
 					if (realParent.TryGetTemplateParameter(n.Name, out tpar))
 						return DCodeCompletionSupport.GetNodeImage("parameter");
 				}
@@ -676,7 +676,7 @@ namespace MonoDevelop.D.Completion
 			{
 				sb.Append("Method");
 			}
-			else if (dn is TemplateParameterNode)
+			else if (dn is TemplateParameter.Node)
 			{
 				sb.Append("Template Parameter");
 			}

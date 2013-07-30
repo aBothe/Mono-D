@@ -66,8 +66,8 @@ namespace MonoDevelop.D.Completion
 			if(parameters == null)
 				return null;
 			
-			if(parameters is ITemplateParameter[])
-				return (parameters as ITemplateParameter[])[paramIndex];
+			if(parameters is TemplateParameter[])
+				return (parameters as TemplateParameter[])[paramIndex];
 			else if(parameters is List<INode>)
 				return (parameters as List<INode>)[paramIndex];
 			return null;
@@ -156,8 +156,8 @@ namespace MonoDevelop.D.Completion
 
 			if (param is AbstractNode)
 				return ((AbstractNode)param).Name;
-			else if (param is ITemplateParameter)
-				return (param as ITemplateParameter).Name;
+			else if (param is TemplateParameter)
+				return (param as TemplateParameter).Name;
 
 			return null;
 		}
@@ -168,8 +168,8 @@ namespace MonoDevelop.D.Completion
 
 			var parameters = GetParameters();
 			
-			if(parameters is ITemplateParameter[])
-				return (parameters as ITemplateParameter[]).Length;
+			if(parameters is TemplateParameter[])
+				return (parameters as TemplateParameter[]).Length;
 			else if(parameters is List<INode>)
 				return (parameters as List<INode>).Count;
 			
