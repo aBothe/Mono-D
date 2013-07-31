@@ -152,7 +152,8 @@ namespace MonoDevelop.D.Projects
 
 			void OnProjectDepChanged(object o, System.Collections.Specialized.NotifyCollectionChangedEventArgs ea)
 			{
-				Update(o, ea);
+				if(Update!=null)
+					Update(o, ea);
 			}
 
 			public override void DeleteProjectRef (string projectId)
