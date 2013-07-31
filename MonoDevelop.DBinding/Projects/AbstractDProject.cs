@@ -33,6 +33,7 @@ namespace MonoDevelop.D.Projects
 			get
 			{
 				var r = new ParseCacheView(IncludePaths);
+				r.Add (GetSourcePaths ());
 
 				if(fileLinkModulesRoot != null)
 					r.Add (fileLinkModulesRoot);
