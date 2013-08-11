@@ -61,6 +61,8 @@ namespace MonoDevelop.D.Projects
 			public void ManipulateMacros(Dictionary<string,string> macros)
 			{
 				var p = this.p.Target as AbstractDProject;
+				if (p == null)
+					return;
 				macros ["solution"] = p.ParentSolution.BaseDirectory;
 				macros ["project"] = p.BaseDirectory;
 			}
