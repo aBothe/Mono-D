@@ -49,12 +49,12 @@
 		<DebugArgs>
 			<CompilerArg>-c "$src" "-of$obj" $includes -gc</CompilerArg>
 			<LinkerArgs>-lib "-of$target" $objs</LinkerArgs>
-      		<OneStepBuildArgs>-gc $sources $libs $includes -lib "-od$objectsDirectory" "-of$lib"</OneStepBuildArgs>
+      		<OneStepBuildArgs>-gc $sources $includes -lib "-od$objectsDirectory" "-of$lib"</OneStepBuildArgs>
 		</DebugArgs>
 		<ReleaseArgs>
 			<CompilerArg>-c "$src" "-of$obj" $includes -O -release</CompilerArg>
 			<LinkerArgs>-lib "-of$target" $objs</LinkerArgs>
-      		<OneStepBuildArgs>-O $sources $libs $includes -lib "-od$objectsDirectory" "-of$lib" -release</OneStepBuildArgs>
+      		<OneStepBuildArgs>-O $sources $includes -lib "-od$objectsDirectory" "-of$lib" -release</OneStepBuildArgs>
 		</ReleaseArgs>
 	</TargetConfiguration>
 </Compiler>
