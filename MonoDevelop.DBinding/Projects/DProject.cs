@@ -40,13 +40,6 @@ namespace MonoDevelop.D.Projects
 		public const string ConfigJson = "projectconfig.json";
 		public ExtendedProjectConfig ExtendedConfiguration;
 
-		/// <summary>
-		/// List of GUIDs that identify project items within their solution.
-		/// Used to store project dependencies.
-		/// </summary>
-		[ItemProperty("DependentProjectIds")]
-		List<string> tempProjectDependencies = new List<string>();
-
 		public override IEnumerable<SolutionItem> GetReferencedItems(ConfigurationSelector configuration)
 		{
 			SolutionItem p;
@@ -112,7 +105,7 @@ namespace MonoDevelop.D.Projects
 			}
 		}
 
-		readonly DefaultReferenceCollection referenceCollection;
+		readonly DefaultDReferencesCollection referenceCollection;
 		public override DProjectReferenceCollection References {
 			get {
 				return referenceCollection;
@@ -125,87 +118,15 @@ namespace MonoDevelop.D.Projects
 		}
 		#endregion
 
-		internal class DefaultReferenceCollection : DProjectReferenceCollection
-		{
-			public ObservableCollection<string> ProjectDependencies;
-
-			public override event EventHandler Update;
-
-			public DefaultReferenceCollection(DProject prj, bool initDepCollection = true)
-				: base(prj)
-			{
-				if(initDepCollection)
-				{
-					ProjectDependencies = new ObservableCollection<string>();
-					ProjectDependencies.CollectionChanged+=OnProjectDepChanged;
-				}
-			}
-
-			internal void InitRefCollection(IEnumerable<string> IDs, IEnumerable<string> includes)
-			{
-				ProjectDependencies = new ObservableCollection<string>(IDs);
-				ProjectDependencies.CollectionChanged+=OnProjectDepChanged;
-
-				foreach (var p in includes)
-					Owner.LocalIncludes.Add (ProjectBuilder.EnsureCorrectPathSeparators (p));
-			}
-
-			void OnProjectDepChanged(object o, System.Collections.Specialized.NotifyCollectionChangedEventArgs ea)
-			{
-				if(Update!=null)
-					Update(o, ea);
-			}
-
-			public override void DeleteProjectRef (string projectId)
-			{
-				ProjectDependencies.Remove (projectId);
-			}
-
-			public override bool AddReference ()
-			{
-				throw new NotImplementedException ();
-			}
-
-			public override bool CanDelete {
-				get {
-					return true;
-				}
-			}
-
-			public override bool CanAdd {
-				get {
-					return true;
-				}
-			}
-
-			public override IEnumerable<string> ReferencedProjectIds {
-				get {
-					return ProjectDependencies;
-				}
-			}
-
-			public override bool HasReferences {
-				get {
-					return ProjectDependencies.Count > 0 || base.HasReferences;
-				}
-			}
-
-			public override void FireUpdate ()
-			{
-				if(Update!=null)
-					Update (this, null);
-			}
-		}
-
 		#region Init
 		public DProject (){
-			referenceCollection = new DefaultReferenceCollection (this);
+			referenceCollection = new DefaultDReferencesCollection (this);
 			Init ();
 		}
 
 		public DProject (ProjectCreateInformation info, XmlElement projectOptions)
 		{
-			referenceCollection = new DefaultReferenceCollection (this);
+			referenceCollection = new DefaultDReferencesCollection (this);
 			Init ();
 
 			string binPath = ".";
@@ -539,6 +460,13 @@ namespace MonoDevelop.D.Projects
 			base.OnModified(args);
 		}*/
 
+		/// <summary>
+		/// List of GUIDs that identify project items within their solution.
+		/// Used to store project dependencies.
+		/// </summary>
+		[ItemProperty("DependentProjectIds")]
+		List<string> tempProjectDependencies = new List<string>();
+
 		[ItemProperty("Includes")]
 		[ItemProperty("Path", Scope = "*")]
 		List<string> tempIncludes = new List<string> ();
@@ -557,7 +485,7 @@ namespace MonoDevelop.D.Projects
 			tempIncludes.Clear ();
 			tempProjectDependencies.Clear ();
 
-			tempIncludes.AddRange (referenceCollection.Includes);
+			tempIncludes.AddRange (referenceCollection.RawIncludes);
 			tempProjectDependencies.AddRange (referenceCollection.ProjectDependencies);
 
 			var ret = handler.Serialize (this);

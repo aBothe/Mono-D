@@ -27,9 +27,10 @@ namespace MonoDevelop.D
 
 		public void Store()
 		{
-			Project.LocalIncludes.Clear ();
+			var refs = Project.References.RawIncludes;
+			refs.Clear ();
 			foreach(var p in text_Includes.Buffer.Text.Split (new[]{'\n'}, StringSplitOptions.RemoveEmptyEntries))
-				Project.LocalIncludes.Add(p.TrimEnd('\\','/'));
+				refs.Add(p.TrimEnd('\\','/'));
 
 			try {
 				// Update parse cache immediately

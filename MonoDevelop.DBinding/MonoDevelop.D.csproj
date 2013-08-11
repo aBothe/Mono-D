@@ -237,6 +237,8 @@
     <Compile Include="Projects\ProjectPad\DProjectReferenceFolderNodeBuilder.cs" />
     <Compile Include="Projects\ProjectPad\DProjectNodeExtension.cs" />
     <Compile Include="Projects\ProjectPad\DProjectReference.cs" />
+    <Compile Include="Projects\Dub\DubReferencesCollection.cs" />
+    <Compile Include="Projects\DefaultDReferencesCollection.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>

@@ -18,6 +18,9 @@ namespace MonoDevelop.D.Projects.Dub
 		Dictionary<string, DubProjectDependency> dependencies = new Dictionary<string, DubProjectDependency>();
 		public readonly DubBuildSettings GlobalBuildSettings = new DubBuildSettings();
 
+		public readonly DubReferencesCollection DubReferences;
+		public override DProjectReferenceCollection References {get {return DubReferences;}} 
+
 		public override string Name { get; set; } // override because the name is normally derived from the file name -- package.json is not the project's file name!
 		public override FilePath FileName { get; set; }
 		public string Homepage;
@@ -134,10 +137,15 @@ namespace MonoDevelop.D.Projects.Dub
 		#endregion
 
 		#region Constructor & Init
+		public DubProject()
+		{
+			DubReferences = new DubReferencesCollection (this);
+		}
+
 		public void UpdateFilelist()
 		{
 			foreach (var p in PhysicalDependencyPaths)
-				LocalIncludes.Add (p);
+				DubReferences.RawIncludes.Add (p);
 
 			foreach (var settings in GetBuildSettings(null))
 			{
@@ -145,7 +153,7 @@ namespace MonoDevelop.D.Projects.Dub
 				if(settings.TryGetValue(DubBuildSettings.ImportPathsProperty, out l))
 					for (int i = l.Count - 1; i >= 0; i--) // Ignore architecture/os/compiler restrictions for now
 						for (int j = l[i].Flags.Length - 1; j >= 0; j--)
-							LocalIncludes.Add(l[i].Flags[j]);
+							DubReferences.RawIncludes.Add(l[i].Flags[j]);
 			}
 
 			DCompilerConfiguration.UpdateParseCacheAsync (LocalIncludes, false, LocalIncludeCache_FinishedParsing);

@@ -28,6 +28,7 @@ using MonoDevelop.D.Projects;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using MonoDevelop.Projects;
+using MonoDevelop.D.Building;
 
 namespace MonoDevelop.D.Projects
 {
@@ -39,23 +40,47 @@ namespace MonoDevelop.D.Projects
 
 	public abstract class DProjectReferenceCollection
 	{
-		public readonly AbstractDProject Owner;
+		public AbstractDProject Owner {get{return owner.Target as AbstractDProject;}}
+		WeakReference owner;
+
+		internal List<string> RawIncludes = new List<string>();
 
 		public virtual bool CanDelete {get{ return true; }}
 		public virtual bool CanAdd{ get {return true;}}
 
-		public virtual IEnumerable<string> Includes {get {return Owner.LocalIncludes; }}
+		readonly LocalIncludesMacroProvider includeMacros;
+		class LocalIncludesMacroProvider : IArgumentMacroProvider
+		{
+			readonly WeakReference p;
+
+			public LocalIncludesMacroProvider(WeakReference prj)
+			{
+				p = prj;
+			}
+
+			public void ManipulateMacros(Dictionary<string,string> macros)
+			{
+				var p = this.p.Target as AbstractDProject;
+				macros ["solution"] = p.ParentSolution.BaseDirectory;
+				macros ["project"] = p.BaseDirectory;
+			}
+		}
+
+		public virtual IEnumerable<string> Includes {
+			get { return ProjectBuilder.FillInMacros (RawIncludes, includeMacros); }
+		}
 		public virtual IEnumerable<string> ReferencedProjectIds {get { return new string[0];}}
-		public virtual bool HasReferences {get { return Owner.LocalIncludes.Count > 0; }}
+		public virtual bool HasReferences {get { return RawIncludes.Count > 0; }}
 
 		public DProjectReferenceCollection(AbstractDProject owner)
 		{
-			Owner = owner;
+			this.owner = new WeakReference(owner);
+			includeMacros = new LocalIncludesMacroProvider (this.owner);
 		}
 
 		public virtual void DeleteInclude(string path)
 		{
-			Owner.LocalIncludes.Remove (path);
+			RawIncludes.Remove (path);
 		}
 		public abstract void DeleteProjectRef(string projectId);
 

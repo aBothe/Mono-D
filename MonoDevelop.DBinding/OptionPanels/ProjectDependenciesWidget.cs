@@ -60,7 +60,7 @@ namespace MonoDevelop.D
 		public void Store()
 		{
 			var tbl = new List<string>(Project.References.ReferencedProjectIds);
-			var refs = Project.References as DProject.DefaultReferenceCollection;
+			var refs = Project.References as DefaultDReferencesCollection;
 
 			foreach (var i in vbox_ProjectDeps)
 			{

@@ -16,15 +16,12 @@ namespace MonoDevelop.D.Projects
 	public abstract class AbstractDProject : Project
 	{
 		#region Properties
-		public virtual IEnumerable<string> GlobalIncludes { get { return DCompilerService.Instance.GetDefaultCompiler().IncludePaths; } }
 		public override string ProjectType { get { return "Native"; } }
 		public override string[] SupportedLanguages { get { return new[] { "D", "" }; } }
-		public virtual DProjectReferenceCollection References { get {return null;} }
 
-		/// <summary>
-		/// Stores parse information from project-wide includes
-		/// </summary>
-		public readonly ObservableCollection<string> LocalIncludes = new ObservableCollection<string>();
+		public virtual IEnumerable<string> GlobalIncludes { get { return DCompilerService.Instance.GetDefaultCompiler().IncludePaths; } }
+		public IEnumerable<string> LocalIncludes {get{return References.Includes;}}
+		public abstract DProjectReferenceCollection References { get; }
 
 		protected MutableRootPackage fileLinkModulesRoot;
 
