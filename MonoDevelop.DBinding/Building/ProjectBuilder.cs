@@ -180,6 +180,9 @@ namespace MonoDevelop.D.Building
 
 			monitor.Log.WriteLine("Current dictionary: " + Project.BaseDirectory);
 
+			string cmdLineFile;
+			HandleOverLongArgumentStrings (Compiler, true, ref argumentString, out cmdLineFile);
+
 			int exitCode = ExecuteCommand(linkerExecutable, argumentString, Project.BaseDirectory, monitor,
 				out stdError,
 				out stdOut);
@@ -188,6 +191,9 @@ namespace MonoDevelop.D.Building
 			ErrorExtracting.HandleCompilerOutput(Project,br, stdOut);
 			ErrorExtracting.HandleOptLinkOutput(Project, br, stdOut);
 			ErrorExtracting.HandleReturnCode(monitor, br, exitCode);
+
+			if (cmdLineFile != null)
+				File.Delete (cmdLineFile);
 
 			return br;
 		}
@@ -280,6 +286,9 @@ namespace MonoDevelop.D.Building
 					compilerExecutable = Compiler.SourceCompilerCommand;
 			}
 
+			string cmdArgFile;
+			HandleOverLongArgumentStrings (Compiler, false, ref dmdArgs, out cmdArgFile);
+
 			int exitCode = ExecuteCommand (compilerExecutable, dmdArgs, Project.BaseDirectory, monitor, out stdError, out stdOutput);
 
 			ErrorExtracting.HandleCompilerOutput(Project,targetBuildResult, stdError);
@@ -290,6 +299,9 @@ namespace MonoDevelop.D.Building
 				targetBuildResult.FailedBuildCount++;
 				return false;
 			} else {
+				if (cmdArgFile != null)
+					File.Delete (cmdArgFile);
+
 				f.LastGenOutput = obj;
 
 				targetBuildResult.BuildCount++;
@@ -381,12 +393,18 @@ namespace MonoDevelop.D.Building
 					linkerExecutable = LinkTargetCfg.Linker;
 			}
 
+			string cmdLineFile;
+			HandleOverLongArgumentStrings (Compiler, true, ref linkArgs, out cmdLineFile);
+
 			int exitCode = ExecuteCommand (linkerExecutable, linkArgs, Project.BaseDirectory, monitor,
                 out linkerErrorOutput,
                 out linkerOutput);
 
 			ErrorExtracting.HandleOptLinkOutput (Project,br, linkerOutput);
 			ErrorExtracting.HandleReturnCode(monitor,br, exitCode);
+
+			if (cmdLineFile != null && !br.Failed)
+				File.Delete (cmdLineFile);
 		}
 
         #region File naming
@@ -596,6 +614,27 @@ namespace MonoDevelop.D.Building
 						yield return "-L-l"+l_;
 					}
 				}
+		}
+
+		static void HandleOverLongArgumentStrings(DCompilerConfiguration cmp, bool isLinking,ref string argstring, out string tempFile)
+		{
+			tempFile = null;
+
+			if (argstring.Length < 1024)
+				return;
+
+			if (isLinking && !cmp.ArgumentPatterns.CommandFileCanBeUsedForLinking)
+				return;
+
+			var cmdFile = cmp.ArgumentPatterns.CommandFile;
+
+			if (string.IsNullOrWhiteSpace (cmdFile))
+				return;
+
+			tempFile = Path.GetTempFileName ();
+			File.WriteAllText (tempFile, argstring);
+
+			argstring = string.Format (cmdFile, tempFile);
 		}
 
         #endregion

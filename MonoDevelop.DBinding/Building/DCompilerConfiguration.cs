@@ -382,6 +382,12 @@ namespace MonoDevelop.D.Building
 		public string DDocExportDirectory = "\"-Dd{0}\"";
 		//(probably TODO:) Handle -Df parameter?
 
+		/// <summary>
+		/// Used for exporting too long argument strings into temporary files.
+		/// </summary>
+		public string CommandFile;
+		public bool CommandFileCanBeUsedForLinking = false;
+
 		public void CopyFrom(CmdLineArgumentPatterns c)
 		{
 			ObjectFileLinkPattern = c.ObjectFileLinkPattern;
@@ -393,6 +399,9 @@ namespace MonoDevelop.D.Building
 			EnableDDocFlag = c.EnableDDocFlag;
 			DDocDefinitionFile = c.DDocDefinitionFile;
 			DDocExportDirectory = c.DDocExportDirectory;
+
+			CommandFile = c.CommandFile;
+			CommandFileCanBeUsedForLinking = c.CommandFileCanBeUsedForLinking;
 		}
 
 		public void SaveTo(XmlWriter x)
@@ -436,6 +445,11 @@ namespace MonoDevelop.D.Building
 			x.WriteStartElement("linkerRedirectFlag");
 			x.WriteCData(LinkerRedirectPrefix);
 			x.WriteEndElement();
+
+			x.WriteStartElement("commandFile");
+			x.WriteAttributeString ("alsoForLinking", CommandFileCanBeUsedForLinking ? "true" : "false");
+			x.WriteCData(CommandFile);
+			x.WriteEndElement();
 		}
 
 		public void ReadFrom(XmlReader x)
@@ -473,6 +487,11 @@ namespace MonoDevelop.D.Building
 						break;
 					case "linkerRedirectFlag":
 						LinkerRedirectPrefix = x.ReadString();
+						break;
+					case "commandFile":
+						var attr = x.GetAttribute ("alsoForLinking");
+						CommandFileCanBeUsedForLinking = attr != "false";
+						CommandFile = x.ReadString ();
 						break;
 				}
 			}
