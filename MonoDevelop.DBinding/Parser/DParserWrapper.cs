@@ -65,8 +65,7 @@ namespace MonoDevelop.D.Parser
 			var dprj = prj as AbstractDProject;
 
 			// Remove obsolete ast from cache
-			if (dprj != null)
-				GlobalParseCache.RemoveModule (file);
+			GlobalParseCache.RemoveModule (file);
 
 			DModule ast;
 			var doc = new ParsedDModule(file);
@@ -148,54 +147,6 @@ namespace MonoDevelop.D.Parser
 						break;
 					}
 			}
-
-			// Workaround for tags not being displayed
-			if (prj != null)
-			{
-				var ctnt = TypeSystemService.GetProjectContentWrapper(prj);
-				if (ctnt != null)
-				{
-					var tags = ctnt.GetExtensionObject<ProjectCommentTags>();
-					if (tags != null)
-						tags.UpdateTags(prj, file, doc.TagComments);
-				}
-			}
-			else
-			{
-				GlobalParseCache.RemoveModule(file);
-				ModulePackage pack;
-				if(GlobalParseCache.AddOrUpdateModule(ast, out pack))
-				{
-					// If the file is not associated with any project,
-					// check if the file is located in an imported/included directory
-					// and update the respective cache.
-					// Note: ParseCache.Remove() also affects the Ufcs cache,
-					// but when adding it again, the UfcsCache has to be updated manually
-					if(pack != null && (pack = pack.Root) != null)
-					{
-						ParseCacheView pcw = null;
-						bool containsPack = false;
-						// Find out which compiler environment fits most
-						foreach(var cmp in DCompilerService.Instance.Compilers)
-						{
-							pcw = cmp.GenParseCacheView();
-							foreach(var r in pack as IEnumerable<ModulePackage>)
-								if(r == pack)
-							{
-								containsPack = true;
-								break;
-							}
-							if(containsPack)
-								break;
-						}
-
-						if(containsPack)
-						{
-							(pack as RootPackage).UfcsCache.CacheModuleMethods(ast, new ResolutionContext(pcw, null, ast));
-						}
-					}
-				}
-			}
 			#endregion
 
 			#region Serialize to NRefactory Dom structure
@@ -222,6 +173,52 @@ namespace MonoDevelop.D.Parser
 			}
 			*/
 			#endregion
+
+
+			if (prj != null)
+			{
+				// Workaround for tags not being displayed
+				var ctnt = TypeSystemService.GetProjectContentWrapper(prj);
+				if (ctnt != null)
+				{
+					var tags = ctnt.GetExtensionObject<ProjectCommentTags>();
+					if (tags != null)
+						tags.UpdateTags(prj, file, doc.TagComments);
+				}
+			}
+
+			// Update UFCS
+			ModulePackage pack;
+			if((pack=GlobalParseCache.GetPackage(ast, false)) != null && (pack = pack.Root) != null)
+			{
+				// If the file is not associated with any project,
+				// check if the file is located in an imported/included directory
+				// and update the respective cache.
+				// Note: ParseCache.Remove() also affects the Ufcs cache,
+				// but when adding it again, the UfcsCache has to be updated manually
+				ParseCacheView pcw;
+				bool containsPack = false;
+				if (prj != null) {
+					pcw = dprj.ParseCache;
+					containsPack = true;
+				} else {
+					// Find out which compiler environment fits most
+					pcw = null;
+					foreach (var cmp in DCompilerService.Instance.Compilers) {
+						pcw = cmp.GenParseCacheView ();
+						foreach (var r in pack as IEnumerable<ModulePackage>)
+							if (r == pack) {
+								containsPack = true;
+								break;
+							}
+						if (containsPack)
+							break;
+					}
+				}
+
+				if(containsPack)
+					(pack as RootPackage).UfcsCache.CacheModuleMethods(ast, new ResolutionContext(pcw, null, ast));
+			}
 
 			return doc;
 		}
