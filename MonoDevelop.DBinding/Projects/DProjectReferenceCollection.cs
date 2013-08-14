@@ -29,6 +29,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using MonoDevelop.Projects;
 using MonoDevelop.D.Building;
+using System.IO;
 
 namespace MonoDevelop.D.Projects
 {
@@ -69,7 +70,19 @@ namespace MonoDevelop.D.Projects
 		}
 
 		public virtual IEnumerable<string> Includes {
-			get { return ProjectBuilder.FillInMacros (RawIncludes, includeMacros); }
+			get { 
+				foreach (var p in ProjectBuilder.FillInMacros (RawIncludes, includeMacros)) {
+					var path = p;
+					if (!Path.IsPathRooted (path))
+						path = Path.Combine (Owner.BaseDirectory, p);
+
+					if(path.Contains(".."))
+						// http://stackoverflow.com/questions/4796254/relative-path-to-absolute-path-in-c
+						path = Path.GetFullPath((new Uri(path)).LocalPath);
+
+					yield return path;
+				}
+			}
 		}
 		public virtual IEnumerable<string> ReferencedProjectIds {get { return new string[0];}}
 		public virtual bool HasReferences {get { return RawIncludes.Count > 0; }}
