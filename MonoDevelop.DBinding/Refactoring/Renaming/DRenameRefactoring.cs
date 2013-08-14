@@ -72,7 +72,7 @@ namespace MonoDevelop.D.Refactoring
 				var references = D_Parser.Refactoring.ReferencesFinder.Scan(mod, n, ctxt).ToList();
 
 				if (((DModule)n.NodeRoot).FileName == mod.FileName)
-					references.Insert(0, new IdentifierDeclaration(n.Name) { Location = n.NameLocation });
+					references.Insert(0, new IdentifierDeclaration(n.NameHash) { Location = n.NameLocation });
 
 				if (references.Count < 1)
 					continue;
