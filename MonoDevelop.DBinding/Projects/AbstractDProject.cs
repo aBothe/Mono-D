@@ -99,7 +99,7 @@ namespace MonoDevelop.D.Projects
 			if (hasFileLinks.Count == 0)
 				analysisFinished_FileLinks = true;
 
-			DCompilerConfiguration.UpdateParseCacheAsync (GetSourcePaths(), false, LocalFileCache_FinishedParsing);
+			DCompilerConfiguration.UpdateParseCacheAsync (GetSourcePaths(), true, LocalFileCache_FinishedParsing);
 
 			//EDIT: What if those file links refer to other project's files? Or what if more than one project reference the same files?
 			//Furthermore, what if those files become edited and reparsed? Will their reference in the projects be updated either?
