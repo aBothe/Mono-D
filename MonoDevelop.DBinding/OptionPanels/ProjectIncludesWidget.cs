@@ -22,7 +22,7 @@ namespace MonoDevelop.D
 
 		public void Load()
 		{
-			text_Includes.Buffer.Text = string.Join ("\n", Project.LocalIncludes);
+			text_Includes.Buffer.Text = string.Join ("\n", Project.References.RawIncludes);
 		}
 
 		public void Store()
