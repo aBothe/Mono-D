@@ -255,9 +255,10 @@ namespace MonoDevelop.D.Projects
 			var skippedItems = new List<int>();
 
 			for(var i = r.Count - 1; i >= 0; i--){
-				r_deps [i] = r [i].GetReferencedItems(cfg);
+				var refItems = r [i].GetReferencedItems(cfg);
+				r_deps.Add (refItems);
 
-				using(var tempEnum = r_deps[i].GetEnumerator())
+				using(var tempEnum = refItems.GetEnumerator())
 					if(!tempEnum.MoveNext())
 				{
 					l.Add(r[i]);
