@@ -348,7 +348,7 @@ namespace MonoDevelop.D.Completion
 		{
 			get
 			{
-				return new IconId("md-name-space");
+				return MonoDevelop.Ide.Gui.Stock.Package;
 			}
 		}
 	}
@@ -380,7 +380,7 @@ namespace MonoDevelop.D.Completion
 		{
 			get
 			{
-				return new IconId("md-name-space");
+				return MonoDevelop.Ide.Gui.Stock.NameSpace;
 			}
 		}
 
