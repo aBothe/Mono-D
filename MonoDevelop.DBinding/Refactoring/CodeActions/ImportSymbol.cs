@@ -100,12 +100,12 @@ namespace MonoDevelop.D.Refactoring.CodeActions
             public InnerAction(string title)
             {
                 this.Title = " import " + title + ";";
+            }
 
-            }
-            public override void Run(Ide.Gui.Document document, ICSharpCode.NRefactory.TextLocation loc)
-            {
-                ApplySolution(Title, document);
-            }
+			public override void Run (MonoDevelop.Ide.TypeSystem.IRefactoringContext context, object script)
+			{
+				ApplySolution (Title, (script as DisposableWrapper).Object as Document);
+			}
         }
 	}
 }

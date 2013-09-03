@@ -6,12 +6,17 @@ using MonoDevelop.D.Projects;
 using MonoDevelop.Ide.TypeSystem;
 using System.Collections.Generic;
 using D_Parser.Misc;
+using MonoDevelop.D.Refactoring;
 
 namespace MonoDevelop.D.Parser
 {
 	public class ParsedDModule : ParsedDocument
 	{
-		public ParsedDModule(string fileName) : base(fileName) { Flags = ParsedDocumentFlags.NonSerializable; }
+		public ParsedDModule(string fileName) : base(fileName) { 
+			Flags = ParsedDocumentFlags.NonSerializable; 
+		
+			CreateRefactoringContext += (MonoDevelop.Ide.Gui.Document arg1, System.Threading.CancellationToken arg2) => new DRefactoringContext (arg1);
+		}
 
 		DModule _ddom;
 		public DModule DDom {

@@ -35,8 +35,6 @@ namespace MonoDevelop.D
 		{
 			updater.FinishUpdate();
 
-			if (!EnableCodeCompletion)
-				return null;
 			if (!EnableAutoCodeCompletion && char.IsLetter(triggerChar))
 				return null;
 

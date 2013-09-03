@@ -7,6 +7,8 @@ using MonoDevelop.Ide;
 using MonoDevelop.Ide.Commands;
 using MonoDevelop.Ide.Gui.Content;
 using MonoDevelop.Refactoring;
+using MonoDevelop.Ide.TypeSystem;
+using System;
 
 namespace MonoDevelop.D.Refactoring
 {
