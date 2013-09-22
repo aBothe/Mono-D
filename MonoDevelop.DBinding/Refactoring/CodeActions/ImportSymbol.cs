@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using MonoDevelop.Ide.TypeSystem;
 
 namespace MonoDevelop.D.Refactoring.CodeActions
 {
@@ -102,7 +103,7 @@ namespace MonoDevelop.D.Refactoring.CodeActions
                 this.Title = " import " + title + ";";
             }
 
-			public override void Run (MonoDevelop.Ide.TypeSystem.IRefactoringContext context, object script)
+			public override void Run (IRefactoringContext context, object script)
 			{
 				ApplySolution (Title, (script as DisposableWrapper).Object as Document);
 			}
