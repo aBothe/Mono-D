@@ -124,7 +124,7 @@ namespace MonoDevelop.D.OptionPanels
 			
 			// Store libs
 			configuration.ExtraLibraries.Clear ();
-			configuration.ExtraLibraries.AddRange (text_Libraries.Buffer.Text.Split (new[]{'\n'}, StringSplitOptions.RemoveEmptyEntries));
+			Misc.StringHelper.AddLineSplittedString (configuration.ExtraLibraries, text_Libraries.Buffer.Text);
 
 			return true;
 		}

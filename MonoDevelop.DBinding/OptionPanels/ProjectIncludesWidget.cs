@@ -29,7 +29,8 @@ namespace MonoDevelop.D
 		{
 			var refs = Project.References.RawIncludes;
 			refs.Clear ();
-			foreach(var p in text_Includes.Buffer.Text.Split (new[]{'\n'}, StringSplitOptions.RemoveEmptyEntries))
+
+			foreach(var p in Misc.StringHelper.SplitLines(text_Includes.Buffer.Text))
 				refs.Add(p.TrimEnd('\\','/'));
 
 			try {

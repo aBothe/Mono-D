@@ -244,6 +244,7 @@
     <Compile Include="Projects\Dub\DubReferencesCollection.cs" />
     <Compile Include="Projects\DefaultDReferencesCollection.cs" />
     <Compile Include="Refactoring\DRefactoringContext.cs" />
+    <Compile Include="Misc\StringHelper.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
@@ -367,5 +368,8 @@
       <Project>{0290A229-9AA1-41C3-B525-CAFB86D8BC42}</Project>
       <Name>DParser2</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Misc\" />
   </ItemGroup>
 </Project>

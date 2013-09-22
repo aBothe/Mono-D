@@ -9,6 +9,7 @@ using Gtk;
 using MonoDevelop.D.Building.CompilerPresets;
 using System.IO;
 using D_Parser.Misc;
+using System.Collections.Generic;
 
 namespace MonoDevelop.D.OptionPanels
 {
@@ -141,8 +142,8 @@ namespace MonoDevelop.D.OptionPanels
 			releaseArgumentsDialog.Load (compiler, false);		
 			debugArgumentsDialog.Load (compiler, true);				
 
-			text_DefaultLibraries.Buffer.Text = string.Join ("\n", compiler.DefaultLibraries);
-			text_Includes.Buffer.Text = string.Join ("\n", compiler.IncludePaths);
+			text_DefaultLibraries.Buffer.Text = string.Join (Environment.NewLine, compiler.DefaultLibraries);
+			text_Includes.Buffer.Text = string.Join (Environment.NewLine, compiler.IncludePaths);
 
 			btnMakeDefault.Active = 
 				configuration.Vendor == defaultCompilerVendor;
@@ -172,7 +173,7 @@ namespace MonoDevelop.D.OptionPanels
 
 			return true;
 		}
-		
+
 		public bool ApplyToVirtConfiguration ()
 		{
 			if (configuration == null)
@@ -195,11 +196,11 @@ namespace MonoDevelop.D.OptionPanels
 			debugArgumentsDialog.Store ();					
 			
 			configuration.DefaultLibraries.Clear ();
-			configuration.DefaultLibraries.AddRange (text_DefaultLibraries.Buffer.Text.Split (new[]{'\n'}, StringSplitOptions.RemoveEmptyEntries));
+			Misc.StringHelper.AddLineSplittedString(configuration.DefaultLibraries,text_DefaultLibraries.Buffer.Text);
 			
 			#region Store new include paths
 			configuration.IncludePaths.Clear();
-			foreach(var p in text_Includes.Buffer.Text.Split (new[]{'\n'}, StringSplitOptions.RemoveEmptyEntries))
+			foreach(var p in Misc.StringHelper.SplitLines(text_Includes.Buffer.Text))
 				configuration.IncludePaths.Add(p.TrimEnd('\\', '/'));
 
 			try {
