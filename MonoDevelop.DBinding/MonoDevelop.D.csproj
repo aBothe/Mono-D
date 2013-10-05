@@ -37,7 +37,7 @@
     <DefineConstants>DEBUG</DefineConstants>
     <CustomCommands>
       <CustomCommands>
-        <Command type="Execute" command="/opt/mono/lib/monodevelop/bin/MonoDevelop.exe" workingdir="" />
+        <Command type="Execute" command="/usr/lib/monodevelop/bin/MonoDevelop.exe" workingdir="" />
       </CustomCommands>
     </CustomCommands>
     <EnvironmentVariables>
@@ -245,6 +245,9 @@
     <Compile Include="Projects\DefaultDReferencesCollection.cs" />
     <Compile Include="Refactoring\DRefactoringContext.cs" />
     <Compile Include="Misc\StringHelper.cs" />
+    <Compile Include="Unittest\Commands\UnittestCommandHandler.cs" />
+    <Compile Include="Unittest\Commands\UnittestCommands.cs" />
+    <Compile Include="Unittest\UnittestCore.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
@@ -371,5 +374,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Misc\" />
+    <Folder Include="Unittest\" />
+    <Folder Include="Unittest\Commands\" />
   </ItemGroup>
 </Project>

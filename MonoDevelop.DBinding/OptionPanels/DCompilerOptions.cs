@@ -139,6 +139,8 @@ namespace MonoDevelop.D.OptionPanels
 			targetConfig = compiler.GetOrCreateTargetConfiguration (DCompileTarget.StaticLibrary); 						
 			txtStaticLibLinker.Text = targetConfig.Linker;
 			
+			txtRdmdUnittestCmd.Text = compiler.RdmdUnittestCommand;
+			
 			releaseArgumentsDialog.Load (compiler, false);		
 			debugArgumentsDialog.Load (compiler, true);				
 
@@ -182,6 +184,7 @@ namespace MonoDevelop.D.OptionPanels
 			configuration.BinPath = txtBinPath.Text;
 			configuration.SourceCompilerCommand = txtCompiler.Text;
 			configuration.EnableGDCLibPrefixing = check_enableLibPrefixing.Active;
+			configuration.RdmdUnittestCommand = txtRdmdUnittestCmd.Text;
 			
 			var targetConfig = configuration.GetOrCreateTargetConfiguration (DCompileTarget.Executable); 			
 			targetConfig.Linker = txtConsoleAppLinker.Text;

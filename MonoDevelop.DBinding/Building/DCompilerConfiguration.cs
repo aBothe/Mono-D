@@ -24,6 +24,8 @@ namespace MonoDevelop.D.Building
 		public readonly CmdLineArgumentPatterns ArgumentPatterns = new CmdLineArgumentPatterns();
 		public bool EnableGDCLibPrefixing = false;
 		
+		public string RdmdUnittestCommand;
+		
 		public bool HasProfilerSupport
 		{
 			get { return HasVendorProfilerSupport(Vendor); }
@@ -150,6 +152,7 @@ namespace MonoDevelop.D.Building
 			SourceCompilerCommand = o.SourceCompilerCommand;
 			ArgumentPatterns.CopyFrom(o.ArgumentPatterns);
 			EnableGDCLibPrefixing = o.EnableGDCLibPrefixing;
+			RdmdUnittestCommand = o.RdmdUnittestCommand;
 
 			IncludePaths.Clear ();
 			if (o.IncludePaths != null)
@@ -226,7 +229,14 @@ namespace MonoDevelop.D.Building
 				case "gdcLibPrefixing":
 					EnableGDCLibPrefixing = x.ReadString() == "true";
 					break;
+				
+				case "RdmdUnittestCommand":
+					RdmdUnittestCommand = x.ReadString();
+					break;
 				}
+				
+				if(string.IsNullOrEmpty(RdmdUnittestCommand))
+					RdmdUnittestCommand = "/usr/bin/rdmd -unittest -main $libs $includes $sources";
 		}
 
 		public void SaveTo (System.Xml.XmlWriter x)
@@ -249,6 +259,10 @@ namespace MonoDevelop.D.Building
 			
 			x.WriteStartElement("gdcLibPrefixing");
 			x.WriteString(EnableGDCLibPrefixing ? "true" : "false");
+			x.WriteEndElement();
+			
+			x.WriteStartElement("RdmdUnittestCommand");
+			x.WriteString(RdmdUnittestCommand);
 			x.WriteEndElement();
 
 			foreach (var kv in LinkTargetConfigurations) {
