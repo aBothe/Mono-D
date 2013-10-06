@@ -322,17 +322,28 @@
                  _label = "Activate Profiling" />
 	</Extension>
 
-	<Extension path = "/MonoDevelop/Ide/MainMenu/Tools">
-		<ItemSet id = "D" _label = "D">
-			<CommandItem id = "MonoDevelop.D.Profiler.Commands.ProfilerCommands.SwitchProfilerMode" />
-		</ItemSet>
-	</Extension>
-
-
 	<Extension path = "/MonoDevelop/Ide/Pads">
 		<SolutionPad id = "MonoDevelop.D.Profiler.DProfilerPad" class = "MonoDevelop.D.Profiler.Gui.DProfilerPad" defaultPlacement = "Bottom" defaultStatus="AutoHide" _label = "D Profiler"></SolutionPad>
 		<Pad id = "MonoDevelop.D.Gui.MixinInsightPad" class = "MonoDevelop.D.Gui.MixinInsightPad" defaultPlacement = "Bottom" defaultStatus="AutoHide" _label = "Mixin Insight"></Pad>
 		<Pad id = "MonoDevelop.D.ExpressionEvaluationPad" class = "MonoDevelop.D.ExpressionEvaluationPad" defaultPlacement = "Right" defaultStatus="AutoHide" _label = "Expression Evaluation"></Pad>
 	</Extension>
 
+
+	<!-- Unittest -->
+
+	<Extension path = "/MonoDevelop/Ide/Commands">
+		<Command id = "MonoDevelop.D.Unittest.Commands.UnittestCommands.Run"
+                 defaultHandler = "MonoDevelop.D.Unittest.Commands.UnittestCommandHandler"
+                 _label = "Run unittest" />
+	</Extension>
+	
+	
+	<!-- Tools/D -->
+	
+	<Extension path = "/MonoDevelop/Ide/MainMenu/Tools">
+		<ItemSet id = "D" _label = "D">
+			<CommandItem id = "MonoDevelop.D.Unittest.Commands.UnittestCommands.Run" />
+			<CommandItem id = "MonoDevelop.D.Profiler.Commands.ProfilerCommands.SwitchProfilerMode" />
+		</ItemSet>
+	</Extension>
 </Addin>
