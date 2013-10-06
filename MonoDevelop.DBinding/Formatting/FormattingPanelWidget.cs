@@ -5,26 +5,26 @@ namespace MonoDevelop.D.Formatting
 	[System.ComponentModel.ToolboxItem(true)]
 	public partial class FormattingPanelWidget : Gtk.Bin
 	{
-		public void Save(DFormattingPolicy p)
+		public void Save(DFormattingPolicy policy)
 		{
-			if (p == null)
+			if (policy == null)
 				throw new ArgumentNullException("policy");
 
-			p.CommentOutStandardHeaders = chk_CommentOutStdHeaders.Active;
-			p.InsertStarAtCommentNewLine = chk_InsertStarAtCommentNewLine.Active;
-			p.KeepAlignmentSpaces = check_KeepAlignmentSpaces.Active;
-			p.IndentPastedCodeLines = check_IndentPastedCodeLines.Active;
+			policy.CommentOutStandardHeaders = chk_CommentOutStdHeaders.Active;
+			policy.InsertStarAtCommentNewLine = chk_InsertStarAtCommentNewLine.Active;
+			policy.KeepAlignmentSpaces = check_KeepAlignmentSpaces.Active;
+			policy.IndentPastedCodeLines = check_IndentPastedCodeLines.Active;
 		}
 
-		public void Load(DFormattingPolicy p)
+		public void Load(DFormattingPolicy policy)
 		{
-			if (p == null)
+			if (policy == null)
 				throw new ArgumentNullException("policy");
 
-			chk_CommentOutStdHeaders.Active = p.CommentOutStandardHeaders;
-			chk_InsertStarAtCommentNewLine.Active = p.InsertStarAtCommentNewLine;
-			check_KeepAlignmentSpaces.Active = p.KeepAlignmentSpaces;
-			check_IndentPastedCodeLines.Active = p.IndentPastedCodeLines;
+			chk_CommentOutStdHeaders.Active = policy.CommentOutStandardHeaders;
+			chk_InsertStarAtCommentNewLine.Active = policy.InsertStarAtCommentNewLine;
+			check_KeepAlignmentSpaces.Active = policy.KeepAlignmentSpaces;
+			check_IndentPastedCodeLines.Active = policy.IndentPastedCodeLines;
 		}
 
 		public FormattingPanelWidget ()
