@@ -98,9 +98,10 @@ namespace MonoDevelop.D.Gui
 			// Code taken from LanugageItemWindow (public int SetMaxWidth (int maxWidth))
 			var label = win.Child as VBox;
 			if (label == null)
-				requiredWidth= win.Allocation.Width;
+				requiredWidth = win.Allocation.Width;
+			else
+				requiredWidth = label.WidthRequest;
 
-			requiredWidth = label.WidthRequest;
 			xalign = 0.5;
 		}
 		
