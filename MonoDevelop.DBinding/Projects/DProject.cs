@@ -30,7 +30,7 @@ namespace MonoDevelop.D.Projects
 	{
 		#region Properties
 		/// <summary>
-		/// Used for incremental compiling&linking
+		/// Used for incremental compiling and linking
 		/// </summary>
 		public readonly Dictionary<ProjectFile, DateTime> LastModificationTimes = new Dictionary<ProjectFile, DateTime> ();
 		public readonly List<string> BuiltObjects = new List<string> ();
