@@ -26,6 +26,8 @@ namespace MonoDevelop.D.Unittest.Commands
 					return;
 				string filePath = file.FilePath.FullPath;
 				
+				IdeApp.Workbench.SaveAll();
+				
 				UnittestCore.Run(filePath,project,conf);
 			};
 			DispatchService.GuiDispatch(guiRun);
