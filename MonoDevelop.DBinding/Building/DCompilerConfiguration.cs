@@ -100,7 +100,7 @@ namespace MonoDevelop.D.Building
 
 				//HACK: Ensure that the includes list won't get changed during parsing
 				if (r == null)
-					throw new ArgumentNullException ("Root package must not be null - either a parse error occurred or the list was changed in between");
+					throw new InvalidOperationException ("The newly created root package must not be null - either a parse error occurred or the list was changed in between");
 
 				//TODO: Supply global condition flags? -- At least the vendor id
 				r.UfcsCache.BeginUpdate (pcw);

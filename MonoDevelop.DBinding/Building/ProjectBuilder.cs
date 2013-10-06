@@ -359,7 +359,7 @@ namespace MonoDevelop.D.Building
 
 		void LinkToTarget (BuildResult br, bool modificationsDone)
 		{
-			/// The target file to which all objects will be linked to
+			// The target file to which all objects will be linked to
 			var LinkTargetFile = Project.GetOutputFileName (BuildConfig.Selector);
 
 			if (!modificationsDone &&

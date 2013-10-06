@@ -46,12 +46,9 @@ namespace MonoDevelop.D.Building
 		/// and adds an error result if the compiler results
 		/// show no errors.
 		/// </summary>
-		/// <param name="returnCode">
-		/// A <see cref="System.Int32"/>: A process return code
-		/// </param>
-		/// <param name="cr">
-		/// A <see cref="CompilerResults"/>: The return code from a compilation run
-		/// </param>
+		/// <param name="monitor"></param>
+		/// <param name="br"> A <see cref="BuildResult"/>: The return code from a build run.</param>
+		/// <param name="returnCode">A <see cref="System.Int32"/>: A process return code.</param>
 		public static bool HandleReturnCode(IProgressMonitor monitor, BuildResult br, int returnCode)
 		{
 			if (returnCode != 0)
