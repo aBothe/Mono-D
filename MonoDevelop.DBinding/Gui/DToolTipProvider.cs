@@ -91,7 +91,7 @@ namespace MonoDevelop.D.Gui
 			return win;
 		}
 		
-		public void GetRequiredPosition(TextEditor editor, Gtk.Window tipWindow, out int requiredWidth, out double xalign)
+		protected override void GetRequiredPosition(TextEditor editor, Gtk.Window tipWindow, out int requiredWidth, out double xalign)
 		{
 			var win = (TooltipWindow)tipWindow;
 
@@ -105,7 +105,7 @@ namespace MonoDevelop.D.Gui
 			xalign = 0.5;
 		}
 		
-		public bool IsInteractive(TextEditor editor, Gtk.Window tipWindow)
+		public override bool IsInteractive(TextEditor editor, Gtk.Window tipWindow)
 		{
 			return false;
 		}
