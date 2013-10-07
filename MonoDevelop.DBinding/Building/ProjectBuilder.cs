@@ -48,7 +48,7 @@ namespace MonoDevelop.D.Building
 			}
 		}
 		IArgumentMacroProvider commonMacros;
-		IProgressMonitor monitor;
+		readonly IProgressMonitor monitor;
 		List<string> BuiltObjects = new List<string> ();
 
 		/// <summary>
