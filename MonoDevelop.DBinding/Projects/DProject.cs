@@ -288,15 +288,14 @@ namespace MonoDevelop.D.Projects
 				return new BuildResult() { FailedBuildCount = 1, CompilerOutput="Circular dependency detected!" };
 			
 			alreadyBuiltProjects.Add(ItemId);
-			try{
-				BuildResult bs;
+
+			BuildResult bs;
 				foreach(var prj in DependingProjects)
-					if(prj.NeedsBuilding(configuration))
-						if((bs=prj.Build(monitor, configuration)).Failed)
-							return bs ?? new BuildResult{ FailedBuildCount = 1};
-			}finally{
-				alreadyBuiltProjects.Remove(ItemId);
-			}
+					if((bs=prj.Build(monitor, configuration)) == null || bs.Failed)
+						return bs ?? new BuildResult{ FailedBuildCount = 1};
+
+			alreadyBuiltProjects.Remove(ItemId);
+
 			return ProjectBuilder.CompileProject (monitor, this, configuration);
 		}
 
