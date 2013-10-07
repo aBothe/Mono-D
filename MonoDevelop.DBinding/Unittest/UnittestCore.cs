@@ -14,6 +14,9 @@ using MonoDevelop.D.Building;
 using MonoDevelop.Core;
 using MonoDevelop.Ide.Gui;
 using System.Text;
+using System.Threading;
+using System.Collections.Generic;
+using System.IO;
 
 namespace MonoDevelop.D.Unittest
 {
@@ -30,17 +33,27 @@ namespace MonoDevelop.D.Unittest
 				manager = new ProgressMonitorManager();
 				monitor = manager.GetOutputProgressMonitor("Run Unittest",Stock.RunProgramIcon,true,true); //manager.GetBuildProgressMonitor();//manager.GetStatusProgressMonitor("Run Unittest",Stock.RunProgramIcon,true);
 			}
+			
+			Pad pad = manager.GetPadForMonitor(monitor);
+			if(pad != null)
+				pad.BringToFront();
+				
 			monitor.BeginTask("start unittest...",2);
 			
-			string[] cmdParts = project.Compiler.RdmdUnittestCommand.Split(new string[]{" "}, 2 , StringSplitOptions.RemoveEmptyEntries);
-			
+			new Thread(delegate (){
+				string[] cmdParts = project.Compiler.RdmdUnittestCommand.Split(new string[]{" "}, 2 , StringSplitOptions.RemoveEmptyEntries);
+				
 //			string args = GetCommandArgs("-unittest -main $libs $includes $sources",filePath,project,conf);
-			string args = GetCommandArgs(cmdParts.Length >= 2 ?cmdParts[1] : "",filePath,project,conf);
-			string errorOutput;
-			string stdOutput;
-			ProjectBuilder.ExecuteCommand(cmdParts[0],args,project.BaseDirectory.FullPath,monitor,out errorOutput, out stdOutput);
-			monitor.ReportSuccess(stdOutput);
-			monitor.EndTask();
+				string args = GetCommandArgs(cmdParts.Length >= 2 ?cmdParts[1] : "",filePath,project,conf);
+				string errorOutput;
+				string stdOutput;
+				string execDir = conf.OutputDirectory.FullPath;
+				if(Directory.Exists(execDir) == false)
+					execDir = project.BaseDirectory.FullPath;
+				ProjectBuilder.ExecuteCommand(cmdParts[0],args,execDir,monitor,out errorOutput, out stdOutput);
+				monitor.Log.WriteLine("unittest done.");
+				monitor.EndTask();
+			}).Start();
 		} 
 		
 		static string GetCommandArgs(string baseCommandArgs, string filePath, DProject project, DProjectConfiguration conf)
@@ -50,6 +63,9 @@ namespace MonoDevelop.D.Unittest
 				slnPath = project.ParentSolution != null ? ProjectBuilder.EnsureCorrectPathSeparators(project.ParentSolution.BaseDirectory) : ""
 			};
 			
+			List<string> includes = new List<string>(project.IncludePaths);
+			includes.Add(project.BaseDirectory.FullPath);
+			
 			string[] src = {filePath};
 			OneStepBuildArgumentMacroProvider compilerMacro = new OneStepBuildArgumentMacroProvider
 			{
@@ -57,10 +73,11 @@ namespace MonoDevelop.D.Unittest
 				IncludesStringPattern = compiler.ArgumentPatterns.IncludePathPattern,
 
 				SourceFiles = src,
-				Includes = ProjectBuilder.FillInMacros(project.IncludePaths, prjPath),
+				Includes = ProjectBuilder.FillInMacros(includes, prjPath),
 				Libraries = ProjectBuilder.GetLibraries(conf, compiler),
 
 			};
+			
 			return ProjectBuilder.FillInMacros(baseCommandArgs,compilerMacro, prjPath);
 		}
 	}
