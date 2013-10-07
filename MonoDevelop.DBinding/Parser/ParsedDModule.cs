@@ -12,10 +12,23 @@ namespace MonoDevelop.D.Parser
 {
 	public class ParsedDModule : ParsedDocument
 	{
+		internal static bool IsOldAPI;
+		static ParsedDModule()
+		{
+			var t = typeof(MonoDevelop.D.Parser.ParsedDModule);
+			IsOldAPI = t.BaseType.GetEvent("CreateRefactoringContext") == null;
+		}
+
 		public ParsedDModule(string fileName) : base(fileName) { 
-			Flags = ParsedDocumentFlags.NonSerializable; 
-		
-			CreateRefactoringContext += (MonoDevelop.Ide.Gui.Document arg1, System.Threading.CancellationToken arg2) => new DRefactoringContext (arg1);
+			Flags = ParsedDocumentFlags.NonSerializable;
+
+			if (!IsOldAPI)
+				InitRefCtxt();
+		}
+
+		void InitRefCtxt()
+		{
+			CreateRefactoringContext += (MonoDevelop.Ide.Gui.Document arg1, System.Threading.CancellationToken arg2) => new DRefactoringContext(arg1);
 		}
 
 		DModule _ddom;
