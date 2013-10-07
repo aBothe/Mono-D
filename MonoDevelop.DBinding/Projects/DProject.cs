@@ -59,7 +59,15 @@ namespace MonoDevelop.D.Projects
 		}
 		
 		[ItemProperty("UseDefaultCompiler")]
-		public bool UseDefaultCompilerVendor = true;
+		bool useDefaultVendor = true;
+		public bool UseDefaultCompilerVendor{
+			get{ return useDefaultVendor; }
+			set{ 
+				var oldVendor = UsedCompilerVendor;
+				useDefaultVendor = value;
+				NeedsFullRebuild |= oldVendor != UsedCompilerVendor;
+			}
+		}
 		string _compilerVendor;
 
 		[ItemProperty("Compiler")]
@@ -74,6 +82,7 @@ namespace MonoDevelop.D.Projects
 				if (c != null)
 					c.FinishedParsing -= compilerCacheUpdated;
 
+				NeedsFullRebuild |= _compilerVendor != value;
 				_compilerVendor = value;
 
 				c = Compiler;
@@ -301,6 +310,9 @@ namespace MonoDevelop.D.Projects
 
 		protected override bool CheckNeedsBuild (ConfigurationSelector configuration)
 		{
+			if (NeedsFullRebuild)
+				return true;
+
 			var cfg = GetConfiguration (configuration) as DProjectConfiguration;
 			
 			if (!EnableIncrementalLinking || 
@@ -316,8 +328,6 @@ namespace MonoDevelop.D.Projects
 					LastModificationTimes [f] != File.GetLastWriteTime (f.FilePath))
 					return true;
 			}
-			
-			//TODO: What if compilation parameters changed? / How to detect this?
 
 			return false;
 		}

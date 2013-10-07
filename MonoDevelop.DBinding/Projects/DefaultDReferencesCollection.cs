@@ -57,6 +57,7 @@ namespace MonoDevelop.D.Projects
 
 		void OnProjectDepChanged(object o, System.Collections.Specialized.NotifyCollectionChangedEventArgs ea)
 		{
+			Owner.NeedsFullRebuild = true;
 			if(Update!=null)
 				Update(o, ea);
 		}

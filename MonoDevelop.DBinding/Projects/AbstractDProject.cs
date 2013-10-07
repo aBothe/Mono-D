@@ -64,6 +64,18 @@ namespace MonoDevelop.D.Projects
 							yield return s;
 			}
 		}
+
+		bool needsFullRebuild;
+		public bool NeedsFullRebuild
+		{
+			get{return needsFullRebuild;}
+			set{ 
+				if (!value)
+					needsFullRebuild = false;
+				else
+					needsFullRebuild = true;
+			}
+		}
 		#endregion
 
 		#region Parsed project modules
@@ -176,13 +188,14 @@ namespace MonoDevelop.D.Projects
 		protected override void OnFileRemovedFromProject(ProjectFileEventArgs e)
 		{
 			base.OnFileRemovedFromProject(e);
-
+			NeedsFullRebuild = true;
 			foreach (var pf in e)
 				GlobalParseCache.RemoveModule (pf.ProjectFile.FilePath);
 		}
 
 		protected override void OnFileRenamedInProject(ProjectFileRenamedEventArgs e)
 		{
+			NeedsFullRebuild = true;
 			//FIXME: Bug when renaming files..the new file won't be reachable somehow.. see https://bugzilla.xamarin.com/show_bug.cgi?id=13360
 			var fi = Files.GetType().GetField("files",BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.GetField);
 			var files = fi.GetValue (Files) as Dictionary<FilePath, ProjectFile>;
@@ -220,6 +233,7 @@ namespace MonoDevelop.D.Projects
 
 			UpdateLocalIncludeCache();
 			UpdateParseCache();
+			NeedsFullRebuild = true;
 		}
 		#endregion
 

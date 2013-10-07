@@ -27,17 +27,27 @@ namespace MonoDevelop.D
 
 		public void Store()
 		{
+			int oldHash=0, newHash = 0;
 			var refs = Project.References.RawIncludes;
+			foreach (var p in refs)
+				oldHash += p.GetHashCode ();
 			refs.Clear ();
 
-			foreach(var p in Misc.StringHelper.SplitLines(text_Includes.Buffer.Text))
-				refs.Add(p.TrimEnd('\\','/'));
+			foreach (var p in Misc.StringHelper.SplitLines(text_Includes.Buffer.Text)) {
+				var p_ = p.TrimEnd ('\\', '/');
+				refs.Add (p_);
+				newHash += p_.GetHashCode ();
+			}
 
-			try {
-				// Update parse cache immediately
-				Project.UpdateLocalIncludeCache();
-			} catch (Exception ex) {
-				LoggingService.LogError ("Include path analysis error", ex);
+			if (oldHash != newHash) { // Only reparse if paths changed
+				Project.NeedsFullRebuild = true;
+
+				try {
+					// Update parse cache immediately
+					Project.UpdateLocalIncludeCache ();
+				} catch (Exception ex) {
+					LoggingService.LogError ("Include path analysis error", ex);
+				}
 			}
 		}
 

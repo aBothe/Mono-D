@@ -132,7 +132,7 @@ namespace MonoDevelop.D.Building
 			// Build argument string
 			var target = Project.GetOutputFileName (BuildConfig.Selector);
 
-			if (!filesModified && Project.EnableIncrementalLinking &&
+			if (!Project.NeedsFullRebuild && !filesModified && Project.EnableIncrementalLinking &&
 				File.Exists(target))
 			{
 				monitor.ReportSuccess("Build successful! - No new linkage needed");
@@ -197,7 +197,9 @@ namespace MonoDevelop.D.Building
 
 			if (!br.Failed) {
 				Project.CopySupportFiles (monitor, this.BuildConfig.Selector);
+				Project.NeedsFullRebuild = false;
 			}
+
 			return br;
 		}
 
@@ -228,7 +230,8 @@ namespace MonoDevelop.D.Building
 					continue;
 				
 				// a.Check if source file was modified and if object file still exists
-				if (Project.EnableIncrementalLinking &&
+				if (!Project.NeedsFullRebuild &&
+					Project.EnableIncrementalLinking &&
                     !string.IsNullOrEmpty (f.LastGenOutput) && 
                     File.Exists (Path.IsPathRooted(f.LastGenOutput) ? f.LastGenOutput : Project.BaseDirectory.Combine(f.LastGenOutput).ToString()) &&
                     Project.LastModificationTimes.ContainsKey (f) &&
@@ -251,9 +254,11 @@ namespace MonoDevelop.D.Building
 			}
 
 			if (br.FailedBuildCount == 0) 
-				LinkToTarget (br, !Project.EnableIncrementalLinking || modificationsDone);
+				LinkToTarget (br, Project.NeedsFullRebuild || !Project.EnableIncrementalLinking || modificationsDone);
+
 			if (!br.Failed) {
 				Project.CopySupportFiles (monitor, this.BuildConfig.Selector);
+				Project.NeedsFullRebuild = false;
 			}
 
 			monitor.EndTask ();
