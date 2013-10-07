@@ -66,7 +66,7 @@ namespace MonoDevelop.D.Refactoring
 
 			if (project != null)
 				foreach (var p in project.GetSourcePaths(IdeApp.Workspace.ActiveConfiguration))
-					modules.AddRange (GlobalParseCache.EnumModules (p, null));
+					modules.AddRange (GlobalParseCache.EnumModulesRecursively (p, null));
 			else
 				modules.Add ((Ide.IdeApp.Workbench.ActiveDocument.ParsedDocument as MonoDevelop.D.Parser.ParsedDModule).DDom);
 

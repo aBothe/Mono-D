@@ -58,7 +58,7 @@ namespace MonoDevelop.D.Refactoring
 				modules.Add((Ide.IdeApp.Workbench.ActiveDocument.ParsedDocument as ParsedDModule).DDom);
 			else
 				foreach(var p in project.GetSourcePaths())
-					modules.AddRange(GlobalParseCache.EnumModules(p));
+					modules.AddRange(GlobalParseCache.EnumModulesRecursively(p));
 
 			var ctxt = ResolutionContext.Create(parseCache, null,null);
 			#endregion
