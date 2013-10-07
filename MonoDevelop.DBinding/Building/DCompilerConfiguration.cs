@@ -24,7 +24,7 @@ namespace MonoDevelop.D.Building
 		public readonly CmdLineArgumentPatterns ArgumentPatterns = new CmdLineArgumentPatterns();
 		public bool EnableGDCLibPrefixing = false;
 		
-		public string RdmdUnittestCommand;
+		public string RdmdUnittestCommand = "rdmd -unittest -main $libs $includes $sources";
 		
 		public bool HasProfilerSupport
 		{
@@ -100,7 +100,7 @@ namespace MonoDevelop.D.Building
 
 				//HACK: Ensure that the includes list won't get changed during parsing
 				if (r == null)
-					throw new ArgumentNullException ("Root package must not be null - either a parse error occurred or the list was changed in between");
+					throw new InvalidOperationException ("The newly created root package must not be null - either a parse error occurred or the list was changed in between");
 
 				//TODO: Supply global condition flags? -- At least the vendor id
 				r.UfcsCache.BeginUpdate (pcw);
@@ -234,9 +234,6 @@ namespace MonoDevelop.D.Building
 					RdmdUnittestCommand = x.ReadString();
 					break;
 				}
-				
-				if(string.IsNullOrEmpty(RdmdUnittestCommand))
-					RdmdUnittestCommand = "/usr/bin/rdmd -unittest -main $libs $includes $sources";
 		}
 
 		public void SaveTo (System.Xml.XmlWriter x)

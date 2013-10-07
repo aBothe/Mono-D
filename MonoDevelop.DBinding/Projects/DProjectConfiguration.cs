@@ -7,6 +7,7 @@ using MonoDevelop.Projects;
 using MonoDevelop.Core;
 using MonoDevelop.D.Profiler;
 using MonoDevelop.D.Profiler.Commands;
+using System.Collections;
 
 namespace MonoDevelop.D.Projects
 {
@@ -200,6 +201,25 @@ namespace MonoDevelop.D.Projects
 			get {
 				return FilePath.Build(ObjectDirectory);
 			}
+		}
+
+		public override int GetHashCode ()
+		{
+			int hash=0;
+			unchecked {
+				foreach (var prop in GetType().GetFields()) {
+					object v;
+					if (prop.GetCustomAttributes (typeof(ItemPropertyAttribute), true).Length > 0 &&
+					   (v = prop.GetValue (this)) != null) {
+						if (v is IEnumerable && !(v is string)) {
+							foreach (var k in v as IEnumerable)
+								hash += k.GetHashCode ();
+						} else
+							hash += v.GetHashCode ();
+					}
+				}
+			}
+			return hash;
 		}
 	}
 }

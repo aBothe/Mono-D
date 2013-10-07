@@ -106,7 +106,8 @@ namespace MonoDevelop.D.OptionPanels
 			if (cmbCompiler.GetActiveIter (out iter))
 				project.UsedCompilerVendor = cmbCompiler.Model.GetValue (iter, 0) as string;
 			
-			// Store args			
+			// Store args
+			int oldHash = configuration.GetHashCode ();
 			configuration.ExtraCompilerArguments = extraCompilerTextView.Buffer.Text;
 			configuration.ExtraLinkerArguments = extraLinkerTextView.Buffer.Text;
 			
@@ -125,6 +126,11 @@ namespace MonoDevelop.D.OptionPanels
 			// Store libs
 			configuration.ExtraLibraries.Clear ();
 			Misc.StringHelper.AddLineSplittedString (configuration.ExtraLibraries, text_Libraries.Buffer.Text);
+
+			if (oldHash != configuration.GetHashCode () && 
+				Ide.IdeApp.Workspace.ActiveConfigurationId == configuration.Id) {
+				project.NeedsFullRebuild = true;
+			}
 
 			return true;
 		}

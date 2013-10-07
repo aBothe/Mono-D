@@ -30,7 +30,7 @@ namespace MonoDevelop.D.Projects
 	{
 		#region Properties
 		/// <summary>
-		/// Used for incremental compiling&linking
+		/// Used for incremental compiling and linking
 		/// </summary>
 		public readonly Dictionary<ProjectFile, DateTime> LastModificationTimes = new Dictionary<ProjectFile, DateTime> ();
 		public readonly List<string> BuiltObjects = new List<string> ();
@@ -59,7 +59,15 @@ namespace MonoDevelop.D.Projects
 		}
 		
 		[ItemProperty("UseDefaultCompiler")]
-		public bool UseDefaultCompilerVendor = true;
+		bool useDefaultVendor = true;
+		public bool UseDefaultCompilerVendor{
+			get{ return useDefaultVendor; }
+			set{ 
+				var oldVendor = UsedCompilerVendor;
+				useDefaultVendor = value;
+				NeedsFullRebuild |= oldVendor != UsedCompilerVendor;
+			}
+		}
 		string _compilerVendor;
 
 		[ItemProperty("Compiler")]
@@ -74,6 +82,7 @@ namespace MonoDevelop.D.Projects
 				if (c != null)
 					c.FinishedParsing -= compilerCacheUpdated;
 
+				NeedsFullRebuild |= _compilerVendor != value;
 				_compilerVendor = value;
 
 				c = Compiler;
@@ -256,18 +265,9 @@ namespace MonoDevelop.D.Projects
 		public override SolutionItemConfiguration CreateConfiguration (string name)
 		{
 			var config = new DProjectConfiguration() { Name=name};
-			//config.Changed += new EventHandler(config_Changed);				
-			
+
 			return config;			
 		}
-
-		/*private void config_Changed(object sender, EventArgs e)
-		{
-			lock (LocalIncludeCache) {
-				LocalIncludeCache.ParsedGlobalDictionaries.Clear();			
-				DLanguageBinding.DIncludesParser.AddDirectoryRange(IncludePaths, LocalIncludeCache);
-			}			
-		}*/
 		#endregion
 
 		#region Building
@@ -297,20 +297,22 @@ namespace MonoDevelop.D.Projects
 				return new BuildResult() { FailedBuildCount = 1, CompilerOutput="Circular dependency detected!" };
 			
 			alreadyBuiltProjects.Add(ItemId);
-			try{
-				BuildResult bs;
+
+			BuildResult bs;
 				foreach(var prj in DependingProjects)
-					if(prj.NeedsBuilding(configuration))
-						if((bs=prj.Build(monitor, configuration)).Failed)
-							return bs ?? new BuildResult{ FailedBuildCount = 1};
-			}finally{
-				alreadyBuiltProjects.Remove(ItemId);
-			}
+					if((bs=prj.Build(monitor, configuration)) == null || bs.Failed)
+						return bs ?? new BuildResult{ FailedBuildCount = 1};
+
+			alreadyBuiltProjects.Remove(ItemId);
+
 			return ProjectBuilder.CompileProject (monitor, this, configuration);
 		}
 
 		protected override bool CheckNeedsBuild (ConfigurationSelector configuration)
 		{
+			if (NeedsFullRebuild)
+				return true;
+
 			var cfg = GetConfiguration (configuration) as DProjectConfiguration;
 			
 			if (!EnableIncrementalLinking || 
@@ -326,8 +328,6 @@ namespace MonoDevelop.D.Projects
 					LastModificationTimes [f] != File.GetLastWriteTime (f.FilePath))
 					return true;
 			}
-			
-			//TODO: What if compilation parameters changed? / How to detect this?
 
 			return false;
 		}
@@ -356,6 +356,8 @@ namespace MonoDevelop.D.Projects
 
 			if (File.Exists (cfg.CompiledOutputName))
 				File.Delete (cfg.CompiledOutputName);
+
+			DeleteSupportFiles (monitor, cfg.Selector);
 
 			monitor.EndTask ();
 
