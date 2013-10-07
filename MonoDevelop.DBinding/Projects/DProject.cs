@@ -357,6 +357,8 @@ namespace MonoDevelop.D.Projects
 			if (File.Exists (cfg.CompiledOutputName))
 				File.Delete (cfg.CompiledOutputName);
 
+			DeleteSupportFiles (monitor, cfg.Selector);
+
 			monitor.EndTask ();
 
 			monitor.ReportSuccess ("Cleanup successful!");

@@ -195,6 +195,9 @@ namespace MonoDevelop.D.Building
 			if (cmdLineFile != null)
 				File.Delete (cmdLineFile);
 
+			if (!br.Failed) {
+				Project.CopySupportFiles (monitor, this.BuildConfig.Selector);
+			}
 			return br;
 		}
 
@@ -249,6 +252,9 @@ namespace MonoDevelop.D.Building
 
 			if (br.FailedBuildCount == 0) 
 				LinkToTarget (br, !Project.EnableIncrementalLinking || modificationsDone);
+			if (!br.Failed) {
+				Project.CopySupportFiles (monitor, this.BuildConfig.Selector);
+			}
 
 			monitor.EndTask ();
 
