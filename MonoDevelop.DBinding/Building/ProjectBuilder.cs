@@ -645,6 +645,7 @@ namespace MonoDevelop.D.Building
 
         #endregion
 
+		#region Command execution lowlevel
 		/// <summary>
 		/// Executes a file and reports events related to the execution to the 'monitor' passed in the parameters.
 		/// </summary>
@@ -698,5 +699,6 @@ namespace MonoDevelop.D.Building
 
 			return exitCode;
 		}
+		#endregion
 	}
 }

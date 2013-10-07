@@ -256,18 +256,9 @@ namespace MonoDevelop.D.Projects
 		public override SolutionItemConfiguration CreateConfiguration (string name)
 		{
 			var config = new DProjectConfiguration() { Name=name};
-			//config.Changed += new EventHandler(config_Changed);				
-			
+
 			return config;			
 		}
-
-		/*private void config_Changed(object sender, EventArgs e)
-		{
-			lock (LocalIncludeCache) {
-				LocalIncludeCache.ParsedGlobalDictionaries.Clear();			
-				DLanguageBinding.DIncludesParser.AddDirectoryRange(IncludePaths, LocalIncludeCache);
-			}			
-		}*/
 		#endregion
 
 		#region Building
