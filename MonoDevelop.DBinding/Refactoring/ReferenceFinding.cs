@@ -74,13 +74,14 @@ namespace MonoDevelop.D.Refactoring
 				monitor.BeginStepTask("Scan for references", modules.Count(), 1);
 
 			List<ISyntaxRegion> references = null;
+			var ctxt = ResolutionContext.Create (parseCache, null, null);
 			foreach (var mod in modules)
 			{
 				if (mod == null)
 					continue;
 				try
 				{
-					references = ReferencesFinder.Scan(mod, member, ResolutionContext.Create(parseCache, null, null)).ToList();
+					references = ReferencesFinder.Scan(mod, member, ctxt).ToList();
 
 					if (references.Count < 1)
 					{
