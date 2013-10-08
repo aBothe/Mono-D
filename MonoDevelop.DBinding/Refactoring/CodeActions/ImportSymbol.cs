@@ -103,6 +103,11 @@ namespace MonoDevelop.D.Refactoring.CodeActions
                 this.Title = " import " + title + ";";
             }
 
+			public void Run (Document document, ICSharpCode.NRefactory.TextLocation loc)
+			{
+				ApplySolution (Title, document);
+			}
+
 			public override void Run (IRefactoringContext context, object script)
 			{
 				ApplySolution (Title, (script as DisposableWrapper).Object as Document);
