@@ -178,7 +178,7 @@ namespace MonoDevelop.D
 		public override bool KeyPress(Gdk.Key key, char keyChar, Gdk.ModifierType modifier)
 		{
 			updater.BeginUpdate();
-			if (this.CompletionWidget != null && (keyChar == ')' || keyChar == ';'))
+			if (this.CompletionWidget != null && (keyChar == '(' || keyChar == ')' || keyChar == ';'))
 				ParameterInformationWindowManager.HideWindow(this, CompletionWidget);
 
 			var ret = base.KeyPress(key, keyChar, modifier);
