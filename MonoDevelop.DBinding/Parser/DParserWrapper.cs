@@ -80,7 +80,7 @@ namespace MonoDevelop.D.Parser
 			{
 				ast = parser.Parse();
 			}
-			catch (TooManyErrorsException x)
+			catch (TooManyErrorsException)
 			{
 				ast = parser.Document;
 			}
