@@ -52,7 +52,6 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>False</ConsolePause>
-    <PlatformTarget>x86</PlatformTarget>
     <RegisterForComInterop>False</RegisterForComInterop>
     <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
     <BaseAddress>4194304</BaseAddress>
@@ -60,6 +59,11 @@
     <StartAction>Program</StartAction>
     <StartProgram>..\..\tutorial.lib\MonoDevelop\main\build\bin\MonoDevelop.exe</StartProgram>
     <DebugSymbols>True</DebugSymbols>
+    <CustomCommands>
+      <CustomCommands>
+        <Command type="Execute" command="/opt/mono/lib/monodevelop/bin/MonoDevelop.exe" />
+      </CustomCommands>
+    </CustomCommands>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Mono.Addins">
