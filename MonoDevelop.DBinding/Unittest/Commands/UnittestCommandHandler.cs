@@ -40,6 +40,7 @@ namespace MonoDevelop.D.Unittest.Commands
 				ProjectFile file = IdeApp.ProjectOperations.CurrentSelectedItem as ProjectFile;
 				if(file == null)
 					return;
+					
 				string filePath = file.FilePath.FullPath;
 				
 				IdeApp.Workbench.SaveAll();
