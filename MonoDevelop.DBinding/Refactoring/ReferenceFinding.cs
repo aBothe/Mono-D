@@ -66,7 +66,7 @@ namespace MonoDevelop.D.Refactoring
 
 			if (project != null)
 				foreach (var p in project.GetSourcePaths(IdeApp.Workspace.ActiveConfiguration))
-					modules.AddRange (GlobalParseCache.EnumModules (p, null));
+					modules.AddRange (GlobalParseCache.EnumModulesRecursively (p, null));
 			else
 				modules.Add ((Ide.IdeApp.Workbench.ActiveDocument.ParsedDocument as MonoDevelop.D.Parser.ParsedDModule).DDom);
 
@@ -74,13 +74,14 @@ namespace MonoDevelop.D.Refactoring
 				monitor.BeginStepTask("Scan for references", modules.Count(), 1);
 
 			List<ISyntaxRegion> references = null;
+			var ctxt = ResolutionContext.Create (parseCache, null, null);
 			foreach (var mod in modules)
 			{
 				if (mod == null)
 					continue;
 				try
 				{
-					references = ReferencesFinder.Scan(mod, member, ResolutionContext.Create(parseCache, null, null)).ToList();
+					references = ReferencesFinder.Scan(mod, member, ctxt).ToList();
 
 					if (references.Count < 1)
 					{

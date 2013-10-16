@@ -39,6 +39,8 @@ namespace MonoDevelop.D.Refactoring
 		}
 	}
 
+	public interface IRefactoringContext { IDisposable CreateScript(); }
+
 	public class DRefactoringContext : IRefactoringContext
 	{
 		public readonly Document Doc;
