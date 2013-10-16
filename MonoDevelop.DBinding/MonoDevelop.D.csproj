@@ -37,7 +37,7 @@
     <DefineConstants>DEBUG</DefineConstants>
     <CustomCommands>
       <CustomCommands>
-        <Command type="Execute" command="/usr/lib/monodevelop/bin/MonoDevelop.exe" workingdir="" />
+        <Command type="Execute" command="/opt/mono/monodevelop/bin/MonoDevelop.exe" workingdir="" />
       </CustomCommands>
     </CustomCommands>
     <EnvironmentVariables>
