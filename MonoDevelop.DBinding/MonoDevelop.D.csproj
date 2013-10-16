@@ -37,12 +37,12 @@
     <DefineConstants>DEBUG</DefineConstants>
     <CustomCommands>
       <CustomCommands>
-        <Command type="Execute" command="/opt/mono/lib/monodevelop/bin/MonoDevelop.exe" workingdir="" />
+        <Command type="Execute" command="/usr/lib/monodevelop/bin/MonoDevelop.exe" workingdir="" />
       </CustomCommands>
     </CustomCommands>
     <EnvironmentVariables>
       <EnvironmentVariables>
-        <Variable name="LD_LIBRARY_PATH" value="/opt/mono/lib:$LD_LIBRARY_PATH" />
+        <Variable name="LD_LIBRARY_PATH" value="/usr/lib:$LD_LIBRARY_PATH" />
       </EnvironmentVariables>
     </EnvironmentVariables>
   </PropertyGroup>

@@ -19,7 +19,13 @@ namespace MonoDevelop.D.Unittest.Commands
 {
 	public class UnittestCommandHandler : CommandHandler
 	{
-		protected override void Run ()
+		CommandInfo commandInfo;
+		protected override void Update (CommandInfo info)
+		{
+			commandInfo = info;
+			base.Update (info);
+		}
+		protected override void Run (object dataItem)
 		{
 			MessageHandler guiRun = delegate
 			{
@@ -34,11 +40,15 @@ namespace MonoDevelop.D.Unittest.Commands
 				ProjectFile file = IdeApp.ProjectOperations.CurrentSelectedItem as ProjectFile;
 				if(file == null)
 					return;
+					
 				string filePath = file.FilePath.FullPath;
 				
 				IdeApp.Workbench.SaveAll();
 				
-				UnittestCore.Run(filePath,project,conf);
+				if((string)commandInfo.Command.Id ==  "MonoDevelop.D.Unittest.Commands.UnittestCommands.RunExternal")
+					UnittestCore.RunExternal(filePath,project,conf);
+				else
+					UnittestCore.Run(filePath,project,conf);
 			};
 			DispatchService.GuiDispatch(guiRun);
 		}

@@ -335,6 +335,9 @@
 		<Command id = "MonoDevelop.D.Unittest.Commands.UnittestCommands.Run"
                  defaultHandler = "MonoDevelop.D.Unittest.Commands.UnittestCommandHandler"
                  _label = "Run unittest" />
+		<Command id = "MonoDevelop.D.Unittest.Commands.UnittestCommands.RunExternal"
+                 defaultHandler = "MonoDevelop.D.Unittest.Commands.UnittestCommandHandler"
+                 _label = "Run unittest external" />
 	</Extension>
 	
 	
@@ -343,6 +346,7 @@
 	<Extension path = "/MonoDevelop/Ide/MainMenu/Tools">
 		<ItemSet id = "D" _label = "D">
 			<CommandItem id = "MonoDevelop.D.Unittest.Commands.UnittestCommands.Run" />
+			<CommandItem id = "MonoDevelop.D.Unittest.Commands.UnittestCommands.RunExternal" />
 			<CommandItem id = "MonoDevelop.D.Profiler.Commands.ProfilerCommands.SwitchProfilerMode" />
 		</ItemSet>
 	</Extension>
