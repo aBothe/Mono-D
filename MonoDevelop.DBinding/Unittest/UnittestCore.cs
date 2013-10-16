@@ -17,6 +17,10 @@ using System.Text;
 using System.Threading;
 using System.Collections.Generic;
 using System.IO;
+using MonoDevelop.Core.ProgressMonitoring;
+using MonoDevelop.Core.Execution;
+using GLib;
+using System.Text.RegularExpressions;
 
 namespace MonoDevelop.D.Unittest
 {
@@ -24,33 +28,44 @@ namespace MonoDevelop.D.Unittest
 	{
 		private static ProgressMonitorManager manager;
 		private static IProgressMonitor monitor;
+		private static IConsole console;
 		
+		public static void RunExternal(string filePath, DProject project, DProjectConfiguration conf)
+		{
+			if(console == null)
+				console = ExternalConsoleFactory.Instance.CreateConsole(false);
+				
+			string[] cmdParts = GetCmdParts(project);
+			string args = GetCommandArgs(cmdParts.Length >= 2 ?cmdParts[1] : "",filePath,project,conf);
+			string execDir = GetExecDir(project, conf);
+				
+			Runtime.ProcessService.StartConsoleProcess(cmdParts[0],args,execDir,console,null);
+		}
 		
 		public static void Run(string filePath, DProject project, DProjectConfiguration conf)
 		{
 			if(manager == null)
 			{
 				manager = new ProgressMonitorManager();
-				monitor = manager.GetOutputProgressMonitor("Run Unittest",Stock.RunProgramIcon,true,true); //manager.GetBuildProgressMonitor();//manager.GetStatusProgressMonitor("Run Unittest",Stock.RunProgramIcon,true);
+				monitor = manager.GetOutputProgressMonitor("Run Unittest",Stock.RunProgramIcon,true,true); 
 			}
 			
 			Pad pad = manager.GetPadForMonitor(monitor);
 			if(pad != null)
 				pad.BringToFront();
 				
-			monitor.BeginTask("start unittest...",2);
+			monitor.BeginTask("start unittest...",1);
 			
-			new Thread(delegate (){
-				string[] cmdParts = project.Compiler.RdmdUnittestCommand.Split(new string[]{" "}, 2 , StringSplitOptions.RemoveEmptyEntries);
-				
-//			string args = GetCommandArgs("-unittest -main $libs $includes $sources",filePath,project,conf);
+			new System.Threading.Thread(delegate (){
+			
+				string[] cmdParts = GetCmdParts(project);
 				string args = GetCommandArgs(cmdParts.Length >= 2 ?cmdParts[1] : "",filePath,project,conf);
 				string errorOutput;
 				string stdOutput;
-				string execDir = conf.OutputDirectory.FullPath;
-				if(Directory.Exists(execDir) == false)
-					execDir = project.BaseDirectory.FullPath;
-				ProjectBuilder.ExecuteCommand(cmdParts[0],args,execDir,monitor,out errorOutput, out stdOutput);
+				string execDir = GetExecDir(project,conf);
+				
+				ProjectBuilder.ExecuteCommand(cmdParts[0], args, execDir,monitor,out stdOutput, out errorOutput);
+							
 				monitor.Log.WriteLine("unittest done.");
 				monitor.EndTask();
 			}).Start();
@@ -79,6 +94,19 @@ namespace MonoDevelop.D.Unittest
 			};
 			
 			return ProjectBuilder.FillInMacros(baseCommandArgs,compilerMacro, prjPath);
+		}
+		
+		static string[] GetCmdParts(DProject project)
+		{
+			return project.Compiler.RdmdUnittestCommand.Split(new string[]{" "}, 2 , StringSplitOptions.RemoveEmptyEntries);
+		}
+		
+		static string GetExecDir(DProject project, DProjectConfiguration conf)
+		{
+				string execDir = conf.OutputDirectory.FullPath;
+				if(Directory.Exists(execDir) == false)
+					execDir = project.BaseDirectory.FullPath;
+			return execDir;
 		}
 	}
 }
