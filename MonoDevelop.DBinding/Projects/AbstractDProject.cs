@@ -49,7 +49,7 @@ namespace MonoDevelop.D.Projects
 			yield return BaseDirectory;
 		}
 
-		public virtual IEnumerable<string> IncludePaths
+		public IEnumerable<string> IncludePaths
 		{
 			get
 			{

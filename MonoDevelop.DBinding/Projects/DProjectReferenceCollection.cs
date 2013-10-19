@@ -69,6 +69,8 @@ namespace MonoDevelop.D.Projects
 			}
 		}
 
+		public virtual string GetIncludeName(string path) { return path; }
+
 		public virtual IEnumerable<string> Includes {
 			get { 
 				foreach (var p in ProjectBuilder.FillInMacros (RawIncludes, includeMacros)) {

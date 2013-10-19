@@ -24,6 +24,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using Newtonsoft.Json;
+using MonoDevelop.D.Building;
+using System.IO;
 
 namespace MonoDevelop.D.Projects.Dub
 {
@@ -31,6 +36,8 @@ namespace MonoDevelop.D.Projects.Dub
 	{
 		public new DubProject Owner {get{return base.Owner as DubProject;}}
 		public override event EventHandler Update;
+
+		Dictionary<string, DubProjectDependency> dependencies = new Dictionary<string, DubProjectDependency>();
 
 		public DubReferencesCollection (DubProject prj) : base(prj)
 		{
@@ -59,9 +66,87 @@ namespace MonoDevelop.D.Projects.Dub
 				Update (this, EventArgs.Empty);
 		}
 
+		public override bool HasReferences {
+			get {
+				return dependencies.Count > 0;
+			}
+		}
+
+		public override string GetIncludeName (string path)
+		{
+			foreach (var kv in dependencies)
+				if (kv.Value.Path == path)
+					return kv.Key;
+			return path;
+		}
+
+		public override IEnumerable<string> Includes {
+			get {
+				foreach (var kv in dependencies)
+					if(kv.Value.Path != null)
+						yield return kv.Value.Path;
+			}
+		}
+
 		public override bool AddReference ()
 		{
 			throw new NotImplementedException ();
+		}
+
+		static Regex dubInstalledPackagesOutputRegex = new Regex ("  (?<name>.+) (?<version>.+): (?<path>.+)", RegexOptions.Compiled | RegexOptions.Multiline | RegexOptions.ExplicitCapture);
+
+		public void DeserializeDubPrjDependencies(JsonReader j)
+		{
+			dependencies.Clear();
+			FireUpdate ();
+			bool tryFillRemainingPaths = false;
+
+			while (j.Read () && j.TokenType != JsonToken.EndObject) {
+				if (j.TokenType == JsonToken.PropertyName) {
+					var depName = j.Value as string;
+					string depVersion = null;
+					string depPath = null;
+
+					if (!j.Read ())
+						throw new JsonReaderException ("Found EOF when parsing project dependency");
+
+					if (j.TokenType == JsonToken.StartObject) {
+						while (j.Read () && j.TokenType != JsonToken.EndObject) {
+							if (j.TokenType == JsonToken.PropertyName) {
+								switch (j.Value as string) {
+									case "version":
+										depVersion = j.ReadAsString ();
+										break;
+									case "path":
+										depPath = j.ReadAsString ();
+										break;
+								}
+							}
+						}
+					} else if (j.TokenType == JsonToken.String) {
+						depVersion = j.Value as string;
+						tryFillRemainingPaths = true;
+					}
+
+					dependencies [depName] = new DubProjectDependency { Name = depName, Version = depVersion, Path = depPath };
+				}
+			}
+
+			if (tryFillRemainingPaths) {
+				string err, outp = null;
+				try{
+					ProjectBuilder.ExecuteCommand (DubSettings.Instance.DubCommand, "list-installed", Owner.BaseDirectory.ToString (), null, out err, out outp);
+				}catch(FileNotFoundException) {}
+				DubProjectDependency dep;
+				if(!string.IsNullOrEmpty(outp))
+					foreach (Match match in dubInstalledPackagesOutputRegex.Matches (outp))
+						if (match.Success && dependencies.TryGetValue(match.Groups["name"].Value, out dep) &&
+							(string.IsNullOrEmpty(dep.Version) || dep.Version == match.Groups["version"].Value) &&
+							string.IsNullOrEmpty(dep.Path))
+							dep.Path = match.Groups["path"].Value;
+			}
+
+			FireUpdate ();
 		}
 	}
 }

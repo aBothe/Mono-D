@@ -20,7 +20,6 @@ namespace MonoDevelop.D.Projects.Dub
 	{
 		#region Properties
 		List<string> authors = new List<string>();
-		Dictionary<string, DubProjectDependency> dependencies = new Dictionary<string, DubProjectDependency>();
 		public readonly DubBuildSettings GlobalBuildSettings = new DubBuildSettings();
 
 		public readonly DubReferencesCollection DubReferences;
@@ -31,10 +30,8 @@ namespace MonoDevelop.D.Projects.Dub
 		public string Homepage;
 		public string Copyright;
 		public List<string> Authors { get { return authors; } }
-		public Dictionary<string, DubProjectDependency> Dependencies
-		{
-			get { return dependencies; }
-		}
+
+		/*
 
 		public List<string> PhysicalDependencyPaths
 		{
@@ -69,7 +66,7 @@ namespace MonoDevelop.D.Projects.Dub
 				return l;
 			}
 		}
-
+		*/
 		public List<DubBuildSettings> GetBuildSettings(ConfigurationSelector sel)
 		{
 			var settingsToScan = new List<DubBuildSettings>(4);
@@ -149,9 +146,6 @@ namespace MonoDevelop.D.Projects.Dub
 
 		public void UpdateFilelist()
 		{
-			foreach (var p in PhysicalDependencyPaths)
-				DubReferences.RawIncludes.Add (p);
-
 			foreach (var settings in GetBuildSettings(null))
 			{
 				List<DubBuildSetting> l;
@@ -198,7 +192,7 @@ namespace MonoDevelop.D.Projects.Dub
 					if (!j.Read () || j.TokenType != JsonToken.StartObject)
 						throw new JsonReaderException ("Expected { when parsing Authors");
 
-					DeserializeDubPrjDependencies(j);
+					DubReferences.DeserializeDubPrjDependencies(j);
 					break;
 				case "configurations":
 					if (!j.Read() || j.TokenType != JsonToken.StartArray)
@@ -218,62 +212,6 @@ namespace MonoDevelop.D.Projects.Dub
 			return true;
 		}
 
-		static Regex dubInstalledPackagesOutputRegex = new Regex ("  (?<name>.+) (?<version>.+): (?<path>.+)", RegexOptions.Compiled | RegexOptions.Multiline | RegexOptions.ExplicitCapture);
-
-		void DeserializeDubPrjDependencies(JsonReader j)
-		{
-			dependencies.Clear();
-			bool tryFillRemainingPaths = false;
-
-			while (j.Read () && j.TokenType != JsonToken.EndObject) {
-				if (j.TokenType == JsonToken.PropertyName) {
-					var depName = j.Value as string;
-					string depVersion = null;
-					string depPath = null;
-
-					if (!j.Read ())
-						throw new JsonReaderException ("Found EOF when parsing project dependency");
-
-					if (j.TokenType == JsonToken.StartObject) {
-						while (j.Read () && j.TokenType != JsonToken.EndObject) {
-							if (j.TokenType == JsonToken.PropertyName) {
-								switch (j.Value as string) {
-									case "version":
-										depVersion = j.ReadAsString ();
-										break;
-									case "path":
-										depPath = j.ReadAsString ();
-										break;
-								}
-							}
-						}
-					} else if (j.TokenType == JsonToken.String) {
-						depVersion = j.Value as string;
-						tryFillRemainingPaths = true;
-					}
-
-					dependencies [depName] = new DubProjectDependency { Name = depName, Version = depVersion, Path = depPath };
-				}
-			}
-
-			if (tryFillRemainingPaths) {
-				string err, outp = null;
-				try{
-				if (ProjectBuilder.ExecuteCommand (DubSettings.Instance.DubCommand, "list-installed", BaseDirectory.ToString (), null, out err, out outp) != 0)
-					return;
-				}catch(FileNotFoundException) {
-					return;
-				}
-				DubProjectDependency dep;
-				if(!string.IsNullOrEmpty(outp))
-					foreach (Match match in dubInstalledPackagesOutputRegex.Matches (outp))
-						if (match.Success && dependencies.TryGetValue(match.Groups["name"].Value, out dep) &&
-							(string.IsNullOrEmpty(dep.Version) || dep.Version == match.Groups["version"].Value) &&
-							string.IsNullOrEmpty(dep.Path))
-							dep.Path = match.Groups["path"].Value;
-			}
-		}
-
 		public void AddProjectAndSolutionConfiguration(DubProjectConfiguration cfg)
 		{
 			if (ParentSolution != null)
@@ -290,7 +228,6 @@ namespace MonoDevelop.D.Projects.Dub
 		#endregion
 
 		#region Building
-
 		protected override BuildResult DoBuild(IProgressMonitor monitor, ConfigurationSelector configuration)
 		{
 			return DubBuilder.BuildProject(this, monitor, configuration);			

@@ -69,7 +69,7 @@ namespace MonoDevelop.D.Projects.ProjectPad
 			if (refs.HasReferences)
 			{
 				foreach (var incl in refs.Includes)
-					ctx.AddChild (new DProjectReference(refs.Owner, ReferenceType.Package, incl));
+					ctx.AddChild (new DProjectReference(refs.Owner, ReferenceType.Package, incl){ NameGetter = refs.GetIncludeName });
 				foreach(var p in refs.ReferencedProjectIds)
 					ctx.AddChild(new DProjectReference(refs.Owner, ReferenceType.Project, p));
 			}

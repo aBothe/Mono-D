@@ -35,6 +35,7 @@ namespace MonoDevelop.D.Projects.ProjectPad
 {
 	class DProjectReference : INotifyPropertyChanged
 	{
+		public Func<string,string> NameGetter;
 		public readonly AbstractDProject OwnerProject;
 		public readonly ReferenceType ReferenceType;
 
@@ -64,6 +65,9 @@ namespace MonoDevelop.D.Projects.ProjectPad
 
 		public virtual string Name {
 			get{ 
+				if(NameGetter != null)
+					return NameGetter(reference);
+
 				switch (ReferenceType) {
 					case ReferenceType.Package:
 						return reference;
