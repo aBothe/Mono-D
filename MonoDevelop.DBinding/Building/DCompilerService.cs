@@ -88,6 +88,7 @@ namespace MonoDevelop.D.Building
 
 		public void Save ()
 		{
+			DubSettings.Save ();
 			PropertyService.Set (GlobalPropertyName, this);
 			PropertyService.SaveProperties ();
 		}
