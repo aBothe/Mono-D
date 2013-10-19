@@ -663,6 +663,7 @@ namespace MonoDevelop.D.Building
             out string errorOutput,
             out string programOutput)
 		{
+			bool useMonitor = monitor != null;
 			errorOutput = string.Empty;
 			int exitCode = -1;
 
@@ -670,19 +671,21 @@ namespace MonoDevelop.D.Building
 			var swOutput = new StringWriter ();
 
 			var chainedError = new LogTextWriter ();
-			chainedError.ChainWriter (monitor.Log);
 			chainedError.ChainWriter (swError);
 
 			var chainedOutput = new LogTextWriter ();
-			chainedOutput.ChainWriter (monitor.Log);
 			chainedOutput.ChainWriter (swOutput);
 
-			monitor.Log.WriteLine ("{0} {1}", command, args);
+			if (useMonitor) {
+				chainedError.ChainWriter (monitor.Log);
+				chainedOutput.ChainWriter (monitor.Log);
+				monitor.Log.WriteLine ("{0} {1}", command, args);
+			}
 
-			var operationMonitor = new AggregatedOperationMonitor (monitor);
+			var operationMonitor = useMonitor ? new AggregatedOperationMonitor (monitor) : null;
 			var p = Runtime.ProcessService.StartProcess (command, args, baseDirectory, chainedOutput, chainedError, null);
-			operationMonitor.AddOperation (p); //handles cancellation
-
+			if(useMonitor)
+				operationMonitor.AddOperation (p); //handles cancellation
 
 			p.WaitForOutput ();
 			errorOutput = swError.ToString ();
@@ -690,17 +693,20 @@ namespace MonoDevelop.D.Building
 			exitCode = p.ExitCode;
 			p.Dispose ();
 
-			if (monitor.IsCancelRequested) {
-				monitor.Log.WriteLine (GettextCatalog.GetString ("Build cancelled"));
-				monitor.ReportError (GettextCatalog.GetString ("Build cancelled"), null);
-				if (exitCode == 0)
-					exitCode = -1;
-			}
-			{
-				chainedError.Close ();
-				swError.Close ();
+			if (useMonitor) {
+				if (monitor.IsCancelRequested) {
+					monitor.Log.WriteLine (GettextCatalog.GetString ("Build cancelled"));
+					monitor.ReportError (GettextCatalog.GetString ("Build cancelled"), null);
+					if (exitCode == 0)
+						exitCode = -1;
+				}
+
 				operationMonitor.Dispose ();
 			}
+
+			chainedError.Close ();
+			swOutput.Close ();
+			swError.Close ();
 
 			return exitCode;
 		}
