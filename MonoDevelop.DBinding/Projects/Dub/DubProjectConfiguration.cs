@@ -16,6 +16,7 @@ namespace MonoDevelop.D.Projects.Dub
 			Platform = "AnyCPU";
 			ExternalConsole = true;
 			PauseConsoleOutput = true;
+			DebugMode = true;
 		}
 
 		public static DubProjectConfiguration DeserializeFromPackageJson(JsonReader j)
