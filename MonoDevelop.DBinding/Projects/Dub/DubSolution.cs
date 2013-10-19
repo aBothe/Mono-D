@@ -6,6 +6,9 @@ using System.Text;
 
 namespace MonoDevelop.D.Projects.Dub
 {
+	/// <summary>
+	/// A dub package container.
+	/// </summary>
 	public class DubSolution : Solution
 	{
 		public override string Name

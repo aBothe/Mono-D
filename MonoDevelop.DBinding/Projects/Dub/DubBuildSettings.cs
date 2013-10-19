@@ -125,7 +125,7 @@ namespace MonoDevelop.D.Projects.Dub
 
 
 
-	public struct DubProjectDependency
+	public class DubProjectDependency
 	{
 		public string Name;
 		public string Version;

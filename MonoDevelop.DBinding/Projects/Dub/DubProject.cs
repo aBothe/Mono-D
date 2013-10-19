@@ -8,9 +8,14 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using MonoDevelop.D.Building;
+using System.Text.RegularExpressions;
+using MonoDevelop.Ide.TypeSystem;
 
 namespace MonoDevelop.D.Projects.Dub
 {
+	/// <summary>
+	/// A dub package.
+	/// </summary>
 	public class DubProject : AbstractDProject
 	{
 		#region Properties
@@ -34,9 +39,9 @@ namespace MonoDevelop.D.Projects.Dub
 		public List<string> PhysicalDependencyPaths
 		{
 			get {
-				var l = new List<string>(Dependencies.Count);
+				var l = new List<string>(dependencies.Count);
 
-				foreach (var dep in Dependencies.Values)
+				foreach (var dep in dependencies.Values)
 				{
 					string dir;
 					if (!string.IsNullOrWhiteSpace(dep.Path))
@@ -190,14 +195,10 @@ namespace MonoDevelop.D.Projects.Dub
 							authors.Add(j.Value as string);
 					break;
 				case "dependencies":
-					if (!j.Read() || j.TokenType != JsonToken.StartObject)
-						throw new JsonReaderException("Expected { when parsing Authors");
-					dependencies.Clear();
-					while (j.Read() && j.TokenType != JsonToken.EndObject)
-					{
-						if (j.TokenType == JsonToken.PropertyName)
-							DeserializeDubPrjDependency(j);
-					}
+					if (!j.Read () || j.TokenType != JsonToken.StartObject)
+						throw new JsonReaderException ("Expected { when parsing Authors");
+
+					DeserializeDubPrjDependencies(j);
 					break;
 				case "configurations":
 					if (!j.Read() || j.TokenType != JsonToken.StartArray)
@@ -217,39 +218,60 @@ namespace MonoDevelop.D.Projects.Dub
 			return true;
 		}
 
-		void DeserializeDubPrjDependency(JsonReader j)
+		static Regex dubInstalledPackagesOutputRegex = new Regex ("  (?<name>.+) (?<version>.+): (?<path>.+)", RegexOptions.Compiled | RegexOptions.Multiline | RegexOptions.ExplicitCapture);
+
+		void DeserializeDubPrjDependencies(JsonReader j)
 		{
-			var depName = j.Value as string;
-			string depVersion = null;
-			string depPath = null;
+			dependencies.Clear();
+			bool tryFillRemainingPaths = false;
 
-			if (!j.Read())
-				throw new JsonReaderException("Found EOF when parsing project dependency");
+			while (j.Read () && j.TokenType != JsonToken.EndObject) {
+				if (j.TokenType == JsonToken.PropertyName) {
+					var depName = j.Value as string;
+					string depVersion = null;
+					string depPath = null;
 
-			if (j.TokenType == JsonToken.StartObject)
-			{
-				while (j.Read() && j.TokenType != JsonToken.EndObject)
-				{
-					if (j.TokenType == JsonToken.PropertyName)
-					{
-						switch (j.Value as string)
-						{
-							case "version":
-								depVersion = j.ReadAsString();
-								break;
-							case "path":
-								depPath = j.ReadAsString();
-								break;
+					if (!j.Read ())
+						throw new JsonReaderException ("Found EOF when parsing project dependency");
+
+					if (j.TokenType == JsonToken.StartObject) {
+						while (j.Read () && j.TokenType != JsonToken.EndObject) {
+							if (j.TokenType == JsonToken.PropertyName) {
+								switch (j.Value as string) {
+									case "version":
+										depVersion = j.ReadAsString ();
+										break;
+									case "path":
+										depPath = j.ReadAsString ();
+										break;
+								}
+							}
 						}
+					} else if (j.TokenType == JsonToken.String) {
+						depVersion = j.Value as string;
+						tryFillRemainingPaths = true;
 					}
+
+					dependencies [depName] = new DubProjectDependency { Name = depName, Version = depVersion, Path = depPath };
 				}
 			}
-			else if (j.TokenType == JsonToken.String)
-			{
-				depVersion = j.Value as string;
-			}
 
-			dependencies[depName] = new DubProjectDependency { Name = depName, Version = depVersion, Path = depPath };
+			if (tryFillRemainingPaths) {
+				string err, outp = null;
+				try{
+				if (ProjectBuilder.ExecuteCommand (DubSettings.Instance.DubCommand, "list-installed", BaseDirectory.ToString (), null, out err, out outp) != 0)
+					return;
+				}catch(FileNotFoundException) {
+					return;
+				}
+				DubProjectDependency dep;
+				if(!string.IsNullOrEmpty(outp))
+					foreach (Match match in dubInstalledPackagesOutputRegex.Matches (outp))
+						if (match.Success && dependencies.TryGetValue(match.Groups["name"].Value, out dep) &&
+							(string.IsNullOrEmpty(dep.Version) || dep.Version == match.Groups["version"].Value) &&
+							string.IsNullOrEmpty(dep.Path))
+							dep.Path = match.Groups["path"].Value;
+			}
 		}
 
 		public void AddProjectAndSolutionConfiguration(DubProjectConfiguration cfg)
@@ -268,6 +290,7 @@ namespace MonoDevelop.D.Projects.Dub
 		#endregion
 
 		#region Building
+
 		protected override BuildResult DoBuild(IProgressMonitor monitor, ConfigurationSelector configuration)
 		{
 			return DubBuilder.BuildProject(this, monitor, configuration);			
