@@ -45,33 +45,19 @@ namespace MonoDevelop.D.Projects.Dub
 			return fileName.ParentDirectory.Combine("package.json");
 		}
 
-		DubSolution readSolution;
-		DateTime lastReadTime;
-
 		public object ReadFile(FilePath file, Type expectedType, IProgressMonitor monitor)
 		{
-			var writeTime = File.GetLastWriteTimeUtc (file);
-			if (readSolution == null || lastReadTime < writeTime) {
-				if (readSolution != null)
-					readSolution = null;
-				using (var s = File.OpenText (file))
-				using (var r = new JsonTextReader (s))
-					readSolution = ReadPackageInformation (file, r);
-				lastReadTime = writeTime;
-			}
+			if (!expectedType.Equals (typeof(WorkspaceItem)))
+				return null;
 
-			if (expectedType.Equals (typeof(SolutionEntityItem)))
-				return readSolution.StartupItem;
-			else if (expectedType.Equals (typeof(WorkspaceItem)))
-				return readSolution;
-
-			return null;
+			using (var s = File.OpenText (file))
+			using (var r = new JsonTextReader (s))
+				return ReadPackageInformation (file, r);
 		}
 
 		public static DubSolution ReadPackageInformation(FilePath packageJsonPath,JsonReader r)
 		{
-			var sln = new DubSolution (packageJsonPath);
-
+			var sln = new DubSolution ();
 			var defaultPackage = new DubProject();
 			defaultPackage.FileName = packageJsonPath;
 			defaultPackage.BaseDirectory = packageJsonPath.ParentDirectory;
