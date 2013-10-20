@@ -10,6 +10,9 @@ using System.Text;
 using MonoDevelop.D.Building;
 using System.Text.RegularExpressions;
 using MonoDevelop.Ide.TypeSystem;
+using MonoDevelop.Components.Commands;
+using MonoDevelop.Ide;
+using MonoDevelop.Ide.Gui;
 
 namespace MonoDevelop.D.Projects.Dub
 {
@@ -201,7 +204,7 @@ namespace MonoDevelop.D.Projects.Dub
 			return true;
 		}
 
-		public void AddProjectAndSolutionConfiguration(DubProjectConfiguration cfg)
+		internal void AddProjectAndSolutionConfiguration(DubProjectConfiguration cfg)
 		{
 			if (ParentSolution != null)
 			{
@@ -217,6 +220,11 @@ namespace MonoDevelop.D.Projects.Dub
 		#endregion
 
 		#region Building
+		protected override void PopulateOutputFileList (List<FilePath> list, ConfigurationSelector configuration)
+		{
+			base.PopulateOutputFileList (list, configuration);
+		}
+
 		protected override BuildResult DoBuild(IProgressMonitor monitor, ConfigurationSelector configuration)
 		{
 			return DubBuilder.BuildProject(this, monitor, configuration);			
@@ -230,6 +238,16 @@ namespace MonoDevelop.D.Projects.Dub
 		protected override void DoExecute(IProgressMonitor monitor, ExecutionContext context, ConfigurationSelector configuration)
 		{
 			DubBuilder.ExecuteProject(this,monitor, context, configuration);
+		}
+
+		public override SolutionItemConfiguration CreateConfiguration (string name)
+		{
+			return new DubProjectConfiguration { Name = name };
+		}
+
+		protected override void DoClean (IProgressMonitor monitor, ConfigurationSelector configuration)
+		{
+			base.DoClean (monitor, configuration);
 		}
 		#endregion
 	}

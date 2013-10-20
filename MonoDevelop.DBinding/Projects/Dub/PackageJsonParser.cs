@@ -65,7 +65,6 @@ namespace MonoDevelop.D.Projects.Dub
 			sln.RootFolder.AddItem (defaultPackage, false);
 			sln.StartupItem = defaultPackage;
 
-
 			while (r.Read ()) {
 				if (r.TokenType == JsonToken.PropertyName) {
 					var propName = r.Value as string;

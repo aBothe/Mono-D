@@ -34,9 +34,11 @@ namespace MonoDevelop.D.Projects.Dub
 			}
 		}
 
-		public DubSolution(Core.FilePath slnPath)
+		public override void Dispose ()
 		{
-			base.FileName = slnPath;
+			StartupItem = null;
+			base.Dispose ();
+			GC.ReRegisterForFinalize (this);
 		}
 	}
 }
