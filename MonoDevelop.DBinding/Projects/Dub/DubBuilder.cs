@@ -14,8 +14,6 @@ namespace MonoDevelop.D.Projects.Dub
 	{
 		public static readonly DubBuilder Instance = new DubBuilder();
 
-		public string DubExecutable = "dub";
-
 		public void BuildCommonArgAppendix(StringBuilder sr,DubProject prj, ConfigurationSelector sel)
 		{
 			if (prj.Configurations.Count > 1)
@@ -33,7 +31,7 @@ namespace MonoDevelop.D.Projects.Dub
 			string output;
 			string errDump;
 
-			int status = ProjectBuilder.ExecuteCommand(Instance.DubExecutable, args.ToString(), prj.BaseDirectory, 
+			int status = ProjectBuilder.ExecuteCommand(DubSettings.Instance.DubCommand, args.ToString(), prj.BaseDirectory, 
 				mon, out errDump, out output);
 			br.CompilerOutput = output;
 
@@ -60,7 +58,7 @@ namespace MonoDevelop.D.Projects.Dub
 
 			try
 			{
-				var cmd = new NativeExecutionCommand(Instance.DubExecutable, sr.ToString(), prj.BaseDirectory.ToString());
+				var cmd = new NativeExecutionCommand(DubSettings.Instance.DubCommand, sr.ToString(), prj.BaseDirectory.ToString());
 				if (!context.ExecutionHandler.CanExecute(cmd))
 				{
 					monitor.ReportError("Cannot execute \""  + "\". The selected execution mode is not supported for Dub projects.", null);
@@ -72,7 +70,7 @@ namespace MonoDevelop.D.Projects.Dub
 				operationMonitor.AddOperation(op);
 				op.WaitForCompleted();
 
-				monitor.Log.WriteLine(Instance.DubExecutable+" exited with code: {0}", op.ExitCode);
+				monitor.Log.WriteLine(DubSettings.Instance.DubCommand+" exited with code: {0}", op.ExitCode);
 
 			}
 			catch (Exception ex)
