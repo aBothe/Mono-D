@@ -16,7 +16,7 @@ namespace MonoDevelop.D.Projects.Dub
 
 		public void BuildCommonArgAppendix(StringBuilder sr,DubProject prj, ConfigurationSelector sel)
 		{
-			if (prj.Configurations.Count > 1)
+			if (prj.Configurations.Count > 1 && sel.GetConfiguration(prj).Id != "Default")
 				sr.Append(" --config=").Append(sel.GetConfiguration(prj).Id);
 		}
 
@@ -35,10 +35,10 @@ namespace MonoDevelop.D.Projects.Dub
 				mon, out errDump, out output);
 			br.CompilerOutput = output;
 
-			ErrorExtracting.HandleReturnCode(mon, br, status);
+			ErrorExtracting.HandleReturnCode (mon, br, status);
 			ErrorExtracting.HandleCompilerOutput(prj, br, output);
 			ErrorExtracting.HandleCompilerOutput(prj, br, errDump);
-			
+
 			return br;
 		}
 
