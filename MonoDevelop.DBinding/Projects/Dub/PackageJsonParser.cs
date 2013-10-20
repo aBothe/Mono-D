@@ -75,8 +75,12 @@ namespace MonoDevelop.D.Projects.Dub
 					break;
 			}
 
+			defaultPackage.Items.Add(new ProjectFile(packageJsonPath, BuildAction.None));
+
+			foreach (var f in defaultPackage.GetItemFiles(true))
+				defaultPackage.Items.Add(new ProjectFile(f));
+
 			defaultPackage.AddProjectAndSolutionConfiguration(new DubProjectConfiguration { Name = "Default", Id = "Default" });
-			defaultPackage.UpdateFilelist ();
 
 			sln.LoadUserProperties ();
 

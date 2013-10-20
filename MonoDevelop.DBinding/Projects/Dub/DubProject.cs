@@ -82,6 +82,18 @@ namespace MonoDevelop.D.Projects.Dub
 			return settingsToScan;
 		}
 
+		public IEnumerable<string> GetAdditionalDubIncludes(ConfigurationSelector sel = null)
+		{
+			foreach (var settings in GetBuildSettings(sel))
+			{
+				List<DubBuildSetting> l;
+				if(settings.TryGetValue(DubBuildSettings.ImportPathsProperty, out l))
+					for (int i = l.Count - 1; i >= 0; i--) // Ignore architecture/os/compiler restrictions for now
+						for (int j = l[i].Flags.Length - 1; j >= 0; j--)
+							yield return (l[i].Flags[j]);
+			}
+		}
+
 		protected override List<FilePath> OnGetItemFiles(bool includeReferencedFiles)
 		{
 			var files = new List<FilePath>();
@@ -95,15 +107,10 @@ namespace MonoDevelop.D.Projects.Dub
 
 		public override IEnumerable<string> GetSourcePaths(ConfigurationSelector sel)
 		{
-			return GetSourcePaths(GetBuildSettings(sel));
-		}
-
-		public IEnumerable<string> GetSourcePaths(List<DubBuildSettings> settings)
-		{
 			string d;
 			List<DubBuildSetting> l;
 			bool returnedOneItem = false;
-			foreach (var sett in settings)
+			foreach (var sett in GetBuildSettings(sel))
 				if (sett.TryGetValue(DubBuildSettings.SourcePathsProperty, out l))
 				{
 					for (int i = l.Count - 1; i >= 0; i--) // Ignore architecture/os/compiler restrictions for now
@@ -142,24 +149,6 @@ namespace MonoDevelop.D.Projects.Dub
 		public DubProject()
 		{
 			DubReferences = new DubReferencesCollection (this);
-		}
-
-		public void UpdateFilelist()
-		{
-			foreach (var settings in GetBuildSettings(null))
-			{
-				List<DubBuildSetting> l;
-				if(settings.TryGetValue(DubBuildSettings.ImportPathsProperty, out l))
-					for (int i = l.Count - 1; i >= 0; i--) // Ignore architecture/os/compiler restrictions for now
-						for (int j = l[i].Flags.Length - 1; j >= 0; j--)
-							DubReferences.RawIncludes.Add(l[i].Flags[j]);
-			}
-
-			DCompilerConfiguration.UpdateParseCacheAsync (LocalIncludes, false, LocalIncludeCache_FinishedParsing);
-
-			Items.Clear();
-			foreach (var f in GetItemFiles(true))
-				Items.Add(new ProjectFile(f));
 		}
 		#endregion
 

@@ -85,6 +85,9 @@ namespace MonoDevelop.D.Projects.Dub
 				foreach (var kv in dependencies)
 					if(kv.Value.Path != null)
 						yield return kv.Value.Path;
+
+				foreach (var inc in Owner.GetAdditionalDubIncludes())
+					yield return inc;
 			}
 		}
 
