@@ -376,7 +376,7 @@ namespace MonoDevelop.D.Projects
 			return cfg.CompileTarget == DCompileTarget.Executable && context.ExecutionHandler.CanExecute (cmd);
 		}
 
-		protected virtual ExecutionCommand CreateExecutionCommand (DProjectConfiguration conf)
+		protected virtual NativeExecutionCommand CreateExecutionCommand (DProjectConfiguration conf)
 		{
 			var app = GetOutputFileName(conf.Selector);
 			var cmd = new NativeExecutionCommand (app);
@@ -428,8 +428,11 @@ namespace MonoDevelop.D.Projects
 				operationMonitor.AddOperation (op);
 				op.WaitForCompleted ();
 
-				monitor.Log.WriteLine ("The operation exited with code: {0}", op.ExitCode);
-				
+				if(op.ExitCode != 0)
+					monitor.ReportError(cmd.Command+" exited with code: "+op.ExitCode.ToString(), null);
+				else
+					monitor.Log.WriteLine(cmd.Command+" exited with code: {0}", op.ExitCode);
+
 			} catch (Exception ex) {
 				monitor.ReportError ("Cannot execute \"" + conf.Output + "\"", ex);
 			} finally {

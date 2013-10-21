@@ -61,7 +61,7 @@ namespace MonoDevelop.D.Projects.Dub
 				var cmd = new NativeExecutionCommand(DubSettings.Instance.DubCommand, sr.ToString(), prj.BaseDirectory.ToString());
 				if (!context.ExecutionHandler.CanExecute(cmd))
 				{
-					monitor.ReportError("Cannot execute \""  + "\". The selected execution mode is not supported for Dub projects.", null);
+					monitor.ReportError("Cannot execute \"" + cmd.Command + " " + cmd.Arguments + "\". The selected execution mode is not supported for Dub projects.", null);
 					return;
 				}
 
@@ -70,8 +70,10 @@ namespace MonoDevelop.D.Projects.Dub
 				operationMonitor.AddOperation(op);
 				op.WaitForCompleted();
 
-				monitor.Log.WriteLine(DubSettings.Instance.DubCommand+" exited with code: {0}", op.ExitCode);
-
+				if(op.ExitCode != 0)
+					monitor.ReportError(cmd.Command+" exited with code: "+op.ExitCode.ToString(), null);
+				else
+					monitor.Log.WriteLine(cmd.Command+" exited with code: {0}", op.ExitCode);
 			}
 			catch (Exception ex)
 			{
