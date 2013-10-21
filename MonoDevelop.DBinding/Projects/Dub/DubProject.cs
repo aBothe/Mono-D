@@ -233,8 +233,30 @@ namespace MonoDevelop.D.Projects.Dub
 
 		protected override bool OnGetCanExecute(ExecutionContext context, ConfigurationSelector configuration)
 		{
-			var name = context.ExecutionHandler.GetType ().Name;
-			return name == "DebugExecutionHandlerFactory" || name == "DefaultExecutionHandler";
+			string targetPath = null, targetName = null, targetType = null;
+			GlobalBuildSettings.TryGetTargetFileProperties (this, configuration, ref targetType, ref targetName, ref targetPath);
+			(GetConfiguration(configuration) as DubProjectConfiguration).BuildSettings
+				.TryGetTargetFileProperties (this, configuration, ref targetType, ref targetName, ref targetPath);
+
+			if (targetType == "autodetect" || string.IsNullOrWhiteSpace (targetType)) {
+				if (string.IsNullOrEmpty (targetName))
+					return true;
+
+				var ext = Path.GetExtension(targetName);
+				if(ext != null)
+					switch (ext.ToLowerInvariant()) {
+						case ".dylib":
+						case ".so":
+						case ".a":
+							return false;
+						case ".exe":
+						case null:
+						default:
+							return true;
+				}
+			}
+
+			return targetType.ToLowerInvariant() == "executable";
 		}
 
 		protected override void DoExecute(IProgressMonitor monitor, ExecutionContext context, ConfigurationSelector configuration)
