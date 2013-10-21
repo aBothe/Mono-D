@@ -20,6 +20,11 @@ namespace MonoDevelop.D.Projects.Dub
 				sr.Append(" --config=").Append(sel.GetConfiguration(prj).Id);
 		}
 
+		public void BuildProgramArgAppendix(StringBuilder sr, DubProject prj, DubProjectConfiguration cfg)
+		{
+
+		}
+
 		public static BuildResult BuildProject(DubProject prj, IProgressMonitor mon, ConfigurationSelector sel)
 		{
 			var br = new BuildResult();
@@ -44,6 +49,8 @@ namespace MonoDevelop.D.Projects.Dub
 
 		internal static void ExecuteProject(DubProject prj,IProgressMonitor monitor, ExecutionContext context, ConfigurationSelector configuration)
 		{
+			bool isDebug = context.ExecutionHandler.GetType ().Name.StartsWith ("Debug");
+
 			var conf = prj.GetConfiguration(configuration) as DubProjectConfiguration;
 			IConsole console;
 			if (conf.ExternalConsole)
@@ -53,12 +60,17 @@ namespace MonoDevelop.D.Projects.Dub
 			
 			var operationMonitor = new AggregatedOperationMonitor(monitor);
 
-			var sr = new StringBuilder("run");
-			Instance.BuildCommonArgAppendix(sr, prj, configuration);
+			var sr = new StringBuilder();
+			if (isDebug)
+				Instance.BuildProgramArgAppendix (sr, prj, conf);
+			else {
+				sr.Append ("run");
+				Instance.BuildCommonArgAppendix (sr, prj, configuration);
+			}
 
 			try
 			{
-				var cmd = new NativeExecutionCommand(DubSettings.Instance.DubCommand, sr.ToString(), prj.BaseDirectory.ToString());
+				var cmd = new NativeExecutionCommand(isDebug ? prj.GetOutputFileName(configuration) :  DubSettings.Instance.DubCommand, sr.ToString(), prj.BaseDirectory.ToString());
 				if (!context.ExecutionHandler.CanExecute(cmd))
 				{
 					monitor.ReportError("Cannot execute \"" + cmd.Command + " " + cmd.Arguments + "\". The selected execution mode is not supported for Dub projects.", null);
