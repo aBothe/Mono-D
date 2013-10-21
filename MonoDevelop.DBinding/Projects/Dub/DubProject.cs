@@ -232,7 +232,8 @@ namespace MonoDevelop.D.Projects.Dub
 
 		protected override bool OnGetCanExecute(ExecutionContext context, ConfigurationSelector configuration)
 		{
-			return context.ExecutionHandler.GetType().Name.EndsWith("DefaultExecutionHandler");
+			var name = context.ExecutionHandler.GetType ().Name;
+			return name == "DebugExecutionHandlerFactory" || name == "DefaultExecutionHandler";
 		}
 
 		protected override void DoExecute(IProgressMonitor monitor, ExecutionContext context, ConfigurationSelector configuration)
