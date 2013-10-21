@@ -74,25 +74,27 @@ namespace MonoDevelop.D.Projects.Dub
 
 		public override IEnumerable<string> GetSourcePaths(ConfigurationSelector sel)
 		{
-			string d;
 			List<DubBuildSetting> l;
+			string d;
 			bool returnedOneItem = false;
-			foreach (var sett in GetBuildSettings(sel))
-				if (sett.TryGetValue(DubBuildSettings.SourcePathsProperty, out l))
-				{
-					for (int i = l.Count - 1; i >= 0; i--) // Ignore architecture/os/compiler restrictions for now
-						for (int j = l[i].Flags.Length - 1; j >= 0; j--)
-						{
-							d = l[i].Flags[j];
-							if (!Path.IsPathRooted(d))
-								d = BaseDirectory.Combine(d).ToString();
+			foreach (var sett in GetBuildSettings(sel)) {
+				if (sett.TryGetValue (DubBuildSettings.SourcePathsProperty, out l))
+					foreach (var setting in l) {
+						foreach(var directory in setting.Values){
+							d = directory;
+							if (!Path.IsPathRooted (d))
+								d = BaseDirectory.Combine (d).ToString ();
 
-							if (!Directory.Exists(d))
+							// Ignore os/arch/version constraints for now
+
+							if (!Directory.Exists (d))
 								continue;
 
+							yield return d;
 							returnedOneItem = true;
 						}
-				}
+					}
+			}
 
 			if (returnedOneItem)
 				yield break;
