@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using MonoDevelop.Projects;
 
 namespace MonoDevelop.D.Projects.Dub
 {
@@ -37,6 +38,25 @@ namespace MonoDevelop.D.Projects.Dub
 			"targettype","targetname","targetpath",
 			"sourcefiles",SourcePathsProperty,"excludedsourcefiles","versions",ImportPathsProperty,"stringimportpaths"
 		};
+
+		public void TryGetTargetFileProperties(DubProject prj, ConfigurationSelector configuration,ref string targetType, ref string targetName, ref string targetPath)
+		{
+			List<DubBuildSetting> l;
+			if (TryGetValue (DubBuildSettings.TargetNameProperty, out l))
+				foreach (var sett in l)
+					if (prj.BuildSettingMatchesConfiguration (sett, configuration))
+						targetName = sett.Values [0];
+
+			if (TryGetValue (DubBuildSettings.TargetPathProperty, out l))
+				foreach (var sett in l)
+					if (prj.BuildSettingMatchesConfiguration (sett, configuration))
+						targetPath = sett.Values [0];
+
+			if (TryGetValue (DubBuildSettings.TargetTypeProperty, out l))
+				foreach (var sett in l)
+					if (prj.BuildSettingMatchesConfiguration (sett, configuration))
+						targetType = sett.Values [0];
+		}
 
 		public bool TryDeserializeBuildSetting(JsonReader j)
 		{

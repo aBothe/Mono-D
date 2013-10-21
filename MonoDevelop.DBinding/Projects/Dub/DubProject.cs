@@ -184,6 +184,43 @@ namespace MonoDevelop.D.Projects.Dub
 		#endregion
 
 		#region Building
+		public bool BuildSettingMatchesConfiguration(DubBuildSetting sett, ConfigurationSelector config)
+		{
+			return true;
+		}
+
+		public override FilePath GetOutputFileName (ConfigurationSelector configuration)
+		{
+			var cfg = GetConfiguration (configuration) as DubProjectConfiguration;
+
+			string targetPath = null, targetName = null, targetType = null;
+			GlobalBuildSettings.TryGetTargetFileProperties (this, configuration, ref targetType, ref targetName, ref targetPath);
+			cfg.BuildSettings.TryGetTargetFileProperties (this, configuration, ref targetType, ref targetName, ref targetPath);
+
+			if (string.IsNullOrWhiteSpace (targetPath))
+				targetPath = BaseDirectory.ToString ();
+			else if (!Path.IsPathRooted (targetPath))
+				targetPath = BaseDirectory.Combine (targetPath).ToString ();
+
+			if (string.IsNullOrWhiteSpace (targetName))
+				targetName = Name;
+
+			if(string.IsNullOrWhiteSpace(targetType) ||
+				(targetType = targetType.ToLowerInvariant()) == "executable" ||
+				targetType == "autodetect")
+			{
+				if(OS.IsWindows)
+					targetName += ".exe";
+			}
+			else
+			{
+				//TODO
+			}
+
+
+			return Path.Combine(targetPath, targetName);
+		}
+
 		protected override void PopulateOutputFileList (List<FilePath> list, ConfigurationSelector configuration)
 		{
 			base.PopulateOutputFileList (list, configuration);
