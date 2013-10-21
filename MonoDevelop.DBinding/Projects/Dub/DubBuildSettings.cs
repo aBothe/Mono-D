@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,8 +8,11 @@ namespace MonoDevelop.D.Projects.Dub
 {
 	public class DubBuildSettings : Dictionary<string, List<DubBuildSetting>>
 	{
-		public const string SourcePathsProperty = "sourcePaths";
-		public const string ImportPathsProperty = "importPaths";
+		public const string TargetTypeProperty = "targettype";
+		public const string TargetNameProperty = "targetname";
+		public const string TargetPathProperty = "targetpath";
+		public const string SourcePathsProperty = "sourcepaths";
+		public const string ImportPathsProperty = "importpaths";
 
 		//public Dictionary<string, string> subConfigurations;
 
@@ -31,50 +34,64 @@ namespace MonoDevelop.D.Projects.Dub
 		};
 
 		static HashSet<string> WantedProps = new HashSet<string> {
-			"sourceFiles",SourcePathsProperty,"excludedSourceFiles","versions",ImportPathsProperty,"stringImportPaths"
+			"targettype","targetname","targetpath",
+			"sourcefiles",SourcePathsProperty,"excludedsourcefiles","versions",ImportPathsProperty,"stringimportpaths"
 		};
 
 		public bool TryDeserializeBuildSetting(JsonReader j)
 		{
 			if (!(j.Value is string))
 				return false;
-			var propName = (j.Value as string).Split(new[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
-			if (propName.Length < 1)
+			var settingIdentifier = (j.Value as string).Split(new[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
+			if (settingIdentifier.Length < 1)
 				return false;
 
+			settingIdentifier[0] = settingIdentifier [0].ToLowerInvariant ();
 			// For now, only extract information that affect code completion
-			if (!WantedProps.Contains(propName[0]))
+			if (!WantedProps.Contains(settingIdentifier[0]))
 			{
 				j.Skip();
 				return false;
 			}
 
 			j.Read();
-			var flags = (new JsonSerializer()).Deserialize<string[]>(j);
+			string[] flags;
+
+			if (j.TokenType == JsonToken.String)
+				flags = new[]{ j.ReadAsString () };
+			else if (j.TokenType == JsonToken.StartArray)
+				flags = (new JsonSerializer ()).Deserialize<string[]> (j);
+			else {
+				j.Skip ();
+				//TODO: Probably throw or notify the user someway else
+				flags = null;
+				return true;
+			}
+
 			DubBuildSetting sett;
 
-			if (propName.Length == 4)
+			if (settingIdentifier.Length == 4)
 			{
 				sett = new DubBuildSetting
 				{
-					Name = propName[0],
-					OperatingSystem = propName[1],
-					Architecture = propName[2],
-					Compiler = propName[3],
-					Flags = flags
+					Name = settingIdentifier[0],
+					OperatingSystem = settingIdentifier[1],
+					Architecture = settingIdentifier[2],
+					Compiler = settingIdentifier[3],
+					Values = flags
 				};
 			}
-			else if (propName.Length == 1)
-				sett = new DubBuildSetting { Name = propName[0], Flags = flags };
+			else if (settingIdentifier.Length == 1)
+				sett = new DubBuildSetting { Name = settingIdentifier[0], Values = flags };
 			else
 			{
 				string Os = null;
 				string Arch = null;
 				string Compiler = null;
 
-				for (int i = 1; i < propName.Length; i++)
+				for (int i = 1; i < settingIdentifier.Length; i++)
 				{
-					var pn = propName[i].ToLowerInvariant();
+					var pn = settingIdentifier[i].ToLowerInvariant();
 					if (Os == null && OsVersions.Contains(pn))
 						Os = pn;
 					else if (Arch == null && Architectures.Contains(pn))
@@ -83,32 +100,14 @@ namespace MonoDevelop.D.Projects.Dub
 						Compiler = pn;
 				}
 
-				sett = new DubBuildSetting { Name = propName[0], OperatingSystem = Os, Architecture = Arch, Compiler = Compiler, Flags = flags };
+				sett = new DubBuildSetting { Name = settingIdentifier[0], OperatingSystem = Os, Architecture = Arch, Compiler = Compiler, Values = flags };
 			}
 
 			List<DubBuildSetting> setts;
-			if (!TryGetValue(propName[0], out setts))
-				Add(propName[0], setts = new List<DubBuildSetting>());
+			if (!TryGetValue(settingIdentifier[0], out setts))
+				Add(settingIdentifier[0], setts = new List<DubBuildSetting>());
 
 			setts.Add(sett);
-
-			//{
-			//	case "sourceFiles":
-
-			//		break;
-			//	case "sourcePaths":
-			//		break;
-			//	case "excludedSourceFiles":
-			//		break;
-			//	case "versions":
-			//		break;
-			//	case "importPaths":
-			//		break;
-			//	case "stringImportPaths":
-			//		break;
-			//	default:
-			//		return false;
-			//}
 
 			return true;
 		}
@@ -120,11 +119,9 @@ namespace MonoDevelop.D.Projects.Dub
 		public string OperatingSystem;
 		public string Architecture;
 		public string Compiler;
-		public string[] Flags;
+		public string[] Values;
 	}
-
-
-
+	
 	public class DubProjectDependency
 	{
 		public string Name;
