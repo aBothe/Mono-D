@@ -34,42 +34,6 @@ namespace MonoDevelop.D.Projects.Dub
 		public string Copyright;
 		public List<string> Authors { get { return authors; } }
 
-		/*
-
-		public List<string> PhysicalDependencyPaths
-		{
-			get {
-				var l = new List<string>(dependencies.Count);
-
-				foreach (var dep in dependencies.Values)
-				{
-					string dir;
-					if (!string.IsNullOrWhiteSpace(dep.Path))
-						dir = Path.IsPathRooted(dep.Path) ? dep.Path : 
-							BaseDirectory.ToAbsolute(new FilePath(dep.Path)).ToString();
-					else
-					{
-						var depDir = BaseDirectory.Combine(".dub", "packages", dep.Name);
-
-						//ISSUE: Theoretically, one had to load the package.json from the dependencies base directory either in order to fully determine the correct source location!
-						// -> Just assume all the stuff to be either located in /source or /src!
-
-						dir = depDir.Combine("source");
-						if (!Directory.Exists(dir))
-						{
-							dir = depDir.Combine("src");
-							if (!Directory.Exists(dir))
-								continue;
-						}
-					}
-
-					l.Add(dir);
-				}
-
-				return l;
-			}
-		}
-		*/
 		public List<DubBuildSettings> GetBuildSettings(ConfigurationSelector sel)
 		{
 			var settingsToScan = new List<DubBuildSettings>(4);
@@ -92,8 +56,8 @@ namespace MonoDevelop.D.Projects.Dub
 				List<DubBuildSetting> l;
 				if(settings.TryGetValue(DubBuildSettings.ImportPathsProperty, out l))
 					for (int i = l.Count - 1; i >= 0; i--) // Ignore architecture/os/compiler restrictions for now
-						for (int j = l[i].Flags.Length - 1; j >= 0; j--)
-							yield return (l[i].Flags[j]);
+						for (int j = l[i].Values.Length - 1; j >= 0; j--)
+							yield return (l[i].Values[j]);
 			}
 		}
 
