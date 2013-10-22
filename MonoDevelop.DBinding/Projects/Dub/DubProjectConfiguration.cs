@@ -10,7 +10,16 @@ namespace MonoDevelop.D.Projects.Dub
 	public class DubProjectConfiguration : ProjectConfiguration
 	{
 		public const string DefaultConfigId = "Default";
-		public readonly DubBuildSettings BuildSettings = new DubBuildSettings();
+		public DubBuildSettings BuildSettings = new DubBuildSettings();
+
+		public override void CopyFrom (ItemConfiguration conf)
+		{
+			var cfg = conf as DubProjectConfiguration;
+			if (cfg != null) {
+				BuildSettings = cfg.BuildSettings;
+			}
+			base.CopyFrom (conf);
+		}
 
 		public DubProjectConfiguration()
 		{
