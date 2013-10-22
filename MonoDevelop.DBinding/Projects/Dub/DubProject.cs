@@ -175,7 +175,13 @@ namespace MonoDevelop.D.Projects.Dub
 					while (j.Read() && j.TokenType != JsonToken.EndArray)
 						AddProjectAndSolutionConfiguration(DubProjectConfiguration.DeserializeFromPackageJson(j));
 					break;
+				case "subpackages":
+					if (!j.Read () || j.TokenType != JsonToken.StartArray)
+						throw new JsonReaderException ("Expected [ when parsing subpackages");
 
+					while (j.Read () && j.TokenType != JsonToken.EndArray)
+						DubSubPackage.ReadAndAdd (this, j);
+					break;
 				default:
 					return CommonBuildSettings.TryDeserializeBuildSetting(j);
 			}

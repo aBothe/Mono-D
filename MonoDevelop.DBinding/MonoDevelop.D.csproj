@@ -253,6 +253,7 @@
     <Compile Include="Unittest\Commands\UnittestCommands.cs" />
     <Compile Include="Unittest\UnittestCore.cs" />
     <Compile Include="Projects\Dub\DubSettings.cs" />
+    <Compile Include="Projects\Dub\DubSubPackage.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>

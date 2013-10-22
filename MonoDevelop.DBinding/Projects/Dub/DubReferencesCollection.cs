@@ -83,11 +83,26 @@ namespace MonoDevelop.D.Projects.Dub
 		public override IEnumerable<string> Includes {
 			get {
 				foreach (var kv in dependencies)
-					if(kv.Value.Path != null)
+					if(kv.Value.Path != null && !kv.Value.Name.Contains(":"))
 						yield return kv.Value.Path;
 
 				foreach (var inc in Owner.GetAdditionalDubIncludes())
 					yield return inc;
+			}
+		}
+
+		public override IEnumerable<string> ReferencedProjectIds {
+			get {
+				var allProjects = Ide.IdeApp.Workspace.GetAllProjects ();
+				foreach (var kv in dependencies){
+					var depPath = kv.Value.Name.Split(':');
+					if (depPath.Length > 1 && depPath [depPath.Length - 2] == Owner.Name) {
+						var depName = depPath [depPath.Length - 1];
+						foreach (var prj in allProjects)
+							if (prj.Name == depName)
+								yield return prj.ItemId;
+					}
+				}
 			}
 		}
 
