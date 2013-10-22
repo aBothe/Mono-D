@@ -23,7 +23,10 @@ namespace MonoDevelop.D.Projects.Dub
 	{
 		#region Properties
 		List<string> authors = new List<string>();
-		public readonly DubBuildSettings GlobalBuildSettings = new DubBuildSettings();
+		/// <summary>
+		/// Project-wide cross-config build settings.
+		/// </summary>
+		public readonly DubBuildSettings CommonBuildSettings = new DubBuildSettings();
 
 		public readonly DubReferencesCollection DubReferences;
 		public override DProjectReferenceCollection References {get {return DubReferences;}} 
@@ -37,7 +40,7 @@ namespace MonoDevelop.D.Projects.Dub
 		public List<DubBuildSettings> GetBuildSettings(ConfigurationSelector sel)
 		{
 			var settingsToScan = new List<DubBuildSettings>(4);
-			settingsToScan.Add(GlobalBuildSettings);
+			settingsToScan.Add(CommonBuildSettings);
 
 			DubProjectConfiguration pcfg;
 			if (sel == null || (pcfg = GetConfiguration(sel) as DubProjectConfiguration) == null)
@@ -164,7 +167,7 @@ namespace MonoDevelop.D.Projects.Dub
 					break;
 
 				default:
-					return GlobalBuildSettings.TryDeserializeBuildSetting(j);
+					return CommonBuildSettings.TryDeserializeBuildSetting(j);
 			}
 
 			return true;
@@ -196,7 +199,7 @@ namespace MonoDevelop.D.Projects.Dub
 			var cfg = GetConfiguration (configuration) as DubProjectConfiguration;
 
 			string targetPath = null, targetName = null, targetType = null;
-			GlobalBuildSettings.TryGetTargetFileProperties (this, configuration, ref targetType, ref targetName, ref targetPath);
+			CommonBuildSettings.TryGetTargetFileProperties (this, configuration, ref targetType, ref targetName, ref targetPath);
 			cfg.BuildSettings.TryGetTargetFileProperties (this, configuration, ref targetType, ref targetName, ref targetPath);
 
 			if (string.IsNullOrWhiteSpace (targetPath))
@@ -236,7 +239,7 @@ namespace MonoDevelop.D.Projects.Dub
 		protected override bool OnGetCanExecute(ExecutionContext context, ConfigurationSelector configuration)
 		{
 			string targetPath = null, targetName = null, targetType = null;
-			GlobalBuildSettings.TryGetTargetFileProperties (this, configuration, ref targetType, ref targetName, ref targetPath);
+			CommonBuildSettings.TryGetTargetFileProperties (this, configuration, ref targetType, ref targetName, ref targetPath);
 			(GetConfiguration(configuration) as DubProjectConfiguration).BuildSettings
 				.TryGetTargetFileProperties (this, configuration, ref targetType, ref targetName, ref targetPath);
 
