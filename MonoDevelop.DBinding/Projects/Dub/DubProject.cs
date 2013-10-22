@@ -137,7 +137,7 @@ namespace MonoDevelop.D.Projects.Dub
 
 		public bool TryPopulateProperty(string propName, JsonReader j)
 		{
-			switch (propName)
+			switch (propName.ToLowerInvariant())
 			{
 				case "name":
 					Name = j.ReadAsString();
@@ -168,9 +168,11 @@ namespace MonoDevelop.D.Projects.Dub
 				case "configurations":
 					if (!j.Read() || j.TokenType != JsonToken.StartArray)
 						throw new JsonReaderException("Expected [ when parsing Configurations");
-					if(ParentSolution != null)
+
+					if(ParentSolution != null && ParentSolution.Configurations.Count == 1 && ParentSolution.Configurations[0].Id == DubProjectConfiguration.DefaultConfigId)
 						ParentSolution.Configurations.Clear();
-					Configurations.Clear();
+					if(Configurations.Count == 1 && Configurations[0].Id == DubProjectConfiguration.DefaultConfigId)
+						Configurations.Clear();
 
 					while (j.Read() && j.TokenType != JsonToken.EndArray)
 						AddProjectAndSolutionConfiguration(DubProjectConfiguration.DeserializeFromPackageJson(j));
@@ -190,7 +192,7 @@ namespace MonoDevelop.D.Projects.Dub
 		}
 
 		internal void AddProjectAndSolutionConfiguration(DubProjectConfiguration cfg)
-		{
+		{//TODO: Is an other config with the same id already existing?
 			if (ParentSolution != null)
 			{
 				var slnCfg = new SolutionConfiguration(cfg.Name, cfg.Platform);
