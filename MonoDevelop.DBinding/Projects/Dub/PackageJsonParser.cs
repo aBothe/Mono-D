@@ -67,6 +67,8 @@ namespace MonoDevelop.D.Projects.Dub
 
 			defaultPackage.BeginLoad ();
 
+			defaultPackage.AddProjectAndSolutionConfiguration(new DubProjectConfiguration { Name = GettextCatalog.GetString("Default"), Id = DubProjectConfiguration.DefaultConfigId });
+
 			while (r.Read ()) {
 				if (r.TokenType == JsonToken.PropertyName) {
 					var propName = r.Value as string;
@@ -80,8 +82,6 @@ namespace MonoDevelop.D.Projects.Dub
 
 			foreach (var f in defaultPackage.GetItemFiles(true))
 				defaultPackage.Items.Add(new ProjectFile(f));
-
-			defaultPackage.AddProjectAndSolutionConfiguration(new DubProjectConfiguration { Name = "Default", Id = "Default" });
 
 			sln.LoadUserProperties ();
 			defaultPackage.EndLoad ();

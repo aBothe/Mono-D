@@ -9,6 +9,7 @@ namespace MonoDevelop.D.Projects.Dub
 {
 	public class DubProjectConfiguration : ProjectConfiguration
 	{
+		public const string DefaultConfigId = "Default";
 		public readonly DubBuildSettings BuildSettings = new DubBuildSettings();
 
 		public DubProjectConfiguration()
