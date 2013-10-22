@@ -40,14 +40,6 @@ namespace MonoDevelop.D.Projects
 		public const string ConfigJson = "projectconfig.json";
 		public ExtendedProjectConfig ExtendedConfiguration;
 
-		public override IEnumerable<SolutionItem> GetReferencedItems(ConfigurationSelector configuration)
-		{
-			SolutionItem p;
-			foreach (var dep in References.ReferencedProjectIds)
-				if ((p = ParentSolution.GetSolutionItem(dep)) != null)
-					yield return p;
-		}
-
 		public IEnumerable<Project> DependingProjects
 		{
 			get {

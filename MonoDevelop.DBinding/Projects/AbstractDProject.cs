@@ -49,6 +49,14 @@ namespace MonoDevelop.D.Projects
 			yield return BaseDirectory;
 		}
 
+		public override IEnumerable<SolutionItem> GetReferencedItems(ConfigurationSelector configuration)
+		{
+			SolutionItem p;
+			foreach (var dep in References.ReferencedProjectIds)
+				if ((p = ParentSolution.GetSolutionItem(dep)) != null)
+					yield return p;
+		}
+
 		public IEnumerable<string> IncludePaths
 		{
 			get
