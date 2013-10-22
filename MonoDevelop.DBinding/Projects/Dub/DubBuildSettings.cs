@@ -7,13 +7,27 @@ using MonoDevelop.Projects;
 
 namespace MonoDevelop.D.Projects.Dub
 {
-	public class DubBuildSettings : Dictionary<string, List<DubBuildSetting>>
+	public class DubBuildSettings : Dictionary<string, List<DubBuildSetting>>, ICloneable
 	{
 		public const string TargetTypeProperty = "targettype";
 		public const string TargetNameProperty = "targetname";
 		public const string TargetPathProperty = "targetpath";
 		public const string SourcePathsProperty = "sourcepaths";
 		public const string ImportPathsProperty = "importpaths";
+
+		public object Clone ()
+		{
+			var s = new DubBuildSettings ();
+
+			foreach (var kv in this) {
+				var newList = new List<DubBuildSetting> ();
+				foreach (var setting in kv.Value)
+					newList.Add (setting.Clone () as DubBuildSetting);
+				s [kv.Key] = newList;
+			}
+
+			return s;
+		}
 
 		//public Dictionary<string, string> subConfigurations;
 
@@ -133,13 +147,18 @@ namespace MonoDevelop.D.Projects.Dub
 		}
 	}
 
-	public class DubBuildSetting
+	public class DubBuildSetting : ICloneable
 	{
 		public string Name;
 		public string OperatingSystem;
 		public string Architecture;
 		public string Compiler;
 		public string[] Values;
+
+		public object Clone ()
+		{
+			return new DubBuildSetting{ Name = Name, OperatingSystem = OperatingSystem, Architecture = Architecture, Compiler = Compiler, Values = Values };
+		}
 	}
 	
 	public class DubProjectDependency
