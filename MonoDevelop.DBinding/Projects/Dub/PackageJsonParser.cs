@@ -65,6 +65,8 @@ namespace MonoDevelop.D.Projects.Dub
 			sln.RootFolder.AddItem (defaultPackage, false);
 			sln.StartupItem = defaultPackage;
 
+			defaultPackage.BeginLoad ();
+
 			while (r.Read ()) {
 				if (r.TokenType == JsonToken.PropertyName) {
 					var propName = r.Value as string;
@@ -82,7 +84,7 @@ namespace MonoDevelop.D.Projects.Dub
 			defaultPackage.AddProjectAndSolutionConfiguration(new DubProjectConfiguration { Name = "Default", Id = "Default" });
 
 			sln.LoadUserProperties ();
-
+			defaultPackage.EndLoad ();
 			return sln;
 		}
 

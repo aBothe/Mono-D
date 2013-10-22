@@ -125,6 +125,16 @@ namespace MonoDevelop.D.Projects.Dub
 		#endregion
 
 		#region Serialize & Deserialize
+		internal void BeginLoad()
+		{
+			OnBeginLoad ();
+		}
+
+		internal void EndLoad()
+		{
+			OnEndLoad ();
+		}
+
 		public bool TryPopulateProperty(string propName, JsonReader j)
 		{
 			switch (propName)
@@ -185,6 +195,12 @@ namespace MonoDevelop.D.Projects.Dub
 
 			if (Configurations.Count == 1)
 				DefaultConfigurationId = cfg.Id;
+		}
+
+		protected override void OnEndLoad ()
+		{
+			DubReferences.FireUpdate ();
+			base.OnEndLoad ();
 		}
 		#endregion
 
