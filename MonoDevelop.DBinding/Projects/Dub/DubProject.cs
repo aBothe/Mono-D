@@ -303,5 +303,10 @@ namespace MonoDevelop.D.Projects.Dub
 			base.DoClean (monitor, configuration);
 		}
 		#endregion
+
+		public override void Save (IProgressMonitor monitor)
+		{
+			monitor.ReportSuccess ("Skip saving dub project.");
+		}
 	}
 }
