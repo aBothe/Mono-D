@@ -6,17 +6,6 @@ namespace MonoDevelop.D
 {
 	public class DLanguageBinding: ILanguageBinding
 	{
-		public static DLanguageBinding Instance { get; private set; }
-
-		public DLanguageBinding()
-		{
-			Instance = this;
-
-			// Init compiler configurations if not done yet
-			if (!DCompilerService.IsInitialized)
-				DCompilerService.Load();
-		}
-
 		~DLanguageBinding()
 		{
 			DCompilerService.Instance.Save();
