@@ -1,4 +1,4 @@
-﻿﻿using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -92,7 +92,7 @@ namespace MonoDevelop.D.Projects.Dub
 			string[] flags;
 
 			if (j.TokenType == JsonToken.String)
-				flags = new[]{ j.ReadAsString () };
+				flags = new[]{ j.Value as string };
 			else if (j.TokenType == JsonToken.StartArray)
 				flags = (new JsonSerializer ()).Deserialize<string[]> (j);
 			else {
