@@ -154,7 +154,7 @@ namespace MonoDevelop.D.Projects.Dub
 				string err, outp = null;
 				try{
 					ProjectBuilder.ExecuteCommand (DubSettings.Instance.DubCommand, "list-installed", Owner.BaseDirectory.ToString (), null, out err, out outp);
-				}catch(FileNotFoundException) {}
+				}catch(Exception) {}
 				DubProjectDependency dep;
 				if(!string.IsNullOrEmpty(outp))
 					foreach (Match match in dubInstalledPackagesOutputRegex.Matches (outp))
