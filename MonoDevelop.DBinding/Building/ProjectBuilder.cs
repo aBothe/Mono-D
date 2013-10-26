@@ -682,6 +682,10 @@ namespace MonoDevelop.D.Building
 				monitor.Log.WriteLine ("{0} {1}", command, args);
 			}
 
+			// Workaround for not handling %PATH% env var expansion properly
+			if (!command.Contains(Path.DirectorySeparatorChar))
+				command = TryExpandPathEnvVariable(command, baseDirectory);
+
 			var operationMonitor = useMonitor ? new AggregatedOperationMonitor (monitor) : null;
 			var p = Runtime.ProcessService.StartProcess (command, args, baseDirectory, chainedOutput, chainedError, null);
 			if(useMonitor)
@@ -709,6 +713,39 @@ namespace MonoDevelop.D.Building
 			swError.Close ();
 
 			return exitCode;
+		}
+
+		public static string TryExpandPathEnvVariable(string command, string baseDirectory = null)
+		{
+			string origCommand;
+			string tmp;
+
+			if (OS.IsWindows)
+			{
+				// TODO: Perhaps take .cmd and other executable file extensions into it?
+				origCommand = command;
+				command = Path.ChangeExtension(command, ".exe");
+			}
+			else
+				origCommand = null;
+
+			if (baseDirectory != null && File.Exists(tmp = Path.Combine(baseDirectory, command)))
+				return tmp;
+			else
+			{ 
+				var PATH = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Machine);
+				string[] PATHS;
+				if (OS.IsWindows)
+					PATHS = PATH.Split(';');
+				else
+					PATHS = PATH.Split(':');
+
+				foreach (var path in PATHS)
+					if (File.Exists(tmp = Path.Combine(path, command)))
+						return tmp;
+			}
+
+			return origCommand ?? command;
 		}
 		#endregion
 	}
