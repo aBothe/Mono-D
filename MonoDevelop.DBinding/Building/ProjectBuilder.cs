@@ -732,17 +732,20 @@ namespace MonoDevelop.D.Building
 			if (baseDirectory != null && File.Exists(tmp = Path.Combine(baseDirectory, command)))
 				return tmp;
 			else
-			{ 
-				var PATH = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Machine);
-				string[] PATHS;
-				if (OS.IsWindows)
-					PATHS = PATH.Split(';');
-				else
-					PATHS = PATH.Split(':');
+			{
+				var PATH = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Machine) ??
+				           Environment.GetEnvironmentVariable("PATH");
+				if (PATH != null) {
+					string[] PATHS;
+					if (OS.IsWindows)
+						PATHS = PATH.Split (';');
+					else
+						PATHS = PATH.Split (':');
 
-				foreach (var path in PATHS)
-					if (File.Exists(tmp = Path.Combine(path, command)))
-						return tmp;
+					foreach (var path in PATHS)
+						if (File.Exists (tmp = Path.Combine (path, command)))
+							return tmp;
+				}
 			}
 
 			return origCommand ?? command;
