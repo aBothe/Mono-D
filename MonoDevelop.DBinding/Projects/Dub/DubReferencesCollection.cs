@@ -161,7 +161,7 @@ namespace MonoDevelop.D.Projects.Dub
 						if (match.Success && dependencies.TryGetValue(match.Groups["name"].Value, out dep) &&
 							(string.IsNullOrEmpty(dep.Version) || dep.Version == match.Groups["version"].Value) &&
 							string.IsNullOrEmpty(dep.Path))
-							dep.Path = match.Groups["path"].Value;
+							dep.Path = match.Groups["path"].Value.Trim();
 			}
 
 			FireUpdate ();
