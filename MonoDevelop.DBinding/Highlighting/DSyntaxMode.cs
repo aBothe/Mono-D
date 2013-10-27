@@ -4,12 +4,31 @@ using System.Xml;
 using Mono.TextEditor;
 using Mono.TextEditor.Highlighting;
 using System.IO;
+using MonoDevelop.Ide.Tasks;
+using System;
+using MonoDevelop.Ide.Gui;
+using MonoDevelop.Core;
+using System.Threading;
 
 namespace MonoDevelop.D.Highlighting
 {
-	public class DSyntaxMode : SyntaxMode
+	public class DSyntaxMode : SyntaxMode, IDisposable
 	{
 		static SyntaxMode baseMode;
+		Document guiDoc;
+		internal Document GuiDocument
+		{
+			get{ return guiDoc; }
+			set{
+				if (guiDoc != null)
+					guiDoc.DocumentParsed -= HandleDocumentParsed;
+				guiDoc = value;
+				if (value != null) {
+					HandleDocumentParsed (this, EventArgs.Empty);
+					guiDoc.DocumentParsed += HandleDocumentParsed;
+				}
+			}
+		}
 
 		public DSyntaxMode()
 		{
@@ -48,9 +67,16 @@ namespace MonoDevelop.D.Highlighting
 			// type declaration names
 			//matches.Add(workaroundMatchCtor("keyword.semantic.type", @"(?<=(class|struct|union|interface|template)[\s]+)[\w]+"));
 
-			
+			SemanticHighlightingEnabled = PropertyService.Get ("EnableSemanticHighlighting", true);
+			PropertyService.PropertyChanged += HandlePropertyChanged;
 
 			this.matches = matches.ToArray();
+		}
+
+		public virtual void Dispose ()
+		{
+			Document = null;
+			PropertyService.PropertyChanged -= HandlePropertyChanged;
 		}
 
 		static Match workaroundMatchCtor(string color, string regex)
@@ -65,6 +91,117 @@ namespace MonoDevelop.D.Highlighting
 			return m;
 		}
 
-		
+
+
+		#region Semantic highlighting
+		bool SemanticHighlightingEnabled;
+		CancellationTokenSource cancelTokenSource;
+
+		void HandlePropertyChanged (object sender, PropertyChangedEventArgs e)
+		{
+			if (e.Key == "EnableSemanticHighlighting")
+				SemanticHighlightingEnabled = PropertyService.Get ("EnableSemanticHighlighting", true);
+		}
+
+		void HandleDocumentParsed (object sender, EventArgs e)
+		{
+			if (cancelTokenSource != null)
+				cancelTokenSource.Cancel ();
+
+			if (guiDoc != null && !guiDoc.IsProjectContextInUpdate && 
+				SemanticHighlightingEnabled && guiDoc.ParsedDocument != null) {
+				cancelTokenSource = new CancellationTokenSource ();
+				System.Threading.Tasks.Task.Factory.StartNew (updateTypeHighlightings, cancelTokenSource.Token);
+			}
+		}
+
+		/// <summary>
+		/// The text locations to highlight. Key = Line. Value = Columns where type ids are located at (1-based)
+		/// </summary>
+		Dictionary<int, int[]> textLocationsToHighlight = new Dictionary<int, int[]>();
+
+		void updateTypeHighlightings()
+		{
+		/*
+			var visitor = new QuickTaskVisitor (newResolver, cancellationToken);
+			try {
+				newResolver.RootNode.AcceptVisitor (visitor);
+			} catch (Exception ex) {
+				LoggingService.LogError ("Error while analyzing the file for the semantic highlighting.", ex);
+				return;
+			}
+			if (!cancellationToken.IsCancellationRequested) {
+				Gtk.Application.Invoke (delegate {
+					if (cancellationToken.IsCancellationRequested)
+						return;
+					var editorData = guiDocument.Editor;
+					if (editorData == null)
+						return;
+//									compilation = newResolver.Compilation;
+					resolver = newResolver;
+					quickTasks = visitor.QuickTasks;
+					OnTasksUpdated (EventArgs.Empty);
+					foreach (var kv in lineSegments) {
+						try {
+							kv.Value.tree.RemoveListener ();
+						} catch (Exception) {
+						}
+					}
+					lineSegments.Clear ();
+					var textEditor = editorData.Parent;
+					if (textEditor != null) {
+						if (!parsedDocument.HasErrors) {
+							var margin = textEditor.TextViewMargin;
+							margin.PurgeLayoutCache ();
+							textEditor.QueueDraw ();
+						}
+					}
+				});
+			}
+			*/
+		}
+
+		public override ChunkParser CreateChunkParser (SpanParser spanParser, ColorScheme style, DocumentLine line)
+		{
+			return new DChunkParser (this,spanParser, style, line);
+		}
+
+		/// Inserts custom highlighting sections per-line into the text document view.
+		class DChunkParser : ChunkParser
+		{
+			DSyntaxMode dsyntaxmode;
+			int lineNumber;
+
+			public DChunkParser(DSyntaxMode sm,SpanParser spanParser, ColorScheme style, DocumentLine line)
+				: base(sm, spanParser, style, line)
+			{
+				dsyntaxmode = sm;
+				lineNumber = line.LineNumber;
+			}
+
+			/// <summary>
+			/// All needed for nice type id highlighting is to alter the chunk style at the right positions.
+			/// </summary>
+			/// <returns>The style.</returns>
+			/// <param name="chunk">A piece of the displayed text.</param>
+			protected override string GetStyle (Chunk chunk)
+			{
+				int[] offsets;
+				if (chunk.Style == "Plain Text") {
+					if (dsyntaxmode.textLocationsToHighlight.TryGetValue (lineNumber, out offsets)) {
+
+						var chunkColumn = chunk.Offset - line.Offset;
+
+						for (int i = offsets.Length - 1; i >= 0; i--)
+							if (offsets [i] == chunkColumn)
+								return "User Types";
+					}
+					return base.GetStyle (chunk) ?? "Plain Text";
+				}
+
+				return base.GetStyle (chunk);
+			}
+		}
+		#endregion
 	}
 }

@@ -36,6 +36,11 @@ namespace MonoDevelop.D.Highlighting
 			textEditorData.Caret.PositionChanged += HandleTextEditorDataCaretPositionChanged;
 			textEditorData.Document.TextReplaced += HandleTextEditorDataDocumentTextReplaced;
 			textEditorData.SelectionChanged += HandleTextEditorDataSelectionChanged;
+
+			// Enable proper semantic highlighting because the syntaxmode won't be given the editor doc by default.
+			var sm = textEditorData.Document.SyntaxMode as DSyntaxMode;
+			if (sm != null)
+				sm.GuiDocument = Document;
 		}
 
 		void HandleTextEditorDataSelectionChanged(object sender, EventArgs e)
