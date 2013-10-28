@@ -9,6 +9,8 @@ using System;
 using MonoDevelop.Ide.Gui;
 using MonoDevelop.Core;
 using System.Threading;
+using D_Parser.Refactoring;
+using D_Parser.Dom;
 
 namespace MonoDevelop.D.Highlighting
 {
@@ -72,10 +74,17 @@ namespace MonoDevelop.D.Highlighting
 
 			this.matches = matches.ToArray();
 		}
-
+		/*
+		protected override void OnDocumentSet (EventArgs e)
+		{
+			base.OnDocumentSet (e);
+			if(base.doc != null)
+				Document.LineChanged += HandleDocumentChanged;
+		}
+*/
 		public virtual void Dispose ()
 		{
-			Document = null;
+			GuiDocument = null;
 			PropertyService.PropertyChanged -= HandlePropertyChanged;
 		}
 
@@ -103,8 +112,15 @@ namespace MonoDevelop.D.Highlighting
 				SemanticHighlightingEnabled = PropertyService.Get ("EnableSemanticHighlighting", true);
 		}
 
+		void HandleDocumentChanged(object sender, LineEventArgs ea)
+		{/*
+			if (ea.LineNumber == -1)
+				textLocationsToHighlight.Remove (ea.Line.LineNumber + 1);
+			textLocationsToHighlight.Remove (ea.Line.LineNumber);*/
+		}
+
 		void HandleDocumentParsed (object sender, EventArgs e)
-		{
+		{/*
 			if (cancelTokenSource != null)
 				cancelTokenSource.Cancel ();
 
@@ -112,16 +128,20 @@ namespace MonoDevelop.D.Highlighting
 				SemanticHighlightingEnabled && guiDoc.ParsedDocument != null) {
 				cancelTokenSource = new CancellationTokenSource ();
 				System.Threading.Tasks.Task.Factory.StartNew (updateTypeHighlightings, cancelTokenSource.Token);
-			}
+			}*/
 		}
 
 		/// <summary>
 		/// The text locations to highlight. Key = Line. Value = Columns where type ids are located at (1-based)
 		/// </summary>
-		Dictionary<int, int[]> textLocationsToHighlight = new Dictionary<int, int[]>();
+		Dictionary<int, List<ISyntaxRegion>> textLocationsToHighlight = new Dictionary<int, List<ISyntaxRegion>>();
 
 		void updateTypeHighlightings()
 		{
+			textLocationsToHighlight = TypeReferenceFinder.Scan(
+				(guiDoc.ParsedDocument as Parser.ParsedDModule).DDom,
+				Completion.DCodeCompletionSupport.CreateContext(guiDoc)).Matches;
+
 		/*
 			var visitor = new QuickTaskVisitor (newResolver, cancellationToken);
 			try {
@@ -160,12 +180,12 @@ namespace MonoDevelop.D.Highlighting
 			}
 			*/
 		}
-
+		/*
 		public override ChunkParser CreateChunkParser (SpanParser spanParser, ColorScheme style, DocumentLine line)
 		{
 			return new DChunkParser (this,spanParser, style, line);
 		}
-
+		*/
 		/// Inserts custom highlighting sections per-line into the text document view.
 		class DChunkParser : ChunkParser
 		{
@@ -186,14 +206,15 @@ namespace MonoDevelop.D.Highlighting
 			/// <param name="chunk">A piece of the displayed text.</param>
 			protected override string GetStyle (Chunk chunk)
 			{
-				int[] offsets;
-				if (chunk.Style == "Plain Text") {
+				List<ISyntaxRegion> offsets;
+				if (chunk.Length != 0) {
 					if (dsyntaxmode.textLocationsToHighlight.TryGetValue (lineNumber, out offsets)) {
+						var chunkColumn = line.GetLogicalColumn(dsyntaxmode.guiDoc.Editor,chunk.Offset-line.Offset);
 
-						var chunkColumn = chunk.Offset - line.Offset;
-
-						for (int i = offsets.Length - 1; i >= 0; i--)
-							if (offsets [i] == chunkColumn)
+						INode n;
+						foreach(var sr in offsets)
+							if(sr.EndLocation.Column >= chunkColumn && ((n=sr as INode) == null ?
+								sr.Location.Column <= chunkColumn :	n.NameLocation.Column <= chunkColumn))
 								return "User Types";
 					}
 					return base.GetStyle (chunk) ?? "Plain Text";

@@ -20,7 +20,7 @@ using MonoDevelop.D.Resolver;
 
 namespace MonoDevelop.D.Completion
 {
-	public class DCodeCompletionSupport
+	public static class DCodeCompletionSupport
 	{
 		public static void BuildCompletionData(Document EditorDocument, 
 			DModule SyntaxTree, 
@@ -34,10 +34,8 @@ namespace MonoDevelop.D.Completion
 				triggerChar=='\0'?null:triggerChar.ToString());
 		}
 
-		public static ResolutionContext CreateCurrentContext()
+		public static ResolutionContext CreateContext(Document doc)
 		{
-			Document doc = null;
-			DispatchService.GuiSyncDispatch(() => doc = Ide.IdeApp.Workbench.ActiveDocument);
 			if (doc != null)
 			{
 				var ddoc = doc.ParsedDocument as ParsedDModule;
@@ -73,7 +71,14 @@ namespace MonoDevelop.D.Completion
 				}
 			}
 			return new ResolutionContext(DResolverWrapper.CreateCacheList(),
-					new ConditionalCompilationFlags(VersionIdEvaluation.GetOSAndCPUVersions(), 1, true), null);
+				new ConditionalCompilationFlags(VersionIdEvaluation.GetOSAndCPUVersions(), 1, true), null);
+		}
+
+		public static ResolutionContext CreateCurrentContext()
+		{
+			Document doc = null;
+			DispatchService.GuiSyncDispatch(() => doc = Ide.IdeApp.Workbench.ActiveDocument);
+			return CreateContext (doc);
 		}
 
 		#region Image helper
