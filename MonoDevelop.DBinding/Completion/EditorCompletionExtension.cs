@@ -34,15 +34,16 @@ namespace MonoDevelop.D
 		public override ICompletionDataList HandleCodeCompletion(CodeCompletionContext completionContext, char triggerChar, ref int triggerWordLength)
 		{
 			updater.FinishUpdate();
+			var isLetter = char.IsLetter (triggerChar) || triggerChar == '_';
 
-			if (!EnableAutoCodeCompletion && char.IsLetter(triggerChar))
+			if (char.IsDigit(triggerChar) || !EnableAutoCodeCompletion && isLetter)
 				return null;
 
-			if (char.IsLetterOrDigit(triggerChar) || triggerChar == '_')
+			if (isLetter)
 			{
 				if (completionContext.TriggerOffset > 1){
 					var prevChar = document.Editor.GetCharAt(completionContext.TriggerOffset - 2);
-					if(char.IsLetterOrDigit(prevChar) || prevChar == '"' || prevChar == '#') // Don't trigger if we're already typing an identifier or if we're typing a string suffix (kinda hacky though)
+					if(char.IsLetterOrDigit(prevChar) || prevChar =='_' || prevChar == '"' || prevChar == '#') // Don't trigger if we're already typing an identifier or if we're typing a string suffix (kinda hacky though)
 						return null;
 				}
 			}
@@ -53,7 +54,7 @@ namespace MonoDevelop.D
 				triggerChar == '\0'))
 				return null;
 			
-			triggerWordLength = (char.IsLetter(triggerChar) || triggerChar=='_' || triggerChar=='@') ? 1 : 0;
+			triggerWordLength = (isLetter || triggerChar=='@') ? 1 : 0;
 
 			// Require a parsed D source
 			
