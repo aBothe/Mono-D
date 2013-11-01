@@ -33,7 +33,6 @@ namespace MonoDevelop.D
 
 		public override ICompletionDataList HandleCodeCompletion(CodeCompletionContext completionContext, char triggerChar, ref int triggerWordLength)
 		{
-			updater.FinishUpdate();
 			var isLetter = char.IsLetter (triggerChar) || triggerChar == '_';
 
 			if (char.IsDigit(triggerChar) || !EnableAutoCodeCompletion && isLetter)
@@ -62,6 +61,8 @@ namespace MonoDevelop.D
 			if (dom == null || dom.DDom == null)
 				return null;
 
+			updater.FinishUpdate();
+			lastTriggerOffset = completionContext.TriggerOffset;
 			var l = new CompletionDataList();
 
 			if (D_Parser.Misc.CompletionOptions.Instance.EnableSuggestionMode)
@@ -179,8 +180,23 @@ namespace MonoDevelop.D
 		public override bool KeyPress(Gdk.Key key, char keyChar, Gdk.ModifierType modifier)
 		{
 			updater.BeginUpdate();
-			if (this.CompletionWidget != null && (keyChar == '(' || keyChar == ')' || keyChar == ';'))
-				ParameterInformationWindowManager.HideWindow(this, CompletionWidget);
+			if (this.CompletionWidget != null) {
+				if ((keyChar == '(' || keyChar == ')' || keyChar == ';'))
+					ParameterInformationWindowManager.HideWindow (this, CompletionWidget);
+				else if (lastTriggerOffset >= 0 && char.IsDigit (keyChar)) {
+
+					bool containsDigitsOnly = true;
+
+					for(int offset = lastTriggerOffset; offset < CompletionWidget.CaretOffset; offset++)
+						if (!char.IsDigit (CompletionWidget.GetChar(offset))) {
+							containsDigitsOnly = false;
+							break;
+						}
+
+					if(containsDigitsOnly)
+						CompletionWindowManager.HideWindow ();
+				}
+			}
 
 			var ret = base.KeyPress(key, keyChar, modifier);
 			updater.FinishUpdate();
