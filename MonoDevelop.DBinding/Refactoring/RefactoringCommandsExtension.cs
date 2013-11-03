@@ -58,7 +58,18 @@ namespace MonoDevelop.D.Refactoring
 		[CommandHandler(RefactoryCommands.GotoDeclaration)]
 		void GotoDeclaration()
 		{
-			GotoDeclaration(firstResultNode);
+			if (Update ())
+				GotoDeclaration (lastResult);
+		}
+
+		internal static void GotoDeclaration(AbstractType lastResult)
+		{
+			var n = DResolver.GetResultMember (lastResult);
+			// Redirect to the actual definition on import bindings
+			if (n is ImportSymbolAlias)
+				n = DResolver.GetResultMember ((lastResult as DSymbol).Base);
+
+			GotoDeclaration (n);
 		}
 
 		public static void GotoDeclaration(INode n)

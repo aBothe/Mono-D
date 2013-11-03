@@ -76,7 +76,7 @@ namespace MonoDevelop.D.Refactoring
 
 		void GotoDeclaration()
 		{
-			RefactoringCommandsExtension.GotoDeclaration(n);
+			RefactoringCommandsExtension.GotoDeclaration(res);
 		}
 
 		public void FindReferences()
