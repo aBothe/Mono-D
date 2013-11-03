@@ -14,46 +14,45 @@ namespace MonoDevelop.D.Refactoring
 {
 	public class RefactoringCommandsExtension : TextEditorExtension
 	{
-		AbstractType[] lastResults;
+		AbstractType lastResult;
 		INode firstResultNode;
 		ResolutionContext lastContext;
+
+		bool Update()
+		{
+			var lastResults = DResolverWrapper.ResolveHoveredCode(out lastContext);
+
+			if (lastResults == null || lastResults.Length == 0)
+			{
+				firstResultNode = null;
+				return false;
+			}
+
+			foreach (var r in lastResults)
+				if ((firstResultNode = DResolver.GetResultMember (lastResult = r)) != null)
+					return true;
+
+			return false;
+		}
 
 		[CommandHandler(Refactoring.Commands.OpenDDocumentation)]
 		void OpenDDocumentation()
 		{
-			var url = Refactoring.DDocumentationLauncher.GetReferenceUrl();
+			if (!Update())
+				return;
+
+			var cl = IdeApp.Workbench.ActiveDocument.Editor.Caret.Location;
+			var url = Refactoring.DDocumentationLauncher.GetReferenceUrl(lastResult, lastContext, new CodeLocation(cl.Column, cl.Line));
 
 			if (url != null)
 				Refactoring.DDocumentationLauncher.LaunchRelativeDUrl(url);
 		}
 
-		[CommandUpdateHandler(EditCommands.Rename)]
-		[CommandUpdateHandler(RefactoryCommands.GotoDeclaration)]
-		[CommandUpdateHandler(RefactoryCommands.FindReferences)]
-		void FindReferences_Upd(CommandInfo ci)
-		{
-			lastResults = DResolverWrapper.ResolveHoveredCode(out lastContext);
-
-			if (lastResults == null || lastResults.Length == 0)
-			{
-				ci.Bypass = true;
-				return;
-			}
-
-			ci.Bypass = true;
-
-			foreach(var r in lastResults)
-				if ((firstResultNode = DResolver.GetResultMember(r)) != null)
-				{
-					ci.Bypass = false;
-					return;
-				}
-		}
-
 		[CommandHandler(RefactoryCommands.FindReferences)]
 		void FindReferences()
 		{
-			ReferenceFinding.StartReferenceSearchAsync(firstResultNode);
+			if(Update())
+				ReferenceFinding.StartReferenceSearchAsync(firstResultNode);
 		}
 
 		[CommandHandler(RefactoryCommands.GotoDeclaration)]
@@ -74,7 +73,8 @@ namespace MonoDevelop.D.Refactoring
 		[CommandHandler(EditCommands.Rename)]
 		void Rename()
 		{
-			new DRenameHandler().Start(firstResultNode);
+			if(Update ())
+				new DRenameHandler().Start(firstResultNode);
 		}
 
 		[CommandHandler(RefactoryCommands.ImportSymbol)]

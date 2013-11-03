@@ -6,6 +6,7 @@ using MonoDevelop.Components.Commands;
 using MonoDevelop.Ide;
 using MonoDevelop.Ide.Commands;
 using MonoDevelop.Refactoring;
+using MonoDevelop.Ide.Gui.Content;
 
 namespace MonoDevelop.D.Refactoring
 {
@@ -18,6 +19,7 @@ namespace MonoDevelop.D.Refactoring
 
 	public class ContextMenuRefactoringCommandHandler : CommandHandler
 	{
+		ResolutionContext ctxt;
 		AbstractType res;
 		INode n;
 
@@ -29,7 +31,6 @@ namespace MonoDevelop.D.Refactoring
 
 		protected override void Update(CommandArrayInfo info)
 		{
-			ResolutionContext ctxt;
 			var rr = Resolver.DResolverWrapper.ResolveHoveredCode(out ctxt);
 
 			bool noRes = true;
@@ -46,23 +47,23 @@ namespace MonoDevelop.D.Refactoring
 					info.Add(IdeApp.CommandService.GetCommandInfo(RefactoryCommands.GotoDeclaration), new Action(GotoDeclaration));
 					info.Add(IdeApp.CommandService.GetCommandInfo(RefactoryCommands.FindReferences), new Action(FindReferences));
 
+					info.AddSeparator();
+
 					if (DRenameRefactoring.CanRenameNode(n))
-					{
-						info.AddSeparator();
 						info.Add(IdeApp.CommandService.GetCommandInfo(EditCommands.Rename), new Action(RenameSymbol));
-					}
 				}
 			}
 
 			if(noRes)
 				info.Add(IdeApp.CommandService.GetCommandInfo(RefactoryCommands.ImportSymbol), new Action(ImportSymbol));
 
-			info.Add(IdeApp.CommandService.GetCommandInfo(Commands.OpenDDocumentation), new Action(OpenDDoc));
+			info.Add(IdeApp.CommandService.GetCommandInfo (Commands.OpenDDocumentation), new Action(OpenDDoc));
 		}
 
 		void OpenDDoc()
 		{
-			var url=DDocumentationLauncher.GetReferenceUrl();
+			var cl = IdeApp.Workbench.ActiveDocument.Editor.Caret.Location;
+			var url=DDocumentationLauncher.GetReferenceUrl(res, ctxt, new CodeLocation(cl.Column, cl.Line));
 
 			if (url != null)
 				Refactoring.DDocumentationLauncher.LaunchRelativeDUrl(url);
