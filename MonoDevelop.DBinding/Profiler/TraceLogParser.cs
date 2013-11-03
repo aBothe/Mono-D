@@ -101,7 +101,7 @@ namespace MonoDevelop.D.Profiler
 				
 			INode node = SearchFunctionNode(method, typeDeclaration, new DModule{ModuleName="___dummy___"});
 			if(node != null)*/
-			RefactoringCommandsExtension.GotoDeclaration(functionSymbol);
+			RefactoringCommandCapsule.GotoDeclaration(functionSymbol);
 		}
 		
 		public static DNode ExamTraceSymbol(string symName, ResolutionContext ctxt, out bool mightBeLegalUnresolvableSymbol)

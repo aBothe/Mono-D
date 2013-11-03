@@ -204,12 +204,10 @@
     <Compile Include="Projects\ProjectJsonConfig.cs" />
     <Compile Include="Refactoring\CodeActions\DCodeActionSource.cs" />
     <Compile Include="Refactoring\CodeActions\ImportSymbol.cs" />
-    <Compile Include="Refactoring\Commands.cs" />
     <Compile Include="Refactoring\DDocumentationLauncher.cs" />
     <Compile Include="Gui\EditorPathbarProvider.cs" />
     <Compile Include="Refactoring\RefactoringCommandsExtension.cs" />
     <Compile Include="Refactoring\ReferenceFinding.cs" />
-    <Compile Include="Refactoring\SymbolImportRefactoring.cs" />
     <Compile Include="Resolver\DResolverWrapper.cs" />
     <Compile Include="Building\DCompilerService.cs" />
     <Compile Include="Building\CompilerPresets\PresetLoader.cs" />
@@ -254,6 +252,8 @@
     <Compile Include="Unittest\UnittestCore.cs" />
     <Compile Include="Projects\Dub\DubSettings.cs" />
     <Compile Include="Projects\Dub\DubSubPackage.cs" />
+    <Compile Include="Refactoring\ContextMenuRefactoringCommandHandler.cs" />
+    <Compile Include="Refactoring\RefactoringCommandCapsule.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>

@@ -14,6 +14,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using MonoDevelop.Ide.TypeSystem;
+using D_Parser.Completion;
 
 namespace MonoDevelop.D.Refactoring.CodeActions
 {
@@ -46,7 +47,8 @@ namespace MonoDevelop.D.Refactoring.CodeActions
         {
             //i had to copy-paste some code from other files
             ResolutionContext ctxt;
-            var rr = Resolver.DResolverWrapper.ResolveHoveredCode(out ctxt);
+			D_Parser.Completion.IEditorData ed;
+			var rr = Resolver.DResolverWrapper.ResolveHoveredCode(out ctxt, out ed);
             if (rr != null && rr.Length > 0)
             {
                 var res = rr[rr.Length - 1];

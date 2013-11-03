@@ -97,10 +97,10 @@ namespace MonoDevelop.D.Resolver
 
 
 		public static AbstractType[] ResolveHoveredCode(
-			out ResolutionContext ResolverContext, 
+			out ResolutionContext ResolverContext, out IEditorData edData, 
 			MonoDevelop.Ide.Gui.Document doc=null)
 		{
-			var edData = CreateEditorData(doc);
+			edData = CreateEditorData(doc);
 
 			ResolverContext = ResolutionContext.Create(edData);
 			

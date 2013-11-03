@@ -50,9 +50,10 @@ namespace MonoDevelop.D.Refactoring
 			var caret = Ide.IdeApp.Workbench.ActiveDocument.Editor.Caret.Location;
 
 			ResolutionContext ctxt = null;
-			var rr = DResolverWrapper.ResolveHoveredCode (out ctxt, Ide.IdeApp.Workbench.ActiveDocument);
+			D_Parser.Completion.IEditorData ed;
+			var rr = DResolverWrapper.ResolveHoveredCode (out ctxt, out ed, Ide.IdeApp.Workbench.ActiveDocument);
 
-			return GetReferenceUrl (rr != null ? rr [0] : null, ctxt, new CodeLocation (caret.Column, caret.Line));
+			return GetReferenceUrl (rr != null ? rr [0] : null, ctxt, ed.CaretLocation);
 		}
 
 		public static string GetReferenceUrl (AbstractType result, ResolutionContext ctxt, CodeLocation caret)

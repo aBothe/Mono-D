@@ -1,12 +1,26 @@
 using System;
 using Gtk;
 using D_Parser.Dom;
+using MonoDevelop.Ide;
 
 namespace MonoDevelop.D
 {
 	public partial class ImportSymbolSelectionDlg : Dialog
 	{
-		public ImportSymbolSelectionDlg (INode[] nodes)
+		public static T Show<T>(T[] items, string title, Func<object, string> nameGetter = null) where T : class
+		{
+			var dlg = new ImportSymbolSelectionDlg(items, nameGetter);
+			dlg.Title = title;
+
+			if(MessageService.RunCustomDialog(dlg, Ide.IdeApp.Workbench.RootWindow) != (int)ResponseType.Ok)
+				return default(T);
+
+			var n = dlg.SelectedNode;
+			dlg.Destroy();
+			return (T)n;
+		}
+
+		ImportSymbolSelectionDlg (object[] nodes, Func<object, string> nameGetter = null)
 		{
 			this.Build ();
 
@@ -31,7 +45,7 @@ namespace MonoDevelop.D
 			// Fill list
 			foreach (var n in nodes)
 				if(n!=null)
-					nodeStore.AppendValues(n.ToString(), n);
+					nodeStore.AppendValues(nameGetter != null ? nameGetter(n) : n.ToString(), n);
 
 			// Select first result
 			TreeIter iter;
@@ -39,14 +53,14 @@ namespace MonoDevelop.D
 				list.Selection.SelectIter(iter);
 		}
 
-		public INode SelectedNode
+		public object SelectedNode
 		{
 			get{
 				TreeIter iter;
 				if(!list.Selection.GetSelected(out iter))
 					return null;
 
-				return (INode)list.Model.GetValue(iter, 1);
+				return list.Model.GetValue(iter, 1);
 			}
 		}
 	

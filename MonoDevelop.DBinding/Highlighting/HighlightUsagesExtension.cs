@@ -16,6 +16,7 @@ using ICSharpCode.NRefactory.Editor;
 using MonoDevelop.D.Projects;
 
 // Code taken and modified from MonoDevelop.CSharp.Highlighting.HighlightUsagesExtension.cs
+using D_Parser.Completion;
 
 namespace MonoDevelop.D.Highlighting
 {
@@ -225,7 +226,8 @@ namespace MonoDevelop.D.Highlighting
 					return false;
 
 				ResolutionContext ctxt;
-				var rr = DResolverWrapper.ResolveHoveredCode(out ctxt, Document);
+				IEditorData ed;
+				var rr = DResolverWrapper.ResolveHoveredCode(out ctxt, out ed, Document);
 
 				if (rr == null || rr.Length < 1)
 					return false;
