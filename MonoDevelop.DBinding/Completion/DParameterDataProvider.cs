@@ -103,19 +103,25 @@ namespace MonoDevelop.D.Completion
 		
 		public static string GetNodeParamString (D_Parser.Dom.INode node)
 		{	
-			string result = "";
-			string sep = "";
-			if (node is DMethod) {
-				
-				foreach (D_Parser.Dom.INode param in (node as DMethod).Parameters) {
+			var result = new StringBuilder ();
+			var dm = node as DMethod;
+			if (dm != null) {
+				result.Append('(');
+				foreach (var param in dm.Parameters) {
 					if (param.Type != null)
-						result = result + sep + param.Type.ToString ();	
-					sep = ", ";
+						result.Append (param.Type);
+					else
+						result.Append (param.Name);
+					result.Append (", ");
 				}
-				if (result.Length != 0)
-					result = "(" + result + ")"; 
+				if (result.Length > 1) {
+					result.Remove (result.Length - 3, 2);
+					result.Append (')');
+				}
+				else
+					return string.Empty; 
 			}
-			return result;
+			return result.ToString();
 		}
 
 		public override TooltipInformation CreateTooltipInformation(int overload, int currentParameter, bool smartWrap)
