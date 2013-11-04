@@ -25,9 +25,10 @@ namespace MonoDevelop.D.Completion
 		
 		public IEnumerable<ISyntaxRegion> GetParameters()
 		{
-			if (CurrentResult is DSymbol)
+			var cur = CurrentResult;
+			if (cur is DSymbol)
 			{
-				var tir = (DSymbol)CurrentResult;
+				var tir = cur as DSymbol;
 
 				if (tir.Definition is DClassLike && ((DClassLike)tir.Definition).TemplateParameters!=null)
 					return ((DClassLike)tir.Definition).TemplateParameters;
@@ -39,10 +40,14 @@ namespace MonoDevelop.D.Completion
 						return dm.TemplateParameters;
 					return dm.Parameters;
 				}
+
+				if (tir.Definition is DVariable)
+					cur = DResolver.StripAliasSymbol(tir.Base);
 			}
-			else if (CurrentResult is DelegateType)
+
+			if (cur is DelegateType)
 			{
-				var dr = (DelegateType)CurrentResult;
+				var dr = (DelegateType)cur;
 
 				if (dr.IsFunctionLiteral)
 					return ((FunctionLiteral)dr.DeclarationOrExpressionBase).AnonymousMethod.Parameters;

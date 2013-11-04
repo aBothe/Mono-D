@@ -21,7 +21,7 @@ namespace MonoDevelop.D.Completion
 				{
 					var bt = DResolver.StripAliasSymbol(ms.Base);
 					if (bt is DelegateType)
-						return TooltipInfoGenerator.Generate(bt as DelegateType, currentParameter);
+						return TooltipInfoGenerator.Generate(bt as DelegateType, isInTemplateArgInsight, currentParameter);
 				}
 				else if (ms.Definition is DMethod)
 					return TooltipInfoGenerator.Generate(ms.Definition as DMethod, isInTemplateArgInsight, currentParameter);
@@ -32,49 +32,43 @@ namespace MonoDevelop.D.Completion
 			return new TooltipInformation();
 		}
 
-		public static TooltipInformation Generate(DelegateType dt, int currentParam = -1)
-		{
-			var dd = dt.TypeDeclarationOf as DelegateDeclaration;
-			if (dd != null)
-				return Generate(dd, currentParam);
-
-			return new TooltipInformation();
-		}
-
-		public static TooltipInformation Generate(DelegateDeclaration dd, int currentParam = -1)
+		public static TooltipInformation Generate(DelegateType dd, bool templateParamInsight, int currentParam = -1)
 		{
 			var sb = new StringBuilder("<i>(Delegate)</i> ");
 
 			if (dd.ReturnType != null)
-				sb.Append(dd.ReturnType.ToString(true)).Append(' ');
+				sb.Append(dd.ReturnType.ToString()).Append(' ');
 
 			if (dd.IsFunction)
 				sb.Append("function");
 			else
 				sb.Append("delegate");
 
-			sb.Append('(');
-			if (dd.Parameters != null && dd.Parameters.Count != 0)
-			{
-				for (int i = 0; i < dd.Parameters.Count; i++)
-				{
-					var p = dd.Parameters[i] as DNode;
-					if (i == currentParam)
-					{
-						sb.Append("<u>");
-						sb.Append(p.ToString(false));
-						sb.Append("</u>,");
-					}
-					else
-						sb.Append(p.ToString(false)).Append(',');
-				}
-
-				sb.Remove(sb.Length - 1, 1);
-			}
-			sb.Append(')');
-
 			var tti = new TooltipInformation();
-			tti.SignatureMarkup = sb.ToString();
+
+			var fn = dd.DeclarationOrExpressionBase as D_Parser.Dom.Expressions.FunctionLiteral;
+			if (fn != null)
+				RenderParamtersAndFooters (tti, fn.AnonymousMethod, sb, templateParamInsight, currentParam);
+			else {
+				sb.Append ('(');
+				var parms = dd.Parameters;
+				if (parms != null && parms.Length != 0) {
+					for (int i = 0; i < parms.Length; i++) {
+						if (i == currentParam)
+							sb.Append ("<u>");
+
+						sb.Append (parms [i] is DSymbol ? (parms [i] as DSymbol).Definition.ToString (true, false) : parms [i].ToCode ());
+
+						if (i == currentParam)
+							sb.Append ("</u>");
+						sb.Append (',');
+					}
+
+					sb.Remove (sb.Length - 1, 1);
+				}
+				sb.Append (')');
+				tti.SignatureMarkup = sb.ToString();
+			}
 
 			return tti;
 		}
@@ -82,27 +76,29 @@ namespace MonoDevelop.D.Completion
 		public static TooltipInformation Generate(DMethod dm, bool isTemplateParamInsight=false, int currentParam=-1)
 		{
 			var tti = new TooltipInformation();
-			var sb = new StringBuilder("<i>(");
+			var sb = new StringBuilder();
 
+			sb.Append ("<i>(");
 			string name;
-			switch (dm.SpecialType)
-			{
+			switch (dm.SpecialType) {
 				case DMethod.MethodType.Constructor:
-					sb.Append("Constructor");
+					sb.Append ("Constructor");
 					name = dm.Parent.Name;
 					break;
 				case DMethod.MethodType.Destructor:
-					sb.Append("Destructor"); name = dm.Parent.Name;
+					sb.Append ("Destructor");
+					name = dm.Parent.Name;
 					break;
 				case DMethod.MethodType.Allocator:
-					sb.Append("Allocator"); name = dm.Parent.Name;
+					sb.Append ("Allocator");
+					name = dm.Parent.Name;
 					break;
 				default:
-					sb.Append("Method");
+					sb.Append ("Method");
 					name = dm.Name;
 					break;
 			}
-			sb.Append(")</i> ");
+			sb.Append (")</i> ");
 
 			if (dm.Type != null)
 			{
@@ -130,6 +126,13 @@ namespace MonoDevelop.D.Completion
 				s = dm.AttributeString + ' ';
 			*/
 
+			RenderParamtersAndFooters (tti, dm, sb, isTemplateParamInsight, currentParam);
+
+			return tti;
+		}
+
+		static void RenderParamtersAndFooters(TooltipInformation tti,DMethod dm, StringBuilder sb, bool isTemplateParamInsight, int currentParam = -1)
+		{
 			// Template parameters
 			if (dm.TemplateParameters != null && dm.TemplateParameters.Length > 0)
 			{
@@ -181,7 +184,6 @@ namespace MonoDevelop.D.Completion
 
 			tti.SummaryMarkup = dm.Description;
 			tti.FooterMarkup = dm.ToString();
-			return tti;
 		}
 
 		public static TooltipInformation Generate(TemplateIntermediateType tit, int currentParam = -1)
