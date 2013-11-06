@@ -229,20 +229,20 @@ namespace MonoDevelop.D.Completion
 	{
 		public CompletionDataList CompletionDataList;
 
-		Dictionary<string, DCompletionData> overloadCheckDict = new Dictionary<string, DCompletionData>();
+		Dictionary<int, DCompletionData> overloadCheckDict = new Dictionary<int, DCompletionData>();
 		public void Add(INode Node)
 		{
-			if (Node == null || Node.Name == null)
+			if (Node == null || Node.NameHash == 0)
 				return;
 
 			DCompletionData dc;
-			if (overloadCheckDict.TryGetValue(Node.Name, out dc))
+			if (overloadCheckDict.TryGetValue(Node.NameHash, out dc))
 			{
 				dc.AddOverload(Node);
 			}
 			else
 			{
-				CompletionDataList.Add(overloadCheckDict[Node.Name]=new DCompletionData(Node));
+				CompletionDataList.Add(overloadCheckDict[Node.NameHash]=new DCompletionData(Node));
 			}
 		}
 
@@ -520,7 +520,7 @@ namespace MonoDevelop.D.Completion
 					}
 
 					TemplateParameter tpar;
-					if (realParent.TryGetTemplateParameter(n.Name, out tpar))
+					if (realParent.TryGetTemplateParameter(n.NameHash, out tpar))
 						return DCodeCompletionSupport.GetNodeImage("parameter");
 				}
 			}
