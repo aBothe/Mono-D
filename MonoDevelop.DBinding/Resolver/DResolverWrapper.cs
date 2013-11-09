@@ -26,6 +26,8 @@ namespace MonoDevelop.D.Resolver
 				return new EditorData();
 
 			var dpd = EditorDocument.ParsedDocument as ParsedDModule;
+			if (dpd == null)
+				return null;
 			var ctx = new CodeCompletionContext();
 
 			ctx.TriggerLine = EditorDocument.Editor.Caret.Line;

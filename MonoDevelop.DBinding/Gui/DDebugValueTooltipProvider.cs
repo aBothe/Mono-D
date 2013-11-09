@@ -61,7 +61,7 @@ namespace MonoDevelop.D.Gui
 		{
 			if (offset >= editor.Document.TextLength)
 				return null;
-			
+
 			if (!DebuggingService.IsDebugging || DebuggingService.IsRunning)
 				return null;
 			
@@ -84,6 +84,8 @@ namespace MonoDevelop.D.Gui
 					return null;
 
 				var editorData = DResolverWrapper.CreateEditorData(doc);
+				if (editorData == null)
+					return null;
 				editorData.CaretOffset = offset;
 				var edLoc = ed.OffsetToLocation(offset);
 				editorData.CaretLocation = new D_Parser.Dom.CodeLocation(edLoc.Column,edLoc.Line);
