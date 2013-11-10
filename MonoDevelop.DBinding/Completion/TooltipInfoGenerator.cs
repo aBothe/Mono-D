@@ -26,8 +26,8 @@ namespace MonoDevelop.D.Completion
 				else if (ms.Definition is DMethod)
 					return TooltipInfoGenerator.Generate(ms.Definition as DMethod, isInTemplateArgInsight, currentParameter);
 			}
-			else if (t is TemplateIntermediateType)
-				return Generate(t as TemplateIntermediateType, currentParameter);
+			else if (t is TemplateIntermediateType || t is EponymousTemplateType)
+				return Generate(t as DSymbol, currentParameter);
 
 			return new TooltipInformation();
 		}
@@ -186,7 +186,7 @@ namespace MonoDevelop.D.Completion
 			tti.FooterMarkup = dm.ToString();
 		}
 
-		public static TooltipInformation Generate(TemplateIntermediateType tit, int currentParam = -1)
+		public static TooltipInformation Generate(DSymbol tit, int currentParam = -1)
 		{
 			var sb = new StringBuilder("(");
 
@@ -194,7 +194,7 @@ namespace MonoDevelop.D.Completion
 				sb.Append("Class");
 			else if (tit is InterfaceType)
 				sb.Append("Interface");
-			else if (tit is TemplateType)
+			else if (tit is TemplateType || tit is EponymousTemplateType)
 				sb.Append("Template");
 			else if (tit is StructType)
 				sb.Append("Struct");

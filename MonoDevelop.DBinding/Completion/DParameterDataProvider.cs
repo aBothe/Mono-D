@@ -41,6 +41,9 @@ namespace MonoDevelop.D.Completion
 					return dm.Parameters;
 				}
 
+				if (tir is EponymousTemplateType)
+					return (tir as EponymousTemplateType).Definition.TemplateParameters;
+
 				if (tir.Definition is DVariable)
 					cur = DResolver.StripAliasSymbol(tir.Base);
 			}
