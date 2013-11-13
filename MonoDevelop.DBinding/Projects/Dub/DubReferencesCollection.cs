@@ -154,6 +154,9 @@ namespace MonoDevelop.D.Projects.Dub
 				string err, outp = null;
 				try{
 					ProjectBuilder.ExecuteCommand (DubSettings.Instance.DubCommand, "list", Owner.BaseDirectory.ToString (), null, out err, out outp);
+					// Backward compatiblity
+					if(!string.IsNullOrEmpty(outp) && outp.StartsWith("Error:"))
+						ProjectBuilder.ExecuteCommand (DubSettings.Instance.DubCommand, "list-installed", Owner.BaseDirectory.ToString (), null, out err, out outp);
 				}catch(Exception ex) {
 					MonoDevelop.Core.LoggingService.LogError ("Error while resolving dub dependencies via executing 'dub list-installed'", ex);
 				}
