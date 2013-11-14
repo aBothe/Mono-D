@@ -25,7 +25,7 @@ namespace MonoDevelop.D.Building
 			get { return Project.Compiler; }
 		}
 
-		public DCompileTarget BuildTargetType { get { return BuildConfig.CompileTarget; } }
+		public DCompileTarget BuildTargetType { get { return BuildConfig.UnittestMode ? DCompileTarget.Executable : BuildConfig.CompileTarget; } }
 
 		LinkTargetConfiguration LinkTargetCfg { get { return Compiler.GetOrCreateTargetConfiguration (BuildTargetType); } }
 

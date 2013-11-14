@@ -153,9 +153,13 @@ namespace MonoDevelop.D.Projects
 						
 					switch (CompileTarget) {
 					case DCompileTarget.SharedLibrary:
+							if (UnittestMode)
+								goto default;
 						ext = DCompilerService.SharedLibraryExtension;
 						break;
 					case DCompileTarget.StaticLibrary:
+							if (UnittestMode)
+								goto default;
 						ext = DCompilerService.StaticLibraryExtension;
 						break;
 					default:

@@ -176,6 +176,7 @@ namespace MonoDevelop.D.Projects
 			
 			cfg.ExtraLibraries.AddRange (libs);
 			cfg.DebugMode = true;
+			cfg.CompileTarget = compTarget;
 
 			Configurations.Add (cfg);
 
@@ -184,6 +185,7 @@ namespace MonoDevelop.D.Projects
 			
 			cfg.ExtraLibraries.AddRange (libs);
 			cfg.DebugMode = false;
+			cfg.CompileTarget = compTarget;
 
 			Configurations.Add (cfg);
 
@@ -193,6 +195,7 @@ namespace MonoDevelop.D.Projects
 			unittestConfig.ExtraLibraries.AddRange (libs);
 			unittestConfig.DebugMode = true;
 			unittestConfig.UnittestMode = true;
+			unittestConfig.CompileTarget = DCompileTarget.Executable;
 
 			Configurations.Add (unittestConfig);
             
@@ -200,7 +203,7 @@ namespace MonoDevelop.D.Projects
 			foreach (DProjectConfiguration c in Configurations) {
 
 				c.ExternalConsole = true;
-				c.CompileTarget = compTarget;
+
 				c.OutputDirectory = Path.Combine (this.GetRelativeChildPath (binPath), c.Id);
 				c.ObjectDirectory += Path.DirectorySeparatorChar + c.Id;
 				c.Output = outputPrefix + Name;
@@ -363,6 +366,10 @@ namespace MonoDevelop.D.Projects
 			var cfg = GetConfiguration (configuration) as DProjectConfiguration;
 			if (cfg == null)
 				return false;
+
+			if (cfg.UnittestMode)
+				return true;
+
 			var cmd = CreateExecutionCommand (cfg);
 
 			return cfg.CompileTarget == DCompileTarget.Executable && context.ExecutionHandler.CanExecute (cmd);
@@ -389,7 +396,7 @@ namespace MonoDevelop.D.Projects
 			if (conf == null)
 				return;
 
-			if (conf.CompileTarget != DCompileTarget.Executable || executeCustomCommand) {
+			if (!conf.UnittestMode && (conf.CompileTarget != DCompileTarget.Executable || executeCustomCommand)) {
 				MessageService.ShowMessage ("Compile target is not an executable!");
 				return;
 			}
