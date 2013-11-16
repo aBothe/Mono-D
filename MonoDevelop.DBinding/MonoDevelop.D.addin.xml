@@ -105,7 +105,7 @@
 					_label = "D Files"
 								extensions = "*.d,*.di"/>
 		<FileFilter id ="dubPrj" insertafter="D" _label ="Dub projects" extensions ="package.json"/>
-
+		<FileFilter id ="visualdprj" insertafter="D" _label ="VisualD projects" extensions ="*.visualdproj"/>
 		<FileFilter id="RC"
 								insertbefore="AllFiles"
 								_label="Resource Scripts"
@@ -176,6 +176,7 @@
 
 	<Extension path = "/MonoDevelop/ProjectModel/FileFormats">
 		<FileFormat id ="DubPackageDefinition" class = "MonoDevelop.D.Projects.Dub.PackageJsonParser" />
+		<FileFormat id ="VisualDProject" class = "MonoDevelop.D.Projects.VisualD.VisualDProjFormat" />
 	</Extension>
 
 

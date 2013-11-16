@@ -254,6 +254,9 @@
     <Compile Include="Projects\Dub\DubSubPackage.cs" />
     <Compile Include="Refactoring\ContextMenuRefactoringCommandHandler.cs" />
     <Compile Include="Refactoring\RefactoringCommandCapsule.cs" />
+    <Compile Include="Projects\VisualD\VisualDProjFormat.cs" />
+    <Compile Include="Projects\VisualD\VisualDProject.cs" />
+    <Compile Include="Projects\VisualD\VisualDPrjConfig.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
@@ -382,5 +385,6 @@
     <Folder Include="Misc\" />
     <Folder Include="Unittest\" />
     <Folder Include="Unittest\Commands\" />
+    <Folder Include="Projects\VisualD\" />
   </ItemGroup>
 </Project>
