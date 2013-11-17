@@ -28,10 +28,21 @@ using MonoDevelop.D.Projects;
 
 namespace MonoDevelop.D
 {
-	public class VisualDProject : DProject
+	public class VisualDProject : AbstractDProject
 	{
 		public VisualDProject ()
 		{
+			
+		}
+
+		protected override void InitializeItemHandler()
+		{
+			base.InitializeItemHandler();
+		}
+
+		public override DProjectReferenceCollection References
+		{
+			get { throw new NotImplementedException(); }
 		}
 	}
 }

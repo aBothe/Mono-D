@@ -94,12 +94,39 @@ namespace MonoDevelop.D.Projects.VisualD
 
 		public static VisualDProject Read(FilePath file, XmlReader x)
 		{
+			var sln = new Solution();
+			
 			var prj = new VisualDProject ();
 			prj.FileName = file;
-
-
+			
+			while (x.Read())
+			{
+				switch (x.LocalName)
+				{
+					case "ProjectGuid":
+						//prj.ItemId = x.ReadString();
+						break;
+					case "Config":
+						ReadConfig(prj, x);
+						break;
+					case "Folder":
+						
+						break;
+				}
+			}
 
 			return prj;
+		}
+
+
+		public static void ReadConfig(VisualDProject prj, XmlReader x)
+		{
+
+		}
+
+		public void ConvertToFormat(object obj)
+		{
+			
 		}
 	}
 }
