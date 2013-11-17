@@ -253,7 +253,7 @@ namespace MonoDevelop.D.Completion
 
 		public void AddPropertyAttribute(string AttributeText)
 		{
-			CompletionDataList.Add(new CompletionData("@"+AttributeText,new IconId("md-keyword"), DTokens.GetDescription("@"+AttributeText)));
+			CompletionDataList.Add(new CompletionData("@"+AttributeText,new IconId("md-keyword"), DTokens.GetDescription("@"+AttributeText)) { CompletionText = AttributeText });
 		}
 
 		public void AddTextItem(string Text, string Description)

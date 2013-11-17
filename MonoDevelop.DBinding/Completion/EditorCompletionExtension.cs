@@ -53,7 +53,7 @@ namespace MonoDevelop.D
 				triggerChar == '\0'))
 				return null;
 			
-			triggerWordLength = (isLetter || triggerChar=='@') ? 1 : 0;
+			triggerWordLength = isLetter ? 1 : 0;
 
 			// Require a parsed D source
 			
