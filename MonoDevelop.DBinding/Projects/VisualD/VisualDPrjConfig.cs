@@ -24,13 +24,38 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 using System;
+using System.Xml;
+using MonoDevelop.Projects;
+using System.Collections.Generic;
 
-namespace MonoDevelop.D
+namespace MonoDevelop.D.Projects.VisualD
 {
-	public class VisualDPrjConfig
+	public class VisualDPrjConfig : ProjectConfiguration
 	{
-		public VisualDPrjConfig ()
+		#region Properties
+		Dictionary<string,string> Properties = new Dictionary<string,string>();
+		#endregion
+
+		public VisualDPrjConfig (string name) : base(name)
 		{
+		}
+
+		public static VisualDPrjConfig ReadAndAdd(VisualDProject prj, string name, string platform, XmlReader x)
+		{
+			var c = prj.AddNewConfiguration (name ?? "Unknown") as VisualDPrjConfig;
+			c.Platform = platform;
+
+			while (x.Read ()) {
+				var n = x.LocalName;
+				if (string.IsNullOrWhiteSpace (n) || n == "Config")
+					continue;
+				var content = x.ReadElementContentAsString();
+
+				if (!string.IsNullOrWhiteSpace (content))
+					c.Properties [n] = content;
+			}
+				
+			return c;
 		}
 	}
 }

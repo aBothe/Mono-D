@@ -1,5 +1,5 @@
 //
-// VisualDProject.cs
+// VisualDProjectReferenceCollection.cs
 //
 // Author:
 //       Alexander Bothe <info@alexanderbothe.com>
@@ -24,39 +24,38 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 using System;
-using MonoDevelop.D.Projects;
-using MonoDevelop.Projects;
 
 namespace MonoDevelop.D.Projects.VisualD
 {
-	public class VisualDProject : AbstractDProject
+	public class VisualDProjectReferenceCollection : DProjectReferenceCollection
 	{
-		#region Properties
-		DProjectReferenceCollection references;
-		internal string ItemIdToAssign
+		public new VisualDProject Owner {get{ return base.Owner as VisualDProject; }}
+
+		public VisualDProjectReferenceCollection (VisualDProject prj) : base(prj)
 		{
-			set{
-				var h = ItemHandler as MonoDevelop.Projects.Formats.MSBuild.MSBuildProjectHandler;
-				if (h != null)
-					h.ItemId = value;
-			}
 		}
+
+		#region implemented abstract members of DProjectReferenceCollection
+
+		public override void DeleteProjectRef (string projectId)
+		{
+
+		}
+
+		public override void FireUpdate ()
+		{
+			if (Update != null)
+				Update (this, EventArgs.Empty);
+		}
+
+		public override bool AddReference ()
+		{
+			return false;
+		}
+
+		public override event EventHandler Update;
+
 		#endregion
-
-		public VisualDProject ()
-		{
-			references = new VisualDProjectReferenceCollection (this);
-		}
-
-		public override SolutionItemConfiguration CreateConfiguration (string name)
-		{
-			return new VisualDPrjConfig (name);
-		}
-
-		public override DProjectReferenceCollection References
-		{
-			get { return references; }
-		}
 	}
 }
 

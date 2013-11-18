@@ -35,12 +35,24 @@ namespace MonoDevelop.D.Projects.VisualD
 {
 	public class VisualDProjFormat : IFileFormat
 	{
+		#region Properties
 		public const string visualDExt = ".visualdproj";
 
 		public bool CanReadFile(FilePath file, Type expectedObjectType)
 		{
 			return file.Extension.Equals (visualDExt, StringComparison.InvariantCultureIgnoreCase);
 		}
+
+		public bool SupportsFramework(Core.Assemblies.TargetFramework framework)
+		{
+			return false;
+		}
+
+		public bool SupportsMixedFormats
+		{
+			get { return true; }
+		}
+		#endregion
 
 		public VisualDProjFormat ()
 		{
@@ -53,7 +65,7 @@ namespace MonoDevelop.D.Projects.VisualD
 
 		public bool CanWriteFile (object obj)
 		{
-			return false;
+			return true;
 		}
 
 		public IEnumerable<string> GetCompatibilityWarnings(object obj)
@@ -73,55 +85,50 @@ namespace MonoDevelop.D.Projects.VisualD
 
 		public object ReadFile (FilePath file, Type expectedType, IProgressMonitor monitor)
 		{
-			if (!expectedType.Equals (typeof(SolutionItem)))
-				return null;
+			VisualDProject prj = null;
 
 			using (var s = File.OpenText (file))
 			using (var r = new XmlTextReader (s))
-				return Read (file, r);
-		}
+				prj = Read (file, r);
 
-		public bool SupportsFramework(Core.Assemblies.TargetFramework framework)
-		{
-			return false;
-		}
+			if (typeof(Project).IsSubclassOf (expectedType))
+				return prj;
 
-		public bool SupportsMixedFormats
-		{
-			get { return true; }
-		}
-
-
-		public static VisualDProject Read(FilePath file, XmlReader x)
-		{
-			var sln = new Solution();
-			
-			var prj = new VisualDProject ();
-			prj.FileName = file;
-			
-			while (x.Read())
-			{
-				switch (x.LocalName)
-				{
-					case "ProjectGuid":
-						//prj.ItemId = x.ReadString();
-						break;
-					case "Config":
-						ReadConfig(prj, x);
-						break;
-					case "Folder":
-						
-						break;
-				}
+			if (typeof(Solution).IsSubclassOf (expectedType)) {
+				var sln = new Solution ();
+				sln.Name = prj.Name;
+				sln.RootFolder.AddItem (prj);
+				return sln;
 			}
 
 			return prj;
 		}
 
-
-		public static void ReadConfig(VisualDProject prj, XmlReader x)
+		public static VisualDProject Read(FilePath file, XmlReader x)
 		{
+			var prj = new VisualDProject ();
+			prj.FileName = file;
 
+			while (x.Read())
+			{
+				if(x.NodeType == XmlNodeType.Element)
+				switch (x.LocalName)
+				{
+					case "ProjectGuid":
+						prj.ItemIdToAssign = x.ReadString();
+						break;
+					case "Config":
+						VisualDPrjConfig.ReadAndAdd(prj, x.GetAttribute ("name"), x.GetAttribute ("platform"), x.ReadSubtree());
+						break;
+					case "File":
+						var filePath = x.GetAttribute ("path");
+						if (!string.IsNullOrWhiteSpace (filePath))
+							prj.AddFile (prj.BaseDirectory.Combine(Building.ProjectBuilder.EnsureCorrectPathSeparators(filePath)).ToString(), BuildAction.Compile);
+						break;
+				}
+			}
+
+			return prj;
 		}
 
 		public void ConvertToFormat(object obj)

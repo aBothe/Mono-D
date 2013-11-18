@@ -257,6 +257,7 @@
     <Compile Include="Projects\VisualD\VisualDProjFormat.cs" />
     <Compile Include="Projects\VisualD\VisualDProject.cs" />
     <Compile Include="Projects\VisualD\VisualDPrjConfig.cs" />
+    <Compile Include="Projects\VisualD\VisualDProjectReferenceCollection.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
