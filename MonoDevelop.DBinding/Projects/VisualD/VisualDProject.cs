@@ -48,6 +48,11 @@ namespace MonoDevelop.D.Projects.VisualD
 			references = new VisualDProjectReferenceCollection (this);
 		}
 
+		protected override void OnSave(Core.IProgressMonitor monitor)
+		{
+			//base.OnSave(monitor);
+		}
+
 		public override SolutionItemConfiguration CreateConfiguration (string name)
 		{
 			return new VisualDPrjConfig (name);

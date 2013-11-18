@@ -30,6 +30,7 @@ using System.Collections.Generic;
 using MonoDevelop.Projects;
 using System.Xml;
 using System.IO;
+using System.Text;
 
 namespace MonoDevelop.D.Projects.VisualD
 {
@@ -65,7 +66,7 @@ namespace MonoDevelop.D.Projects.VisualD
 
 		public bool CanWriteFile (object obj)
 		{
-			return true;
+			return obj is VisualDProject;
 		}
 
 		public IEnumerable<string> GetCompatibilityWarnings(object obj)
@@ -80,7 +81,41 @@ namespace MonoDevelop.D.Projects.VisualD
 
 		public void WriteFile (FilePath file, object obj, IProgressMonitor monitor)
 		{
-			throw new NotImplementedException ();
+			try
+			{
+				using (var x = new XmlTextWriter(file, System.Text.Encoding.UTF8))
+					Write(obj as VisualDProject, x);
+			}
+			catch (Exception ex)
+			{
+				monitor.ReportError("Couldn't write project file", ex);
+			}
+		}
+
+		static void Write(VisualDProject prj, XmlWriter x)
+		{
+			x.WriteStartDocument();
+
+			x.WriteStartElement("DProject");
+
+			x.WriteElementString("ProjectGuid", prj.ItemId);
+
+			foreach (VisualDPrjConfig config in prj.Configurations)
+			{
+				x.WriteStartElement("Config");
+				x.WriteAttributeString("name", config.Name);
+				x.WriteAttributeString("platform", config.Platform);
+
+				foreach (var kv in config.Properties)
+					x.WriteElementString(kv.Key, kv.Value);
+
+				x.WriteEndElement();
+			}
+
+			//TODO: Files
+
+			x.WriteEndDocument();
+			x.Close();
 		}
 
 		public object ReadFile (FilePath file, Type expectedType, IProgressMonitor monitor)
