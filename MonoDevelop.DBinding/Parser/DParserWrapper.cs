@@ -255,10 +255,17 @@ namespace MonoDevelop.D.Parser
 			foreach (var raw in rawPaths) {
 				var path = raw.Replace("$solution", solutionPath);
 
-				if (Path.IsPathRooted (path))
-					l.Add (path);
-				else
-					l.Add (Path.Combine(fallbackPath, path));
+				if (string.IsNullOrWhiteSpace(path))
+					continue;
+
+				try
+				{
+					if (fallbackPath != null && !Path.IsPathRooted(path))
+						path = Path.Combine(fallbackPath, path);
+				}
+				catch (System.ArgumentException) { }
+
+				l.Add(path);
 			}
 
 			return l;
