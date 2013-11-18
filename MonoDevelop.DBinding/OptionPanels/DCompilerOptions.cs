@@ -203,8 +203,12 @@ namespace MonoDevelop.D.OptionPanels
 			
 			#region Store new include paths
 			configuration.IncludePaths.Clear();
-			foreach(var p in Misc.StringHelper.SplitLines(text_Includes.Buffer.Text))
-				configuration.IncludePaths.Add(p.TrimEnd('\\', '/'));
+			foreach (var p in Misc.StringHelper.SplitLines(text_Includes.Buffer.Text))
+			{
+				var p_ = p.Trim().TrimEnd('\\', '/');
+				if (!string.IsNullOrWhiteSpace(p_))
+					configuration.IncludePaths.Add(p_);
+			}
 
 			try {
 				// Update parse cache immediately

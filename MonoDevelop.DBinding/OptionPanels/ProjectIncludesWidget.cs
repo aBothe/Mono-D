@@ -34,7 +34,9 @@ namespace MonoDevelop.D
 			refs.Clear ();
 
 			foreach (var p in Misc.StringHelper.SplitLines(text_Includes.Buffer.Text)) {
-				var p_ = p.TrimEnd ('\\', '/');
+				var p_ = p.Trim().TrimEnd ('\\', '/');
+				if (string.IsNullOrWhiteSpace(p_))
+					continue;
 				refs.Add (p_);
 				newHash += p_.GetHashCode ();
 			}
