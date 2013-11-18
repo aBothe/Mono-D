@@ -104,28 +104,97 @@ namespace MonoDevelop.D.Projects.VisualD
 			return prj;
 		}
 
+		static string GetPath(Stack<string> folderStack, string filename = null)
+		{
+			var sb = new StringBuilder(256);
+			bool isAbs = false;
+
+			var backup = new Stack<string>(folderStack.Count);
+
+			while (folderStack.Count > 0)
+			{
+				var p = folderStack.Pop();
+				backup.Push(p);
+				if (!string.IsNullOrWhiteSpace(p))
+				{
+					if (!Path.IsPathRooted(p))
+						sb.Append(Path.DirectorySeparatorChar).Append(p);
+					else
+					{
+						isAbs = true;
+						sb.Clear().Append(p);
+					}
+				}
+			}
+
+			while (backup.Count > 0)
+				folderStack.Push(backup.Pop());
+
+			// Might be an absolute path on non-Windows systems!
+			if (!isAbs && sb.Length > 0 && sb[0] == Path.DirectorySeparatorChar)
+				sb.Remove(0, 1);
+
+			if (!string.IsNullOrWhiteSpace(filename))
+			{
+				if (filename.StartsWith(sb.ToString()))
+					sb.Clear();
+
+				if (!Path.IsPathRooted(filename))
+					sb.Append(Path.DirectorySeparatorChar).Append(filename);
+				else
+				{
+					isAbs = true;
+					sb.Clear().Append(filename);
+				}
+			}
+
+			// Might be an absolute path on non-Windows systems!
+			if (!isAbs && sb.Length > 0 && sb[0] == Path.DirectorySeparatorChar)
+				sb.Remove(0, 1);
+
+			return sb.ToString();
+		}
+
 		public static VisualDProject Read(FilePath file, XmlReader x)
 		{
 			var prj = new VisualDProject ();
 			prj.FileName = file;
+			var folderStack = new Stack<string>();
+			string path;
 
 			while (x.Read())
 			{
-				if(x.NodeType == XmlNodeType.Element)
-				switch (x.LocalName)
-				{
-					case "ProjectGuid":
-						prj.ItemIdToAssign = x.ReadString();
-						break;
-					case "Config":
-						VisualDPrjConfig.ReadAndAdd(prj, x.GetAttribute ("name"), x.GetAttribute ("platform"), x.ReadSubtree());
-						break;
-					case "File":
-						var filePath = x.GetAttribute ("path");
-						if (!string.IsNullOrWhiteSpace (filePath))
-							prj.AddFile (prj.BaseDirectory.Combine(Building.ProjectBuilder.EnsureCorrectPathSeparators(filePath)).ToString(), BuildAction.Compile);
-						break;
-				}
+				if (x.NodeType == XmlNodeType.Element)
+					switch (x.LocalName)
+					{
+						case "ProjectGuid":
+							prj.ItemIdToAssign = x.ReadString();
+							break;
+						case "Config":
+							VisualDPrjConfig.ReadAndAdd(prj, x.GetAttribute("name"), x.GetAttribute("platform"), x.ReadSubtree());
+							break;
+						case "Folder":
+							if (folderStack.Count == 0)
+							{
+								// Somehow, the very root Folder node gets merely ignored..somehow
+								folderStack.Push(string.Empty);
+								break;
+							}
+
+							folderStack.Push(Building.ProjectBuilder.EnsureCorrectPathSeparators(x.GetAttribute("name") ?? string.Empty));
+							path = GetPath(folderStack);
+							if(!string.IsNullOrWhiteSpace(path))
+								prj.AddDirectory(path);
+							break;
+						case "File":
+							var filePath = Building.ProjectBuilder.EnsureCorrectPathSeparators(x.GetAttribute("path"));
+							//TODO: Custom tools that are executed right before building..gosh!
+							if (!string.IsNullOrWhiteSpace(filePath) && !string.IsNullOrWhiteSpace(path = GetPath(folderStack, filePath)))
+								prj.AddFile(Path.IsPathRooted(path) ? path : prj.BaseDirectory.Combine(path).ToString(), BuildAction.Compile);
+							break;
+					}
+				if (x.NodeType == XmlNodeType.EndElement && x.LocalName == "Folder")
+					folderStack.Pop();
 			}
 
 			return prj;

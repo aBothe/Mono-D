@@ -33,7 +33,7 @@ namespace MonoDevelop.D.Projects.VisualD
 	public class VisualDPrjConfig : ProjectConfiguration
 	{
 		#region Properties
-		Dictionary<string,string> Properties = new Dictionary<string,string>();
+		public readonly Dictionary<string,string> Properties = new Dictionary<string,string>();
 		#endregion
 
 		public VisualDPrjConfig (string name) : base(name)
