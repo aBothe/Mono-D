@@ -28,10 +28,10 @@ namespace MonoDevelop.D.Completion
 			CompletionDataList l, 
 			char triggerChar)
 		{
+			var ed = DResolverWrapper.CreateEditorData(EditorDocument, SyntaxTree, ctx, triggerChar);
 			AbstractCompletionProvider.BuildCompletionData(
-				new CompletionDataGenerator { CompletionDataList = l },
-				DResolverWrapper.CreateEditorData(EditorDocument, SyntaxTree as DModule, ctx, triggerChar), 
-				triggerChar=='\0'?null:triggerChar.ToString());
+				new CompletionDataGenerator(l, DResolver.SearchBlockAt(SyntaxTree, ed.CaretLocation)),
+				ed, triggerChar=='\0'?null:triggerChar.ToString());
 		}
 
 		public static ResolutionContext CreateContext(Document doc)
@@ -227,7 +227,19 @@ namespace MonoDevelop.D.Completion
 
 	class CompletionDataGenerator : ICompletionDataGenerator
 	{
-		public CompletionDataList CompletionDataList;
+		public readonly CompletionDataList CompletionDataList;
+		INode scopedBlock;
+
+		public CompletionDataGenerator(CompletionDataList l, INode scopedBlock)
+		{
+			CompletionDataList = l;
+			this.scopedBlock = scopedBlock;
+		}
+
+		~CompletionDataGenerator()
+		{
+			DCompletionData.catCache.Clear();
+		}
 
 		Dictionary<int, DCompletionData> overloadCheckDict = new Dictionary<int, DCompletionData>();
 		public void Add(INode Node)
@@ -242,7 +254,7 @@ namespace MonoDevelop.D.Completion
 			}
 			else
 			{
-				CompletionDataList.Add(overloadCheckDict[Node.NameHash]=new DCompletionData(Node));
+				CompletionDataList.Add(overloadCheckDict[Node.NameHash]=new DCompletionData(Node, Node.Parent == scopedBlock));
 			}
 		}
 
@@ -260,7 +272,7 @@ namespace MonoDevelop.D.Completion
 		{
 			CompletionDataList.Add(Text, IconId.Null, Description);
 		}
-		
+
 		public void AddModule(DModule module, string nameOverride)
 		{
 			CompletionDataList.Add(new NamespaceCompletionData(module));
@@ -275,6 +287,34 @@ namespace MonoDevelop.D.Completion
 	public class TokenCompletionData : CompletionData
 	{
 		public byte Token { get; set; }
+
+		class TokenCompletionCategory : CompletionCategory
+		{
+			public static readonly TokenCompletionCategory Instance = new TokenCompletionCategory();
+
+			TokenCompletionCategory()
+			{
+				base.DisplayText = GettextCatalog.GetString("Keywords");
+				base.Icon = "md-keyword";
+			}
+
+			public override int CompareTo(CompletionCategory other)
+			{
+				return 1;
+			}
+		}
+
+		public override CompletionCategory CompletionCategory
+		{
+			get
+			{
+				return TokenCompletionCategory.Instance;
+			}
+			set
+			{
+				
+			}
+		}
 
 		public TokenCompletionData(byte Token)
 		{
@@ -307,6 +347,34 @@ namespace MonoDevelop.D.Completion
 	{
 		public string Path;
 		public string Name;
+
+		class PackagesCompletionCategory : CompletionCategory
+		{
+			public static readonly PackagesCompletionCategory Instance = new PackagesCompletionCategory();
+
+			PackagesCompletionCategory()
+			{
+				base.DisplayText = GettextCatalog.GetString("Packages");
+				base.Icon = MonoDevelop.Ide.Gui.Stock.Package.Name;
+			}
+
+			public override int CompareTo(CompletionCategory other)
+			{
+				return 0;
+			}
+		}
+
+		public override CompletionCategory CompletionCategory
+		{
+			get
+			{
+				return PackagesCompletionCategory.Instance;
+			}
+			set
+			{
+				
+			}
+		}
 
 		public PackageCompletionData()
 		{
@@ -363,6 +431,34 @@ namespace MonoDevelop.D.Completion
 		string modName;
 		public readonly DModule Module;
 
+		class PackageCompletionCategory : CompletionCategory
+		{
+			public static readonly PackageCompletionCategory Instance = new PackageCompletionCategory();
+
+			public PackageCompletionCategory()
+			{
+				base.DisplayText = GettextCatalog.GetString("Modules");
+				base.Icon = MonoDevelop.Ide.Gui.Stock.NameSpace.Name;
+			}
+
+			public override int CompareTo(CompletionCategory other)
+			{
+				return 0;
+			}
+		}
+
+		public override CompletionCategory CompletionCategory
+		{
+			get
+			{
+				return PackageCompletionCategory.Instance;
+			}
+			set
+			{
+				
+			}
+		}
+
 		public NamespaceCompletionData(DModule mod)
 		{
 			this.Module = mod;
@@ -414,12 +510,81 @@ namespace MonoDevelop.D.Completion
 
 	public class DCompletionData : CompletionData, IComparable<ICompletionData>
 	{
-		public DCompletionData(INode n)
+		internal class NodeCompletionCategory : CompletionCategory
 		{
-			Node = n;
+			DNode n;
+			bool isLocalContainer;
+
+			public NodeCompletionCategory(DNode n, bool isLocalContainer)
+			{
+				this.isLocalContainer = isLocalContainer;
+				this.n = n;
+				DisplayText = n.ToString(false, true);
+				Icon = DCompletionData.GetNodeIcon(n).Name;
+			}
+
+			public override int CompareTo(CompletionCategory other)
+			{
+				var ncc = other as NodeCompletionCategory;
+				
+
+				if (ncc != null)
+				{
+					if (isLocalContainer)
+						return -1;
+					if (ncc.isLocalContainer)
+						return 1;
+
+					if (n == ncc.n.Parent)
+						return 1;
+					if (n.Parent == ncc.n)
+						return -1;
+
+					return 0;
+				}
+				
+				return -1;
+			}
+		}
+
+		bool parentContainsLocals;
+		internal static Dictionary<INode, NodeCompletionCategory> catCache = new Dictionary<INode, NodeCompletionCategory>();
+
+		public DCompletionData(INode n, bool parentContainsLocals)
+		{
+			Node = n as DNode;
+			this.parentContainsLocals = parentContainsLocals;
 
 			Icon = GetNodeIcon(n as DNode);
 			this.DisplayFlags = ICSharpCode.NRefactory.Completion.DisplayFlags.DescriptionHasMarkup;
+		}
+
+		public override CompletionCategory CompletionCategory
+		{
+			get
+			{
+				NodeCompletionCategory cat;
+				var par = Node.Parent as DNode;
+
+				if(par == null)
+					return null;
+
+				if (par is DEnum && par.NameHash == 0)
+				{
+					par = par.Parent as DNode;
+					if (par == null)
+						return null;
+				}
+
+				if (!catCache.TryGetValue(par, out cat))
+					catCache[par] = cat = new NodeCompletionCategory(par,parentContainsLocals);
+
+				return cat;
+			}
+			set
+			{
+				
+			}
 		}
 
 		public static Core.IconId GetNodeIcon(DNode n)
@@ -610,7 +775,7 @@ namespace MonoDevelop.D.Completion
 			}
 		}
 
-		public INode Node { get; protected set; }
+		public readonly DNode Node;
 
 		public override string CompletionText
 		{
@@ -628,8 +793,7 @@ namespace MonoDevelop.D.Completion
 		{
 			var tti = new TooltipInformation();
 
-			var n = Node;
-			var dn = n as DNode;
+			var dn = Node;
 
 			var sb = new StringBuilder();
 			sb.Append("<i>(");
@@ -691,8 +855,8 @@ namespace MonoDevelop.D.Completion
 			tti.SignatureMarkup = sb.Append(AmbienceService.EscapeText(PureNodeString)).ToString();
 
 			
-			if(!string.IsNullOrWhiteSpace(n.Description))
-				tti.SummaryMarkup = AmbienceService.EscapeText(n.Description);
+			if(!string.IsNullOrWhiteSpace(dn.Description))
+				tti.SummaryMarkup = AmbienceService.EscapeText(dn.Description);
 
 			return tti;
 		}
@@ -717,7 +881,7 @@ namespace MonoDevelop.D.Completion
 
 		public void AddOverload(INode n)
 		{
-			AddOverload(new DCompletionData(n));
+			AddOverload(new DCompletionData(n, parentContainsLocals));
 		}
 
 		public override void AddOverload(ICompletionData n)
