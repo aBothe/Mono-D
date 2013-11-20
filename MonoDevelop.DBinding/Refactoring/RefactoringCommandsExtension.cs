@@ -37,6 +37,12 @@ namespace MonoDevelop.D.Refactoring
 				caps.GotoDeclaration ();
 		}
 
+		[CommandUpdateHandler(EditCommands.Rename)]
+		void Rename_Update(CommandInfo ci)
+		{
+			ci.Bypass = false;
+		}
+
 		[CommandHandler(EditCommands.Rename)]
 		void Rename()
 		{
@@ -47,7 +53,7 @@ namespace MonoDevelop.D.Refactoring
 		[CommandHandler(RefactoryCommands.ImportSymbol)]
 		void TryImportMissingSymbol()
 		{
-			if(Update())
+			if(!Update())
 				caps.TryImportMissingSymbol ();
 		}
 	}
