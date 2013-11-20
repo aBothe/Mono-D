@@ -13,6 +13,7 @@ using MonoDevelop.Ide.TypeSystem;
 using MonoDevelop.Components.Commands;
 using MonoDevelop.Ide;
 using MonoDevelop.Ide.Gui;
+using MonoDevelop.Core.Execution;
 
 namespace MonoDevelop.D.Projects.Dub
 {
@@ -260,8 +261,23 @@ namespace MonoDevelop.D.Projects.Dub
 			return DubBuilder.BuildProject(this, monitor, configuration);			
 		}
 
+		public override NativeExecutionCommand CreateExecutionCommand(ConfigurationSelector conf)
+		{
+			var sr = new StringBuilder();
+			DubBuilder.Instance.BuildProgramArgAppendix(sr, this, GetConfiguration(conf) as DubProjectConfiguration);
+
+			var cmd = base.CreateExecutionCommand(conf);
+
+			cmd.Arguments = sr.ToString();
+			cmd.WorkingDirectory = BaseDirectory;
+			return cmd;
+		}
+
 		protected override bool OnGetCanExecute(ExecutionContext context, ConfigurationSelector configuration)
 		{
+			if (!base.OnGetCanExecute(context, configuration))
+				return false;
+
 			string targetPath = null, targetName = null, targetType = null;
 			CommonBuildSettings.TryGetTargetFileProperties (this, configuration, ref targetType, ref targetName, ref targetPath);
 			(GetConfiguration(configuration) as DubProjectConfiguration).BuildSettings

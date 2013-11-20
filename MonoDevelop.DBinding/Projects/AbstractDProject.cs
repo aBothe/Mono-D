@@ -10,6 +10,7 @@ using System.Linq;
 using MonoDevelop.Core;
 using System.Reflection;
 using System.Collections.ObjectModel;
+using MonoDevelop.Core.Execution;
 
 namespace MonoDevelop.D.Projects
 {
@@ -261,6 +262,16 @@ namespace MonoDevelop.D.Projects
 				GlobalParseCache.RemoveRoot (path);
 
 			base.Dispose ();
+		}
+
+		protected override bool OnGetCanExecute(ExecutionContext context, ConfigurationSelector configuration)
+		{
+			return context.ExecutionHandler.CanExecute(CreateExecutionCommand(configuration));
+		}
+
+		public virtual NativeExecutionCommand CreateExecutionCommand(ConfigurationSelector conf)
+		{
+			return new NativeExecutionCommand(GetOutputFileName(conf));
 		}
 
 		/// <summary>

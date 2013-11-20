@@ -361,27 +361,26 @@ namespace MonoDevelop.D.Projects
 		#endregion
 
 		#region Execution
-		protected override bool OnGetCanExecute (ExecutionContext context, ConfigurationSelector configuration)
+		protected override bool OnGetCanExecute(ExecutionContext context, ConfigurationSelector configuration)
 		{
-			var cfg = GetConfiguration (configuration) as DProjectConfiguration;
-			if (cfg == null)
+			if (!base.OnGetCanExecute(context, configuration))
 				return false;
 
-			if (cfg.UnittestMode)
-				return true;
+			var cfg = GetConfiguration(configuration) as DProjectConfiguration;
 
-			var cmd = CreateExecutionCommand (cfg);
-
-			return cfg.CompileTarget == DCompileTarget.Executable && context.ExecutionHandler.CanExecute (cmd);
+			return cfg.UnittestMode || cfg.CompileTarget == DCompileTarget.Executable;
 		}
 
-		protected virtual NativeExecutionCommand CreateExecutionCommand (DProjectConfiguration conf)
+		public override NativeExecutionCommand CreateExecutionCommand(ConfigurationSelector sel)
 		{
-			var app = GetOutputFileName(conf.Selector);
-			var cmd = new NativeExecutionCommand (app);
-			cmd.Arguments = conf.CommandLineParameters;
-			cmd.WorkingDirectory = conf.OutputDirectory.ToAbsolute(BaseDirectory);
-			cmd.EnvironmentVariables = conf.EnvironmentVariables;
+			var cmd = base.CreateExecutionCommand(sel);
+			var conf = GetConfiguration(sel) as DProjectConfiguration;
+			if (conf != null)
+			{
+				cmd.Arguments = conf.CommandLineParameters;
+				cmd.WorkingDirectory = conf.OutputDirectory.ToAbsolute(BaseDirectory);
+				cmd.EnvironmentVariables = conf.EnvironmentVariables;
+			}
 			return cmd;
 		}
 
@@ -416,7 +415,7 @@ namespace MonoDevelop.D.Projects
 			var operationMonitor = new AggregatedOperationMonitor (monitor);
 
 			try {
-				var cmd = CreateExecutionCommand (conf);
+				var cmd = CreateExecutionCommand(configuration);
 				if (!context.ExecutionHandler.CanExecute (cmd)) {
 					monitor.ReportError ("Cannot execute \"" + conf.Output + "\". The selected execution mode is not supported for D projects.", null);
 					return;
