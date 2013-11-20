@@ -32,7 +32,7 @@ using System.IO;
 
 namespace MonoDevelop.D.Projects.Dub
 {
-	public class DubReferencesCollection : DProjectReferenceCollection 
+	public class DubReferencesCollection : DProjectReferenceCollection, IEnumerable<DubProjectDependency>
 	{
 		public new DubProject Owner {get{return base.Owner as DubProject;}}
 		public override event EventHandler Update;
@@ -155,21 +155,47 @@ namespace MonoDevelop.D.Projects.Dub
 				try{
 					ProjectBuilder.ExecuteCommand (DubSettings.Instance.DubCommand, "list", Owner.BaseDirectory.ToString (), null, out err, out outp);
 					// Backward compatiblity
-					if(!string.IsNullOrEmpty(outp) && outp.StartsWith("Error:"))
-						ProjectBuilder.ExecuteCommand (DubSettings.Instance.DubCommand, "list-installed", Owner.BaseDirectory.ToString (), null, out err, out outp);
+					if (!string.IsNullOrWhiteSpace(err) || !TryInterpretDubListOutput(outp))
+					{
+						ProjectBuilder.ExecuteCommand(DubSettings.Instance.DubCommand, "list-installed", Owner.BaseDirectory.ToString(), null, out err, out outp);
+						TryInterpretDubListOutput(outp);
+					}
 				}catch(Exception ex) {
 					MonoDevelop.Core.LoggingService.LogError ("Error while resolving dub dependencies via executing 'dub list-installed'", ex);
 				}
-				DubProjectDependency dep;
-				if(!string.IsNullOrEmpty(outp))
-					foreach (Match match in dubInstalledPackagesOutputRegex.Matches (outp))
-						if (match.Success && dependencies.TryGetValue(match.Groups["name"].Value, out dep) &&
-							(string.IsNullOrEmpty(dep.Version) || dep.Version == match.Groups["version"].Value) &&
-							string.IsNullOrEmpty(dep.Path))
-							dep.Path = match.Groups["path"].Value.Trim();
+				
 			}
 
 			FireUpdate ();
+		}
+
+		bool TryInterpretDubListOutput(string outp)
+		{
+			bool ret = false;
+			DubProjectDependency dep;
+			if (string.IsNullOrEmpty(outp))
+				return false;
+
+			foreach (Match match in dubInstalledPackagesOutputRegex.Matches(outp))
+			{
+				ret = true;
+				if (match.Success && dependencies.TryGetValue(match.Groups["name"].Value, out dep) &&
+					(string.IsNullOrEmpty(dep.Version) || dep.Version == match.Groups["version"].Value) &&
+					string.IsNullOrEmpty(dep.Path))
+					dep.Path = match.Groups["path"].Value.Trim();
+
+			}
+			return ret;
+		}
+
+		public IEnumerator<DubProjectDependency> GetEnumerator()
+		{
+			return dependencies.Values.GetEnumerator();
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
 		}
 	}
 }
