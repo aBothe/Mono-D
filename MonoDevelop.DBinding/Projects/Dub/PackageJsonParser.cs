@@ -88,7 +88,7 @@ namespace MonoDevelop.D.Projects.Dub
 							if (cfgEntry != null)
 							{
 								cfgEntry.Build = false;
-								cfgEntry.Deploy = false;
+								//cfgEntry.Deploy = false;
 							}
 						}
 					}
