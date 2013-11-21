@@ -382,10 +382,5 @@
       <Name>DParser2</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Misc\" />
-    <Folder Include="Unittest\" />
-    <Folder Include="Unittest\Commands\" />
-    <Folder Include="Projects\VisualD\" />
-  </ItemGroup>
+  <ItemGroup />
 </Project>

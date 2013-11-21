@@ -27,7 +27,21 @@ namespace MonoDevelop.D.Refactoring
 		void FindReferences()
 		{
 			if(Update())
-				caps.FindReferences ();
+				caps.FindReferences (false);
+		}
+
+		[CommandHandler(RefactoryCommands.FindAllReferences)]
+		void FindAllReferences()
+		{
+			if (Update())
+				caps.FindReferences(true);
+		}
+
+		[CommandHandler(RefactoryCommands.FindDerivedClasses)]
+		void FindDerivedClasses()
+		{
+			if (Update())
+				caps.FindDerivedClasses();
 		}
 
 		[CommandHandler(RefactoryCommands.GotoDeclaration)]
@@ -37,7 +51,13 @@ namespace MonoDevelop.D.Refactoring
 				caps.GotoDeclaration ();
 		}
 
+		[CommandUpdateHandler(Refactoring.Commands.OpenDDocumentation)]
 		[CommandUpdateHandler(EditCommands.Rename)]
+		[CommandUpdateHandler(RefactoryCommands.FindReferences)]
+		[CommandUpdateHandler(RefactoryCommands.FindAllReferences)]
+		[CommandUpdateHandler(RefactoryCommands.FindDerivedClasses)]
+		[CommandUpdateHandler(RefactoryCommands.GotoDeclaration)]
+		[CommandUpdateHandler(RefactoryCommands.ImportSymbol)]
 		void Rename_Update(CommandInfo ci)
 		{
 			ci.Bypass = false;

@@ -87,12 +87,29 @@ namespace MonoDevelop.D.Refactoring
 					n.Location.Column);
 		}
 
-		public void FindReferences()
+		public void FindReferences(bool allOverloads = false)
 		{
 			AbstractType res = GetResult();
 			INode n;
 			if (res != null && (n = DResolver.GetResultMember(res)) != null)
-				ReferenceFinding.StartReferenceSearchAsync(n);
+				ReferenceFinding.StartReferenceSearchAsync(n, allOverloads);
+		}
+
+		public void FindDerivedClasses()
+		{
+			var monitor = IdeApp.Workbench.ProgressMonitors.GetSearchProgressMonitor(true, true);
+
+			foreach (var t in lastResults)
+			{
+				var t_ = DResolver.StripMemberSymbols(t);
+				if (!(t_ is ClassType || t_ is InterfaceType))
+					continue;
+
+				var ds = DResolver.StripMemberSymbols(t) as TemplateIntermediateType;
+				var dc = ds.Definition;
+			}
+
+			monitor.EndTask();
 		}
 
 		public void RenameSymbol()

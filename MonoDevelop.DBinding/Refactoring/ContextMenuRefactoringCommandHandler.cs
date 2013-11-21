@@ -28,11 +28,19 @@ namespace MonoDevelop.D.Refactoring
 		{
 			if (dataItem is Action)
 				(dataItem as Action) ();
-			else if (dataItem is INode) // Currently only used when importing missing symbols
-				ImportDirectiveCreator.GenerateImportStatementForNode (dataItem as INode, caps.ed, (loc, s) => {
-					var doc = IdeApp.Workbench.ActiveDocument.Editor;
-					doc.Insert(doc.LocationToOffset(loc.Line,loc.Column), s);
-				});
+			var t = dataItem as object[];
+			if (t != null)
+			{
+				if (t.Length == 2)
+				{
+					if(t[0].Equals("a"))
+						ImportDirectiveCreator.GenerateImportStatementForNode(t[1] as INode, caps.ed, (loc, s) =>
+						{
+							var doc = IdeApp.Workbench.ActiveDocument.Editor;
+							doc.Insert(doc.LocationToOffset(loc.Line, loc.Column), s);
+						});
+				}
+			}
 		}
 
 		protected override void Update(CommandArrayInfo info)
@@ -56,20 +64,30 @@ namespace MonoDevelop.D.Refactoring
 					info.Add (refactoringMenu);
 
 				info.Add (IdeApp.CommandService.GetCommandInfo (RefactoryCommands.GotoDeclaration), new Action (caps.GotoDeclaration));
-				info.Add (IdeApp.CommandService.GetCommandInfo (RefactoryCommands.FindReferences), new Action (caps.FindReferences));
+				info.Add(IdeApp.CommandService.GetCommandInfo(RefactoryCommands.FindReferences), new Action(() => { caps.FindReferences(false); }));
+
+				if (caps.lastResults.Any((t) => t is DSymbol && (t as DSymbol).Definition.Parent is DClassLike))
+					info.Add(IdeApp.CommandService.GetCommandInfo(RefactoryCommands.FindAllReferences), new Action(() => { caps.FindReferences(true); }));
+
+				if (caps.lastResults.Any((t) =>
+				{
+					var ds = DResolver.StripMemberSymbols(t);
+					return ds is ClassType || ds is InterfaceType;
+				}))
+					info.Add(IdeApp.CommandService.GetCommandInfo(RefactoryCommands.FindDerivedClasses), new Action(caps.FindDerivedClasses));
 			}
 			else 
 			{
 				bool _u;
 				var nodes = ImportDirectiveCreator.TryFindingSelectedIdImportIndependently (caps.ed, out _u, false);
-
+				
 				if (nodes.Length > 0) {
 					var importSymbolMenu = new CommandInfoSet { Text = GettextCatalog.GetString("Resolve") };
 
 					foreach(var n in nodes)
 						importSymbolMenu.CommandInfos.Add(new CommandInfo{
-							Text = DNode.GetNodePath(n, true), 
-								Icon = MonoDevelop.Ide.Gui.Stock.AddNamespace },n);
+							Text = "import "+DNode.GetNodePath(n.NodeRoot as DModule, true)+";", 
+								Icon = MonoDevelop.Ide.Gui.Stock.AddNamespace },new object[]{"a",n});
 
 					// To explicitly show the Ctrl+Alt+Space hint.
 					importSymbolMenu.CommandInfos.AddSeparator ();

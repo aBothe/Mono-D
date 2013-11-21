@@ -18,10 +18,12 @@ namespace MonoDevelop.D.Refactoring
 	public class ReferenceFinding
 	{
 		ISearchProgressMonitor monitor;
+		bool alsoSearchDerivatives = false;
 
-		public static void StartReferenceSearchAsync(INode n)
+		public static void StartReferenceSearchAsync(INode n, bool searchInDerivatives = false)
 		{
 			var rf = new ReferenceFinding {
+				alsoSearchDerivatives = searchInDerivatives,
 				monitor = IdeApp.Workbench.ProgressMonitors.GetSearchProgressMonitor(true, true)
 			};
 
