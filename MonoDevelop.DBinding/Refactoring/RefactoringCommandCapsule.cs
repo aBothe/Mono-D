@@ -31,6 +31,8 @@ using MonoDevelop.Ide;
 using D_Parser.Refactoring;
 using MonoDevelop.Ide.Gui;
 using MonoDevelop.Core;
+using MonoDevelop.Ide.FindInFiles;
+using System.Threading;
 
 namespace MonoDevelop.D.Refactoring
 {
@@ -97,19 +99,35 @@ namespace MonoDevelop.D.Refactoring
 
 		public void FindDerivedClasses()
 		{
+			ThreadPool.QueueUserWorkItem(FindDerivedClassesThread);
+		}
+
+		void FindDerivedClassesThread(object s)
+		{
 			var monitor = IdeApp.Workbench.ProgressMonitors.GetSearchProgressMonitor(true, true);
+			monitor.BeginStepTask (GettextCatalog.GetString ("Find Derived Classes"), lastResults.Length,1);
 
 			foreach (var t in lastResults)
 			{
 				var t_ = DResolver.StripMemberSymbols(t);
-				if (!(t_ is ClassType || t_ is InterfaceType))
+				if (!(t_ is ClassType || t_ is InterfaceType)) {
+					monitor.Step (1);
 					continue;
+				}
 
-				var ds = DResolver.StripMemberSymbols(t) as TemplateIntermediateType;
-				var dc = ds.Definition;
+				foreach (var res in ClassInterfaceDerivativeFinder.SearchForClassDerivatives(t_ as TemplateIntermediateType, ctxt)) {
+					var dc = res.Definition;
+					var file = (dc.NodeRoot as DModule).FileName;
+					var targetDoc = Ide.TextFileProvider.Instance.GetTextEditorData(new FilePath(file));
+
+					monitor.ReportResult(new SearchResult(new FileProvider(file, IdeApp.Workspace.GetProjectContainingFile(file)),
+						targetDoc.LocationToOffset(dc.NameLocation.Line,dc.NameLocation.Column),dc.Name.Length));
+				}
+				monitor.Step (1);
 			}
 
 			monitor.EndTask();
+			monitor.Dispose ();
 		}
 
 		public void RenameSymbol()
