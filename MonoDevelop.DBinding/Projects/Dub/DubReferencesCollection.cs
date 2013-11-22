@@ -77,6 +77,12 @@ namespace MonoDevelop.D.Projects.Dub
 			foreach (var kv in dependencies)
 				if (kv.Value.Path == path)
 					return kv.Key;
+
+			path = Path.GetFullPath(path);
+			foreach (var prj in Ide.IdeApp.Workspace.GetAllProjects ())
+				if (prj.BaseDirectory.ToString() == path)
+					return prj.Name;
+
 			return path;
 		}
 
@@ -84,10 +90,10 @@ namespace MonoDevelop.D.Projects.Dub
 			get {
 				foreach (var kv in dependencies)
 					if(kv.Value.Path != null && !kv.Value.Name.Contains(":"))
-						yield return kv.Value.Path;
+						yield return Owner.GetAbsPath(kv.Value.Path);
 
 				foreach (var inc in Owner.GetAdditionalDubIncludes())
-					yield return inc;
+					yield return Owner.GetAbsPath(inc);
 			}
 		}
 

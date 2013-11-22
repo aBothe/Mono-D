@@ -274,6 +274,15 @@ namespace MonoDevelop.D.Projects
 			return new NativeExecutionCommand(GetOutputFileName(conf));
 		}
 
+		public string GetAbsPath(string path)
+		{
+			try{
+				return Path.IsPathRooted (path) ? path : BaseDirectory.Combine (path).ToString ();
+			}catch {
+				return path;
+			}
+		}
+
 		/// <summary>
 		/// Returns dependent projects in a topological order (from least to most dependent)
 		/// </summary>

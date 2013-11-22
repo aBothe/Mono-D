@@ -75,7 +75,7 @@ namespace MonoDevelop.D.Projects.Dub
 				if (string.IsNullOrWhiteSpace(dep.Path))
 					continue;
 
-				var packageJsonToLoad = Path.Combine(dep.Path, PackageJsonFile);
+				var packageJsonToLoad = Path.Combine(defaultPackage.GetAbsPath(dep.Path), PackageJsonFile);
 				if (File.Exists(packageJsonToLoad))
 				{
 					var prj = ReadFile(new FilePath(packageJsonToLoad), typeof(Project), monitor) as SolutionEntityItem;
