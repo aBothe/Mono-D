@@ -258,6 +258,8 @@
     <Compile Include="Projects\VisualD\VisualDProject.cs" />
     <Compile Include="Projects\VisualD\VisualDPrjConfig.cs" />
     <Compile Include="Projects\VisualD\VisualDProjectReferenceCollection.cs" />
+    <Compile Include="OptionPanels\DubOptionPanel.cs" />
+    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.DubOptionPanel.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>

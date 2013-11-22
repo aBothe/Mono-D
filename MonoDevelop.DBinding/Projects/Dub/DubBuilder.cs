@@ -16,6 +16,7 @@ namespace MonoDevelop.D.Projects.Dub
 
 		public void BuildCommonArgAppendix(StringBuilder sr,DubProject prj, ConfigurationSelector sel)
 		{
+			sr.Append (DubSettings.Instance.CommonArgs);
 			if (prj.Configurations.Count > 1 && sel.GetConfiguration(prj).Id != "Default")
 				sr.Append(" --config=").Append(sel.GetConfiguration(prj).Id);
 		}

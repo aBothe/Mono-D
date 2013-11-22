@@ -1,5 +1,5 @@
 //
-// DubSettings.cs
+// DubOptionPanel.cs
 //
 // Author:
 //       Alexander Bothe <info@alexanderbothe.com>
@@ -24,65 +24,52 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 using System;
-using MonoDevelop.Core;
-using System.Xml;
+using MonoDevelop.Ide.Gui.Dialogs;
 
-namespace MonoDevelop.D
+namespace MonoDevelop.D.OptionPanels
 {
-	public class DubSettings : ICustomXmlSerializer
+	[System.ComponentModel.ToolboxItem (true)]
+	public partial class DubOptionPanel : Gtk.Bin
 	{
-		#region Properties
-		const string DubSettingsPropId = "MonoDevelop.D.Dub";
-		static DubSettings inst;
-		public static DubSettings Instance
+		public DubOptionPanel ()
+		{
+			this.Build ();
+
+			text_dub.Text = DubSettings.Instance.DubCommand;
+			text_commonArgs.Text = DubSettings.Instance.CommonArgs;
+		}
+
+		public void ApplyChanges()
+		{
+			DubSettings.Instance.DubCommand = text_dub.Text;
+			DubSettings.Instance.CommonArgs = text_commonArgs.Text;
+		}
+
+		public bool Valid
 		{
 			get{ 
-				if (inst == null) {
-					inst = PropertyService.Get<DubSettings> (DubSettingsPropId);
-					if (inst == null)
-						inst = new DubSettings ();
-				}
-
-				return inst;
+				return !string.IsNullOrWhiteSpace(text_dub.Text);
 			}
 		}
+	}
 
-		public static void Save()
+	public class DubOptionPanelBinding : OptionsPanel
+	{
+		DubOptionPanel pan;
+		public override Gtk.Widget CreatePanelWidget ()
 		{
-			PropertyService.Set (DubSettingsPropId, Instance);
+			return pan = new DubOptionPanel ();
 		}
 
-		public string DubCommand = "dub";
-		public string CommonArgs = string.Empty;
-		#endregion
-
-		#region Loading & Saving
-		public void WriteTo (XmlWriter w)
+		public override void ApplyChanges ()
 		{
-			w.WriteStartElement ("cmd");
-			w.WriteCData (DubCommand);
-			w.WriteEndElement ();
-
-			w.WriteStartElement ("commonargs");
-			w.WriteCData (CommonArgs);
-			w.WriteEndElement ();
+			pan.ApplyChanges ();
 		}
 
-		public ICustomXmlSerializer ReadFrom (XmlReader r)
+		public override bool ValidateChanges ()
 		{
-			while (r.Read ()) {
-				switch (r.LocalName) {
-					case "cmd":
-						DubCommand = r.ReadString ();
-						break;
-					case "commonargs":
-						CommonArgs = r.ReadString ();
-						break;
-				}
-			}
-			return this;
+			return pan.Valid;
 		}
-		#endregion
 	}
 }
 

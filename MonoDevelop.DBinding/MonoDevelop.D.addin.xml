@@ -207,9 +207,10 @@
 			id = "DCompilerOptions"
 			_label = "Compiler toolchains"
 			class = "MonoDevelop.D.OptionPanels.DCompilerOptionsBinding"/>
-	</Extension>
-
-	<Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Preferences/DGlobalOptions">
+		<Section
+			id = "DDubOptions"
+			_label = "Dub options"
+			class = "MonoDevelop.D.OptionPanels.DubOptionPanelBinding"/>
 		<Section
 			id = "ResCompilerOptions"
 			_label = "Win32 Resource Compiler"
