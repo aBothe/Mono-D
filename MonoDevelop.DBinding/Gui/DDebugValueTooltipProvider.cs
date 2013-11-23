@@ -89,10 +89,9 @@ namespace MonoDevelop.D.Gui
 				editorData.CaretOffset = offset;
 				var edLoc = ed.OffsetToLocation(offset);
 				editorData.CaretLocation = new D_Parser.Dom.CodeLocation(edLoc.Column,edLoc.Line);
-				var ctxt=ResolutionContext.Create(editorData);
 
-				var o = DResolver.GetScopedCodeObject(editorData, ctxt, 
-				                              DResolver.AstReparseOptions.AlsoParseBeyondCaret | 
+				var o = DResolver.GetScopedCodeObject(editorData, 
+											  DResolver.AstReparseOptions.AlsoParseBeyondCaret | 
 				                              DResolver.AstReparseOptions.OnlyAssumeIdentifierList);
 
 				if(o != null)

@@ -107,7 +107,7 @@ namespace MonoDevelop.D.Resolver
 			ResolverContext = ResolutionContext.Create(edData);
 			
 			// Resolve the hovered piece of code
-			return DResolver.ResolveType(edData, ResolverContext, DResolver.AstReparseOptions.AlsoParseBeyondCaret);
+			return DResolver.ResolveType(edData, ctxt:ResolverContext);
 		}
 	}
 }
