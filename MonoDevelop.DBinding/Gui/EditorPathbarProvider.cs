@@ -7,6 +7,7 @@ using MonoDevelop.D.Completion;
 using MonoDevelop.D.Parser;
 using MonoDevelop.Ide;
 using MonoDevelop.Ide.Gui;
+using D_Parser.Resolver.ASTScanner;
 
 
 namespace MonoDevelop.D.Gui
@@ -45,14 +46,11 @@ namespace MonoDevelop.D.Gui
 			if (!(tag is IBlockNode))
 				return;
 			var blockNode = (tag as IBlockNode);
-			foreach(D_Parser.Dom.INode nd in blockNode.Children)
-			{					
-				if ((nd is IBlockNode) || (nd is DEnumValue)) {
+			foreach(var nd in blockNode.Children)
+				if (AbstractVisitor.CanAddMemberOfType(MemberFilter.All, nd))
 					memberList.Add(nd);
-				}
-			}
 			
-			memberList.Sort ((x, y) => String.Compare (x.Name + DParameterDataProvider.GetNodeParamString(x), y.Name + DParameterDataProvider.GetNodeParamString(y), StringComparison.OrdinalIgnoreCase));
+			memberList.Sort ((x, y) => x.Name.CompareTo(y.Name));
 		}		
 				
 		public string GetMarkup (int n)
