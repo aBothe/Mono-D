@@ -68,10 +68,12 @@ namespace MonoDevelop.D.Projects.Dub
 		protected override List<FilePath> OnGetItemFiles(bool includeReferencedFiles)
 		{
 			var files = new List<FilePath>();
-
+			int i=0;
+			var cha = new[] {Path.DirectorySeparatorChar};
 			foreach(var dir in GetSourcePaths((ConfigurationSelector)null))
 				foreach (var f in Directory.GetFiles(dir, "*", SearchOption.AllDirectories))
-					files.Add(new FilePath(f));
+					if((i = f.LastIndexOfAny(cha)) < -1 ? !f.StartsWith(".") : f[i+1] != '.')
+						files.Add(new FilePath(f));
 
 			return files;
 		}
