@@ -81,7 +81,7 @@ namespace MonoDevelop.D.Refactoring
 				bool _u;
 				var nodes = ImportDirectiveCreator.TryFindingSelectedIdImportIndependently (caps.ed, out _u, false);
 				
-				if (nodes.Length > 0) {
+				if (nodes != null && nodes.Length > 0) {
 					var importSymbolMenu = new CommandInfoSet { Text = GettextCatalog.GetString("Resolve") };
 
 					foreach(var n in nodes)
