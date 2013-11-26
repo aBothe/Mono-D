@@ -277,7 +277,7 @@ namespace MonoDevelop.D.Projects
 		public string GetAbsPath(string path)
 		{
 			try{
-				return Path.IsPathRooted (path) ? path : BaseDirectory.Combine (path).ToString ();
+				return Path.IsPathRooted (path) ? path : Path.GetFullPath(BaseDirectory.Combine (path).ToString ());
 			}catch {
 				return path;
 			}

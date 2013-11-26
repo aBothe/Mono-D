@@ -76,11 +76,11 @@ namespace MonoDevelop.D.Projects
 				foreach (var p in ProjectBuilder.FillInMacros (RawIncludes, includeMacros)) {
 					var path = p;
 					if (!Path.IsPathRooted (path))
-						path = Path.Combine (Owner.BaseDirectory, p);
+						path = Path.Combine (Owner.BaseDirectory, ProjectBuilder.EnsureCorrectPathSeparators(p));
 
 					if(path.Contains(".."))
 						// http://stackoverflow.com/questions/4796254/relative-path-to-absolute-path-in-c
-						path = Path.GetFullPath((new Uri(path)).LocalPath);
+						path = Path.GetFullPath(path);
 
 					yield return path;
 				}

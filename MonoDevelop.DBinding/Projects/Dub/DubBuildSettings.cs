@@ -165,6 +165,9 @@ namespace MonoDevelop.D.Projects.Dub
 	{
 		public string Name;
 		public string Version;
+		/// <summary>
+		/// May contain inappropriate directory path separators! (Win, Non-Win OS)
+		/// </summary>
 		public string Path;
 	}
 }
