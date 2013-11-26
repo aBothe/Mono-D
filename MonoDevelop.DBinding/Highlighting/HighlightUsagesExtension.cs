@@ -25,7 +25,7 @@ namespace MonoDevelop.D.Highlighting
 		TextEditorData textEditorData;
 		public DModule SyntaxTree
 		{
-			get { return (Document.ParsedDocument as ParsedDModule).DDom; }
+			get { return Document.ParsedDocument != null ? (Document.ParsedDocument as ParsedDModule).DDom : null; }
 		}
 
 		#region Init & Doc edit events
