@@ -29,9 +29,7 @@ namespace MonoDevelop.D.Completion
 			char triggerChar)
 		{
 			var ed = DResolverWrapper.CreateEditorData(EditorDocument, SyntaxTree, ctx, triggerChar);
-			AbstractCompletionProvider.BuildCompletionData(
-				new CompletionDataGenerator(l, DResolver.SearchBlockAt(SyntaxTree, ed.CaretLocation)),
-				ed, triggerChar=='\0'?null:triggerChar.ToString());
+			CodeCompletion.GenerateCompletionData(ed, new CompletionDataGenerator(l, null), triggerChar);
 		}
 
 		public static ResolutionContext CreateContext(Document doc)
