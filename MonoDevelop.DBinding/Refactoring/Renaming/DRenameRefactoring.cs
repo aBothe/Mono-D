@@ -111,7 +111,7 @@ namespace MonoDevelop.D.Refactoring
 
 			// All id chars must be identifier chars
 			foreach (var c in id)
-				if (!D_Parser.Completion.CtrlSpaceCompletionProvider.IsIdentifierChar(c))
+				if (!D_Parser.Parser.DTokens.IsIdentifierChar(c))
 					return false;
 
 			// New identifier might be a keyword..
