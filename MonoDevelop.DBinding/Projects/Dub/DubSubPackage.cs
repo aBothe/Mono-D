@@ -66,11 +66,8 @@ namespace MonoDevelop.D.Projects.Dub
 
 			sub.BeginLoad ();
 
-			foreach (var config in superProject.Configurations)
-				sub.AddNewConfiguration (config.Name).CopyFrom (config);
-
-			superProject.ParentSolution.RootFolder.AddItem (sub, false);
-
+			superProject.packagesToAdd.Add(sub);
+			
 			while (r.Read ()) {
 				if (r.TokenType == JsonToken.PropertyName)
 					sub.TryPopulateProperty (r.Value as string, r);
@@ -101,6 +98,11 @@ namespace MonoDevelop.D.Projects.Dub
 		protected override bool CheckNeedsBuild (MonoDevelop.Projects.ConfigurationSelector configuration)
 		{
 			return false;
+		}
+
+		public override FilePath GetOutputFileName(ConfigurationSelector configuration)
+		{
+			return new FilePath();
 		}
 
 		protected override void DoClean (MonoDevelop.Core.IProgressMonitor monitor, ConfigurationSelector configuration)

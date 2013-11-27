@@ -24,6 +24,7 @@ namespace MonoDevelop.D.Projects.Dub
 	{
 		#region Properties
 		List<string> authors = new List<string>();
+		internal List<DubSubPackage> packagesToAdd = new List<DubSubPackage>();
 		/// <summary>
 		/// Project-wide cross-config build settings.
 		/// </summary>
@@ -212,6 +213,15 @@ namespace MonoDevelop.D.Projects.Dub
 		{
 			DubReferences.FireUpdate ();
 			base.OnEndLoad ();
+		}
+
+		protected override void OnBoundToSolution()
+		{
+			base.OnBoundToSolution();
+
+			foreach (var sub in packagesToAdd)
+				ParentSolution.RootFolder.AddItem(sub, false);
+			packagesToAdd.Clear();
 		}
 		#endregion
 
