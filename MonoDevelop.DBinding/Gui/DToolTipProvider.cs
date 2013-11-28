@@ -8,6 +8,7 @@ using MonoDevelop.D.Parser;
 using MonoDevelop.D.Resolver;
 using MonoDevelop.Ide;
 using Pango;
+using System.Collections.Generic;
 
 namespace MonoDevelop.D.Gui
 {
@@ -56,7 +57,7 @@ namespace MonoDevelop.D.Gui
 		protected override Window CreateTooltipWindow(TextEditor editor, int offset, Gdk.ModifierType modifierState, TooltipItem item)
 		{
 			//create a message string from all the results
-			var results = item.Item as AbstractTooltipContent[];
+			var results = item.Item as IEnumerable<AbstractTooltipContent>;
 
 			var win = new DToolTipWindow();
 
