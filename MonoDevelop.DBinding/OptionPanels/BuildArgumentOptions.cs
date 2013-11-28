@@ -128,6 +128,10 @@ namespace MonoDevelop.D.OptionPanels
 
 		protected void OnButtonCancelClicked (object sender, System.EventArgs e)
 		{
+			var sel = SelectedCompileTarget;
+			Load (Configuration, IsDebug);
+			SelectedCompileTarget = sel;
+
 			Hide ();
 		}
 
