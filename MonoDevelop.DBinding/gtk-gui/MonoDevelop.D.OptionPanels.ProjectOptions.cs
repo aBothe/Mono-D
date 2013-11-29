@@ -88,7 +88,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.label10 = new global::Gtk.Label ();
 			this.label10.Name = "label10";
 			this.label10.Xalign = 0F;
-			this.label10.LabelProp = global::Mono.Unix.Catalog.GetString ("Extra Linker Options");
+			this.label10.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("Extra Linker Options");
 			this.table_LinkingTab.Add (this.label10);
 			global::Gtk.Table.TableChild w2 = ((global::Gtk.Table.TableChild)(this.table_LinkingTab [this.label10]));
 			w2.TopAttach = ((uint)(5));
@@ -99,7 +99,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.label13 = new global::Gtk.Label ();
 			this.label13.Name = "label13";
 			this.label13.Xalign = 0F;
-			this.label13.LabelProp = global::Mono.Unix.Catalog.GetString ("Compile target");
+			this.label13.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("Compile target");
 			this.table_LinkingTab.Add (this.label13);
 			global::Gtk.Table.TableChild w3 = ((global::Gtk.Table.TableChild)(this.table_LinkingTab [this.label13]));
 			w3.TopAttach = ((uint)(2));
@@ -110,7 +110,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.label3 = new global::Gtk.Label ();
 			this.label3.Name = "label3";
 			this.label3.Xalign = 0F;
-			this.label3.LabelProp = global::Mono.Unix.Catalog.GetString ("Output file");
+			this.label3.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("Output file");
 			this.table_LinkingTab.Add (this.label3);
 			global::Gtk.Table.TableChild w4 = ((global::Gtk.Table.TableChild)(this.table_LinkingTab [this.label3]));
 			w4.TopAttach = ((uint)(3));
@@ -121,7 +121,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.label6 = new global::Gtk.Label ();
 			this.label6.Name = "label6";
 			this.label6.Xalign = 0F;
-			this.label6.LabelProp = global::Mono.Unix.Catalog.GetString ("Output directory");
+			this.label6.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("Output directory");
 			this.table_LinkingTab.Add (this.label6);
 			global::Gtk.Table.TableChild w5 = ((global::Gtk.Table.TableChild)(this.table_LinkingTab [this.label6]));
 			w5.TopAttach = ((uint)(1));
@@ -132,7 +132,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.label8 = new global::Gtk.Label ();
 			this.label8.Name = "label8";
 			this.label8.Xalign = 0F;
-			this.label8.LabelProp = global::Mono.Unix.Catalog.GetString ("Libraries\n(one per line)");
+			this.label8.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("Libraries\n(one per line)");
 			this.table_LinkingTab.Add (this.label8);
 			global::Gtk.Table.TableChild w6 = ((global::Gtk.Table.TableChild)(this.table_LinkingTab [this.label8]));
 			w6.TopAttach = ((uint)(4));
@@ -143,7 +143,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.label9 = new global::Gtk.Label ();
 			this.label9.Name = "label9";
 			this.label9.Xalign = 0F;
-			this.label9.LabelProp = global::Mono.Unix.Catalog.GetString ("Note: Relative paths will be related to the project's base directory!");
+			this.label9.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("Note: Relative paths will be related to the project's base directory!");
 			this.table_LinkingTab.Add (this.label9);
 			global::Gtk.Table.TableChild w7 = ((global::Gtk.Table.TableChild)(this.table_LinkingTab [this.label9]));
 			w7.LeftAttach = ((uint)(1));
@@ -220,7 +220,7 @@ namespace MonoDevelop.D.OptionPanels
 			// Notebook tab
 			this.label2 = new global::Gtk.Label ();
 			this.label2.Name = "label2";
-			this.label2.LabelProp = global::Mono.Unix.Catalog.GetString ("Linking");
+			this.label2.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("Linking");
 			this.notebook1.SetTabLabel (this.table_LinkingTab, this.label2);
 			this.label2.ShowAll ();
 			// Container child notebook1.Gtk.Notebook+NotebookChild
@@ -233,7 +233,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.cbPreferOneStepCompilation = new global::Gtk.CheckButton ();
 			this.cbPreferOneStepCompilation.CanFocus = true;
 			this.cbPreferOneStepCompilation.Name = "cbPreferOneStepCompilation";
-			this.cbPreferOneStepCompilation.Label = global::Mono.Unix.Catalog.GetString ("Perform a one-step compilation if the compiler allows it to do that");
+			this.cbPreferOneStepCompilation.Label = MonoDevelop.Core.GettextCatalog.GetString ("Perform a one-step compilation if the compiler allows it to do that");
 			this.cbPreferOneStepCompilation.DrawIndicator = true;
 			this.cbPreferOneStepCompilation.UseUnderline = true;
 			this.table_CompilingTab.Add (this.cbPreferOneStepCompilation);
@@ -248,7 +248,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.cbUseDefaultCompiler = new global::Gtk.CheckButton ();
 			this.cbUseDefaultCompiler.CanFocus = true;
 			this.cbUseDefaultCompiler.Name = "cbUseDefaultCompiler";
-			this.cbUseDefaultCompiler.Label = global::Mono.Unix.Catalog.GetString ("Use Default Compiler");
+			this.cbUseDefaultCompiler.Label = MonoDevelop.Core.GettextCatalog.GetString ("Use Default Compiler");
 			this.cbUseDefaultCompiler.Active = true;
 			this.cbUseDefaultCompiler.DrawIndicator = true;
 			this.cbUseDefaultCompiler.UseUnderline = true;
@@ -274,7 +274,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.label11 = new global::Gtk.Label ();
 			this.label11.Name = "label11";
 			this.label11.Xalign = 0F;
-			this.label11.LabelProp = global::Mono.Unix.Catalog.GetString ("Note: Relative paths will be related to the project's base directory!");
+			this.label11.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("Note: Relative paths will be related to the project's base directory!");
 			this.table_CompilingTab.Add (this.label11);
 			global::Gtk.Table.TableChild w19 = ((global::Gtk.Table.TableChild)(this.table_CompilingTab [this.label11]));
 			w19.LeftAttach = ((uint)(1));
@@ -284,7 +284,7 @@ namespace MonoDevelop.D.OptionPanels
 			// Container child table_CompilingTab.Gtk.Table+TableChild
 			this.label17 = new global::Gtk.Label ();
 			this.label17.Name = "label17";
-			this.label17.LabelProp = global::Mono.Unix.Catalog.GetString ("Debug constants");
+			this.label17.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("Debug constants");
 			this.table_CompilingTab.Add (this.label17);
 			global::Gtk.Table.TableChild w20 = ((global::Gtk.Table.TableChild)(this.table_CompilingTab [this.label17]));
 			w20.TopAttach = ((uint)(4));
@@ -294,7 +294,7 @@ namespace MonoDevelop.D.OptionPanels
 			// Container child table_CompilingTab.Gtk.Table+TableChild
 			this.label18 = new global::Gtk.Label ();
 			this.label18.Name = "label18";
-			this.label18.LabelProp = global::Mono.Unix.Catalog.GetString ("Version constants");
+			this.label18.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("Version constants");
 			this.table_CompilingTab.Add (this.label18);
 			global::Gtk.Table.TableChild w21 = ((global::Gtk.Table.TableChild)(this.table_CompilingTab [this.label18]));
 			w21.TopAttach = ((uint)(6));
@@ -304,7 +304,7 @@ namespace MonoDevelop.D.OptionPanels
 			// Container child table_CompilingTab.Gtk.Table+TableChild
 			this.label19 = new global::Gtk.Label ();
 			this.label19.Name = "label19";
-			this.label19.LabelProp = global::Mono.Unix.Catalog.GetString ("Debug level");
+			this.label19.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("Debug level");
 			this.table_CompilingTab.Add (this.label19);
 			global::Gtk.Table.TableChild w22 = ((global::Gtk.Table.TableChild)(this.table_CompilingTab [this.label19]));
 			w22.TopAttach = ((uint)(5));
@@ -314,7 +314,7 @@ namespace MonoDevelop.D.OptionPanels
 			// Container child table_CompilingTab.Gtk.Table+TableChild
 			this.label20 = new global::Gtk.Label ();
 			this.label20.Name = "label20";
-			this.label20.LabelProp = global::Mono.Unix.Catalog.GetString ("DDoc directory");
+			this.label20.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("DDoc directory");
 			this.table_CompilingTab.Add (this.label20);
 			global::Gtk.Table.TableChild w23 = ((global::Gtk.Table.TableChild)(this.table_CompilingTab [this.label20]));
 			w23.TopAttach = ((uint)(8));
@@ -325,7 +325,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.label4 = new global::Gtk.Label ();
 			this.label4.Name = "label4";
 			this.label4.Xalign = 0F;
-			this.label4.LabelProp = global::Mono.Unix.Catalog.GetString ("Compiler");
+			this.label4.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("Compiler");
 			this.table_CompilingTab.Add (this.label4);
 			global::Gtk.Table.TableChild w24 = ((global::Gtk.Table.TableChild)(this.table_CompilingTab [this.label4]));
 			w24.TopAttach = ((uint)(1));
@@ -336,7 +336,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.label5 = new global::Gtk.Label ();
 			this.label5.Name = "label5";
 			this.label5.Xalign = 0F;
-			this.label5.LabelProp = global::Mono.Unix.Catalog.GetString ("Objects directory");
+			this.label5.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("Objects directory");
 			this.table_CompilingTab.Add (this.label5);
 			global::Gtk.Table.TableChild w25 = ((global::Gtk.Table.TableChild)(this.table_CompilingTab [this.label5]));
 			w25.TopAttach = ((uint)(7));
@@ -347,7 +347,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.label7 = new global::Gtk.Label ();
 			this.label7.Name = "label7";
 			this.label7.Xalign = 0F;
-			this.label7.LabelProp = global::Mono.Unix.Catalog.GetString ("Extra Compiler Options");
+			this.label7.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("Extra Compiler Options");
 			this.table_CompilingTab.Add (this.label7);
 			global::Gtk.Table.TableChild w26 = ((global::Gtk.Table.TableChild)(this.table_CompilingTab [this.label7]));
 			w26.TopAttach = ((uint)(9));
@@ -454,7 +454,7 @@ namespace MonoDevelop.D.OptionPanels
 			// Notebook tab
 			this.label1 = new global::Gtk.Label ();
 			this.label1.Name = "label1";
-			this.label1.LabelProp = global::Mono.Unix.Catalog.GetString ("Compiling");
+			this.label1.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("Compiling");
 			this.notebook1.SetTabLabel (this.table_CompilingTab, this.label1);
 			this.label1.ShowAll ();
 			// Container child notebook1.Gtk.Notebook+NotebookChild
@@ -465,7 +465,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.check_EnableBuildCmdOverride = new global::Gtk.CheckButton ();
 			this.check_EnableBuildCmdOverride.CanFocus = true;
 			this.check_EnableBuildCmdOverride.Name = "check_EnableBuildCmdOverride";
-			this.check_EnableBuildCmdOverride.Label = global::Mono.Unix.Catalog.GetString ("Enable custom build tools");
+			this.check_EnableBuildCmdOverride.Label = MonoDevelop.Core.GettextCatalog.GetString ("Enable custom build tools");
 			this.check_EnableBuildCmdOverride.DrawIndicator = true;
 			this.check_EnableBuildCmdOverride.UseUnderline = true;
 			this.vbox1.Add (this.check_EnableBuildCmdOverride);
@@ -482,7 +482,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.check_BuildToolsPerConfiguration = new global::Gtk.CheckButton ();
 			this.check_BuildToolsPerConfiguration.CanFocus = true;
 			this.check_BuildToolsPerConfiguration.Name = "check_BuildToolsPerConfiguration";
-			this.check_BuildToolsPerConfiguration.Label = global::Mono.Unix.Catalog.GetString ("Apply custom build settings to all configurations");
+			this.check_BuildToolsPerConfiguration.Label = MonoDevelop.Core.GettextCatalog.GetString ("Apply custom build settings to all configurations");
 			this.check_BuildToolsPerConfiguration.DrawIndicator = true;
 			this.check_BuildToolsPerConfiguration.UseUnderline = true;
 			this.table_CustomBuildTools.Add (this.check_BuildToolsPerConfiguration);
@@ -494,7 +494,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.label22 = new global::Gtk.Label ();
 			this.label22.Name = "label22";
 			this.label22.Xalign = 0F;
-			this.label22.LabelProp = global::Mono.Unix.Catalog.GetString ("Build command");
+			this.label22.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("Build command");
 			this.table_CustomBuildTools.Add (this.label22);
 			global::Gtk.Table.TableChild w37 = ((global::Gtk.Table.TableChild)(this.table_CustomBuildTools [this.label22]));
 			w37.TopAttach = ((uint)(1));
@@ -505,7 +505,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.label23 = new global::Gtk.Label ();
 			this.label23.Name = "label23";
 			this.label23.Xalign = 0F;
-			this.label23.LabelProp = global::Mono.Unix.Catalog.GetString ("Run command");
+			this.label23.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("Run command");
 			this.table_CustomBuildTools.Add (this.label23);
 			global::Gtk.Table.TableChild w38 = ((global::Gtk.Table.TableChild)(this.table_CustomBuildTools [this.label23]));
 			w38.TopAttach = ((uint)(3));
@@ -516,7 +516,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.label24 = new global::Gtk.Label ();
 			this.label24.Name = "label24";
 			this.label24.Xalign = 0F;
-			this.label24.LabelProp = global::Mono.Unix.Catalog.GetString ("Macros");
+			this.label24.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("Macros");
 			this.table_CustomBuildTools.Add (this.label24);
 			global::Gtk.Table.TableChild w39 = ((global::Gtk.Table.TableChild)(this.table_CustomBuildTools [this.label24]));
 			w39.TopAttach = ((uint)(4));
@@ -526,7 +526,7 @@ namespace MonoDevelop.D.OptionPanels
 			// Container child table_CustomBuildTools.Gtk.Table+TableChild
 			this.label25 = new global::Gtk.Label ();
 			this.label25.Name = "label25";
-			this.label25.LabelProp = global::Mono.Unix.Catalog.GetString ("Build check command");
+			this.label25.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("Build check command");
 			this.table_CustomBuildTools.Add (this.label25);
 			global::Gtk.Table.TableChild w40 = ((global::Gtk.Table.TableChild)(this.table_CustomBuildTools [this.label25]));
 			w40.TopAttach = ((uint)(2));
@@ -596,7 +596,7 @@ namespace MonoDevelop.D.OptionPanels
 			// Notebook tab
 			this.label21 = new global::Gtk.Label ();
 			this.label21.Name = "label21";
-			this.label21.LabelProp = global::Mono.Unix.Catalog.GetString ("Custom build tools");
+			this.label21.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("Custom build tools");
 			this.notebook1.SetTabLabel (this.vbox1, this.label21);
 			this.label21.ShowAll ();
 			this.Add (this.notebook1);

@@ -14,7 +14,7 @@ namespace MonoDevelop.D
 			global::Stetic.Gui.Initialize (this);
 			// Widget MonoDevelop.D.ImportSymbolSelectionDlg
 			this.Name = "MonoDevelop.D.ImportSymbolSelectionDlg";
-			this.Title = global::Mono.Unix.Catalog.GetString ("Select symbol to import");
+			this.Title = MonoDevelop.Core.GettextCatalog.GetString ("Select symbol to import");
 			this.WindowPosition = ((global::Gtk.WindowPosition)(1));
 			this.Modal = true;
 			// Internal child MonoDevelop.D.ImportSymbolSelectionDlg.VBox
@@ -57,7 +57,7 @@ namespace MonoDevelop.D
 			this.buttonOk.CanFocus = true;
 			this.buttonOk.Name = "buttonOk";
 			this.buttonOk.UseUnderline = true;
-			this.buttonOk.Label = global::Mono.Unix.Catalog.GetString ("_OK");
+			this.buttonOk.Label = MonoDevelop.Core.GettextCatalog.GetString ("_OK");
 			w4.Add (this.buttonOk);
 			global::Gtk.ButtonBox.ButtonBoxChild w6 = ((global::Gtk.ButtonBox.ButtonBoxChild)(w4 [this.buttonOk]));
 			w6.Position = 1;

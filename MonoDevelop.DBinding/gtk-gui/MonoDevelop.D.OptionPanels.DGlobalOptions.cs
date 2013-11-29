@@ -45,7 +45,7 @@ namespace MonoDevelop.D.OptionPanels
 			w1.SetTip (this.check_EnableMixinAnalysis, "If enabled, deadlocks might occur if mixins are used too often", "If enabled, deadlocks might occur if mixins are used too often");
 			this.check_EnableMixinAnalysis.CanFocus = true;
 			this.check_EnableMixinAnalysis.Name = "check_EnableMixinAnalysis";
-			this.check_EnableMixinAnalysis.Label = global::Mono.Unix.Catalog.GetString ("Enable Mixin & Template Mixin Analysis");
+			this.check_EnableMixinAnalysis.Label = MonoDevelop.Core.GettextCatalog.GetString ("Enable Mixin & Template Mixin Analysis");
 			this.check_EnableMixinAnalysis.DrawIndicator = true;
 			this.check_EnableMixinAnalysis.UseUnderline = true;
 			this.table1.Add (this.check_EnableMixinAnalysis);
@@ -61,7 +61,7 @@ namespace MonoDevelop.D.OptionPanels
 			w1.SetTip (this.check_EnableSuggestionMode, "If true, the selected text in the completion box will not be inserted into the code unless the <Return> key has been pressed.", "If true, the selected text in the completion box will not be inserted into the code unless the <Return> key has been pressed.");
 			this.check_EnableSuggestionMode.CanFocus = true;
 			this.check_EnableSuggestionMode.Name = "check_EnableSuggestionMode";
-			this.check_EnableSuggestionMode.Label = global::Mono.Unix.Catalog.GetString ("Enable suggestive completion mode");
+			this.check_EnableSuggestionMode.Label = MonoDevelop.Core.GettextCatalog.GetString ("Enable suggestive completion mode");
 			this.check_EnableSuggestionMode.DrawIndicator = true;
 			this.check_EnableSuggestionMode.UseUnderline = true;
 			this.table1.Add (this.check_EnableSuggestionMode);
@@ -76,7 +76,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.check_EnableUFCSCompletion = new global::Gtk.CheckButton ();
 			this.check_EnableUFCSCompletion.CanFocus = true;
 			this.check_EnableUFCSCompletion.Name = "check_EnableUFCSCompletion";
-			this.check_EnableUFCSCompletion.Label = global::Mono.Unix.Catalog.GetString ("Enable UFCS Completion");
+			this.check_EnableUFCSCompletion.Label = MonoDevelop.Core.GettextCatalog.GetString ("Enable UFCS Completion");
 			this.check_EnableUFCSCompletion.DrawIndicator = true;
 			this.check_EnableUFCSCompletion.UseUnderline = true;
 			this.table1.Add (this.check_EnableUFCSCompletion);
@@ -91,7 +91,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.check_GrayOutNonPublic = new global::Gtk.CheckButton ();
 			this.check_GrayOutNonPublic.CanFocus = true;
 			this.check_GrayOutNonPublic.Name = "check_GrayOutNonPublic";
-			this.check_GrayOutNonPublic.Label = global::Mono.Unix.Catalog.GetString ("Gray-out non public members");
+			this.check_GrayOutNonPublic.Label = MonoDevelop.Core.GettextCatalog.GetString ("Gray-out non public members");
 			this.check_GrayOutNonPublic.Active = true;
 			this.check_GrayOutNonPublic.DrawIndicator = true;
 			this.check_GrayOutNonPublic.UseUnderline = true;
@@ -108,7 +108,7 @@ namespace MonoDevelop.D.OptionPanels
 			w1.SetTip (this.check_HideDeprecatedItems, "If enabled, deadlocks might occur if mixins are used too often", "If enabled, deadlocks might occur if mixins are used too often");
 			this.check_HideDeprecatedItems.CanFocus = true;
 			this.check_HideDeprecatedItems.Name = "check_HideDeprecatedItems";
-			this.check_HideDeprecatedItems.Label = global::Mono.Unix.Catalog.GetString ("Hide deprecated items in the completion list");
+			this.check_HideDeprecatedItems.Label = MonoDevelop.Core.GettextCatalog.GetString ("Hide deprecated items in the completion list");
 			this.check_HideDeprecatedItems.Active = true;
 			this.check_HideDeprecatedItems.DrawIndicator = true;
 			this.check_HideDeprecatedItems.UseUnderline = true;
@@ -124,7 +124,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.check_IndentInsteadFormatCode = new global::Gtk.CheckButton ();
 			this.check_IndentInsteadFormatCode.CanFocus = true;
 			this.check_IndentInsteadFormatCode.Name = "check_IndentInsteadFormatCode";
-			this.check_IndentInsteadFormatCode.Label = global::Mono.Unix.Catalog.GetString ("Only indent code lines instead of rearrange code parts\n(because the actual formatter isn't finished currently)");
+			this.check_IndentInsteadFormatCode.Label = MonoDevelop.Core.GettextCatalog.GetString ("Only indent code lines instead of rearrange code parts\n(because the actual formatter isn't finished currently)");
 			this.check_IndentInsteadFormatCode.Active = true;
 			this.check_IndentInsteadFormatCode.DrawIndicator = true;
 			this.check_IndentInsteadFormatCode.UseUnderline = true;
@@ -140,7 +140,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.check_ShowFunctionParams = new global::Gtk.CheckButton ();
 			this.check_ShowFunctionParams.CanFocus = true;
 			this.check_ShowFunctionParams.Name = "check_ShowFunctionParams";
-			this.check_ShowFunctionParams.Label = global::Mono.Unix.Catalog.GetString ("Show function parameters");
+			this.check_ShowFunctionParams.Label = MonoDevelop.Core.GettextCatalog.GetString ("Show function parameters");
 			this.check_ShowFunctionParams.Active = true;
 			this.check_ShowFunctionParams.DrawIndicator = true;
 			this.check_ShowFunctionParams.UseUnderline = true;
@@ -156,7 +156,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.check_ShowFunctionVariables = new global::Gtk.CheckButton ();
 			this.check_ShowFunctionVariables.CanFocus = true;
 			this.check_ShowFunctionVariables.Name = "check_ShowFunctionVariables";
-			this.check_ShowFunctionVariables.Label = global::Mono.Unix.Catalog.GetString ("Show function variables");
+			this.check_ShowFunctionVariables.Label = MonoDevelop.Core.GettextCatalog.GetString ("Show function variables");
 			this.check_ShowFunctionVariables.DrawIndicator = true;
 			this.check_ShowFunctionVariables.UseUnderline = true;
 			this.table1.Add (this.check_ShowFunctionVariables);
@@ -171,7 +171,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.check_ShowTypes = new global::Gtk.CheckButton ();
 			this.check_ShowTypes.CanFocus = true;
 			this.check_ShowTypes.Name = "check_ShowTypes";
-			this.check_ShowTypes.Label = global::Mono.Unix.Catalog.GetString ("Display node base types");
+			this.check_ShowTypes.Label = MonoDevelop.Core.GettextCatalog.GetString ("Display node base types");
 			this.check_ShowTypes.Active = true;
 			this.check_ShowTypes.DrawIndicator = true;
 			this.check_ShowTypes.UseUnderline = true;
@@ -190,7 +190,7 @@ namespace MonoDevelop.D.OptionPanels
 			// Container child hbox2.Gtk.Box+BoxChild
 			this.label5 = new global::Gtk.Label ();
 			this.label5.Name = "label5";
-			this.label5.LabelProp = global::Mono.Unix.Catalog.GetString ("Expansion behaviour on tree rebuild");
+			this.label5.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("Expansion behaviour on tree rebuild");
 			this.hbox2.Add (this.label5);
 			global::Gtk.Box.BoxChild w11 = ((global::Gtk.Box.BoxChild)(this.hbox2 [this.label5]));
 			w11.Position = 0;
@@ -198,9 +198,9 @@ namespace MonoDevelop.D.OptionPanels
 			w11.Fill = false;
 			// Container child hbox2.Gtk.Box+BoxChild
 			this.combo_ExpansionBehaviour = global::Gtk.ComboBox.NewText ();
-			this.combo_ExpansionBehaviour.AppendText (global::Mono.Unix.Catalog.GetString ("Collapse All"));
-			this.combo_ExpansionBehaviour.AppendText (global::Mono.Unix.Catalog.GetString ("Leave expanded nodes expanded"));
-			this.combo_ExpansionBehaviour.AppendText (global::Mono.Unix.Catalog.GetString ("Expand All"));
+			this.combo_ExpansionBehaviour.AppendText (MonoDevelop.Core.GettextCatalog.GetString ("Collapse All"));
+			this.combo_ExpansionBehaviour.AppendText (MonoDevelop.Core.GettextCatalog.GetString ("Leave expanded nodes expanded"));
+			this.combo_ExpansionBehaviour.AppendText (MonoDevelop.Core.GettextCatalog.GetString ("Expand All"));
 			this.combo_ExpansionBehaviour.Name = "combo_ExpansionBehaviour";
 			this.hbox2.Add (this.combo_ExpansionBehaviour);
 			global::Gtk.Box.BoxChild w12 = ((global::Gtk.Box.BoxChild)(this.hbox2 [this.combo_ExpansionBehaviour]));
@@ -216,7 +216,7 @@ namespace MonoDevelop.D.OptionPanels
 			// Container child table1.Gtk.Table+TableChild
 			this.label1 = new global::Gtk.Label ();
 			this.label1.Name = "label1";
-			this.label1.LabelProp = global::Mono.Unix.Catalog.GetString ("Help manual base url");
+			this.label1.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("Help manual base url");
 			this.table1.Add (this.label1);
 			global::Gtk.Table.TableChild w14 = ((global::Gtk.Table.TableChild)(this.table1 [this.label1]));
 			w14.XOptions = ((global::Gtk.AttachOptions)(4));
@@ -225,7 +225,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.label2 = new global::Gtk.Label ();
 			this.label2.Name = "label2";
 			this.label2.Xalign = 0F;
-			this.label2.LabelProp = global::Mono.Unix.Catalog.GetString ("<b>Editing &amp; Completion Options</b>");
+			this.label2.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("<b>Editing &amp; Completion Options</b>");
 			this.label2.UseMarkup = true;
 			this.table1.Add (this.label2);
 			global::Gtk.Table.TableChild w15 = ((global::Gtk.Table.TableChild)(this.table1 [this.label2]));
@@ -238,7 +238,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.label3 = new global::Gtk.Label ();
 			this.label3.Name = "label3";
 			this.label3.Xalign = 0F;
-			this.label3.LabelProp = global::Mono.Unix.Catalog.GetString ("<b>Document Outline</b>");
+			this.label3.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("<b>Document Outline</b>");
 			this.label3.UseMarkup = true;
 			this.table1.Add (this.label3);
 			global::Gtk.Table.TableChild w16 = ((global::Gtk.Table.TableChild)(this.table1 [this.label3]));
@@ -252,7 +252,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.label4 = new global::Gtk.Label ();
 			this.label4.Name = "label4";
 			this.label4.Xalign = 0F;
-			this.label4.LabelProp = global::Mono.Unix.Catalog.GetString ("<b>Formatting (general)</b>");
+			this.label4.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("<b>Formatting (general)</b>");
 			this.label4.UseMarkup = true;
 			this.table1.Add (this.label4);
 			global::Gtk.Table.TableChild w17 = ((global::Gtk.Table.TableChild)(this.table1 [this.label4]));

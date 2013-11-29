@@ -33,7 +33,7 @@ namespace MonoDevelop.D
 			// Container child hbox3.Gtk.Box+BoxChild
 			this.label1 = new global::Gtk.Label ();
 			this.label1.Name = "label1";
-			this.label1.LabelProp = global::Mono.Unix.Catalog.GetString ("New Name:");
+			this.label1.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("New Name:");
 			this.hbox3.Add (this.label1);
 			global::Gtk.Box.BoxChild w2 = ((global::Gtk.Box.BoxChild)(this.hbox3 [this.label1]));
 			w2.Position = 0;
@@ -87,7 +87,7 @@ namespace MonoDevelop.D
 			this.buttonPreview.CanFocus = true;
 			this.buttonPreview.Name = "buttonPreview";
 			this.buttonPreview.UseUnderline = true;
-			this.buttonPreview.Label = global::Mono.Unix.Catalog.GetString ("_Preview");
+			this.buttonPreview.Label = MonoDevelop.Core.GettextCatalog.GetString ("_Preview");
 			w6.Add (this.buttonPreview);
 			global::Gtk.ButtonBox.ButtonBoxChild w8 = ((global::Gtk.ButtonBox.ButtonBoxChild)(w6 [this.buttonPreview]));
 			w8.Position = 1;

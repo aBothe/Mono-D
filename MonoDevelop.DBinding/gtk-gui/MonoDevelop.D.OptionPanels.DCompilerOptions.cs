@@ -61,7 +61,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.btnDefaults.CanFocus = true;
 			this.btnDefaults.Name = "btnDefaults";
 			this.btnDefaults.UseUnderline = true;
-			this.btnDefaults.Label = global::Mono.Unix.Catalog.GetString ("Defaults");
+			this.btnDefaults.Label = MonoDevelop.Core.GettextCatalog.GetString ("Defaults");
 			this.table6.Add (this.btnDefaults);
 			global::Gtk.Table.TableChild w1 = ((global::Gtk.Table.TableChild)(this.table6 [this.btnDefaults]));
 			w1.TopAttach = ((uint)(7));
@@ -86,7 +86,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.button_BinPathBrowser.CanFocus = true;
 			this.button_BinPathBrowser.Name = "button_BinPathBrowser";
 			this.button_BinPathBrowser.UseUnderline = true;
-			this.button_BinPathBrowser.Label = global::Mono.Unix.Catalog.GetString ("Browse...");
+			this.button_BinPathBrowser.Label = MonoDevelop.Core.GettextCatalog.GetString ("Browse...");
 			this.hbox2.Add (this.button_BinPathBrowser);
 			global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(this.hbox2 [this.button_BinPathBrowser]));
 			w3.Position = 1;
@@ -117,7 +117,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.btnMakeDefault.Name = "btnMakeDefault";
 			this.btnMakeDefault.UseUnderline = true;
 			this.btnMakeDefault.Active = true;
-			this.btnMakeDefault.Label = global::Mono.Unix.Catalog.GetString ("Make Default");
+			this.btnMakeDefault.Label = MonoDevelop.Core.GettextCatalog.GetString ("Make Default");
 			this.hbox4.Add (this.btnMakeDefault);
 			global::Gtk.Box.BoxChild w7 = ((global::Gtk.Box.BoxChild)(this.hbox4 [this.btnMakeDefault]));
 			w7.Position = 1;
@@ -138,7 +138,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.btnDebugArguments.CanFocus = true;
 			this.btnDebugArguments.Name = "btnDebugArguments";
 			this.btnDebugArguments.UseUnderline = true;
-			this.btnDebugArguments.Label = global::Mono.Unix.Catalog.GetString ("Debug Arguments");
+			this.btnDebugArguments.Label = MonoDevelop.Core.GettextCatalog.GetString ("Debug Arguments");
 			this.hbox8.Add (this.btnDebugArguments);
 			global::Gtk.Box.BoxChild w9 = ((global::Gtk.Box.BoxChild)(this.hbox8 [this.btnDebugArguments]));
 			w9.Position = 1;
@@ -149,7 +149,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.btnReleaseArguments.CanFocus = true;
 			this.btnReleaseArguments.Name = "btnReleaseArguments";
 			this.btnReleaseArguments.UseUnderline = true;
-			this.btnReleaseArguments.Label = global::Mono.Unix.Catalog.GetString ("Release Arguments");
+			this.btnReleaseArguments.Label = MonoDevelop.Core.GettextCatalog.GetString ("Release Arguments");
 			this.hbox8.Add (this.btnReleaseArguments);
 			global::Gtk.Box.BoxChild w10 = ((global::Gtk.Box.BoxChild)(this.hbox8 [this.btnReleaseArguments]));
 			w10.Position = 2;
@@ -165,7 +165,7 @@ namespace MonoDevelop.D.OptionPanels
 			// Container child table6.Gtk.Table+TableChild
 			this.label2 = new global::Gtk.Label ();
 			this.label2.Name = "label2";
-			this.label2.LabelProp = global::Mono.Unix.Catalog.GetString ("Toolchain bin path");
+			this.label2.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("Toolchain bin path");
 			this.table6.Add (this.label2);
 			global::Gtk.Table.TableChild w12 = ((global::Gtk.Table.TableChild)(this.table6 [this.label2]));
 			w12.TopAttach = ((uint)(1));
@@ -175,7 +175,7 @@ namespace MonoDevelop.D.OptionPanels
 			// Container child table6.Gtk.Table+TableChild
 			this.label28 = new global::Gtk.Label ();
 			this.label28.Name = "label28";
-			this.label28.LabelProp = global::Mono.Unix.Catalog.GetString ("\"Static library\" linker");
+			this.label28.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("\"Static library\" linker");
 			this.table6.Add (this.label28);
 			global::Gtk.Table.TableChild w13 = ((global::Gtk.Table.TableChild)(this.table6 [this.label28]));
 			w13.TopAttach = ((uint)(5));
@@ -185,7 +185,7 @@ namespace MonoDevelop.D.OptionPanels
 			// Container child table6.Gtk.Table+TableChild
 			this.label29 = new global::Gtk.Label ();
 			this.label29.Name = "label29";
-			this.label29.LabelProp = global::Mono.Unix.Catalog.GetString ("\"Shared library\" linker");
+			this.label29.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("\"Shared library\" linker");
 			this.table6.Add (this.label29);
 			global::Gtk.Table.TableChild w14 = ((global::Gtk.Table.TableChild)(this.table6 [this.label29]));
 			w14.TopAttach = ((uint)(4));
@@ -195,7 +195,7 @@ namespace MonoDevelop.D.OptionPanels
 			// Container child table6.Gtk.Table+TableChild
 			this.label3 = new global::Gtk.Label ();
 			this.label3.Name = "label3";
-			this.label3.LabelProp = global::Mono.Unix.Catalog.GetString ("Compiler");
+			this.label3.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("Compiler");
 			this.table6.Add (this.label3);
 			global::Gtk.Table.TableChild w15 = ((global::Gtk.Table.TableChild)(this.table6 [this.label3]));
 			w15.XOptions = ((global::Gtk.AttachOptions)(4));
@@ -203,7 +203,7 @@ namespace MonoDevelop.D.OptionPanels
 			// Container child table6.Gtk.Table+TableChild
 			this.label30 = new global::Gtk.Label ();
 			this.label30.Name = "label30";
-			this.label30.LabelProp = global::Mono.Unix.Catalog.GetString ("\"Executable\" linker");
+			this.label30.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("\"Executable\" linker");
 			this.table6.Add (this.label30);
 			global::Gtk.Table.TableChild w16 = ((global::Gtk.Table.TableChild)(this.table6 [this.label30]));
 			w16.TopAttach = ((uint)(3));
@@ -213,7 +213,7 @@ namespace MonoDevelop.D.OptionPanels
 			// Container child table6.Gtk.Table+TableChild
 			this.label31 = new global::Gtk.Label ();
 			this.label31.Name = "label31";
-			this.label31.LabelProp = global::Mono.Unix.Catalog.GetString ("Compiler executable");
+			this.label31.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("Compiler executable");
 			this.table6.Add (this.label31);
 			global::Gtk.Table.TableChild w17 = ((global::Gtk.Table.TableChild)(this.table6 [this.label31]));
 			w17.TopAttach = ((uint)(2));
@@ -223,7 +223,7 @@ namespace MonoDevelop.D.OptionPanels
 			// Container child table6.Gtk.Table+TableChild
 			this.label4 = new global::Gtk.Label ();
 			this.label4.Name = "label4";
-			this.label4.LabelProp = global::Mono.Unix.Catalog.GetString ("rdmd unittest command");
+			this.label4.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("rdmd unittest command");
 			this.table6.Add (this.label4);
 			global::Gtk.Table.TableChild w18 = ((global::Gtk.Table.TableChild)(this.table6 [this.label4]));
 			w18.TopAttach = ((uint)(6));
@@ -333,7 +333,7 @@ namespace MonoDevelop.D.OptionPanels
 			w6.SetTip (this.check_enableLibPrefixing, "If checked, all referenced libraries that can not be found locally will be stripped by their file extensions and get a \"-L-l\" prefix as they are passed to the compiler during project building.\n'../myCustomLib/bin/myCustomLib.a' remains untouched.\n'libphobos2.a' becomes '-L-llibphobos2' on compilation.\nThis is mainly activated when using the gdc compiler.", "If checked, all referenced libraries that can not be found locally will be stripped by their file extensions and get a \"-L-l\" prefix as they are passed to the compiler during project building.\n'../myCustomLib/bin/myCustomLib.a' remains untouched.\n'libphobos2.a' becomes '-L-llibphobos2' on compilation.\nThis is mainly activated when using the gdc compiler.");
 			this.check_enableLibPrefixing.CanFocus = true;
 			this.check_enableLibPrefixing.Name = "check_enableLibPrefixing";
-			this.check_enableLibPrefixing.Label = global::Mono.Unix.Catalog.GetString ("Enable gdc-specific import lib prefix stripping (e.g. libopengl32.a -> opengl32)");
+			this.check_enableLibPrefixing.Label = MonoDevelop.Core.GettextCatalog.GetString ("Enable gdc-specific import lib prefix stripping (e.g. libopengl32.a -> opengl32)");
 			this.check_enableLibPrefixing.Active = true;
 			this.check_enableLibPrefixing.DrawIndicator = true;
 			this.check_enableLibPrefixing.UseUnderline = true;
@@ -346,7 +346,7 @@ namespace MonoDevelop.D.OptionPanels
 			// Notebook tab
 			this.label12 = new global::Gtk.Label ();
 			this.label12.Name = "label12";
-			this.label12.LabelProp = global::Mono.Unix.Catalog.GetString ("Default Libraries");
+			this.label12.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("Default Libraries");
 			this.notebook2.SetTabLabel (this.vbox2, this.label12);
 			this.label12.ShowAll ();
 			// Container child notebook2.Gtk.Notebook+NotebookChild
@@ -375,7 +375,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.button_AddInclude.CanFocus = true;
 			this.button_AddInclude.Name = "button_AddInclude";
 			this.button_AddInclude.UseUnderline = true;
-			this.button_AddInclude.Label = global::Mono.Unix.Catalog.GetString ("Browse & Add");
+			this.button_AddInclude.Label = MonoDevelop.Core.GettextCatalog.GetString ("Browse & Add");
 			this.table3.Add (this.button_AddInclude);
 			global::Gtk.Table.TableChild w31 = ((global::Gtk.Table.TableChild)(this.table3 [this.button_AddInclude]));
 			w31.XOptions = ((global::Gtk.AttachOptions)(4));
@@ -391,7 +391,7 @@ namespace MonoDevelop.D.OptionPanels
 			// Notebook tab
 			this.label1 = new global::Gtk.Label ();
 			this.label1.Name = "label1";
-			this.label1.LabelProp = global::Mono.Unix.Catalog.GetString ("Includes");
+			this.label1.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("Includes");
 			this.notebook2.SetTabLabel (this.table2, this.label1);
 			this.label1.ShowAll ();
 			this.vbox8.Add (this.notebook2);

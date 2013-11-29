@@ -24,7 +24,7 @@ namespace MonoDevelop.D
 			// Container child table1.Gtk.Table+TableChild
 			this.label3 = new global::Gtk.Label ();
 			this.label3.Name = "label3";
-			this.label3.LabelProp = global::Mono.Unix.Catalog.GetString ("Compiler Executable");
+			this.label3.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("Compiler Executable");
 			this.table1.Add (this.label3);
 			global::Gtk.Table.TableChild w1 = ((global::Gtk.Table.TableChild)(this.table1 [this.label3]));
 			w1.XOptions = ((global::Gtk.AttachOptions)(4));
@@ -32,7 +32,7 @@ namespace MonoDevelop.D
 			// Container child table1.Gtk.Table+TableChild
 			this.label4 = new global::Gtk.Label ();
 			this.label4.Name = "label4";
-			this.label4.LabelProp = global::Mono.Unix.Catalog.GetString ("Build Arguments");
+			this.label4.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("Build Arguments");
 			this.table1.Add (this.label4);
 			global::Gtk.Table.TableChild w2 = ((global::Gtk.Table.TableChild)(this.table1 [this.label4]));
 			w2.TopAttach = ((uint)(1));

@@ -130,7 +130,6 @@
       <HintPath>..\ext\MonoDevelop.DesignerSupport.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Mono.Posix" />
     <Reference Include="Mono.Cairo" />
     <Reference Include="Xwt">
       <HintPath>..\ext\Xwt.dll</HintPath>

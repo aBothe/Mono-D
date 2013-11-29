@@ -48,7 +48,7 @@ namespace MonoDevelop.D
 			this.label14 = new global::Gtk.Label ();
 			this.label14.Name = "label14";
 			this.label14.Xalign = 0F;
-			this.label14.LabelProp = global::Mono.Unix.Catalog.GetString ("Note: Relative paths will be related to the project's base directory!");
+			this.label14.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("Note: Relative paths will be related to the project's base directory!");
 			this.table2.Add (this.label14);
 			global::Gtk.Table.TableChild w4 = ((global::Gtk.Table.TableChild)(this.table2 [this.label14]));
 			w4.YOptions = ((global::Gtk.AttachOptions)(4));
@@ -62,7 +62,7 @@ namespace MonoDevelop.D
 			this.button_AddInclude.CanFocus = true;
 			this.button_AddInclude.Name = "button_AddInclude";
 			this.button_AddInclude.UseUnderline = true;
-			this.button_AddInclude.Label = global::Mono.Unix.Catalog.GetString ("Browse & Add");
+			this.button_AddInclude.Label = MonoDevelop.Core.GettextCatalog.GetString ("Browse & Add");
 			this.table3.Add (this.button_AddInclude);
 			global::Gtk.Table.TableChild w5 = ((global::Gtk.Table.TableChild)(this.table3 [this.button_AddInclude]));
 			w5.XOptions = ((global::Gtk.AttachOptions)(4));

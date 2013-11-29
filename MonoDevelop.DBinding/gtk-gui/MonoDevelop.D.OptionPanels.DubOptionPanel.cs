@@ -24,7 +24,7 @@ namespace MonoDevelop.D.OptionPanels
 			// Container child table1.Gtk.Table+TableChild
 			this.label1 = new global::Gtk.Label ();
 			this.label1.Name = "label1";
-			this.label1.LabelProp = global::Mono.Unix.Catalog.GetString ("dub executable");
+			this.label1.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("dub executable");
 			this.table1.Add (this.label1);
 			global::Gtk.Table.TableChild w1 = ((global::Gtk.Table.TableChild)(this.table1 [this.label1]));
 			w1.XOptions = ((global::Gtk.AttachOptions)(4));
@@ -32,7 +32,7 @@ namespace MonoDevelop.D.OptionPanels
 			// Container child table1.Gtk.Table+TableChild
 			this.label2 = new global::Gtk.Label ();
 			this.label2.Name = "label2";
-			this.label2.LabelProp = global::Mono.Unix.Catalog.GetString ("Generic dub arguments");
+			this.label2.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("Generic dub arguments");
 			this.table1.Add (this.label2);
 			global::Gtk.Table.TableChild w2 = ((global::Gtk.Table.TableChild)(this.table1 [this.label2]));
 			w2.TopAttach = ((uint)(1));

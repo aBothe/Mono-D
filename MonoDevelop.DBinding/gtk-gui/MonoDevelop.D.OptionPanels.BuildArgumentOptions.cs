@@ -21,7 +21,7 @@ namespace MonoDevelop.D.OptionPanels
 			global::Stetic.Gui.Initialize (this);
 			// Widget MonoDevelop.D.OptionPanels.BuildArgumentOptions
 			this.Name = "MonoDevelop.D.OptionPanels.BuildArgumentOptions";
-			this.Title = global::Mono.Unix.Catalog.GetString ("Release build arguments");
+			this.Title = MonoDevelop.Core.GettextCatalog.GetString ("Release build arguments");
 			this.WindowPosition = ((global::Gtk.WindowPosition)(4));
 			this.Modal = true;
 			this.DestroyWithParent = true;
@@ -47,7 +47,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.label1 = new global::Gtk.Label ();
 			this.label1.Name = "label1";
 			this.label1.Xalign = 0F;
-			this.label1.LabelProp = global::Mono.Unix.Catalog.GetString ("Build target");
+			this.label1.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("Build target");
 			this.table1.Add (this.label1);
 			global::Gtk.Table.TableChild w3 = ((global::Gtk.Table.TableChild)(this.table1 [this.label1]));
 			w3.XOptions = ((global::Gtk.AttachOptions)(4));
@@ -56,7 +56,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.label2 = new global::Gtk.Label ();
 			this.label2.Name = "label2";
 			this.label2.Xalign = 0F;
-			this.label2.LabelProp = global::Mono.Unix.Catalog.GetString ("Compiler arguments");
+			this.label2.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("Compiler arguments");
 			this.table1.Add (this.label2);
 			global::Gtk.Table.TableChild w4 = ((global::Gtk.Table.TableChild)(this.table1 [this.label2]));
 			w4.TopAttach = ((uint)(1));
@@ -67,7 +67,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.label3 = new global::Gtk.Label ();
 			this.label3.Name = "label3";
 			this.label3.Xalign = 0F;
-			this.label3.LabelProp = global::Mono.Unix.Catalog.GetString ("Linker arguments");
+			this.label3.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("Linker arguments");
 			this.table1.Add (this.label3);
 			global::Gtk.Table.TableChild w5 = ((global::Gtk.Table.TableChild)(this.table1 [this.label3]));
 			w5.TopAttach = ((uint)(2));
@@ -78,7 +78,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.label4 = new global::Gtk.Label ();
 			this.label4.Name = "label4";
 			this.label4.Xalign = 0F;
-			this.label4.LabelProp = global::Mono.Unix.Catalog.GetString ("One-Step-Build arguments");
+			this.label4.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("One-Step-Build arguments");
 			this.table1.Add (this.label4);
 			global::Gtk.Table.TableChild w6 = ((global::Gtk.Table.TableChild)(this.table1 [this.label4]));
 			w6.TopAttach = ((uint)(3));
@@ -165,8 +165,8 @@ namespace MonoDevelop.D.OptionPanels
 			if ((this.Child != null)) {
 				this.Child.ShowAll ();
 			}
-			this.DefaultWidth = 571;
-			this.DefaultHeight = 198;
+			this.DefaultWidth = 582;
+			this.DefaultHeight = 210;
 			this.Hide ();
 			this.combo_SelectedBuildTarget.Changed += new global::System.EventHandler (this.OnComboSelectedBuildTargetChanged);
 			this.buttonCancel.Clicked += new global::System.EventHandler (this.OnButtonCancelClicked);

@@ -25,7 +25,7 @@ namespace MonoDevelop.D.Formatting
 			this.check_IndentPastedCodeLines = new global::Gtk.CheckButton ();
 			this.check_IndentPastedCodeLines.CanFocus = true;
 			this.check_IndentPastedCodeLines.Name = "check_IndentPastedCodeLines";
-			this.check_IndentPastedCodeLines.Label = global::Mono.Unix.Catalog.GetString ("Automatically indent pasted code lines");
+			this.check_IndentPastedCodeLines.Label = MonoDevelop.Core.GettextCatalog.GetString ("Automatically indent pasted code lines");
 			this.check_IndentPastedCodeLines.DrawIndicator = true;
 			this.check_IndentPastedCodeLines.UseUnderline = true;
 			this.table1.Add (this.check_IndentPastedCodeLines);
@@ -41,7 +41,7 @@ namespace MonoDevelop.D.Formatting
 			w2.SetTip (this.check_KeepAlignmentSpaces, "If unchecked, spaces that are not used for indentation but for final code alignment will be converted to tabs, too.", "If unchecked, spaces that are not used for indentation but for final code alignment will be converted to tabs, too.");
 			this.check_KeepAlignmentSpaces.CanFocus = true;
 			this.check_KeepAlignmentSpaces.Name = "check_KeepAlignmentSpaces";
-			this.check_KeepAlignmentSpaces.Label = global::Mono.Unix.Catalog.GetString ("Keep spaces for code aligment");
+			this.check_KeepAlignmentSpaces.Label = MonoDevelop.Core.GettextCatalog.GetString ("Keep spaces for code aligment");
 			this.check_KeepAlignmentSpaces.DrawIndicator = true;
 			this.check_KeepAlignmentSpaces.UseUnderline = true;
 			this.table1.Add (this.check_KeepAlignmentSpaces);
@@ -55,7 +55,7 @@ namespace MonoDevelop.D.Formatting
 			this.chk_CommentOutStdHeaders = new global::Gtk.CheckButton ();
 			this.chk_CommentOutStdHeaders.CanFocus = true;
 			this.chk_CommentOutStdHeaders.Name = "chk_CommentOutStdHeaders";
-			this.chk_CommentOutStdHeaders.Label = global::Mono.Unix.Catalog.GetString ("Comment out standard header");
+			this.chk_CommentOutStdHeaders.Label = MonoDevelop.Core.GettextCatalog.GetString ("Comment out standard header");
 			this.chk_CommentOutStdHeaders.DrawIndicator = true;
 			this.chk_CommentOutStdHeaders.UseUnderline = true;
 			this.table1.Add (this.chk_CommentOutStdHeaders);
@@ -67,7 +67,7 @@ namespace MonoDevelop.D.Formatting
 			this.chk_InsertStarAtCommentNewLine = new global::Gtk.CheckButton ();
 			this.chk_InsertStarAtCommentNewLine.CanFocus = true;
 			this.chk_InsertStarAtCommentNewLine.Name = "chk_InsertStarAtCommentNewLine";
-			this.chk_InsertStarAtCommentNewLine.Label = global::Mono.Unix.Catalog.GetString ("Insert * or + at comment new line");
+			this.chk_InsertStarAtCommentNewLine.Label = MonoDevelop.Core.GettextCatalog.GetString ("Insert * or + at comment new line");
 			this.chk_InsertStarAtCommentNewLine.DrawIndicator = true;
 			this.chk_InsertStarAtCommentNewLine.UseUnderline = true;
 			this.table1.Add (this.chk_InsertStarAtCommentNewLine);
