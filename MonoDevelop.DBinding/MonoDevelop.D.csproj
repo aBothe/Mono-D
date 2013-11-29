@@ -269,6 +269,7 @@
           <TextStylePolicy inheritsSet="null" scope="text/x-csharp" />
           <CSharpFormattingPolicy IndentSwitchBody="True" AfterDelegateDeclarationParameterComma="True" inheritsSet="Mono" inheritsScope="text/x-csharp" scope="text/x-csharp" />
         </Policies>
+        <GtkDesignInfo gettextClass="MonoDevelop.Core.GettextCatalog" />
       </Properties>
     </MonoDevelop>
   </ProjectExtensions>
