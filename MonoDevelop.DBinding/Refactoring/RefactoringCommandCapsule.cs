@@ -33,6 +33,11 @@ using MonoDevelop.Ide.Gui;
 using MonoDevelop.Core;
 using MonoDevelop.Ide.FindInFiles;
 using System.Threading;
+using MonoDevelop.D.Resolver;
+using D_Parser.Dom.Expressions;
+using D_Parser.Resolver.ExpressionSemantics;
+using D_Parser.Completion;
+using D_Parser.Parser;
 
 namespace MonoDevelop.D.Refactoring
 {
@@ -41,6 +46,14 @@ namespace MonoDevelop.D.Refactoring
 		public ResolutionContext ctxt;
 		public D_Parser.Completion.IEditorData ed;
 		public AbstractType[] lastResults;
+		public DResolver.NodeResolutionAttempt resultResolutionAttempt;
+
+		public bool Update(Document doc = null)
+		{
+			lastResults = DResolverWrapper.ResolveHoveredCodeLoosely(out ctxt, out ed, out resultResolutionAttempt, doc);
+
+			return lastResults != null && lastResults.Length > 0;
+		}
 
 		AbstractType GetResult()
 		{
@@ -139,39 +152,21 @@ namespace MonoDevelop.D.Refactoring
 				new DRenameHandler().Start(n);
 		}
 
-		#region Imports
+		public static void GenerateImportStatementForNode(INode n, IEditorData ed, Action<CodeLocation, string> ci)
+		{
+			var loc = new CodeLocation(0, DParser.FindLastImportStatementEndLocation(ed.SyntaxTree, ed.ModuleCode).Line+1);
+			ci(loc, "import " + (n.NodeRoot as DModule).ModuleName + ";\n");
+		}
+
 		public void TryImportMissingSymbol()
 		{
-			try
-			{
-				ImportGen_CustImplementation.CreateImportDirectiveForHighlightedSymbol(ed, new ImportGen_CustImplementation(IdeApp.Workbench.ActiveDocument));
-			}
-			catch (Exception ex)
-			{
-				MessageService.ShowError(IdeApp.Workbench.RootWindow,GettextCatalog.GetString("Error during import directive creation"),ex.Message);
-			}
+			var t = GetResult ();
+			if (t is DSymbol)
+				GenerateImportStatementForNode ((t as DSymbol).Definition, ed, (loc, s) => {
+					var doc = IdeApp.Workbench.ActiveDocument.Editor;
+					doc.Insert (doc.LocationToOffset (loc.Line, loc.Column), s);
+				});
 		}
-
-		class ImportGen_CustImplementation : ImportDirectiveCreator
-		{
-			public ImportGen_CustImplementation(Document doc)
-			{
-				this.doc = doc;
-			}
-
-			Document doc;
-
-			public override INode HandleMultipleResults(INode[] results)
-			{
-				return ImportSymbolSelectionDlg.Show (results, GettextCatalog.GetString("Select symbol to import"));
-			}
-
-			public override void InsertIntoCode(CodeLocation location, string codeToInsert)
-			{
-				doc.Editor.Insert(doc.Editor.GetLine(location.Line).Offset, codeToInsert.Trim() + doc.Editor.EolMarker);
-			}
-		}
-		#endregion
 	}
 }
 

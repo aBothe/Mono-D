@@ -60,7 +60,7 @@ namespace MonoDevelop.D.Refactoring.CodeActions
                 }
             }
 
-            INode[] nodes;
+			/* INode[] nodes;
             bool req;
             var edData = DResolverWrapper.CreateEditorData(doc);
             try
@@ -79,7 +79,7 @@ namespace MonoDevelop.D.Refactoring.CodeActions
                 {
                     yield return mod.ModuleName;
                 }
-            }
+			}*/
             yield break;
         }
 

@@ -11,9 +11,7 @@ namespace MonoDevelop.D.Refactoring
 
 		bool Update()
 		{
-			caps.lastResults = MonoDevelop.D.Resolver.DResolverWrapper.ResolveHoveredCode(out caps.ctxt, out caps.ed, Document);
-
-			return caps.lastResults != null && caps.lastResults.Length > 0;
+			return caps.Update (document) && caps.resultResolutionAttempt != D_Parser.Resolver.TypeResolution.DResolver.NodeResolutionAttempt.RawSymbolLookup;
 		}
 
 		[CommandHandler(Refactoring.Commands.OpenDDocumentation)]
@@ -73,7 +71,7 @@ namespace MonoDevelop.D.Refactoring
 		[CommandHandler(RefactoryCommands.ImportSymbol)]
 		void TryImportMissingSymbol()
 		{
-			if(!Update())
+			if(!Update() && caps.lastResults != null && caps.resultResolutionAttempt == D_Parser.Resolver.TypeResolution.DResolver.NodeResolutionAttempt.RawSymbolLookup)
 				caps.TryImportMissingSymbol ();
 		}
 	}

@@ -96,8 +96,6 @@ namespace MonoDevelop.D.Resolver
 				return DCompilerService.Instance.GetDefaultCompiler().GenParseCacheView();
 		}
 
-
-
 		public static AbstractType[] ResolveHoveredCode(
 			out ResolutionContext ResolverContext, out IEditorData edData, 
 			MonoDevelop.Ide.Gui.Document doc=null)
@@ -105,9 +103,17 @@ namespace MonoDevelop.D.Resolver
 			edData = CreateEditorData(doc);
 
 			ResolverContext = ResolutionContext.Create(edData);
-			
+
 			// Resolve the hovered piece of code
 			return DResolver.ResolveType(edData, ctxt:ResolverContext);
+		}
+
+		public static AbstractType[] ResolveHoveredCodeLoosely(out ResolutionContext ctxt, out IEditorData ed, out DResolver.NodeResolutionAttempt resolutionAttempt, Document doc = null)
+		{
+			ed = CreateEditorData(doc);
+			ctxt = ResolutionContext.Create(ed);
+
+			return DResolver.ResolveTypeLoosely (ed, out resolutionAttempt, ctxt);
 		}
 	}
 }
