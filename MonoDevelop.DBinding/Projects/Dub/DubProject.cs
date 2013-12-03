@@ -139,12 +139,18 @@ namespace MonoDevelop.D.Projects.Dub
 			OnEndLoad ();
 		}
 
+		string displayName;
+
 		public bool TryPopulateProperty(string propName, JsonReader j)
 		{
 			switch (propName.ToLowerInvariant())
 			{
+				case "displayname":
+					Name = displayName = j.ReadAsString ();
+					break;
 				case "name":
-					Name = j.ReadAsString();
+					if(displayName==null)
+						Name = j.ReadAsString();
 					break;
 				case "description":
 					Description = j.ReadAsString();
