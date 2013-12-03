@@ -84,10 +84,15 @@ namespace MonoDevelop.D.Refactoring
 				if (nodes != null && nodes.Length > 0) {
 					var importSymbolMenu = new CommandInfoSet { Text = GettextCatalog.GetString("Resolve") };
 
-					foreach(var n in nodes)
-						importSymbolMenu.CommandInfos.Add(new CommandInfo{
-							Text = "import "+DNode.GetNodePath(n.NodeRoot as DModule, true)+";", 
-								Icon = MonoDevelop.Ide.Gui.Stock.AddNamespace },new object[]{"a",n});
+						var alreadyAddedItems = new List<INode> ();
+						foreach (var n in nodes) {
+							var m = n.NodeRoot as DModule;
+							if (m != null && !alreadyAddedItems.Contains (m))
+								importSymbolMenu.CommandInfos.Add (new CommandInfo {
+									Text = "import " + DNode.GetNodePath (m, true) + ";", 
+									Icon = MonoDevelop.Ide.Gui.Stock.AddNamespace
+								}, new object[]{ "a", n });
+						}
 
 					// To explicitly show the Ctrl+Alt+Space hint.
 					importSymbolMenu.CommandInfos.AddSeparator ();
