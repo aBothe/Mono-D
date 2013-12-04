@@ -14,6 +14,7 @@ namespace MonoDevelop.D
 			global::Stetic.Gui.Initialize (this);
 			// Widget MonoDevelop.D.ProjectDependenciesWidget
 			global::Stetic.BinContainer.Attach (this);
+			this.HeightRequest = 300;
 			this.Name = "MonoDevelop.D.ProjectDependenciesWidget";
 			// Container child MonoDevelop.D.ProjectDependenciesWidget.Gtk.Container+ContainerChild
 			this.vbox2 = new global::Gtk.VBox ();

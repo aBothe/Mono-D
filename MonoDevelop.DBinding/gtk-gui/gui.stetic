@@ -3049,6 +3049,7 @@ This is mainly activated when using the gdc compiler.</property>
   </widget>
   <widget class="Gtk.Bin" id="MonoDevelop.D.ProjectDependenciesWidget" design-size="502 318">
     <property name="MemberName" />
+    <property name="HeightRequest">300</property>
     <child>
       <widget class="Gtk.VBox" id="vbox2">
         <property name="MemberName" />
