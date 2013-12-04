@@ -65,7 +65,8 @@ namespace MonoDevelop.D.Parser
 			var dprj = prj as AbstractDProject;
 
 			// Remove obsolete ast from cache
-			GlobalParseCache.RemoveModule (file);
+			if(file != null)
+				GlobalParseCache.RemoveModule (file);
 
 			DModule ast;
 			var doc = new ParsedDModule(file);
@@ -89,7 +90,7 @@ namespace MonoDevelop.D.Parser
 			if(string.IsNullOrEmpty(ast.ModuleName))
 			{
 				if(pf == null)
-					ast.ModuleName = Path.GetFileNameWithoutExtension(file);
+					ast.ModuleName = file != null ? Path.GetFileNameWithoutExtension(file) : string.Empty;
 				else
 					ast.ModuleName = BuildModuleName(pf);
 			}
