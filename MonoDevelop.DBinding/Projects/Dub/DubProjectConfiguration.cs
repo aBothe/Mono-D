@@ -12,6 +12,28 @@ namespace MonoDevelop.D.Projects.Dub
 		public const string DefaultConfigId = "Default";
 		public DubBuildSettings BuildSettings = new DubBuildSettings();
 
+		public MonoDevelop.D.Building.DCompileTarget TargetType
+		{
+			get{ 
+				string targetType = null;
+				var prj = base.ParentItem as DubProject;
+				prj.CommonBuildSettings.TryGetTargetTypeProperty (prj, Selector, ref targetType);
+				BuildSettings.TryGetTargetTypeProperty (prj, Selector, ref targetType);
+
+				if (targetType == null)
+					return MonoDevelop.D.Building.DCompileTarget.Executable;
+
+				switch (targetType.ToLowerInvariant ()) {
+					case "shared":
+						return MonoDevelop.D.Building.DCompileTarget.SharedLibrary;
+					case "static":
+						return MonoDevelop.D.Building.DCompileTarget.StaticLibrary;
+					default:
+						return MonoDevelop.D.Building.DCompileTarget.Executable;
+				}
+			}
+		}
+
 		public override void CopyFrom (ItemConfiguration conf)
 		{
 			var cfg = conf as DubProjectConfiguration;

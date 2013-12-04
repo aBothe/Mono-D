@@ -8,6 +8,7 @@ using MonoDevelop.Core;
 using MonoDevelop.D.Profiler;
 using MonoDevelop.D.Profiler.Commands;
 using System.Collections;
+using MonoDevelop.D.Projects.Dub;
 
 namespace MonoDevelop.D.Projects
 {
@@ -70,21 +71,26 @@ namespace MonoDevelop.D.Projects
 
 				if(takeDefSelector)
 					configSelector = dep.DefaultConfiguration.Selector;
-				
-				var activeConfig = dep.GetConfiguration(configSelector) as DProjectConfiguration;
 
-				if (activeConfig != null){
-					if(activeConfig.CompileTarget == DCompileTarget.StaticLibrary)
-						yield return dep.GetOutputFileName(configSelector);
-					// Assume there is an import lib inside the dll's output directory and add it to the linked-in libs
-					// https://github.com/aBothe/Mono-D/issues/180
-					else if(OS.IsWindows && 
-					        activeConfig.CompileTarget == DCompileTarget.SharedLibrary)
-					{
-						var lib = Path.ChangeExtension(dep.GetOutputFileName(configSelector), DCompilerService.StaticLibraryExtension);
-						if(File.Exists(lib))
-							yield return lib;
-					}
+				var cfg = dep.GetConfiguration (configSelector);
+
+				DCompileTarget targetType;
+
+				if (cfg is DProjectConfiguration)
+					targetType = (cfg as DProjectConfiguration).CompileTarget;
+				else if (cfg is DubProjectConfiguration)
+					targetType = (cfg as DubProjectConfiguration).TargetType;
+				else
+					continue;
+
+				if (targetType == DCompileTarget.StaticLibrary)
+						yield return dep.GetOutputFileName (configSelector);
+				// Assume there is an import lib inside the dll's output directory and add it to the linked-in libs
+				// https://github.com/aBothe/Mono-D/issues/180
+				else if (OS.IsWindows && targetType == DCompileTarget.SharedLibrary) {
+					var lib = Path.ChangeExtension (dep.GetOutputFileName (configSelector), DCompilerService.StaticLibraryExtension);
+					if (File.Exists (lib))
+						yield return lib;
 				}
 			}
 		}

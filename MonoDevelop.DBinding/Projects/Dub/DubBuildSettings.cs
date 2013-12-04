@@ -53,6 +53,15 @@ namespace MonoDevelop.D.Projects.Dub
 			"sourcefiles",SourcePathsProperty,"excludedsourcefiles","versions",ImportPathsProperty,"stringimportpaths"
 		};
 
+		public void TryGetTargetTypeProperty(DubProject prj, ConfigurationSelector cfg, ref string targetType)
+		{
+			List<DubBuildSetting> l;
+			if (TryGetValue (DubBuildSettings.TargetTypeProperty, out l))
+				foreach (var sett in l)
+					if (prj.BuildSettingMatchesConfiguration (sett, cfg))
+						targetType = sett.Values [0];
+		}
+
 		public void TryGetTargetFileProperties(DubProject prj, ConfigurationSelector configuration,ref string targetType, ref string targetName, ref string targetPath)
 		{
 			List<DubBuildSetting> l;
@@ -66,10 +75,7 @@ namespace MonoDevelop.D.Projects.Dub
 					if (prj.BuildSettingMatchesConfiguration (sett, configuration))
 						targetPath = sett.Values [0];
 
-			if (TryGetValue (DubBuildSettings.TargetTypeProperty, out l))
-				foreach (var sett in l)
-					if (prj.BuildSettingMatchesConfiguration (sett, configuration))
-						targetType = sett.Values [0];
+			TryGetTargetTypeProperty (prj, configuration, ref targetType);
 		}
 
 		public bool TryDeserializeBuildSetting(JsonReader j)
