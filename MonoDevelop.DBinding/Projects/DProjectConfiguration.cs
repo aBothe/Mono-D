@@ -58,10 +58,14 @@ namespace MonoDevelop.D.Projects
 				yield return i;
 			
 			bool takeDefSelector = configSelector == null;
-			foreach (var dep_ in AbstractDProject.GetSortedProjectDependencies(Project,configSelector))
+			var prj = Project;
+			foreach (var dep_ in prj.ParentSolution.GetAllProjectsWithTopologicalSort (configSelector))
 			{
-				var dep = dep_ as DProject;
-				if (dep == null || dep == Project)
+				if (dep_ == prj)
+					yield break; // Break as soon as we reached our project - all following projects are not part of our dependencies!
+
+				var dep = dep_ as AbstractDProject;
+				if (dep == null)
 					continue;
 
 				if(takeDefSelector)
