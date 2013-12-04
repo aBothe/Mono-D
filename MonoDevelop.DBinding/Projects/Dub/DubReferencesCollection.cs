@@ -102,10 +102,10 @@ namespace MonoDevelop.D.Projects.Dub
 				var allProjects = Ide.IdeApp.Workspace.GetAllProjects ();
 				foreach (var kv in dependencies){
 					var depPath = kv.Value.Name.Split(':');
-					if (depPath.Length > 1 && depPath [depPath.Length - 2] == Owner.Name) {
+					if (depPath.Length > 1 && depPath [depPath.Length - 2] == Owner.packageName) {
 						var depName = depPath [depPath.Length - 1];
 						foreach (var prj in allProjects)
-							if (prj.Name == depName)
+							if (prj is DubProject ? ((prj as DubProject).packageName == depName) : prj.Name == depName)
 								yield return prj.ItemId;
 					}
 				}

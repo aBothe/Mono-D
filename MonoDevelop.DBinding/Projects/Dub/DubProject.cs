@@ -33,7 +33,9 @@ namespace MonoDevelop.D.Projects.Dub
 		public readonly DubReferencesCollection DubReferences;
 		public override DProjectReferenceCollection References {get {return DubReferences;}} 
 
-		public override string Name { get; set; } // override because the name is normally derived from the file name -- package.json is not the project's file name!
+		public string packageName;
+		string displayName;
+		public override string Name { get{ return displayName ?? packageName; } set { packageName = value; } } // override because the name is normally derived from the file name -- package.json is not the project's file name!
 		public override FilePath FileName { get; set; }
 		public string Homepage;
 		public string Copyright;
@@ -139,18 +141,15 @@ namespace MonoDevelop.D.Projects.Dub
 			OnEndLoad ();
 		}
 
-		string displayName;
-
 		public bool TryPopulateProperty(string propName, JsonReader j)
 		{
 			switch (propName.ToLowerInvariant())
 			{
 				case "displayname":
-					Name = displayName = j.ReadAsString ();
+					displayName = j.ReadAsString ();
 					break;
 				case "name":
-					if(displayName==null)
-						Name = j.ReadAsString();
+					Name = j.ReadAsString();
 					break;
 				case "description":
 					Description = j.ReadAsString();
