@@ -186,7 +186,7 @@ namespace MonoDevelop.D.Projects.Dub
 			{
 				ret = true;
 				if (match.Success && dependencies.TryGetValue(match.Groups["name"].Value, out dep) &&
-					(string.IsNullOrEmpty(dep.Version) || dep.Version == match.Groups["version"].Value) &&
+					//(string.IsNullOrEmpty(dep.Version) || dep.Version == match.Groups["version"].Value) && // TODO: Appropriate handling of dep versions
 					string.IsNullOrEmpty(dep.Path) &&
 					!dep.Name.Contains(":")) // Since dub v0.9.20, subpackages' paths are included in the path list as well!
 					dep.Path = match.Groups["path"].Value.Trim();
