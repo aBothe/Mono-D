@@ -75,6 +75,8 @@ namespace MonoDevelop.D
 			else
 				l.AddKeyHandler(new DoubleUnderScoreWorkaroundHandler(this));
 
+			l.AddKeyHandler (EscapeCompletionAbortHandler.Instance);
+
 			lock(dom.DDom)
 				DCodeCompletionSupport.BuildCompletionData(
 					Document,
@@ -84,6 +86,27 @@ namespace MonoDevelop.D
 					triggerChar);
 
 			return l.Count != 0 ? l : null;
+		}
+
+		class EscapeCompletionAbortHandler : ICompletionKeyHandler
+		{
+			public static EscapeCompletionAbortHandler Instance = new EscapeCompletionAbortHandler();
+
+			public bool PreProcessKey (CompletionListWindow listWindow, Gdk.Key key, char keyChar, Gdk.ModifierType modifier, out KeyActions keyAction)
+			{
+				if (key == Gdk.Key.Escape) {
+					keyAction = KeyActions.CloseWindow;
+					return true;
+				}
+				keyAction = KeyActions.None;
+				return false;
+			}
+
+			public bool PostProcessKey (CompletionListWindow listWindow, Gdk.Key key, char keyChar, Gdk.ModifierType modifier, out KeyActions keyAction)
+			{
+				keyAction = KeyActions.None;
+				return false;
+			}
 		}
 
 		class DoubleUnderScoreWorkaroundHandler : ICompletionKeyHandler
