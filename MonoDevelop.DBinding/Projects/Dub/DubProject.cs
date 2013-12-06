@@ -23,6 +23,7 @@ namespace MonoDevelop.D.Projects.Dub
 	public class DubProject : AbstractDProject
 	{
 		#region Properties
+		bool loading;
 		List<string> authors = new List<string>();
 		internal List<DubSubPackage> packagesToAdd = new List<DubSubPackage>();
 		/// <summary>
@@ -68,6 +69,11 @@ namespace MonoDevelop.D.Projects.Dub
 			}
 		}
 
+		public override bool ItemFilesChanged {
+			get {
+				return loading;
+			}
+		}
 		protected override List<FilePath> OnGetItemFiles(bool includeReferencedFiles)
 		{
 			var files = new List<FilePath>();
@@ -133,12 +139,14 @@ namespace MonoDevelop.D.Projects.Dub
 		#region Serialize & Deserialize
 		internal void BeginLoad()
 		{
+			loading = true;
 			OnBeginLoad ();
 		}
 
 		internal void EndLoad()
 		{
 			OnEndLoad ();
+			loading = false;
 		}
 
 		public bool TryPopulateProperty(string propName, JsonReader j)
