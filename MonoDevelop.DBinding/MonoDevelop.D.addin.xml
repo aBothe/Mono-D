@@ -240,6 +240,10 @@
 		<SyntaxMode mimeTypes="text/x-d" class="MonoDevelop.D.Highlighting.DSyntaxMode"/>
 	</Extension>
 
+	<Extension path = "/MonoDevelop/SourceEditor2/SyntaxModes">
+		<Templates mimeTypes="text/x-dt" resource="DietTemplateSyntaxDefinition.xml"/>
+	</Extension>
+
 	<Extension path = "/MonoDevelop/Ide/CodeFormatters">
 		<Formatter mimeType="text/x-d" class="MonoDevelop.D.Formatting.DCodeFormatter" />
 	</Extension>

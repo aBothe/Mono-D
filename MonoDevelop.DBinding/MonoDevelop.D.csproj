@@ -140,6 +140,10 @@
     <EmbeddedResource Include="gtk-gui\gui.stetic">
       <LogicalName>gui.stetic</LogicalName>
     </EmbeddedResource>
+    <EmbeddedResource Include="DietTemplateSyntaxDefinition.xml">
+      <LogicalName>DietTemplateSyntaxDefinition.xml</LogicalName>
+      <Gettext-ScanForTranslations>False</Gettext-ScanForTranslations>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
