@@ -110,6 +110,7 @@
 								insertbefore="AllFiles"
 								_label="Resource Scripts"
 								extensions="*.rc"/>
+		<FileFilter id="diet" insertafter="D" _label="Diet template definition" extensions="*.dt"/>
 	</Extension>
 
 	<Extension path = "/MonoDevelop/Core/MimeTypes">
@@ -121,10 +122,15 @@
 		<MimeType id="text/x-d" _description="Resource script code" icon="md-resource-file-icon" isText="true">
 			<File pattern="*.rc" />
 		</MimeType>
+
+		<MimeType id="text/x-dt" _description="Diet template definition" isText="true">
+			<File pattern="*.dt" />
+		</MimeType>
 	</Extension>
 
 	<Extension path = "/MonoDevelop/ProjectModel/Gui/MimeTypePolicyPanels">
 		<Panel id = "DFormatting" _label = "D Format" mimeType="text/x-d" class="MonoDevelop.D.Formatting.FormattingPanel" />
+		<Panel id="DietFormatting" _label = "Diet templates" mimeType="text/x-dt" class="MonoDevelop.D.Formatting.DietTemplateFormattingPanel"/>
 	</Extension>
 
 	<Extension path = "/MonoDevelop/ProjectModel/PolicySets/Mono" >
