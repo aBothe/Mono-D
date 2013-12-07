@@ -238,10 +238,7 @@
 
 	<Extension path = "/MonoDevelop/SourceEditor2/CustomModes">
 		<SyntaxMode mimeTypes="text/x-d" class="MonoDevelop.D.Highlighting.DSyntaxMode"/>
-	</Extension>
-
-	<Extension path = "/MonoDevelop/SourceEditor2/SyntaxModes">
-		<Templates mimeTypes="text/x-dt" resource="DietTemplateSyntaxDefinition.xml"/>
+		<SyntaxMode mimeTypes="text/x-dt" class="MonoDevelop.D.Highlighting.DietTemplateSyntaxMode"/>
 	</Extension>
 
 	<Extension path = "/MonoDevelop/Ide/CodeFormatters">

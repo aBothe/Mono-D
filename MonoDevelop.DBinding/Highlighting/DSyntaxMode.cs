@@ -88,7 +88,7 @@ namespace MonoDevelop.D.Highlighting
 			PropertyService.PropertyChanged -= HandlePropertyChanged;
 		}
 
-		static Match workaroundMatchCtor(string color, string regex)
+		public static Match workaroundMatchCtor(string color, string regex)
 		{
 			var st = new StringReader("<Match color = \""+color+"\"><![CDATA["+regex+"]]></Match>");
 

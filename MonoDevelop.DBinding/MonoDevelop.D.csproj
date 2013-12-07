@@ -263,6 +263,7 @@
     <Compile Include="OptionPanels\DubOptionPanel.cs" />
     <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.DubOptionPanel.cs" />
     <Compile Include="Formatting\DietTemplateFormattingPanel.cs" />
+    <Compile Include="Highlighting\DietTemplateSyntaxMode.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
