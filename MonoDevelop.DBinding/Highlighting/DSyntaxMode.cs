@@ -214,7 +214,7 @@ namespace MonoDevelop.D.Highlighting
 			public void TransformChunks (List<Chunk> chunks)
 			{
 				try{
-					/*var off = Offset;
+					var off = Offset;
 					var endOff = EndOffset;
 
 					for(int i = 0; i < chunks.Count; i++)
@@ -243,7 +243,7 @@ namespace MonoDevelop.D.Highlighting
 							chunks.Insert(i+1, insertee);
 							return;
 						}
-					}*/
+					}
 				}catch(Exception ex) {
 					LoggingService.LogError ("Error during semantic highlighting", ex);
 				}
