@@ -117,6 +117,8 @@ namespace MonoDevelop.D.Highlighting
 
 		void HandleDocumentParsed (object sender, EventArgs e)
 		{
+			return;
+
 			if (cancelTokenSource != null)
 				cancelTokenSource.Cancel ();
 
@@ -130,54 +132,78 @@ namespace MonoDevelop.D.Highlighting
 		/// <summary>
 		/// The text locations to highlight. Key = Line.
 		/// </summary>
-		Dictionary<int, List<ISyntaxRegion>> textLocationsToHighlight = new Dictionary<int, List<ISyntaxRegion>> ();
 		List<TypeIdSegmMarker> segments = new List<TypeIdSegmMarker>();
 
 		void RemoveOldTypeMarkers()
 		{
 			Ide.DispatchService.GuiSyncDispatch (() => {
-				guiDoc.Editor.Parent.TextViewMargin.PurgeLayoutCache();
-				for (int i = segments.Count; i > 0;)
-					doc.RemoveMarker (segments [--i]);
-				segments.Clear ();
+				try{
+					guiDoc.Editor.Parent.TextViewMargin.PurgeLayoutCache();
+					for (int i = segments.Count; i > 0;)
+						doc.RemoveMarker (segments [--i]);
+					segments.Clear ();
+				}catch(Exception ex)
+				{
+					LoggingService.LogError ("Error during semantic highlighting", ex);
+				}
 			});
 		}
 
 		void updateTypeHighlightings ()
 		{
-			/*
-			var ast = (guiDoc.ParsedDocument as Parser.ParsedDModule).DDom;
-			var textLocationsToHighlight = OldTypeReferenceFinder.Scan(
-				ast, MonoDevelop.D.Resolver.DResolverWrapper.CreateCacheList(guiDoc)).TypeMatches;*/
-			textLocationsToHighlight.Clear ();
+			try{
+				if (guiDoc == null)
+					return;
+				var parsedDoc = guiDoc.ParsedDocument as Parser.ParsedDModule;
+				if (parsedDoc == null)
+					return;
+				var ast = (guiDoc.ParsedDocument as Parser.ParsedDModule).DDom;
+				if (ast == null)
+					return;
 
-			var ast = (guiDoc.ParsedDocument as Parser.ParsedDModule).DDom;
-			List<ISyntaxRegion> l;
-			foreach (var n in ast) {
-				if (n is DClassLike) {
-					var name = n.Name;
-					var nameLoc = n.NameLocation;
+				var textLocationsToHighlight = TypeReferenceFinder.Scan(ast, 
+					MonoDevelop.D.Completion.DCodeCompletionSupport.CreateContext(guiDoc)).Matches;
+				/*textLocationsToHighlight.Clear ();
 
-					if (!textLocationsToHighlight.TryGetValue (nameLoc.Line, out l))
-						textLocationsToHighlight [nameLoc.Line] = l = new List<ISyntaxRegion> ();
+				List<ISyntaxRegion> l;
+				foreach (var n in ast) {
+					if (n is DClassLike) {
+						var name = n.Name;
+						var nameLoc = n.NameLocation;
 
-					l.Add (new D_Parser.Dom.Expressions.IdentifierExpression (name) { 
-						Location = nameLoc, EndLocation = new CodeLocation (nameLoc.Column + name.Length, nameLoc.Line)
-					});
+						if (!textLocationsToHighlight.TryGetValue (nameLoc.Line, out l))
+							textLocationsToHighlight [nameLoc.Line] = l = new List<ISyntaxRegion> ();
+
+						l.Add (new D_Parser.Dom.Expressions.IdentifierExpression (name) { 
+							Location = nameLoc, EndLocation = new CodeLocation (nameLoc.Column + name.Length, nameLoc.Line)
+						});
+					}
+				}*/
+
+				RemoveOldTypeMarkers ();
+				int off, len;
+
+				foreach (var kv in textLocationsToHighlight) {
+					var line = doc.GetLine (kv.Key);
+					foreach (var sr in kv.Value) {
+						if (sr is INode) {
+							var n = sr as INode;
+							var nameLine = n.NameLocation.Line == kv.Key ? line : doc.GetLine (n.NameLocation.Line);
+							off = nameLine.Offset + n.NameLocation.Column - 1;
+							len = n.Name.Length;
+						} else {
+							off = line.Offset + sr.Location.Column - 1;
+							len = sr.EndLocation.Column - sr.Location.Column;
+						}
+
+						var marker = new TypeIdSegmMarker (off, len);
+						segments.Add (marker);
+						doc.AddMarker (marker);
+					}
 				}
 			}
-
-			RemoveOldTypeMarkers ();
-
-			foreach (var kv in textLocationsToHighlight) {
-				var line = doc.GetLine (kv.Key);
-				foreach (var sr in kv.Value) {
-					var off = line.Offset + sr.Location.Column - 1;
-					var len = sr.EndLocation.Column - sr.Location.Column;
-					var marker = new TypeIdSegmMarker (off, len);
-					segments.Add (marker);
-					doc.AddMarker (marker);
-				}
+			catch(Exception ex) {
+				LoggingService.LogError ("Error during semantic highlighting", ex);
 			}
 		}
 
@@ -187,25 +213,39 @@ namespace MonoDevelop.D.Highlighting
 
 			public void TransformChunks (List<Chunk> chunks)
 			{
-				var off = Offset;
-				var endOff = EndOffset;
+				try{
+					/*var off = Offset;
+					var endOff = EndOffset;
 
-				for(int i = 0; i < chunks.Count; i++)
-				{
-					var chunk = chunks [i];
-					if (chunk.Offset == off && chunk.EndOffset == endOff) {
-						chunk.Style = "User Types";
-						return;
-					} else if (chunk.Next != null ? chunk.Next.Offset >= endOff : chunk.Offset <= off) {
-						var remaining = chunk.EndOffset - endOff;
-						chunk.Length = off - chunk.Offset;
+					for(int i = 0; i < chunks.Count; i++)
+					{
+						var chunk = chunks [i];
+						if (chunk.Offset == off && chunk.EndOffset == endOff) {
+							chunk.Style = "User Types";
+							return;
+						} else if (chunk.Next != null ? chunk.Next.Offset >= endOff : chunk.Offset <= off) {
+							var remaining = chunk.EndOffset - endOff;
+							chunk.Length = off - chunk.Offset;
 
-						var insertee = new Chunk (off, endOff - off + remaining, "User Types") { Next = chunk.Next };
-						chunk.Next = insertee;
+							var insertee = new Chunk (off, endOff - off, "User Types");
+							chunk.Next = insertee;
 
-						chunks.Insert(i+1, insertee);
-						return;
-					}
+							if(remaining > 0)
+							{
+								var filler = new Chunk(endOff, remaining, chunk.Style);
+								insertee.Next = filler;
+								filler.Next = chunk.Next;
+								chunks.Insert(i+1, filler);
+							}
+							else
+								insertee.Next = chunk.Next;
+
+							chunks.Insert(i+1, insertee);
+							return;
+						}
+					}*/
+				}catch(Exception ex) {
+					LoggingService.LogError ("Error during semantic highlighting", ex);
 				}
 			}
 
