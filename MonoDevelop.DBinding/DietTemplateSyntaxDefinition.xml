@@ -25,7 +25,7 @@
 			<End>"</End>
 	</Span>
 			
-	<Match color="Css Selector">#[a-zA-Z_-][a-zA-Z0-9_-]*</Match>
+	<Match color="Html Attribute Name">#[a-zA-Z_-][a-zA-Z0-9_-]*</Match>
 	<Match color="Html Element Name">^\s*(?!block|include|extends)\w+(\.\w[\w-_]*)*</Match>
 
 	<Rule name = "String">
