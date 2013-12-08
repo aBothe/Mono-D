@@ -108,120 +108,108 @@ namespace MonoDevelop.D.Highlighting
 
 		void HandlePropertyChanged (object sender, PropertyChangedEventArgs e)
 		{
-			if (e.Key == "EnableSemanticHighlighting")
+			if (e.Key == "EnableSemanticHighlighting") {
 				SemanticHighlightingEnabled = PropertyService.Get ("EnableSemanticHighlighting", true);
-		}
-
-		void HandleDocumentChanged(object sender, LineEventArgs ea)
-		{/*
-			if (ea.LineNumber == -1)
-				textLocationsToHighlight.Remove (ea.Line.LineNumber + 1);
-			textLocationsToHighlight.Remove (ea.Line.LineNumber);*/
+				if (!SemanticHighlightingEnabled)
+					RemoveOldTypeMarkers ();
+			}
 		}
 
 		void HandleDocumentParsed (object sender, EventArgs e)
-		{/*
+		{
 			if (cancelTokenSource != null)
 				cancelTokenSource.Cancel ();
 
-			if (guiDoc != null && !guiDoc.IsProjectContextInUpdate && 
-				SemanticHighlightingEnabled && guiDoc.ParsedDocument != null) {
+			if (guiDoc != null && !guiDoc.IsProjectContextInUpdate &&
+			    SemanticHighlightingEnabled && guiDoc.ParsedDocument != null) {
 				cancelTokenSource = new CancellationTokenSource ();
 				System.Threading.Tasks.Task.Factory.StartNew (updateTypeHighlightings, cancelTokenSource.Token);
-			}*/
+			}
 		}
 
 		/// <summary>
-		/// The text locations to highlight. Key = Line. Value = Columns where type ids are located at (1-based)
+		/// The text locations to highlight. Key = Line.
 		/// </summary>
-		Dictionary<int, List<ISyntaxRegion>> textLocationsToHighlight = new Dictionary<int, List<ISyntaxRegion>>();
+		Dictionary<int, List<ISyntaxRegion>> textLocationsToHighlight = new Dictionary<int, List<ISyntaxRegion>> ();
+		List<TypeIdSegmMarker> segments = new List<TypeIdSegmMarker>();
 
-		void updateTypeHighlightings()
+		void RemoveOldTypeMarkers()
 		{
-			textLocationsToHighlight = TypeReferenceFinder.Scan(
-				(guiDoc.ParsedDocument as Parser.ParsedDModule).DDom,
-				Completion.DCodeCompletionSupport.CreateContext(guiDoc)).Matches;
-
-		/*
-			var visitor = new QuickTaskVisitor (newResolver, cancellationToken);
-			try {
-				newResolver.RootNode.AcceptVisitor (visitor);
-			} catch (Exception ex) {
-				LoggingService.LogError ("Error while analyzing the file for the semantic highlighting.", ex);
-				return;
-			}
-			if (!cancellationToken.IsCancellationRequested) {
-				Gtk.Application.Invoke (delegate {
-					if (cancellationToken.IsCancellationRequested)
-						return;
-					var editorData = guiDocument.Editor;
-					if (editorData == null)
-						return;
-//									compilation = newResolver.Compilation;
-					resolver = newResolver;
-					quickTasks = visitor.QuickTasks;
-					OnTasksUpdated (EventArgs.Empty);
-					foreach (var kv in lineSegments) {
-						try {
-							kv.Value.tree.RemoveListener ();
-						} catch (Exception) {
-						}
-					}
-					lineSegments.Clear ();
-					var textEditor = editorData.Parent;
-					if (textEditor != null) {
-						if (!parsedDocument.HasErrors) {
-							var margin = textEditor.TextViewMargin;
-							margin.PurgeLayoutCache ();
-							textEditor.QueueDraw ();
-						}
-					}
-				});
-			}
-			*/
+			Ide.DispatchService.GuiSyncDispatch (() => {
+				guiDoc.Editor.Parent.TextViewMargin.PurgeLayoutCache();
+				for (int i = segments.Count; i > 0;)
+					doc.RemoveMarker (segments [--i]);
+				segments.Clear ();
+			});
 		}
-		/*
-		public override ChunkParser CreateChunkParser (SpanParser spanParser, ColorScheme style, DocumentLine line)
+
+		void updateTypeHighlightings ()
 		{
-			return new DChunkParser (this,spanParser, style, line);
-		}
-		*/
-		/// Inserts custom highlighting sections per-line into the text document view.
-		class DChunkParser : ChunkParser
-		{
-			DSyntaxMode dsyntaxmode;
-			int lineNumber;
+			/*
+			var ast = (guiDoc.ParsedDocument as Parser.ParsedDModule).DDom;
+			var textLocationsToHighlight = OldTypeReferenceFinder.Scan(
+				ast, MonoDevelop.D.Resolver.DResolverWrapper.CreateCacheList(guiDoc)).TypeMatches;*/
+			textLocationsToHighlight.Clear ();
 
-			public DChunkParser(DSyntaxMode sm,SpanParser spanParser, ColorScheme style, DocumentLine line)
-				: base(sm, spanParser, style, line)
-			{
-				dsyntaxmode = sm;
-				lineNumber = line.LineNumber;
-			}
+			var ast = (guiDoc.ParsedDocument as Parser.ParsedDModule).DDom;
+			List<ISyntaxRegion> l;
+			foreach (var n in ast) {
+				if (n is DClassLike) {
+					var name = n.Name;
+					var nameLoc = n.NameLocation;
 
-			/// <summary>
-			/// All needed for nice type id highlighting is to alter the chunk style at the right positions.
-			/// </summary>
-			/// <returns>The style.</returns>
-			/// <param name="chunk">A piece of the displayed text.</param>
-			protected override string GetStyle (Chunk chunk)
-			{
-				List<ISyntaxRegion> offsets;
-				if (chunk.Length != 0) {
-					if (dsyntaxmode.textLocationsToHighlight.TryGetValue (lineNumber, out offsets)) {
-						var chunkColumn = line.GetLogicalColumn(dsyntaxmode.guiDoc.Editor,chunk.Offset-line.Offset);
+					if (!textLocationsToHighlight.TryGetValue (nameLoc.Line, out l))
+						textLocationsToHighlight [nameLoc.Line] = l = new List<ISyntaxRegion> ();
 
-						INode n;
-						foreach(var sr in offsets)
-							if(sr.EndLocation.Column >= chunkColumn && ((n=sr as INode) == null ?
-								sr.Location.Column <= chunkColumn :	n.NameLocation.Column <= chunkColumn))
-								return "User Types";
-					}
-					return base.GetStyle (chunk) ?? "Plain Text";
+					l.Add (new D_Parser.Dom.Expressions.IdentifierExpression (name) { 
+						Location = nameLoc, EndLocation = new CodeLocation (nameLoc.Column + name.Length, nameLoc.Line)
+					});
 				}
-
-				return base.GetStyle (chunk);
 			}
+
+			RemoveOldTypeMarkers ();
+
+			foreach (var kv in textLocationsToHighlight) {
+				var line = doc.GetLine (kv.Key);
+				foreach (var sr in kv.Value) {
+					var off = line.Offset + sr.Location.Column - 1;
+					var len = sr.EndLocation.Column - sr.Location.Column;
+					var marker = new TypeIdSegmMarker (off, len);
+					segments.Add (marker);
+					doc.AddMarker (marker);
+				}
+			}
+		}
+
+		class TypeIdSegmMarker : TextSegmentMarker, IChunkMarker
+		{
+			public TypeIdSegmMarker(int off, int len) : base(off,len){}
+
+			public void TransformChunks (List<Chunk> chunks)
+			{
+				var off = Offset;
+				var endOff = EndOffset;
+
+				for(int i = 0; i < chunks.Count; i++)
+				{
+					var chunk = chunks [i];
+					if (chunk.Offset == off && chunk.EndOffset == endOff) {
+						chunk.Style = "User Types";
+						return;
+					} else if (chunk.Next != null ? chunk.Next.Offset >= endOff : chunk.Offset <= off) {
+						var remaining = chunk.EndOffset - endOff;
+						chunk.Length = off - chunk.Offset;
+
+						var insertee = new Chunk (off, endOff - off + remaining, "User Types") { Next = chunk.Next };
+						chunk.Next = insertee;
+
+						chunks.Insert(i+1, insertee);
+						return;
+					}
+				}
+			}
+
+			public void ChangeForeColor (TextEditor editor, Chunk chunk, ref Cairo.Color color) { }
 		}
 		#endregion
 	}
