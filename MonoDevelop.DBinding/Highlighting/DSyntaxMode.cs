@@ -11,11 +11,15 @@ using MonoDevelop.Core;
 using System.Threading;
 using D_Parser.Refactoring;
 using D_Parser.Dom;
+using D_Parser.Misc;
+using System.Collections.Concurrent;
+using System.Reflection;
 
 namespace MonoDevelop.D.Highlighting
 {
 	public class DSyntaxMode : SyntaxMode, IDisposable
 	{
+		public const string UserTypesStyle = "User Types";
 		static SyntaxMode baseMode;
 		Document guiDoc;
 		internal Document GuiDocument
@@ -34,6 +38,13 @@ namespace MonoDevelop.D.Highlighting
 
 		public DSyntaxMode()
 		{
+			if(textSegmentMarkerTreeFI == null)
+				textSegmentMarkerTreeFI = typeof(TextDocument).GetField ("textSegmentMarkerTree", 
+					System.Reflection.BindingFlags.NonPublic | 
+					BindingFlags.Public |
+					System.Reflection.BindingFlags.Instance | 
+					System.Reflection.BindingFlags.IgnoreCase);
+
 			var matches = new List<Mono.TextEditor.Highlighting.Match>();
 
 			if (baseMode == null)
@@ -100,9 +111,25 @@ namespace MonoDevelop.D.Highlighting
 			return m;
 		}
 
+		protected override void OnDocumentSet (EventArgs e)
+		{
+			base.OnDocumentSet (e);
+
+			if (doc != null)
+				segmentMarkerTree = textSegmentMarkerTreeFI.GetValue (doc) as SegmentTree<TextSegmentMarker>;
+			else
+				segmentMarkerTree = null;
+		}
+
 
 
 		#region Semantic highlighting
+		static FieldInfo textSegmentMarkerTreeFI;
+		SegmentTree<TextSegmentMarker> segmentMarkerTree;
+
+		List<TypeIdSegmMarker> oldSegments;
+
+
 		bool SemanticHighlightingEnabled;
 		CancellationTokenSource cancelTokenSource;
 
@@ -117,7 +144,8 @@ namespace MonoDevelop.D.Highlighting
 
 		void HandleDocumentParsed (object sender, EventArgs e)
 		{
-			return;
+			if(segmentMarkerTree == null)
+				return;
 
 			if (cancelTokenSource != null)
 				cancelTokenSource.Cancel ();
@@ -129,19 +157,16 @@ namespace MonoDevelop.D.Highlighting
 			}
 		}
 
-		/// <summary>
-		/// The text locations to highlight. Key = Line.
-		/// </summary>
-		List<TypeIdSegmMarker> segments = new List<TypeIdSegmMarker>();
-
-		void RemoveOldTypeMarkers()
+		void RemoveOldTypeMarkers(bool commitUpdate = true)
 		{
 			Ide.DispatchService.GuiSyncDispatch (() => {
 				try{
-					guiDoc.Editor.Parent.TextViewMargin.PurgeLayoutCache();
-					for (int i = segments.Count; i > 0;)
-						doc.RemoveMarker (segments [--i]);
-					segments.Clear ();
+					if(oldSegments != null)
+						foreach(var segm in oldSegments)
+							segmentMarkerTree.Remove (segm);
+					oldSegments = null;
+					if(commitUpdate)
+						doc.CommitDocumentUpdate();
 				}catch(Exception ex)
 				{
 					LoggingService.LogError ("Error during semantic highlighting", ex);
@@ -151,16 +176,19 @@ namespace MonoDevelop.D.Highlighting
 
 		void updateTypeHighlightings ()
 		{
-			try{
-				if (guiDoc == null)
-					return;
-				var parsedDoc = guiDoc.ParsedDocument as Parser.ParsedDModule;
-				if (parsedDoc == null)
-					return;
-				var ast = (guiDoc.ParsedDocument as Parser.ParsedDModule).DDom;
-				if (ast == null)
-					return;
+			if (guiDoc == null || GlobalParseCache.IsParsing)
+				return;
+			var parsedDoc = guiDoc.ParsedDocument as Parser.ParsedDModule;
+			if (parsedDoc == null)
+				return;
+			var ast = (guiDoc.ParsedDocument as Parser.ParsedDModule).DDom;
+			if (ast == null)
+				return;
 
+			RemoveOldTypeMarkers (false);
+
+			var segments = new List<TypeIdSegmMarker>();
+			try{
 				var textLocationsToHighlight = TypeReferenceFinder.Scan(ast, 
 					MonoDevelop.D.Completion.DCodeCompletionSupport.CreateContext(guiDoc)).Matches;
 				/*textLocationsToHighlight.Clear ();
@@ -180,7 +208,6 @@ namespace MonoDevelop.D.Highlighting
 					}
 				}*/
 
-				RemoveOldTypeMarkers ();
 				int off, len;
 
 				foreach (var kv in textLocationsToHighlight) {
@@ -198,58 +225,68 @@ namespace MonoDevelop.D.Highlighting
 
 						var marker = new TypeIdSegmMarker (off, len);
 						segments.Add (marker);
-						doc.AddMarker (marker);
 					}
 				}
+
+				Ide.DispatchService.GuiDispatch(()=>{ 
+					foreach(var m in segments)
+						segmentMarkerTree.Add(m);
+
+					try{
+						doc.CommitDocumentUpdate();
+					}
+					catch(Exception ex) {
+						LoggingService.LogError ("Error during semantic highlighting", ex);
+					}
+				});
 			}
 			catch(Exception ex) {
 				LoggingService.LogError ("Error during semantic highlighting", ex);
 			}
+
+			if (oldSegments != null)
+				RemoveOldTypeMarkers ();
+			oldSegments = segments;
 		}
 
-		class TypeIdSegmMarker : TextSegmentMarker, IChunkMarker
+		class TypeIdSegmMarker : TextSegmentMarker
 		{
 			public TypeIdSegmMarker(int off, int len) : base(off,len){}
+		}
 
-			public void TransformChunks (List<Chunk> chunks)
+		public override ChunkParser CreateChunkParser (SpanParser spanParser, ColorScheme style, DocumentLine line)
+		{
+			return new DChunkParser(this, spanParser, style, line);
+		}
+
+		class DChunkParser : ChunkParser
+		{
+			public DChunkParser(DSyntaxMode syn,SpanParser s, ColorScheme st, DocumentLine ln)
+				: base(syn, s, st, ln) {}
+
+			protected override void AddRealChunk (Chunk chunk)
 			{
-				try{
-					var off = Offset;
-					var endOff = EndOffset;
+				if (spanParser.CurSpan != null && (spanParser.CurSpan.Rule == "Comment" || spanParser.CurSpan.Rule == "PreProcessorComment")) {
+					base.AddRealChunk (chunk);
+					return;
+				}
 
-					for(int i = 0; i < chunks.Count; i++)
-					{
-						var chunk = chunks [i];
-						if (chunk.Offset == off && chunk.EndOffset == endOff) {
-							chunk.Style = "User Types";
-							return;
-						} else if (chunk.Next != null ? chunk.Next.Offset >= endOff : chunk.Offset <= off) {
-							var remaining = chunk.EndOffset - endOff;
-							chunk.Length = off - chunk.Offset;
-
-							var insertee = new Chunk (off, endOff - off, "User Types");
-							chunk.Next = insertee;
-
-							if(remaining > 0)
-							{
-								var filler = new Chunk(endOff, remaining, chunk.Style);
-								insertee.Next = filler;
-								filler.Next = chunk.Next;
-								chunks.Insert(i+1, filler);
-							}
-							else
-								insertee.Next = chunk.Next;
-
-							chunks.Insert(i+1, insertee);
+				foreach (var m in doc.GetTextSegmentMarkersAt(line)) {
+					var tm = m as TypeIdSegmMarker;
+					if (chunk.Offset == tm.Offset && tm != null && tm.IsVisible) {
+						var endLoc = tm.EndOffset;
+						if (endLoc < chunk.EndOffset) {
+							base.AddRealChunk (new Chunk (chunk.Offset, endLoc - chunk.Offset, DSyntaxMode.UserTypesStyle));
+							base.AddRealChunk (new Chunk (endLoc, chunk.EndOffset - endLoc, chunk.Style));
 							return;
 						}
+						chunk.Style = DSyntaxMode.UserTypesStyle;
+						break;
 					}
-				}catch(Exception ex) {
-					LoggingService.LogError ("Error during semantic highlighting", ex);
 				}
-			}
 
-			public void ChangeForeColor (TextEditor editor, Chunk chunk, ref Cairo.Color color) { }
+				base.AddRealChunk (chunk);
+			}
 		}
 		#endregion
 	}
