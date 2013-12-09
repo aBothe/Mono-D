@@ -156,7 +156,7 @@ namespace MonoDevelop.D.Highlighting
 
 		void HandleDocumentParsed (object sender, EventArgs e)
 		{
-			//if(segmentMarkerTree == null)
+			if(segmentMarkerTree == null || !PropertyService.Get("UNO", false))
 				return;
 
 			if (cancelTokenSource != null)
@@ -171,11 +171,12 @@ namespace MonoDevelop.D.Highlighting
 
 		void RemoveOldTypeMarkers(bool commitUpdate = true)
 		{
-			Ide.DispatchService.GuiSyncDispatch (() => {
+			Ide.DispatchService.GuiSyncDispatch ((object s) => {
 				try{
-					if(oldSegments != null)
+					var tree = s as SegmentTree<TextSegmentMarker>;
+					if(oldSegments != null && tree != null)
 						foreach(var segm in oldSegments)
-							segmentMarkerTree.Remove (segm);
+							tree.Remove (segm);
 					oldSegments = null;
 					if(commitUpdate)
 						doc.CommitDocumentUpdate();
@@ -183,7 +184,7 @@ namespace MonoDevelop.D.Highlighting
 				{
 					LoggingService.LogError ("Error during semantic highlighting", ex);
 				}
-			});
+			}, segmentMarkerTree);
 		}
 
 		void updateTypeHighlightings ()
