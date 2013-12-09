@@ -82,6 +82,7 @@ namespace MonoDevelop.D.Highlighting
 
 			SemanticHighlightingEnabled = PropertyService.Get ("EnableSemanticHighlighting", true);
 			PropertyService.PropertyChanged += HandlePropertyChanged;
+			GlobalParseCache.ParseTaskFinished += GlobalParseCacheFilled;
 
 			this.matches = matches.ToArray();
 		}
@@ -96,7 +97,11 @@ namespace MonoDevelop.D.Highlighting
 		public virtual void Dispose ()
 		{
 			GuiDocument = null;
+			if (cancelTokenSource != null)
+				cancelTokenSource.Cancel ();
 			PropertyService.PropertyChanged -= HandlePropertyChanged;
+			GlobalParseCache.ParseTaskFinished -= GlobalParseCacheFilled;
+			segmentMarkerTree = null;
 		}
 
 		public static Match workaroundMatchCtor(string color, string regex)
@@ -121,14 +126,21 @@ namespace MonoDevelop.D.Highlighting
 				segmentMarkerTree = null;
 		}
 
-
+		void GlobalParseCacheFilled(ParsingFinishedEventArgs ea)
+		{
+			var GuiDoc = GuiDocument;
+			if(GuiDoc != null && Document != null)
+			{
+				var pcl = MonoDevelop.D.Resolver.DResolverWrapper.CreateCacheList(GuiDocument);
+				if (pcl.Contains (ea.Package.Root))
+					HandleDocumentParsed (this, EventArgs.Empty);
+			}
+		}
 
 		#region Semantic highlighting
 		static FieldInfo textSegmentMarkerTreeFI;
 		SegmentTree<TextSegmentMarker> segmentMarkerTree;
-
 		List<TypeIdSegmMarker> oldSegments;
-
 
 		bool SemanticHighlightingEnabled;
 		CancellationTokenSource cancelTokenSource;
@@ -176,10 +188,10 @@ namespace MonoDevelop.D.Highlighting
 
 		void updateTypeHighlightings ()
 		{
-			if (guiDoc == null || GlobalParseCache.IsParsing)
+			if (guiDoc == null)
 				return;
 			var parsedDoc = guiDoc.ParsedDocument as Parser.ParsedDModule;
-			if (parsedDoc == null)
+			if (parsedDoc == null || parsedDoc.IsInvalid)
 				return;
 			var ast = (guiDoc.ParsedDocument as Parser.ParsedDModule).DDom;
 			if (ast == null)
@@ -227,26 +239,22 @@ namespace MonoDevelop.D.Highlighting
 						segments.Add (marker);
 					}
 				}
-
-				Ide.DispatchService.GuiDispatch(()=>{ 
-					foreach(var m in segments)
-						segmentMarkerTree.Add(m);
-
-					try{
-						doc.CommitDocumentUpdate();
-					}
-					catch(Exception ex) {
-						LoggingService.LogError ("Error during semantic highlighting", ex);
-					}
-				});
 			}
 			catch(Exception ex) {
 				LoggingService.LogError ("Error during semantic highlighting", ex);
 			}
 
-			if (oldSegments != null)
-				RemoveOldTypeMarkers ();
-			oldSegments = segments;
+			Ide.DispatchService.GuiDispatch(()=>{ 
+				foreach(var m in segments)
+					segmentMarkerTree.Add(m);
+
+				guiDoc.Editor.Parent.TextViewMargin.PurgeLayoutCache ();
+				guiDoc.Editor.Parent.QueueDraw ();
+
+				if (oldSegments != null)
+					RemoveOldTypeMarkers ();
+				oldSegments = segments;
+			});
 		}
 
 		class TypeIdSegmMarker : TextSegmentMarker
