@@ -156,7 +156,7 @@ namespace MonoDevelop.D.Highlighting
 
 		void HandleDocumentParsed (object sender, EventArgs e)
 		{
-			if(segmentMarkerTree == null)
+			//if(segmentMarkerTree == null)
 				return;
 
 			if (cancelTokenSource != null)
