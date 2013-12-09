@@ -121,7 +121,11 @@ namespace MonoDevelop.D.Highlighting
 			base.OnDocumentSet (e);
 
 			if (doc != null)
-				segmentMarkerTree = textSegmentMarkerTreeFI.GetValue (doc) as SegmentTree<TextSegmentMarker>;
+			{
+				segmentMarkerTree = textSegmentMarkerTreeFI.GetValue(doc) as SegmentTree<TextSegmentMarker>;
+				if (textSegmentTreeRemoveMI == null)
+					textSegmentTreeRemoveMI = segmentMarkerTree.GetType().GetMethod("Remove", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+			}
 			else
 				segmentMarkerTree = null;
 		}
@@ -139,6 +143,7 @@ namespace MonoDevelop.D.Highlighting
 
 		#region Semantic highlighting
 		static FieldInfo textSegmentMarkerTreeFI;
+		static MethodInfo textSegmentTreeRemoveMI;
 		SegmentTree<TextSegmentMarker> segmentMarkerTree;
 		List<TypeIdSegmMarker> oldSegments;
 
@@ -173,10 +178,13 @@ namespace MonoDevelop.D.Highlighting
 		{
 			Ide.DispatchService.GuiSyncDispatch ((object s) => {
 				try{
+					var args = new object[1];
 					var tree = s as SegmentTree<TextSegmentMarker>;
 					if(oldSegments != null && tree != null)
-						foreach(var segm in oldSegments)
-							tree.Remove (segm);
+						foreach(var segm in oldSegments){
+							args[0] = segm;
+							textSegmentTreeRemoveMI.Invoke(tree, args);
+						}
 					oldSegments = null;
 					if(commitUpdate)
 						doc.CommitDocumentUpdate();
