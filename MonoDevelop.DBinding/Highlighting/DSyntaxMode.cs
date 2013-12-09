@@ -162,7 +162,7 @@ namespace MonoDevelop.D.Highlighting
 			if (cancelTokenSource != null)
 				cancelTokenSource.Cancel ();
 
-			if (guiDoc != null && !guiDoc.IsProjectContextInUpdate &&
+			if (guiDoc != null &&
 			    SemanticHighlightingEnabled && guiDoc.ParsedDocument != null) {
 				cancelTokenSource = new CancellationTokenSource ();
 				System.Threading.Tasks.Task.Factory.StartNew (updateTypeHighlightings, cancelTokenSource.Token);
