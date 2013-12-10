@@ -79,19 +79,8 @@ namespace MonoDevelop.D.Projects.Dub
 				if (File.Exists(packageJsonToLoad))
 				{
 					var prj = ReadFile(new FilePath(packageJsonToLoad), typeof(Project), monitor) as SolutionEntityItem;
-					if (prj != null){
+					if (prj != null)
 						sln.RootFolder.AddItem(prj, false);
-						// In order to let dependencies unbuilt, disbale the entry for the project from each solution config
-						foreach (var slnCfg in sln.Configurations)
-						{
-							var cfgEntry = slnCfg.GetEntryForItem(prj);
-							if (cfgEntry != null)
-							{
-								cfgEntry.Build = false;
-								//cfgEntry.Deploy = false;
-							}
-						}
-					}
 				}
 			}
 
