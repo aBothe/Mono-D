@@ -36,7 +36,17 @@ namespace MonoDevelop.D.Projects.Dub
 
 		public string packageName;
 		string displayName;
-		public override string Name { get{ return displayName ?? packageName; } set { packageName = value; } } // override because the name is normally derived from the file name -- package.json is not the project's file name!
+		public override string Name { get{ 
+				if (!string.IsNullOrWhiteSpace(displayName))
+					return displayName;
+
+				if (string.IsNullOrWhiteSpace (packageName))
+					return string.Empty;
+
+				var p = packageName.Split (':');
+				return p [p.Length - 1];
+			} 
+			set { displayName = value; } } // override because the name is normally derived from the file name -- package.json is not the project's file name!
 		public override FilePath FileName { get; set; }
 		public string Homepage;
 		public string Copyright;
@@ -55,18 +65,6 @@ namespace MonoDevelop.D.Projects.Dub
 				settingsToScan.Add(pcfg.BuildSettings);
 
 			return settingsToScan;
-		}
-
-		public IEnumerable<string> GetAdditionalDubIncludes(ConfigurationSelector sel = null)
-		{
-			foreach (var settings in GetBuildSettings(sel))
-			{
-				List<DubBuildSetting> l;
-				if(settings.TryGetValue(DubBuildSettings.ImportPathsProperty, out l))
-					for (int i = l.Count - 1; i >= 0; i--) // Ignore architecture/os/compiler restrictions for now
-						for (int j = l[i].Values.Length - 1; j >= 0; j--)
-							yield return (l[i].Values[j]);
-			}
 		}
 
 		public override bool ItemFilesChanged {
@@ -157,7 +155,7 @@ namespace MonoDevelop.D.Projects.Dub
 					displayName = j.ReadAsString ();
 					break;
 				case "name":
-					Name = j.ReadAsString();
+					packageName = j.ReadAsString();
 					break;
 				case "description":
 					Description = j.ReadAsString();

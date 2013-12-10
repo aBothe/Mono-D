@@ -74,6 +74,8 @@ namespace MonoDevelop.D.Projects.Dub
 				else if (r.TokenType == JsonToken.EndObject)
 					break;
 			}
+				
+			sub.packageName = superProject.packageName + ":" + (sub.packageName ?? string.Empty);
 
 			var sourcePaths = sub.GetSourcePaths ().ToArray();
 			if (sourcePaths.Length > 0 && !string.IsNullOrWhiteSpace(sourcePaths[0]))

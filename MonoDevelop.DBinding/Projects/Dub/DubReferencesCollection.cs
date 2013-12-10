@@ -88,12 +88,14 @@ namespace MonoDevelop.D.Projects.Dub
 
 		public override IEnumerable<string> Includes {
 			get {
-				foreach (var kv in dependencies)
-					if(kv.Value.Path != null && !kv.Value.Name.Contains(":"))
-						yield return Owner.GetAbsPath(ProjectBuilder.EnsureCorrectPathSeparators(kv.Value.Path));
-
-				foreach (var inc in Owner.GetAdditionalDubIncludes())
-					yield return Owner.GetAbsPath(inc);
+				foreach (var settings in Owner.GetBuildSettings(null))
+				{
+					List<DubBuildSetting> l;
+					if(settings.TryGetValue(DubBuildSettings.ImportPathsProperty, out l))
+						for (int i = l.Count - 1; i >= 0; i--) // Ignore architecture/os/compiler restrictions for now
+							for (int j = l[i].Values.Length - 1; j >= 0; j--)
+								yield return (l[i].Values[j]);
+				}
 			}
 		}
 
@@ -101,13 +103,10 @@ namespace MonoDevelop.D.Projects.Dub
 			get {
 				var allProjects = Ide.IdeApp.Workspace.GetAllProjects ();
 				foreach (var kv in dependencies){
-					var depPath = kv.Value.Name.Split(':');
-					if (depPath.Length > 1 && depPath [depPath.Length - 2] == Owner.packageName) {
-						var depName = depPath [depPath.Length - 1];
-						foreach (var prj in allProjects)
-							if (prj is DubProject ? ((prj as DubProject).packageName == depName) : prj.Name == depName)
-								yield return prj.ItemId;
-					}
+					var depPath = kv.Value.Name;
+					foreach (var prj in allProjects)
+						if (prj is DubProject ? ((prj as DubProject).packageName == depPath) : prj.Name == depPath)
+							yield return prj.ItemId;
 				}
 			}
 		}
