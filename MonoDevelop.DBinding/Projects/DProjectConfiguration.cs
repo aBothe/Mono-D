@@ -43,6 +43,8 @@ namespace MonoDevelop.D.Projects
 		[ItemProperty("Libs")]
 		[ItemProperty("Lib", Scope = "*")]
 		public List<string> ExtraLibraries = new List<string> ();
+		[ItemProperty("LinkinThirdPartyLibraries")]
+		public bool LinkinThirdPartyLibraries = false;
 		[ItemProperty("ObjectsDirectory", DefaultValue="obj")]
 		public string ObjectDirectory = "obj";
 		[ItemProperty("DDocDirectory", DefaultValue = "doc")]
@@ -60,8 +62,12 @@ namespace MonoDevelop.D.Projects
 			
 			bool takeDefSelector = configSelector == null;
 			var prj = Project;
-			foreach (var dep_ in prj.GetReferencedItems (configSelector))
+			var referencedItems = LinkinThirdPartyLibraries ? prj.ParentSolution.GetAllProjectsWithTopologicalSort (configSelector) : prj.GetReferencedItems (configSelector);
+			foreach (var dep_ in referencedItems)
 			{
+				if (dep_ == prj) // Prohibit linking to itself - will occur when enlisting all projects via GetAllProjectsWithTopologicalSort
+					break;
+
 				var dep = dep_ as AbstractDProject;
 				if (dep == null)
 					continue;
@@ -145,6 +151,7 @@ namespace MonoDevelop.D.Projects
 
             ExtraLibraries.Clear();
             ExtraLibraries.AddRange(conf.ExtraLibraries);
+			LinkinThirdPartyLibraries = conf.LinkinThirdPartyLibraries;
 			
 			if (Changed != null)
 				Changed (this, new EventArgs ());

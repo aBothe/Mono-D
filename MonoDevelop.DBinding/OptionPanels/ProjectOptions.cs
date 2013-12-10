@@ -63,6 +63,8 @@ namespace MonoDevelop.D.OptionPanels
 			
 			extraCompilerTextView.Buffer.Text = config.ExtraCompilerArguments;
 			extraLinkerTextView.Buffer.Text = config.ExtraLinkerArguments;
+
+			check_LinkThirdPartyLibs.Active = configuration.LinkinThirdPartyLibraries;
 			
 			text_BinDirectory.Text = config.OutputDirectory;
 			text_TargetFile.Text = config.Output;
@@ -110,6 +112,8 @@ namespace MonoDevelop.D.OptionPanels
 			int oldHash = configuration.GetHashCode ();
 			configuration.ExtraCompilerArguments = extraCompilerTextView.Buffer.Text;
 			configuration.ExtraLinkerArguments = extraLinkerTextView.Buffer.Text;
+
+			configuration.LinkinThirdPartyLibraries = check_LinkThirdPartyLibs.Active;
 			
 			configuration.OutputDirectory = text_BinDirectory.Text;
 			configuration.Output = text_TargetFile.Text;

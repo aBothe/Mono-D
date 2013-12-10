@@ -20,19 +20,48 @@
       <widget class="Gtk.Notebook" id="notebook1">
         <property name="MemberName" />
         <property name="CanFocus">True</property>
-        <property name="CurrentPage">2</property>
+        <property name="CurrentPage">0</property>
         <property name="ShowBorder">False</property>
         <property name="Scrollable">True</property>
         <child>
           <widget class="Gtk.Table" id="table_LinkingTab">
             <property name="MemberName" />
-            <property name="NRows">6</property>
+            <property name="NRows">7</property>
             <property name="NColumns">2</property>
             <property name="RowSpacing">4</property>
             <property name="ColumnSpacing">4</property>
             <property name="BorderWidth">4</property>
             <child>
               <placeholder />
+            </child>
+            <child>
+              <placeholder />
+            </child>
+            <child>
+              <widget class="Gtk.CheckButton" id="check_LinkThirdPartyLibs">
+                <property name="MemberName" />
+                <property name="CanFocus">True</property>
+                <property name="Label" translatable="yes">Link in static/shared libraries from nested dependencies</property>
+                <property name="Active">True</property>
+                <property name="DrawIndicator">True</property>
+                <property name="HasLabel">True</property>
+                <property name="UseUnderline">True</property>
+              </widget>
+              <packing>
+                <property name="TopAttach">5</property>
+                <property name="BottomAttach">6</property>
+                <property name="LeftAttach">1</property>
+                <property name="RightAttach">2</property>
+                <property name="AutoSize">True</property>
+                <property name="XOptions">Fill</property>
+                <property name="YOptions">Fill</property>
+                <property name="XExpand">False</property>
+                <property name="XFill">True</property>
+                <property name="XShrink">False</property>
+                <property name="YExpand">False</property>
+                <property name="YFill">True</property>
+                <property name="YShrink">False</property>
+              </packing>
             </child>
             <child>
               <widget class="Gtk.ComboBox" id="combo_ProjectType">
@@ -63,8 +92,8 @@
                 <property name="LabelProp" translatable="yes">Extra Linker Options</property>
               </widget>
               <packing>
-                <property name="TopAttach">5</property>
-                <property name="BottomAttach">6</property>
+                <property name="TopAttach">6</property>
+                <property name="BottomAttach">7</property>
                 <property name="AutoSize">True</property>
                 <property name="XOptions">Fill</property>
                 <property name="YOptions">Fill</property>
@@ -226,8 +255,8 @@ Example:
                 </child>
               </widget>
               <packing>
-                <property name="TopAttach">5</property>
-                <property name="BottomAttach">6</property>
+                <property name="TopAttach">6</property>
+                <property name="BottomAttach">7</property>
                 <property name="LeftAttach">1</property>
                 <property name="RightAttach">2</property>
                 <property name="AutoSize">False</property>
