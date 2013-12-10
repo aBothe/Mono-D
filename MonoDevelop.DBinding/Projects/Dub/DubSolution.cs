@@ -40,5 +40,15 @@ namespace MonoDevelop.D.Projects.Dub
 			base.Dispose ();
 			GC.ReRegisterForFinalize (this);
 		}
+
+		protected override BuildResult OnBuild (MonoDevelop.Core.IProgressMonitor monitor, ConfigurationSelector configuration)
+		{
+			var s = StartupItem as Project;
+
+			if (s == null)
+				return new BuildResult{ FailedBuildCount = 1, CompilerOutput = "No default package specified!", BuildCount = 0 };
+
+			return (StartupItem as Project).Build(monitor, configuration);
+		}
 	}
 }
