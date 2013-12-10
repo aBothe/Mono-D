@@ -9,7 +9,6 @@ namespace MonoDevelop.D.Gui
 	public class MixinInsightExtension : TextEditorExtension
 	{
 		static AutoResetEvent stateChanged = new AutoResetEvent(false);
-		static MixinInsightPad pad;
 		static Thread updateTh;
 		static bool initialized;
 
@@ -79,15 +78,7 @@ namespace MonoDevelop.D.Gui
 				stateChanged.WaitOne();
 				while (stateChanged.WaitOne(400));
 
-				DispatchService.GuiSyncDispatch(() =>
-				{
-					var p = Ide.IdeApp.Workbench.GetPad<MixinInsightPad>();
-					if (p == null)
-						return;
-
-					pad = p.Content as MixinInsightPad;
-				});
-				
+				var pad = MixinInsightPad.Instance;			
 				if (pad != null && pad.Window.ContentVisible)
 					pad.Update();
 			}

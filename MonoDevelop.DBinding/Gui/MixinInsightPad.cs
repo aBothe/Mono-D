@@ -17,6 +17,8 @@ namespace MonoDevelop.D.Gui
 {
 	public class MixinInsightPad : AbstractPadContent
 	{
+		public static MixinInsightPad Instance;
+
 		#region Properties
 		Gtk.ScrolledWindow scrolledWindow;
 		TextEditor outputEditor;
@@ -73,6 +75,7 @@ namespace MonoDevelop.D.Gui
 			tb.Add(abortButton);
 
 			tb.ShowAll();
+			Instance = this;
 		}
 
 		public override Gtk.Widget Control
