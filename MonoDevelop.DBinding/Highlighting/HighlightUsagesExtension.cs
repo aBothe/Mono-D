@@ -247,6 +247,8 @@ namespace MonoDevelop.D.Highlighting
 				if (referencedNode is DMethod && ((DMethod)referencedNode).SpecialType == DMethod.MethodType.Constructor)
 				{
 					mr = mr.Base as DSymbol;
+					if (mr == null)
+						return false;
 					referencedNode = mr.Definition;
 				}
 				try
