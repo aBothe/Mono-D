@@ -38,13 +38,6 @@ namespace MonoDevelop.D.Highlighting
 
 		public DSyntaxMode()
 		{
-			if(textSegmentMarkerTreeFI == null)
-				textSegmentMarkerTreeFI = typeof(TextDocument).GetField ("textSegmentMarkerTree", 
-					System.Reflection.BindingFlags.NonPublic | 
-					BindingFlags.Public |
-					System.Reflection.BindingFlags.Instance | 
-					System.Reflection.BindingFlags.IgnoreCase);
-
 			var matches = new List<Mono.TextEditor.Highlighting.Match>();
 
 			if (baseMode == null)
@@ -86,16 +79,11 @@ namespace MonoDevelop.D.Highlighting
 
 			this.matches = matches.ToArray();
 		}
-		/*
-		protected override void OnDocumentSet (EventArgs e)
-		{
-			base.OnDocumentSet (e);
-			if(base.doc != null)
-				Document.LineChanged += HandleDocumentChanged;
-		}
-*/
+
 		public virtual void Dispose ()
 		{
+			if (doc != null && segmentMarkerTree != null)
+				segmentMarkerTree.RemoveListener();
 			GuiDocument = null;
 			if (cancelTokenSource != null)
 				cancelTokenSource.Cancel ();
@@ -122,9 +110,8 @@ namespace MonoDevelop.D.Highlighting
 
 			if (doc != null)
 			{
-				segmentMarkerTree = textSegmentMarkerTreeFI.GetValue(doc) as SegmentTree<TextSegmentMarker>;
-				if (textSegmentTreeRemoveMI == null)
-					textSegmentTreeRemoveMI = segmentMarkerTree.GetType().GetMethod("Remove", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+				segmentMarkerTree = new SegmentTree<TextSegmentMarker>();
+				segmentMarkerTree.InstallListener(doc);
 			}
 			else
 				segmentMarkerTree = null;
@@ -133,19 +120,20 @@ namespace MonoDevelop.D.Highlighting
 		void GlobalParseCacheFilled(ParsingFinishedEventArgs ea)
 		{
 			var GuiDoc = GuiDocument;
-			if(GuiDoc != null && Document != null)
+			if(GuiDoc != null && Document != null && ea.Package != null)
 			{
-				var pcl = MonoDevelop.D.Resolver.DResolverWrapper.CreateCacheList(GuiDocument);
-				if (pcl.Contains (ea.Package.Root))
+				var root = ea.Package.Root;
+				if (root == null)
+					return;
+
+				var pcl = MonoDevelop.D.Resolver.DResolverWrapper.CreateCacheList(GuiDoc);
+				if (pcl.Contains (root))
 					HandleDocumentParsed (this, EventArgs.Empty);
 			}
 		}
 
 		#region Semantic highlighting
-		static FieldInfo textSegmentMarkerTreeFI;
-		static MethodInfo textSegmentTreeRemoveMI;
-		SegmentTree<TextSegmentMarker> segmentMarkerTree;
-		List<TypeIdSegmMarker> oldSegments;
+		SegmentTree<TextSegmentMarker> segmentMarkerTree = new SegmentTree<TextSegmentMarker>();
 
 		bool SemanticHighlightingEnabled;
 		CancellationTokenSource cancelTokenSource;
@@ -176,23 +164,17 @@ namespace MonoDevelop.D.Highlighting
 
 		void RemoveOldTypeMarkers(bool commitUpdate = true)
 		{
-			Ide.DispatchService.GuiSyncDispatch ((object s) => {
+			if(segmentMarkerTree != null)
+				segmentMarkerTree.Clear();
+			if (commitUpdate)
+			Ide.DispatchService.GuiSyncDispatch (() => {
 				try{
-					var args = new object[1];
-					var tree = s as SegmentTree<TextSegmentMarker>;
-					if(oldSegments != null && tree != null)
-						foreach(var segm in oldSegments){
-							args[0] = segm;
-							textSegmentTreeRemoveMI.Invoke(tree, args);
-						}
-					oldSegments = null;
-					if(commitUpdate)
-						doc.CommitDocumentUpdate();
+					doc.CommitDocumentUpdate();
 				}catch(Exception ex)
 				{
 					LoggingService.LogError ("Error during semantic highlighting", ex);
 				}
-			}, segmentMarkerTree);
+			});
 		}
 
 		void updateTypeHighlightings ()
@@ -208,26 +190,9 @@ namespace MonoDevelop.D.Highlighting
 
 			RemoveOldTypeMarkers (false);
 
-			var segments = new List<TypeIdSegmMarker>();
 			try{
 				var textLocationsToHighlight = TypeReferenceFinder.Scan(ast, 
 					MonoDevelop.D.Completion.DCodeCompletionSupport.CreateContext(guiDoc)).Matches;
-				/*textLocationsToHighlight.Clear ();
-
-				List<ISyntaxRegion> l;
-				foreach (var n in ast) {
-					if (n is DClassLike) {
-						var name = n.Name;
-						var nameLoc = n.NameLocation;
-
-						if (!textLocationsToHighlight.TryGetValue (nameLoc.Line, out l))
-							textLocationsToHighlight [nameLoc.Line] = l = new List<ISyntaxRegion> ();
-
-						l.Add (new D_Parser.Dom.Expressions.IdentifierExpression (name) { 
-							Location = nameLoc, EndLocation = new CodeLocation (nameLoc.Column + name.Length, nameLoc.Line)
-						});
-					}
-				}*/
 
 				int off, len;
 
@@ -245,7 +210,7 @@ namespace MonoDevelop.D.Highlighting
 						}
 
 						var marker = new TypeIdSegmMarker (off, len);
-						segments.Add (marker);
+						segmentMarkerTree.Add (marker);
 					}
 				}
 			}
@@ -254,15 +219,8 @@ namespace MonoDevelop.D.Highlighting
 			}
 
 			Ide.DispatchService.GuiDispatch(()=>{ 
-				foreach(var m in segments)
-					segmentMarkerTree.Add(m);
-
 				guiDoc.Editor.Parent.TextViewMargin.PurgeLayoutCache ();
 				guiDoc.Editor.Parent.QueueDraw ();
-
-				if (oldSegments != null)
-					RemoveOldTypeMarkers ();
-				oldSegments = segments;
 			});
 		}
 
@@ -287,10 +245,11 @@ namespace MonoDevelop.D.Highlighting
 					base.AddRealChunk (chunk);
 					return;
 				}
-
-				foreach (var m in doc.GetTextSegmentMarkersAt(line)) {
+				var syn = mode as DSyntaxMode;
+				foreach (var m in syn.segmentMarkerTree.GetSegmentsAt(chunk.Offset)) {
 					var tm = m as TypeIdSegmMarker;
-					if (chunk.Offset == tm.Offset && tm != null && tm.IsVisible) {
+					if (tm != null && tm.IsVisible)
+					{
 						var endLoc = tm.EndOffset;
 						if (endLoc < chunk.EndOffset) {
 							base.AddRealChunk (new Chunk (chunk.Offset, endLoc - chunk.Offset, DSyntaxMode.UserTypesStyle));
