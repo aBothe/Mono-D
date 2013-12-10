@@ -14,6 +14,7 @@ using D_Parser.Dom;
 using D_Parser.Misc;
 using System.Collections.Concurrent;
 using System.Reflection;
+using D_Parser.Dom.Expressions;
 
 namespace MonoDevelop.D.Highlighting
 {
@@ -205,8 +206,10 @@ namespace MonoDevelop.D.Highlighting
 							off = nameLine.Offset + n.NameLocation.Column - 1;
 							len = n.Name.Length;
 						} else {
-							off = line.Offset + sr.Location.Column - 1;
-							len = sr.EndLocation.Column - sr.Location.Column;
+							var sr_ = sr;
+							GetIdentifier(ref sr_);
+							off = line.Offset + sr_.Location.Column - 1;
+							len = sr_.EndLocation.Column - sr_.Location.Column;
 						}
 
 						var marker = new TypeIdSegmMarker (off, len);
@@ -222,6 +225,17 @@ namespace MonoDevelop.D.Highlighting
 				guiDoc.Editor.Parent.TextViewMargin.PurgeLayoutCache ();
 				guiDoc.Editor.Parent.QueueDraw ();
 			});
+		}
+
+		static void GetIdentifier(ref ISyntaxRegion sr)
+		{
+			if (sr is TemplateInstanceExpression) {
+				sr = (sr as TemplateInstanceExpression).Identifier;
+				GetIdentifier (ref sr);
+			} else if (sr is NewExpression) {
+				sr = (sr as NewExpression).Type;
+				GetIdentifier (ref sr);
+			}
 		}
 
 		class TypeIdSegmMarker : TextSegmentMarker
