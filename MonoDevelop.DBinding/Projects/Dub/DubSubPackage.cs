@@ -66,6 +66,8 @@ namespace MonoDevelop.D.Projects.Dub
 
 			sub.BeginLoad ();
 
+			sub.AddProjectAndSolutionConfiguration(new DubProjectConfiguration { Name = GettextCatalog.GetString("Default"), Id = DubProjectConfiguration.DefaultConfigId });
+
 			superProject.packagesToAdd.Add(sub);
 			
 			while (r.Read ()) {
@@ -92,29 +94,19 @@ namespace MonoDevelop.D.Projects.Dub
 			return sub;
 		}
 
-		protected override bool OnGetCanExecute (MonoDevelop.Projects.ExecutionContext context, MonoDevelop.Projects.ConfigurationSelector configuration)
+		protected override void DoExecute (IProgressMonitor monitor, ExecutionContext context, ConfigurationSelector configuration)
 		{
-			return false;
+			useOriginalBasePath = true;
+			base.DoExecute (monitor, context, configuration);
+			useOriginalBasePath = false;
 		}
 
-		protected override bool CheckNeedsBuild (MonoDevelop.Projects.ConfigurationSelector configuration)
+		protected override BuildResult DoBuild (IProgressMonitor monitor, ConfigurationSelector configuration)
 		{
-			return false;
-		}
-
-		public override FilePath GetOutputFileName(ConfigurationSelector configuration)
-		{
-			return new FilePath();
-		}
-
-		protected override void DoClean (MonoDevelop.Core.IProgressMonitor monitor, ConfigurationSelector configuration)
-		{
-
-		}
-
-		protected override BuildResult OnBuild (MonoDevelop.Core.IProgressMonitor monitor, MonoDevelop.Projects.ConfigurationSelector configuration)
-		{
-			return new BuildResult { CompilerOutput = "Can't build subpackage. Skipping." };
+			useOriginalBasePath = true;
+			var res = base.DoBuild (monitor, configuration);
+			useOriginalBasePath = false;
+			return res;
 		}
 	}
 }

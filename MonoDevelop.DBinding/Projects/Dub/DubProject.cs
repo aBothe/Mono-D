@@ -256,7 +256,10 @@ namespace MonoDevelop.D.Projects.Dub
 				targetPath = BaseDirectory.Combine (targetPath).ToString ();
 
 			if (string.IsNullOrWhiteSpace (targetName))
-				targetName = Name;
+			{
+				var packName = packageName.Split (':');
+				targetName = packName[packName.Length-1];
+			}
 
 			if(string.IsNullOrWhiteSpace(targetType) ||
 				(targetType = targetType.ToLowerInvariant()) == "executable" ||
