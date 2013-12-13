@@ -216,9 +216,6 @@ namespace MonoDevelop.D.Parser
 							break;
 					}
 				}
-
-				if(containsPack)
-					(pack as RootPackage).UfcsCache.CacheModuleMethods(ast, new ResolutionContext(pcw, null, ast));
 			}
 
 			return doc;

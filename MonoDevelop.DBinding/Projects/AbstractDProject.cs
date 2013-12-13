@@ -88,15 +88,8 @@ namespace MonoDevelop.D.Projects
 		#endregion
 
 		#region Parsed project modules
-		protected void InformGlobalParseCacheFilled()
-		{
-			analysisFinished_GlobalCache = true;
-			TryBuildUfcsCache ();
-		}
-
 		public void UpdateLocalIncludeCache()
 		{
-			analysisFinished_LocalIncludes = false;
 			DCompilerConfiguration.UpdateParseCacheAsync(LocalIncludes, BaseDirectory,
 			                                             ParentSolution == null ? 
 			                                             	BaseDirectory.ToString() : 
@@ -109,18 +102,12 @@ namespace MonoDevelop.D.Projects
 		/// </summary>
 		public void UpdateParseCache()
 		{
-			analysisFinished_LocalCache = analysisFinished_FileLinks = false;
-
 			var hasFileLinks = new List<ProjectFile>();
 			foreach (var f in Files)
 				if ((f.IsLink || f.IsExternalToProject) && File.Exists(f.ToString()))
 					hasFileLinks.Add(f);
-
-			// To prevent race condition bugs, test if links exist _before_ the actual local file parse procedure starts.
-			if (hasFileLinks.Count == 0)
-				analysisFinished_FileLinks = true;
-
-			DCompilerConfiguration.UpdateParseCacheAsync (GetSourcePaths(), true, LocalFileCache_FinishedParsing);
+					
+			DCompilerConfiguration.UpdateParseCacheAsync (GetSourcePaths(), true);
 
 			//EDIT: What if those file links refer to other project's files? Or what if more than one project reference the same files?
 			//Furthermore, what if those files become edited and reparsed? Will their reference in the projects be updated either?
@@ -138,60 +125,13 @@ namespace MonoDevelop.D.Projects
 					foreach (var f in hasFileLinks)
 						r.AddModule(DParser.ParseFile(f.FilePath) as DModule);
 					fileLinkModulesRoot = r;
-
-					analysisFinished_FileLinks = true;
-					TryBuildUfcsCache();
 				}) { IsBackground = true }.Start();
 		}
-
-		bool analysisFinished_GlobalCache, analysisFinished_LocalIncludes, analysisFinished_LocalCache, analysisFinished_FileLinks;
-
+			
 		protected void LocalIncludeCache_FinishedParsing(ParsingFinishedEventArgs PerformanceData)
 		{
 			if (References != null)
 				References.FireUpdate();
-			analysisFinished_LocalIncludes = true;
-			TryBuildUfcsCache();
-		}
-
-		void LocalFileCache_FinishedParsing(ParsingFinishedEventArgs PerformanceData)
-		{
-			analysisFinished_LocalCache = true;
-			TryBuildUfcsCache();
-		}
-
-		void TryBuildUfcsCache()
-		{
-			if (analysisFinished_GlobalCache &&
-			    analysisFinished_LocalCache && 
-			    analysisFinished_LocalIncludes &&
-				analysisFinished_FileLinks)
-			{
-				var pcw = new ParseCacheView (GlobalIncludes);
-				pcw.Add (LocalIncludes);
-
-				foreach (var p in LocalIncludes) {
-					var r = GlobalParseCache.GetRootPackage (p);
-					if (r == null)
-						continue;
-
-					r.UfcsCache.BeginUpdate (pcw);
-				}
-
-				// Don't reuse the existing view for obvious threading problems!
-				pcw = new ParseCacheView (GlobalIncludes);
-				pcw.Add (LocalIncludes);
-				var src = GetSourcePaths ();
-				pcw.Add (src);
-
-				foreach (var p in src) {
-					var r = GlobalParseCache.GetRootPackage (p);
-					if (r == null)
-						continue;
-
-					r.UfcsCache.BeginUpdate (pcw);
-				}
-			}
 		}
 
 		protected override void OnFileRemovedFromProject(ProjectFileEventArgs e)

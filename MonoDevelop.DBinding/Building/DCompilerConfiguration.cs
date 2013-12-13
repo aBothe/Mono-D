@@ -47,11 +47,6 @@ namespace MonoDevelop.D.Building
 				"Parsed {0} files in \"{1}\" in {2}ms ({3}ms;{4}% parse time) (~{5}ms/{6}ms per file)",
 				ea.FileAmount,ea.Directory,ea.Duration, ea.ParseDuration, 
 				Math.Truncate(ea.Duration > 0 ? (double)ea.ParseDuration/(double)ea.Duration * 100.0 : 0.0) ,ea.FileDuration,ea.FileParseDuration);
-			UFCSCache.AnyAnalysisFinished+=(r) => 
-				LoggingService.LogInfo("Finished Ufcs cache preparation in {0}s ({1} parameters parsed, ~{2}ms per resolution)",
-			    r.UfcsCache.CachingDuration.TotalSeconds,
-			    r.UfcsCache.MethodCacheCount,
-			    r.UfcsCache.MethodCacheCount == 0 ? 0 : Math.Round(r.UfcsCache.CachingDuration.TotalMilliseconds / r.UfcsCache.MethodCacheCount));
 		}
 
 		public DCompilerConfiguration() {
@@ -93,19 +88,6 @@ namespace MonoDevelop.D.Building
 
 		void parsingFinished(ParsingFinishedEventArgs ea)
 		{
-			// Update UFCS cache
-			var pcw = GenParseCacheView ();
-			foreach (var path in IncludePaths) {
-				var r = GlobalParseCache.GetRootPackage (path);
-
-				//HACK: Ensure that the includes list won't get changed during parsing
-				if (r == null)
-					throw new InvalidOperationException ("The newly created root package must not be null - either a parse error occurred or the list was changed in between");
-
-				//TODO: Supply global condition flags? -- At least the vendor id
-				r.UfcsCache.BeginUpdate (pcw);
-			}
-
 			HadInitialParse = true;
 
 			if (FinishedParsing != null)

@@ -70,19 +70,8 @@ namespace MonoDevelop.D.Projects
 				return _compilerVendor;
 			}
 			set {
-				var c = Compiler;
-				if (c != null)
-					c.FinishedParsing -= compilerCacheUpdated;
-
 				NeedsFullRebuild |= _compilerVendor != value;
 				_compilerVendor = value;
-
-				c = Compiler;
-				if (c != null) {
-					c.FinishedParsing += compilerCacheUpdated;
-					if (c.HadInitialParse)
-						compilerCacheUpdated (null);
-				}
 			}
 		}
 
@@ -122,13 +111,11 @@ namespace MonoDevelop.D.Projects
 		#region Init
 		public DProject (){
 			referenceCollection = new DefaultDReferencesCollection (this);
-			Init ();
 		}
 
 		public DProject (ProjectCreateInformation info, XmlElement projectOptions)
 		{
 			referenceCollection = new DefaultDReferencesCollection (this);
-			Init ();
 
 			string binPath = ".";
 			
@@ -228,16 +215,6 @@ namespace MonoDevelop.D.Projects
 							projectOptions.Attributes ["PauseConsoleOutput"].InnerText);
 					}			
 				}
-			}
-		}
-
-		void Init()
-		{
-			var c = Compiler;
-			if (c != null) {
-				c.FinishedParsing += compilerCacheUpdated;
-				if (c.HadInitialParse)
-					compilerCacheUpdated (null);
 			}
 		}
 		#endregion
@@ -478,8 +455,6 @@ namespace MonoDevelop.D.Projects
 		{
 			handler.Deserialize (this, data);
 
-			Init ();
-
 			referenceCollection.InitRefCollection (tempProjectDependencies, tempIncludes);
 		}
 
@@ -529,11 +504,6 @@ namespace MonoDevelop.D.Projects
 			}
 
 			base.OnEndLoad();
-		}
-
-		void compilerCacheUpdated(ParsingFinishedEventArgs ea)
-		{
-			base.InformGlobalParseCacheFilled ();
 		}
 		#endregion
 	}
