@@ -157,7 +157,8 @@ namespace MonoDevelop.D.Completion
 			}*/
 			var idx = args.CurrentlyTypedArgumentIndex;
 			var ms = CurrentResult as MemberSymbol;
-			if (ms != null && ms.IsUFCSResult)
+			ISemantic _u;
+			if (ms != null && UFCSResolver.IsUfcsResult(ms, out _u))
 				idx++;
 			return idx;
 		}
