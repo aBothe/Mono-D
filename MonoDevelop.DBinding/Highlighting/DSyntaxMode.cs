@@ -193,7 +193,7 @@ namespace MonoDevelop.D.Highlighting
 
 			try{
 				var textLocationsToHighlight = TypeReferenceFinder.Scan(ast, 
-					MonoDevelop.D.Completion.DCodeCompletionSupport.CreateContext(guiDoc)).Matches;
+					MonoDevelop.D.Completion.DCodeCompletionSupport.CreateContext(guiDoc));
 
 				int off, len;
 
