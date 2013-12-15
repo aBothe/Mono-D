@@ -47,20 +47,50 @@ namespace MonoDevelop.D.Projects.Dub
 			return fileName.ParentDirectory.Combine(PackageJsonFile);
 		}
 
+		[ThreadStatic]
+		internal static List<string> CurrentlyLoadedProjects;
+
 		public object ReadFile(FilePath file, Type expectedType, IProgressMonitor monitor)
 		{
-			DubProject defaultPackage;
-			using (var s = File.OpenText (file))
-			using (var r = new JsonTextReader (s))
-				defaultPackage = ReadPackageInformation(file, r);
+			return PackageJsonParser.ReadFile_(file, expectedType, monitor);
+		}
 
-			if (expectedType.IsInstanceOfType(defaultPackage))
+		public static object ReadFile_(string file, Type expectedType, IProgressMonitor monitor)
+		{
+			bool clearLoadedPrjList = CurrentlyLoadedProjects == null;
+			if (clearLoadedPrjList)
+				CurrentlyLoadedProjects = new List<string> ();
+
+			DubProject defaultPackage;
+			try{
+				using (var s = File.OpenText (file))
+				using (var r = new JsonTextReader (s))
+					defaultPackage = ReadPackageInformation(file, r, monitor);
+				}catch(Exception ex){
+				if (clearLoadedPrjList)
+					CurrentlyLoadedProjects = null;
+				monitor.ReportError ("Couldn't load dub package \"" + file + "\"", ex);
+				return null;
+			}
+
+			CurrentlyLoadedProjects.Add (file.ToString());
+
+			if (expectedType.IsInstanceOfType (defaultPackage)) {
+				LoadDubProjectReferences (defaultPackage, monitor);
+
+				if (clearLoadedPrjList)
+					CurrentlyLoadedProjects = null;
+
 				return defaultPackage;
+			}
 
 			var sln = new DubSolution();
 
-			if (!expectedType.IsInstanceOfType(sln))
+			if (!expectedType.IsInstanceOfType (sln)) {
+				if (clearLoadedPrjList)
+					CurrentlyLoadedProjects = null;
 				return null;
+			}
 
 			sln.RootFolder.AddItem(defaultPackage, false);
 			sln.StartupItem = defaultPackage;
@@ -69,27 +99,47 @@ namespace MonoDevelop.D.Projects.Dub
 			foreach (var cfg in defaultPackage.Configurations)
 				sln.AddConfiguration(cfg.Name, false).Platform = cfg.Platform;
 
-			//TODO: Recursively load all subdependencies? I guess not, huh?
+			LoadDubProjectReferences (defaultPackage, monitor, sln);
+
+			sln.LoadUserProperties();
+
+			if (clearLoadedPrjList)
+				CurrentlyLoadedProjects = null;
+
+			return sln;
+		}
+
+		internal static void LoadDubProjectReferences(DubProject defaultPackage, IProgressMonitor monitor, Solution sln = null)
+		{
+			var sub = defaultPackage as DubSubPackage;
 			foreach (var dep in defaultPackage.DubReferences)
 			{
 				if (string.IsNullOrWhiteSpace(dep.Path))
 					continue;
 
+				if (sub != null)
+					sub.useOriginalBasePath = true;
 				var packageJsonToLoad = Path.Combine(defaultPackage.GetAbsPath(Building.ProjectBuilder.EnsureCorrectPathSeparators(dep.Path)), PackageJsonFile);
+				if(sub != null)
+					sub.useOriginalBasePath = false;
 				if (File.Exists(packageJsonToLoad))
 				{
-					var prj = ReadFile(new FilePath(packageJsonToLoad), typeof(Project), monitor) as SolutionEntityItem;
-					if (prj != null)
-						sln.RootFolder.AddItem(prj, false);
+					if (CurrentlyLoadedProjects.Contains(packageJsonToLoad))
+						continue;
+
+					var prj = ReadFile_(packageJsonToLoad, typeof(Project), monitor) as DubProject;
+					if (prj != null) {
+						CurrentlyLoadedProjects.Add (packageJsonToLoad);
+						if (sln != null)
+							sln.RootFolder.AddItem (prj, false);
+						else
+							defaultPackage.packagesToAdd.Add (prj);
+					}
 				}
 			}
-
-			sln.LoadUserProperties();
-
-			return sln;
 		}
 
-		public static DubProject ReadPackageInformation(FilePath packageJsonPath,JsonReader r)
+		public static DubProject ReadPackageInformation(FilePath packageJsonPath,JsonReader r, IProgressMonitor monitor)
 		{
 			var defaultPackage = new DubProject();
 			defaultPackage.FileName = packageJsonPath;
@@ -102,7 +152,7 @@ namespace MonoDevelop.D.Projects.Dub
 			while (r.Read ()) {
 				if (r.TokenType == JsonToken.PropertyName) {
 					var propName = r.Value as string;
-					defaultPackage.TryPopulateProperty (propName, r);
+					defaultPackage.TryPopulateProperty (propName, r, monitor);
 				}
 				else if (r.TokenType == JsonToken.EndObject)
 					break;

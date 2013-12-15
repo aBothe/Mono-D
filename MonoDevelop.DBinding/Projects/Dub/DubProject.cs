@@ -25,7 +25,7 @@ namespace MonoDevelop.D.Projects.Dub
 		#region Properties
 		bool loading;
 		List<string> authors = new List<string>();
-		internal List<DubSubPackage> packagesToAdd = new List<DubSubPackage>();
+		internal List<DubProject> packagesToAdd = new List<DubProject>();
 		/// <summary>
 		/// Project-wide cross-config build settings.
 		/// </summary>
@@ -95,8 +95,13 @@ namespace MonoDevelop.D.Projects.Dub
 					foreach (var setting in l) {
 						foreach(var directory in setting.Values){
 							d = directory;
-							if (!Path.IsPathRooted (d))
+							if (!Path.IsPathRooted (d)) {
+								if (this is DubSubPackage)
+									(this as DubSubPackage).useOriginalBasePath = true;
 								d = BaseDirectory.Combine (d).ToString ();
+								if (this is DubSubPackage)
+									(this as DubSubPackage).useOriginalBasePath = false;
+							}
 
 							// Ignore os/arch/version constraints for now
 
@@ -147,7 +152,7 @@ namespace MonoDevelop.D.Projects.Dub
 			loading = false;
 		}
 
-		public bool TryPopulateProperty(string propName, JsonReader j)
+		public bool TryPopulateProperty(string propName, JsonReader j, IProgressMonitor monitor)
 		{
 			switch (propName.ToLowerInvariant())
 			{
@@ -197,7 +202,7 @@ namespace MonoDevelop.D.Projects.Dub
 						throw new JsonReaderException ("Expected [ when parsing subpackages");
 
 					while (j.Read () && j.TokenType != JsonToken.EndArray)
-						DubSubPackage.ReadAndAdd (this, j);
+						DubSubPackage.ReadAndAdd (this, j, monitor);
 					break;
 				default:
 					return CommonBuildSettings.TryDeserializeBuildSetting(j);

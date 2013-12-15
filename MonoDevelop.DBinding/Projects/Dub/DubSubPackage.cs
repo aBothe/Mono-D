@@ -52,7 +52,7 @@ namespace MonoDevelop.D.Projects.Dub
 			return en;
 		}
 
-		public static DubSubPackage ReadAndAdd(DubProject superProject,JsonReader r)
+		public static DubSubPackage ReadAndAdd(DubProject superProject,JsonReader r, IProgressMonitor monitor)
 		{
 			if (r.TokenType != JsonToken.StartObject)
 				throw new JsonReaderException ("Illegal token on subpackage definition beginning");
@@ -72,7 +72,7 @@ namespace MonoDevelop.D.Projects.Dub
 			
 			while (r.Read ()) {
 				if (r.TokenType == JsonToken.PropertyName)
-					sub.TryPopulateProperty (r.Value as string, r);
+					sub.TryPopulateProperty (r.Value as string, r, monitor);
 				else if (r.TokenType == JsonToken.EndObject)
 					break;
 			}
@@ -85,6 +85,8 @@ namespace MonoDevelop.D.Projects.Dub
 
 			foreach(var f in sub.GetItemFiles(false))
 				sub.Items.Add(new ProjectFile(f));
+
+			PackageJsonParser.LoadDubProjectReferences (sub, monitor);
 
 			// TODO: What to do with new configurations that were declared in this sub package? Add them to all other packages as well?
 			sub.EndLoad ();
