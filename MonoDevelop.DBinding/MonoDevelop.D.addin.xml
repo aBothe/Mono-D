@@ -185,11 +185,6 @@
 		<FileFormat id ="VisualDProject" class = "MonoDevelop.D.Projects.VisualD.VisualDProjFormat" />
 	</Extension>
 
-
-	<Extension path = "/MonoDevelop/ProjectModel/MD1SerializationMaps">
-		<SerializationMap resource="MonoDevelop.D.ProjectFormats.xml" />
-	</Extension>
-
 	<Extension path = "/MonoDevelop/ProjectModel/SerializableClasses">
 		<DataType class = "MonoDevelop.D.Projects.DProject" />
 		<DataType class = "MonoDevelop.D.Projects.DProjectConfiguration" />
