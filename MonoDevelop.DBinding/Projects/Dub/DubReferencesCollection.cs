@@ -88,13 +88,20 @@ namespace MonoDevelop.D.Projects.Dub
 
 		public override IEnumerable<string> Includes {
 			get {
+				var sub = Owner as DubSubPackage;
+				if (sub != null)
+					sub.useOriginalBasePath = true;
+				var dir = Owner.BaseDirectory;
+				if (sub != null)
+					sub.useOriginalBasePath = false;
+
 				foreach (var settings in Owner.GetBuildSettings(null))
 				{
 					List<DubBuildSetting> l;
 					if(settings.TryGetValue(DubBuildSettings.ImportPathsProperty, out l))
 						for (int i = l.Count - 1; i >= 0; i--) // Ignore architecture/os/compiler restrictions for now
 							for (int j = l[i].Values.Length - 1; j >= 0; j--)
-								yield return (l[i].Values[j]);
+								yield return dir.ToAbsolute(l[i].Values[j]);
 				}
 			}
 		}

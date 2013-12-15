@@ -35,7 +35,7 @@ namespace MonoDevelop.D.Projects.Dub
 {
 	public class DubSubPackage : DubProject
 	{
-		bool useOriginalBasePath;
+		public bool useOriginalBasePath;
 		FilePath OriginalBasePath;
 		FilePath VirtualBasePath;
 
