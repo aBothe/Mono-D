@@ -91,7 +91,8 @@ namespace MonoDevelop.D.Projects.Dub
 			string d;
 			bool returnedOneItem = false;
 			foreach (var sett in GetBuildSettings(sel)) {
-				if (sett.TryGetValue (DubBuildSettings.SourcePathsProperty, out l))
+				if (sett.TryGetValue (DubBuildSettings.SourcePathsProperty, out l)) {
+					returnedOneItem = true;
 					foreach (var setting in l) {
 						foreach(var directory in setting.Values){
 							d = directory;
@@ -109,9 +110,9 @@ namespace MonoDevelop.D.Projects.Dub
 								continue;
 
 							yield return d;
-							returnedOneItem = true;
 						}
 					}
+				}
 			}
 
 			if (returnedOneItem)
