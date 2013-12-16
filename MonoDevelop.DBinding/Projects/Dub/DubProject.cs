@@ -94,12 +94,12 @@ namespace MonoDevelop.D.Projects.Dub
 				if (sett.TryGetValue (DubBuildSettings.SourcePathsProperty, out l)) {
 					returnedOneItem = true;
 					foreach (var setting in l) {
-						foreach(var directory in setting.Values){
-							d = directory;
+						foreach (var directory in setting.Values) {
+							d = ProjectBuilder.EnsureCorrectPathSeparators(directory);
 							if (!Path.IsPathRooted (d)) {
 								if (this is DubSubPackage)
 									(this as DubSubPackage).useOriginalBasePath = true;
-								d = BaseDirectory.Combine (d).ToString ();
+								d = Path.GetFullPath(Path.Combine(BaseDirectory.ToString(), d));
 								if (this is DubSubPackage)
 									(this as DubSubPackage).useOriginalBasePath = false;
 							}
