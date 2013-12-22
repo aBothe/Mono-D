@@ -206,7 +206,6 @@
     <Compile Include="Projects\ProjectJsonConfig.cs" />
     <Compile Include="Refactoring\CodeActions\DCodeActionSource.cs" />
     <Compile Include="Refactoring\CodeActions\ImportSymbol.cs" />
-    <Compile Include="Refactoring\DDocumentationLauncher.cs" />
     <Compile Include="Gui\EditorPathbarProvider.cs" />
     <Compile Include="Refactoring\RefactoringCommandsExtension.cs" />
     <Compile Include="Refactoring\ReferenceFinding.cs" />

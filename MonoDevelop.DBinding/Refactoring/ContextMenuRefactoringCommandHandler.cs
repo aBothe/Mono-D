@@ -98,8 +98,6 @@ namespace MonoDevelop.D.Refactoring
 					}
 				}
 			}
-
-			info.Add(IdeApp.CommandService.GetCommandInfo (Commands.OpenDDocumentation), new Action(caps.OpenDDoc));
 		}
 	}
 }

@@ -178,10 +178,6 @@ namespace MonoDevelop.D.Building
 					Win32ResourceCompiler.Instance.Load (x.ReadSubtree ());
 					break;
 
-				case "DDocBaseUrl":
-					MonoDevelop.D.Refactoring.DDocumentationLauncher.DigitalMarsUrl = x.ReadString ();
-					break;
-
 				case "DocumentOutline":
 					Outline.Load(x.ReadSubtree());
 					break;
@@ -216,10 +212,6 @@ namespace MonoDevelop.D.Building
 			
 			x.WriteStartElement ("ResCmp");
 			Win32ResourceCompiler.Instance.Save (x);
-			x.WriteEndElement ();
-			
-			x.WriteStartElement ("DDocBaseUrl");
-			x.WriteCData (D.Refactoring.DDocumentationLauncher.DigitalMarsUrl);
 			x.WriteEndElement ();
 			
 			x.WriteStartElement ("CompletionOptions");

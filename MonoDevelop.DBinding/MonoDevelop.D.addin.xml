@@ -280,10 +280,6 @@
 					defaultHandler = "MonoDevelop.D.Refactoring.ContextMenuRefactoringCommandHandler"
 					_label="Refactoring Commands"
 						 type="array" />
-
-		<Command id="MonoDevelop.D.Refactoring.Commands.OpenDDocumentation"
-						 _label="Open D Documentation"
-						 shortcut="F1"/>
 	</Extension>
 
 	<Extension path = "/MonoDevelop/Ide/Pads/ProjectPad">

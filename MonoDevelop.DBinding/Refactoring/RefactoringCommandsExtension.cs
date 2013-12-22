@@ -14,13 +14,6 @@ namespace MonoDevelop.D.Refactoring
 			return caps.Update (document) && caps.resultResolutionAttempt != D_Parser.Resolver.TypeResolution.DResolver.NodeResolutionAttempt.RawSymbolLookup;
 		}
 
-		[CommandHandler(Refactoring.Commands.OpenDDocumentation)]
-		void OpenDDocumentation()
-		{
-			if (Update ())
-				caps.OpenDDoc ();
-		}
-
 		[CommandHandler(RefactoryCommands.FindReferences)]
 		void FindReferences()
 		{
@@ -49,7 +42,6 @@ namespace MonoDevelop.D.Refactoring
 				caps.GotoDeclaration ();
 		}
 
-		[CommandUpdateHandler(Refactoring.Commands.OpenDDocumentation)]
 		[CommandUpdateHandler(EditCommands.Rename)]
 		[CommandUpdateHandler(RefactoryCommands.FindReferences)]
 		[CommandUpdateHandler(RefactoryCommands.FindAllReferences)]

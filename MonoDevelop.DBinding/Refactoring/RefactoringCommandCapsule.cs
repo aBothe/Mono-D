@@ -64,18 +64,6 @@ namespace MonoDevelop.D.Refactoring
 				(object o) => o is DSymbol ? (o as DSymbol).Definition.ToString(false, true) : o.ToString());
 		}
 
-		public void OpenDDoc()
-		{
-			AbstractType res = GetResult();
-			if (res == null)
-				return;
-
-			var url=DDocumentationLauncher.GetReferenceUrl(res, ctxt, ed.CaretLocation);
-
-			if (url != null)
-				Refactoring.DDocumentationLauncher.LaunchRelativeDUrl(url);
-		}
-
 		public void GotoDeclaration()
 		{
 			AbstractType res = GetResult();
