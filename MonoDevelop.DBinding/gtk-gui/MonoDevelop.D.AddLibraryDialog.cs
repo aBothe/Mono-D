@@ -13,7 +13,7 @@ namespace MonoDevelop.D
 			global::Stetic.Gui.Initialize (this);
 			// Widget MonoDevelop.D.AddLibraryDialog
 			this.Name = "MonoDevelop.D.AddLibraryDialog";
-			this.Title = MonoDevelop.Core.GettextCatalog.GetString ("Add Library");
+			this.Title = global::MonoDevelop.Core.GettextCatalog.GetString ("Add Library");
 			this.Modal = true;
 			// Internal child MonoDevelop.D.AddLibraryDialog.VBox
 			global::Gtk.VBox w1 = this.VBox;

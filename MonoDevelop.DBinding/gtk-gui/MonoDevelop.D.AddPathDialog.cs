@@ -13,7 +13,7 @@ namespace MonoDevelop.D
 			global::Stetic.Gui.Initialize (this);
 			// Widget MonoDevelop.D.AddPathDialog
 			this.Name = "MonoDevelop.D.AddPathDialog";
-			this.Title = MonoDevelop.Core.GettextCatalog.GetString ("Add Path");
+			this.Title = global::MonoDevelop.Core.GettextCatalog.GetString ("Add Path");
 			this.Modal = true;
 			// Internal child MonoDevelop.D.AddPathDialog.VBox
 			global::Gtk.VBox w1 = this.VBox;

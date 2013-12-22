@@ -22,17 +22,17 @@ namespace MonoDevelop.D.Profiler.Gui
 			Stetic.BinContainer w1 = global::Stetic.BinContainer.Attach (this);
 			this.UIManager = new global::Gtk.UIManager ();
 			global::Gtk.ActionGroup w2 = new global::Gtk.ActionGroup ("Default");
-			this.refreshAction = new global::Gtk.Action ("refreshAction", MonoDevelop.Core.GettextCatalog.GetString ("Scann"), MonoDevelop.Core.GettextCatalog.GetString ("Analysing the trace.log of the selected project"), "gtk-refresh");
-			this.refreshAction.ShortLabel = MonoDevelop.Core.GettextCatalog.GetString ("Scann");
+			this.refreshAction = new global::Gtk.Action ("refreshAction", global::MonoDevelop.Core.GettextCatalog.GetString ("Scann"), global::MonoDevelop.Core.GettextCatalog.GetString ("Analysing the trace.log of the selected project"), "gtk-refresh");
+			this.refreshAction.ShortLabel = global::MonoDevelop.Core.GettextCatalog.GetString ("Scann");
 			w2.Add (this.refreshAction, null);
-			this.switchProfilingModeAction = new global::Gtk.Action ("switchProfilingModeAction", MonoDevelop.Core.GettextCatalog.GetString ("Switch Profiling Mode"), MonoDevelop.Core.GettextCatalog.GetString ("Enable / Disable Profiling Mode"), "gtk-yes");
-			this.switchProfilingModeAction.ShortLabel = MonoDevelop.Core.GettextCatalog.GetString ("Switch Profiling Mode");
+			this.switchProfilingModeAction = new global::Gtk.Action ("switchProfilingModeAction", global::MonoDevelop.Core.GettextCatalog.GetString ("Switch Profiling Mode"), global::MonoDevelop.Core.GettextCatalog.GetString ("Enable / Disable Profiling Mode"), "gtk-yes");
+			this.switchProfilingModeAction.ShortLabel = global::MonoDevelop.Core.GettextCatalog.GetString ("Switch Profiling Mode");
 			w2.Add (this.switchProfilingModeAction, null);
-			this.openTraceLogAction = new global::Gtk.Action ("openTraceLogAction", null, MonoDevelop.Core.GettextCatalog.GetString ("Open the trace.log file of the selected project"), "gtk-open");
+			this.openTraceLogAction = new global::Gtk.Action ("openTraceLogAction", null, global::MonoDevelop.Core.GettextCatalog.GetString ("Open the trace.log file of the selected project"), "gtk-open");
 			w2.Add (this.openTraceLogAction, null);
-			this.copyRowAction = new global::Gtk.Action ("copyRowAction", null, MonoDevelop.Core.GettextCatalog.GetString ("Copy the selected row to the clipboard"), "gtk-copy");
+			this.copyRowAction = new global::Gtk.Action ("copyRowAction", null, global::MonoDevelop.Core.GettextCatalog.GetString ("Copy the selected row to the clipboard"), "gtk-copy");
 			w2.Add (this.copyRowAction, null);
-			this.goToFunctionAction = new global::Gtk.Action ("goToFunctionAction", null, MonoDevelop.Core.GettextCatalog.GetString ("Go to the selected function"), "gtk-jump-to");
+			this.goToFunctionAction = new global::Gtk.Action ("goToFunctionAction", null, global::MonoDevelop.Core.GettextCatalog.GetString ("Go to the selected function"), "gtk-jump-to");
 			w2.Add (this.goToFunctionAction, null);
 			this.UIManager.InsertActionGroup (w2, 0);
 			this.Name = "MonoDevelop.D.Profiler.Gui.ProfilerPadWidget";
@@ -41,7 +41,7 @@ namespace MonoDevelop.D.Profiler.Gui
 			this.vbox2.Name = "vbox2";
 			this.vbox2.Spacing = 6;
 			// Container child vbox2.Gtk.Box+BoxChild
-			this.UIManager.AddUiFromString ("<ui><toolbar name='toolbar2'><toolitem name='switchProfilingModeAction' action='switchProfilingModeAction'/><toolitem name='refreshAction' action='refreshAction'/><toolitem name='openTraceLogAction' action='openTraceLogAction'/><toolitem name='copyRowAction' action='copyRowAction'/><toolitem name='goToFunctionAction' action='goToFunctionAction'/></toolbar></ui>");
+			this.UIManager.AddUiFromString (@"<ui><toolbar name='toolbar2'><toolitem name='switchProfilingModeAction' action='switchProfilingModeAction'/><toolitem name='refreshAction' action='refreshAction'/><toolitem name='openTraceLogAction' action='openTraceLogAction'/><toolitem name='copyRowAction' action='copyRowAction'/><toolitem name='goToFunctionAction' action='goToFunctionAction'/></toolbar></ui>");
 			this.toolbar2 = ((global::Gtk.Toolbar)(this.UIManager.GetWidget ("/toolbar2")));
 			this.toolbar2.Name = "toolbar2";
 			this.toolbar2.ShowArrow = false;

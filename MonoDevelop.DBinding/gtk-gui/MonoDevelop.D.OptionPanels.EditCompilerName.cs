@@ -15,7 +15,7 @@ namespace MonoDevelop.D.OptionPanels
 			global::Stetic.Gui.Initialize (this);
 			// Widget MonoDevelop.D.OptionPanels.EditCompilerName
 			this.Name = "MonoDevelop.D.OptionPanels.EditCompilerName";
-			this.Title = MonoDevelop.Core.GettextCatalog.GetString ("Edit compiler preset name");
+			this.Title = global::MonoDevelop.Core.GettextCatalog.GetString ("Edit compiler preset name");
 			this.WindowPosition = ((global::Gtk.WindowPosition)(4));
 			// Internal child MonoDevelop.D.OptionPanels.EditCompilerName.VBox
 			global::Gtk.VBox w1 = this.VBox;
@@ -28,7 +28,7 @@ namespace MonoDevelop.D.OptionPanels
 			// Container child vbox3.Gtk.Box+BoxChild
 			this.label1 = new global::Gtk.Label ();
 			this.label1.Name = "label1";
-			this.label1.LabelProp = MonoDevelop.Core.GettextCatalog.GetString ("Enter the new compiler preset name");
+			this.label1.LabelProp = global::MonoDevelop.Core.GettextCatalog.GetString ("Enter the new compiler preset name");
 			this.vbox3.Add (this.label1);
 			global::Gtk.Box.BoxChild w2 = ((global::Gtk.Box.BoxChild)(this.vbox3 [this.label1]));
 			w2.Position = 0;
