@@ -108,7 +108,7 @@ namespace MonoDevelop.D.Parser
 					parserError.Location.Column));
 
 			#region Provide comment fold support by addin them to the IDE document object
-			foreach (var cm in parser.TrackerVariables.Comments)
+			foreach (var cm in parser.Comments)
 			{
 				var c = new MonoDevelop.Ide.TypeSystem.Comment(cm.CommentText){
 					CommentStartsLine = cm.CommentStartsLine,

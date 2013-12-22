@@ -142,11 +142,8 @@ namespace MonoDevelop.D.Formatting.Indentation
 			if (key == Gdk.Key.Tab) {
 				stateTracker.UpdateEngine ();
 				if (stateTracker.Engine.IsInsideStringLiteral && !textEditorData.IsSomethingSelected) {
-					var tokenCtxt = CaretContextAnalyzer.GetTokenContext(textEditorData.Document.Text, textEditorData.Caret.Offset);
-					if (tokenCtxt == TokenContext.String || tokenCtxt == TokenContext.VerbatimString) {
-						textEditorData.InsertAtCaret ("\\t");
-						return false;
-					}
+					textEditorData.InsertAtCaret ("\\t");
+					return false;
 				}
 			}
 

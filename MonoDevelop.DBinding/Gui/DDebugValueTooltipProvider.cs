@@ -90,9 +90,7 @@ namespace MonoDevelop.D.Gui
 				var edLoc = ed.OffsetToLocation(offset);
 				editorData.CaretLocation = new D_Parser.Dom.CodeLocation(edLoc.Column,edLoc.Line);
 
-				var o = DResolver.GetScopedCodeObject(editorData, 
-											  DResolver.AstReparseOptions.AlsoParseBeyondCaret | 
-				                              DResolver.AstReparseOptions.OnlyAssumeIdentifierList);
+				var o = DResolver.GetScopedCodeObject(editorData);
 
 				if(o != null)
 					expression = o.ToString();
