@@ -48,7 +48,7 @@ namespace MonoDevelop.D.Projects.Dub
 		}
 
 		[ThreadStatic]
-		internal static List<string> CurrentlyLoadedProjects;
+		internal static List<string> AlreadyLoadedPackages;
 
 		public object ReadFile(FilePath file, Type expectedType, IProgressMonitor monitor)
 		{
@@ -57,29 +57,31 @@ namespace MonoDevelop.D.Projects.Dub
 
 		public static object ReadFile_(string file, Type expectedType, IProgressMonitor monitor)
 		{
-			bool clearLoadedPrjList = CurrentlyLoadedProjects == null;
+			bool clearLoadedPrjList = AlreadyLoadedPackages == null;
 			if (clearLoadedPrjList)
-				CurrentlyLoadedProjects = new List<string> ();
+				AlreadyLoadedPackages = new List<string> ();
+
+			if (AlreadyLoadedPackages.Contains (file))
+				return null;
+			AlreadyLoadedPackages.Add (file);
 
 			DubProject defaultPackage;
 			try{
 				using (var s = File.OpenText (file))
 				using (var r = new JsonTextReader (s))
 					defaultPackage = ReadPackageInformation(file, r, monitor);
-				}catch(Exception ex){
+			}catch(Exception ex){
 				if (clearLoadedPrjList)
-					CurrentlyLoadedProjects = null;
+					AlreadyLoadedPackages = null;
 				monitor.ReportError ("Couldn't load dub package \"" + file + "\"", ex);
 				return null;
 			}
-
-			CurrentlyLoadedProjects.Add (file.ToString());
 
 			if (expectedType.IsInstanceOfType (defaultPackage)) {
 				LoadDubProjectReferences (defaultPackage, monitor);
 
 				if (clearLoadedPrjList)
-					CurrentlyLoadedProjects = null;
+					AlreadyLoadedPackages = null;
 
 				return defaultPackage;
 			}
@@ -88,7 +90,7 @@ namespace MonoDevelop.D.Projects.Dub
 
 			if (!expectedType.IsInstanceOfType (sln)) {
 				if (clearLoadedPrjList)
-					CurrentlyLoadedProjects = null;
+					AlreadyLoadedPackages = null;
 				return null;
 			}
 
@@ -103,8 +105,12 @@ namespace MonoDevelop.D.Projects.Dub
 
 			sln.LoadUserProperties();
 
-			if (clearLoadedPrjList)
-				CurrentlyLoadedProjects = null;
+			if (clearLoadedPrjList) {
+				AlreadyLoadedPackages = null;
+
+				// Clear 'dub list' outputs
+				DubReferencesCollection.DubListOutputs.Clear ();
+			}
 
 			return sln;
 		}
@@ -124,12 +130,8 @@ namespace MonoDevelop.D.Projects.Dub
 					sub.useOriginalBasePath = false;
 				if (File.Exists(packageJsonToLoad))
 				{
-					if (CurrentlyLoadedProjects.Contains(packageJsonToLoad))
-						continue;
-
 					var prj = ReadFile_(packageJsonToLoad, typeof(Project), monitor) as DubProject;
 					if (prj != null) {
-						CurrentlyLoadedProjects.Add (packageJsonToLoad);
 						if (sln != null)
 							sln.RootFolder.AddItem (prj, false);
 						else

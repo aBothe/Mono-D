@@ -125,6 +125,7 @@ namespace MonoDevelop.D.Projects.Dub
 		}
 
 		static Regex dubInstalledPackagesOutputRegex = new Regex ("  (?<name>.+) (?<version>.+): (?<path>.+)", RegexOptions.Compiled | RegexOptions.Multiline | RegexOptions.ExplicitCapture);
+		internal static Dictionary<string, string> DubListOutputs = new Dictionary<string, string>();
 
 		public void DeserializeDubPrjDependencies(JsonReader j, IProgressMonitor mon = null)
 		{
@@ -163,19 +164,25 @@ namespace MonoDevelop.D.Projects.Dub
 			}
 
 			if (tryFillRemainingPaths) {
-				string err, outp = null;
-				try{
-					ProjectBuilder.ExecuteCommand (DubSettings.Instance.DubCommand, "list", Owner.BaseDirectory.ToString (), mon, out err, out outp);
-					// Backward compatiblity
-					if (!string.IsNullOrWhiteSpace(err) || !TryInterpretDubListOutput(outp))
-					{
-						ProjectBuilder.ExecuteCommand(DubSettings.Instance.DubCommand, "list-installed", Owner.BaseDirectory.ToString(), mon, out err, out outp);
-						TryInterpretDubListOutput(outp);
+				string err, outp;
+				var baseDir = Owner.BaseDirectory.ToString ();
+				if (DubListOutputs.TryGetValue (baseDir, out outp)) {
+					TryInterpretDubListOutput (outp);
+				} else {
+					try {
+						ProjectBuilder.ExecuteCommand (DubSettings.Instance.DubCommand, "list", baseDir, mon, out err, out outp);
+						// Backward compatiblity
+						if (!string.IsNullOrWhiteSpace (err) || !TryInterpretDubListOutput (outp)) {
+							ProjectBuilder.ExecuteCommand (DubSettings.Instance.DubCommand, "list-installed", baseDir, mon, out err, out outp);
+							TryInterpretDubListOutput (outp);
+						}
+
+						if(!string.IsNullOrWhiteSpace(outp))
+							DubListOutputs[baseDir] = outp;
+					} catch (Exception ex) {
+						MonoDevelop.Core.LoggingService.LogError ("Error while resolving dub dependencies via executing 'dub list-installed'", ex);
 					}
-				}catch(Exception ex) {
-					MonoDevelop.Core.LoggingService.LogError ("Error while resolving dub dependencies via executing 'dub list-installed'", ex);
 				}
-				
 			}
 
 			FireUpdate ();
