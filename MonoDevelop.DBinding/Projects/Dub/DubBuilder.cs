@@ -34,6 +34,17 @@ namespace MonoDevelop.D.Projects.Dub
 		{
 			var br = new BuildResult();
 
+			// Skip building sourceLibraries
+			string targetType = null;
+			var cfg = prj.GetConfiguration (sel) as DubProjectConfiguration;
+			if (cfg != null){
+				cfg.BuildSettings.TryGetTargetTypeProperty (prj, sel, ref targetType);
+				if (targetType != null && targetType.ToLower () == "sourcelibrary") {
+					br.BuildCount = 1;
+					return br;
+				}
+			}
+
 			var args = new StringBuilder("build");
 
 			Instance.BuildCommonArgAppendix(args, prj, sel);
