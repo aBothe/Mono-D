@@ -36,6 +36,7 @@ namespace MonoDevelop.D.Projects
 		public readonly List<string> BuiltObjects = new List<string> ();
 		[ItemProperty("PreferOneStepBuild")]
 		public bool PreferOneStepBuild = true;
+		string defaultBinPathStub = ".";
 
 		public const string ConfigJson = "projectconfig.json";
 		public ExtendedProjectConfig ExtendedConfiguration;
@@ -117,15 +118,13 @@ namespace MonoDevelop.D.Projects
 		{
 			referenceCollection = new DefaultDReferencesCollection (this);
 
-			string binPath = ".";
-			
 			if (info != null) {
 				Name = info.ProjectName;
 
 				BaseDirectory = info.ProjectBasePath;
 
 				if (info.BinPath != null)
-					binPath = info.BinPath;
+					defaultBinPathStub = info.BinPath;
 			}
 
 			var compTarget = DCompileTarget.Executable;
@@ -160,62 +159,51 @@ namespace MonoDevelop.D.Projects
 
 			// Create a debug configuration
 			var cfg = CreateConfiguration ("Debug") as DProjectConfiguration;
-			
-			cfg.ExtraLibraries.AddRange (libs);
+			DefaultConfiguration = cfg;
+
 			cfg.DebugMode = true;
+
+			cfg.ExtraLibraries.AddRange (libs);
 			cfg.CompileTarget = compTarget;
+			cfg.ExternalConsole = true;
+			cfg.Output = outputPrefix + Name;
+			if (projectOptions != null) {
+				// Set extra compiler&linker args
+				if (projectOptions.Attributes ["CompilerArgs"].InnerText != null) {
+					cfg.ExtraCompilerArguments += projectOptions.Attributes ["CompilerArgs"].InnerText;
+				}
+				if (projectOptions.Attributes ["LinkerArgs"].InnerText != null) {
+					cfg.ExtraLinkerArguments += projectOptions.Attributes ["LinkerArgs"].InnerText;
+				}
+
+				if (projectOptions.GetAttribute ("ExternalConsole") == "True") {
+					cfg.ExternalConsole = true;
+					cfg.PauseConsoleOutput = true;
+				}
+
+				if (projectOptions.Attributes ["PauseConsoleOutput"] != null) {
+					cfg.PauseConsoleOutput = bool.Parse (
+						projectOptions.Attributes ["PauseConsoleOutput"].InnerText);
+				}
+			}
 
 			Configurations.Add (cfg);
 
 			// Create a release configuration
 			cfg = CreateConfiguration ("Release") as DProjectConfiguration;
 			
-			cfg.ExtraLibraries.AddRange (libs);
 			cfg.DebugMode = false;
-			cfg.CompileTarget = compTarget;
 
 			Configurations.Add (cfg);
 
 			// Create unittest configuration
 			var unittestConfig = CreateConfiguration ("Unittest") as DProjectConfiguration;
 			
-			unittestConfig.ExtraLibraries.AddRange (libs);
 			unittestConfig.DebugMode = true;
 			unittestConfig.UnittestMode = true;
 			unittestConfig.CompileTarget = DCompileTarget.Executable;
 
 			Configurations.Add (unittestConfig);
-            
-			// Prepare all configurations
-			foreach (DProjectConfiguration c in Configurations) {
-
-				c.ExternalConsole = true;
-
-				c.OutputDirectory = Path.Combine (this.GetRelativeChildPath (binPath), c.Id);
-				c.ObjectDirectory += Path.DirectorySeparatorChar + c.Id;
-				c.Output = outputPrefix + Name;
-
-				c.UpdateGlobalVersionIdentifiers();
-
-				if (projectOptions != null) {
-					// Set extra compiler&linker args
-					if (projectOptions.Attributes ["CompilerArgs"].InnerText != null) {
-						c.ExtraCompilerArguments += projectOptions.Attributes ["CompilerArgs"].InnerText;
-					}
-					if (projectOptions.Attributes ["LinkerArgs"].InnerText != null) {
-						c.ExtraLinkerArguments += projectOptions.Attributes ["LinkerArgs"].InnerText;
-					}
-
-					if (projectOptions.GetAttribute ("ExternalConsole") == "True") {
-						c.ExternalConsole = true;
-						c.PauseConsoleOutput = true;
-					}
-					if (projectOptions.Attributes ["PauseConsoleOutput"] != null) {
-						c.PauseConsoleOutput = bool.Parse (
-							projectOptions.Attributes ["PauseConsoleOutput"].InnerText);
-					}			
-				}
-			}
 		}
 		#endregion
 
@@ -236,9 +224,35 @@ namespace MonoDevelop.D.Projects
 		
 		public override SolutionItemConfiguration CreateConfiguration (string name)
 		{
-			var config = new DProjectConfiguration() { Name=name};
+			var defConfig = DefaultConfiguration as DProjectConfiguration;
+			var c = new DProjectConfiguration() { Name=name };
 
-			return config;			
+			if (defConfig != null) {
+				// Try to replace trailing /Debug by /Release, as this is the most common way to name binary directories
+				var defOutputDirEnd = Path.DirectorySeparatorChar + defConfig.Name;
+				var outputDir = defConfig.OutputDirectory.ToString ();
+				if (outputDir.EndsWith (defOutputDirEnd))
+					c.OutputDirectory = Path.Combine(outputDir.Remove (outputDir.Length - defOutputDirEnd.Length) , name);
+
+				// Same for intermediate output directory
+				outputDir = defConfig.ObjectDirectory;
+				if (outputDir.EndsWith (defOutputDirEnd))
+					c.ObjectDirectory = Path.Combine(outputDir.Remove (outputDir.Length - defOutputDirEnd.Length) , name);
+
+				c.Output = defConfig.Output;
+				c.CompileTarget = defConfig.CompileTarget;
+				c.ExternalConsole = defConfig.ExternalConsole;
+				c.PauseConsoleOutput = defConfig.PauseConsoleOutput;
+
+				c.ExtraLibraries.AddRange (defConfig.ExtraLibraries);
+				c.ExtraLinkerArguments = defConfig.ExtraLinkerArguments;
+				c.ExtraCompilerArguments = defConfig.ExtraCompilerArguments;
+			} else {
+				c.OutputDirectory = Path.Combine (this.GetRelativeChildPath (defaultBinPathStub), name);
+				c.ObjectDirectory += Path.DirectorySeparatorChar + name;
+			}
+
+			return c;			
 		}
 		#endregion
 
