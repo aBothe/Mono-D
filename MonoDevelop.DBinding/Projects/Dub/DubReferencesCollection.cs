@@ -29,6 +29,7 @@ using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using MonoDevelop.D.Building;
 using System.IO;
+using MonoDevelop.Core;
 
 namespace MonoDevelop.D.Projects.Dub
 {
@@ -125,7 +126,7 @@ namespace MonoDevelop.D.Projects.Dub
 
 		static Regex dubInstalledPackagesOutputRegex = new Regex ("  (?<name>.+) (?<version>.+): (?<path>.+)", RegexOptions.Compiled | RegexOptions.Multiline | RegexOptions.ExplicitCapture);
 
-		public void DeserializeDubPrjDependencies(JsonReader j)
+		public void DeserializeDubPrjDependencies(JsonReader j, IProgressMonitor mon = null)
 		{
 			dependencies.Clear();
 			FireUpdate ();
@@ -153,11 +154,10 @@ namespace MonoDevelop.D.Projects.Dub
 								}
 							}
 						}
-					} else if (j.TokenType == JsonToken.String) {
+					} else if (j.TokenType == JsonToken.String)
 						depVersion = j.Value as string;
-						tryFillRemainingPaths = true;
-					}
 
+					tryFillRemainingPaths |= string.IsNullOrEmpty(depPath);
 					dependencies [depName] = new DubProjectDependency { Name = depName, Version = depVersion, Path = depPath };
 				}
 			}
@@ -165,11 +165,11 @@ namespace MonoDevelop.D.Projects.Dub
 			if (tryFillRemainingPaths) {
 				string err, outp = null;
 				try{
-					ProjectBuilder.ExecuteCommand (DubSettings.Instance.DubCommand, "list", Owner.BaseDirectory.ToString (), null, out err, out outp);
+					ProjectBuilder.ExecuteCommand (DubSettings.Instance.DubCommand, "list", Owner.BaseDirectory.ToString (), mon, out err, out outp);
 					// Backward compatiblity
 					if (!string.IsNullOrWhiteSpace(err) || !TryInterpretDubListOutput(outp))
 					{
-						ProjectBuilder.ExecuteCommand(DubSettings.Instance.DubCommand, "list-installed", Owner.BaseDirectory.ToString(), null, out err, out outp);
+						ProjectBuilder.ExecuteCommand(DubSettings.Instance.DubCommand, "list-installed", Owner.BaseDirectory.ToString(), mon, out err, out outp);
 						TryInterpretDubListOutput(outp);
 					}
 				}catch(Exception ex) {
@@ -193,8 +193,8 @@ namespace MonoDevelop.D.Projects.Dub
 				ret = true;
 				if (match.Success && dependencies.TryGetValue(match.Groups["name"].Value, out dep) &&
 					//(string.IsNullOrEmpty(dep.Version) || dep.Version == match.Groups["version"].Value) && // TODO: Appropriate handling of dep versions
-					string.IsNullOrEmpty(dep.Path) &&
-					!dep.Name.Contains(":")) // Since dub v0.9.20, subpackages' paths are included in the path list as well!
+					string.IsNullOrEmpty(dep.Path)/* &&
+					!dep.Name.Contains(":")*/) // Since dub v0.9.20, subpackages' paths are included in the path list as well!
 					dep.Path = match.Groups["path"].Value.Trim();
 
 			}

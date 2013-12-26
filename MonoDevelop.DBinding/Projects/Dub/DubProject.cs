@@ -184,7 +184,7 @@ namespace MonoDevelop.D.Projects.Dub
 					if (!j.Read () || j.TokenType != JsonToken.StartObject)
 						throw new JsonReaderException ("Expected { when parsing Authors");
 
-					DubReferences.DeserializeDubPrjDependencies(j);
+					DubReferences.DeserializeDubPrjDependencies(j, monitor);
 					break;
 				case "configurations":
 					if (!j.Read() || j.TokenType != JsonToken.StartArray)
