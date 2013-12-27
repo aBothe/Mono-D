@@ -49,6 +49,7 @@ namespace MonoDevelop.D.OptionPanels
 			configuration = config;
 			
 			cbUseDefaultCompiler.Active = proj.UseDefaultCompilerVendor;
+			cbIsUnittestConfig.Active = config.UnittestMode;
 			cbPreferOneStepCompilation.Active = proj.PreferOneStepBuild;
 			
 			OnUseDefaultCompilerChanged ();
@@ -102,6 +103,7 @@ namespace MonoDevelop.D.OptionPanels
 			
 			// Store used compiler vendor
 			project.UseDefaultCompilerVendor = cbUseDefaultCompiler.Active;
+			configuration.UnittestMode = cbIsUnittestConfig.Active;
 			project.PreferOneStepBuild = cbPreferOneStepCompilation.Active;
 			
 			Gtk.TreeIter iter;
