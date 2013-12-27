@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using MonoDevelop.Core;
 using System.Xml;
 using D_Parser.Misc;
+using MonoDevelop.D.Unittest;
 
 namespace MonoDevelop.D.Building
 {
@@ -191,6 +192,10 @@ namespace MonoDevelop.D.Building
 				case "FormattingCorrectsIndentOnly":
 					Formatting.DCodeFormatter.IndentCorrectionOnly = x.ReadString().ToLowerInvariant() == "true";
 					break;
+					
+				case "UnittestSettings":
+					UnittestSettings.Load (x.ReadSubtree ());
+					break;
 				}
 			}
 
@@ -226,6 +231,10 @@ namespace MonoDevelop.D.Building
 			
 			x.WriteStartElement("FormattingCorrectsIndentOnly");
 			x.WriteString(Formatting.DCodeFormatter.IndentCorrectionOnly ? "true" : "false");
+			x.WriteEndElement();
+
+			x.WriteStartElement ("UnittestSettings");
+			UnittestSettings.Save(x);
 			x.WriteEndElement();
 		}
 		#endregion

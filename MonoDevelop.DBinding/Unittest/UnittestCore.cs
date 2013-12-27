@@ -22,6 +22,7 @@ using MonoDevelop.Core.Execution;
 using GLib;
 using System.Text.RegularExpressions;
 
+
 namespace MonoDevelop.D.Unittest
 {
 	public class UnittestCore
@@ -98,7 +99,7 @@ namespace MonoDevelop.D.Unittest
 		
 		static string[] GetCmdParts(DProject project)
 		{
-			return project.Compiler.RdmdUnittestCommand.Split(new string[]{" "}, 2 , StringSplitOptions.RemoveEmptyEntries);
+			return UnittestSettings.UnittestCommand.Split(new string[]{" "}, 2 , StringSplitOptions.RemoveEmptyEntries);
 		}
 		
 		static string GetExecDir(DProject project, DProjectConfiguration conf)

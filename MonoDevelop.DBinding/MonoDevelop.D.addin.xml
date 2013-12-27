@@ -213,6 +213,10 @@
 			_label = "Dub options"
 			class = "MonoDevelop.D.OptionPanels.DubOptionPanelBinding"/>
 		<Section
+			id = "DUnittestOptions"
+			_label = "Unittests"
+			class = "MonoDevelop.D.OptionPanels.UnittestOptionsBinding"/>
+		<Section
 			id = "ResCompilerOptions"
 			_label = "Win32 Resource Compiler"
 			class = "MonoDevelop.D.ResourceCompilerOptionsBinding"/>

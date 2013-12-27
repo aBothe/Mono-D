@@ -22,10 +22,8 @@ namespace MonoDevelop.D.OptionPanels
 		private global::Gtk.Label label3;
 		private global::Gtk.Label label30;
 		private global::Gtk.Label label31;
-		private global::Gtk.Label label4;
 		private global::Gtk.Entry txtCompiler;
 		private global::Gtk.Entry txtConsoleAppLinker;
-		private global::Gtk.Entry txtRdmdUnittestCmd;
 		private global::Gtk.Entry txtSharedLibLinker;
 		private global::Gtk.Entry txtStaticLibLinker;
 		private global::Gtk.Notebook notebook2;
@@ -52,7 +50,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.vbox8.Name = "vbox8";
 			this.vbox8.Spacing = 6;
 			// Container child vbox8.Gtk.Box+BoxChild
-			this.table6 = new global::Gtk.Table (((uint)(8)), ((uint)(2)), false);
+			this.table6 = new global::Gtk.Table (((uint)(7)), ((uint)(2)), false);
 			this.table6.Name = "table6";
 			this.table6.RowSpacing = ((uint)(6));
 			this.table6.ColumnSpacing = ((uint)(6));
@@ -64,8 +62,8 @@ namespace MonoDevelop.D.OptionPanels
 			this.btnDefaults.Label = global::MonoDevelop.Core.GettextCatalog.GetString ("Defaults");
 			this.table6.Add (this.btnDefaults);
 			global::Gtk.Table.TableChild w1 = ((global::Gtk.Table.TableChild)(this.table6 [this.btnDefaults]));
-			w1.TopAttach = ((uint)(7));
-			w1.BottomAttach = ((uint)(8));
+			w1.TopAttach = ((uint)(6));
+			w1.BottomAttach = ((uint)(7));
 			w1.XOptions = ((global::Gtk.AttachOptions)(4));
 			w1.YOptions = ((global::Gtk.AttachOptions)(4));
 			// Container child table6.Gtk.Table+TableChild
@@ -157,8 +155,8 @@ namespace MonoDevelop.D.OptionPanels
 			w10.Fill = false;
 			this.table6.Add (this.hbox8);
 			global::Gtk.Table.TableChild w11 = ((global::Gtk.Table.TableChild)(this.table6 [this.hbox8]));
-			w11.TopAttach = ((uint)(7));
-			w11.BottomAttach = ((uint)(8));
+			w11.TopAttach = ((uint)(6));
+			w11.BottomAttach = ((uint)(7));
 			w11.LeftAttach = ((uint)(1));
 			w11.RightAttach = ((uint)(2));
 			w11.YOptions = ((global::Gtk.AttachOptions)(4));
@@ -221,28 +219,18 @@ namespace MonoDevelop.D.OptionPanels
 			w17.XOptions = ((global::Gtk.AttachOptions)(4));
 			w17.YOptions = ((global::Gtk.AttachOptions)(4));
 			// Container child table6.Gtk.Table+TableChild
-			this.label4 = new global::Gtk.Label ();
-			this.label4.Name = "label4";
-			this.label4.LabelProp = global::MonoDevelop.Core.GettextCatalog.GetString ("rdmd unittest command");
-			this.table6.Add (this.label4);
-			global::Gtk.Table.TableChild w18 = ((global::Gtk.Table.TableChild)(this.table6 [this.label4]));
-			w18.TopAttach = ((uint)(6));
-			w18.BottomAttach = ((uint)(7));
-			w18.XOptions = ((global::Gtk.AttachOptions)(4));
-			w18.YOptions = ((global::Gtk.AttachOptions)(4));
-			// Container child table6.Gtk.Table+TableChild
 			this.txtCompiler = new global::Gtk.Entry ();
 			this.txtCompiler.CanFocus = true;
 			this.txtCompiler.Name = "txtCompiler";
 			this.txtCompiler.IsEditable = true;
 			this.txtCompiler.InvisibleChar = '•';
 			this.table6.Add (this.txtCompiler);
-			global::Gtk.Table.TableChild w19 = ((global::Gtk.Table.TableChild)(this.table6 [this.txtCompiler]));
-			w19.TopAttach = ((uint)(2));
-			w19.BottomAttach = ((uint)(3));
-			w19.LeftAttach = ((uint)(1));
-			w19.RightAttach = ((uint)(2));
-			w19.YOptions = ((global::Gtk.AttachOptions)(4));
+			global::Gtk.Table.TableChild w18 = ((global::Gtk.Table.TableChild)(this.table6 [this.txtCompiler]));
+			w18.TopAttach = ((uint)(2));
+			w18.BottomAttach = ((uint)(3));
+			w18.LeftAttach = ((uint)(1));
+			w18.RightAttach = ((uint)(2));
+			w18.YOptions = ((global::Gtk.AttachOptions)(4));
 			// Container child table6.Gtk.Table+TableChild
 			this.txtConsoleAppLinker = new global::Gtk.Entry ();
 			this.txtConsoleAppLinker.CanFocus = true;
@@ -250,27 +238,13 @@ namespace MonoDevelop.D.OptionPanels
 			this.txtConsoleAppLinker.IsEditable = true;
 			this.txtConsoleAppLinker.InvisibleChar = '•';
 			this.table6.Add (this.txtConsoleAppLinker);
-			global::Gtk.Table.TableChild w20 = ((global::Gtk.Table.TableChild)(this.table6 [this.txtConsoleAppLinker]));
-			w20.TopAttach = ((uint)(3));
-			w20.BottomAttach = ((uint)(4));
-			w20.LeftAttach = ((uint)(1));
-			w20.RightAttach = ((uint)(2));
-			w20.XOptions = ((global::Gtk.AttachOptions)(4));
-			w20.YOptions = ((global::Gtk.AttachOptions)(4));
-			// Container child table6.Gtk.Table+TableChild
-			this.txtRdmdUnittestCmd = new global::Gtk.Entry ();
-			this.txtRdmdUnittestCmd.CanFocus = true;
-			this.txtRdmdUnittestCmd.Name = "txtRdmdUnittestCmd";
-			this.txtRdmdUnittestCmd.IsEditable = true;
-			this.txtRdmdUnittestCmd.InvisibleChar = '●';
-			this.table6.Add (this.txtRdmdUnittestCmd);
-			global::Gtk.Table.TableChild w21 = ((global::Gtk.Table.TableChild)(this.table6 [this.txtRdmdUnittestCmd]));
-			w21.TopAttach = ((uint)(6));
-			w21.BottomAttach = ((uint)(7));
-			w21.LeftAttach = ((uint)(1));
-			w21.RightAttach = ((uint)(2));
-			w21.XOptions = ((global::Gtk.AttachOptions)(4));
-			w21.YOptions = ((global::Gtk.AttachOptions)(4));
+			global::Gtk.Table.TableChild w19 = ((global::Gtk.Table.TableChild)(this.table6 [this.txtConsoleAppLinker]));
+			w19.TopAttach = ((uint)(3));
+			w19.BottomAttach = ((uint)(4));
+			w19.LeftAttach = ((uint)(1));
+			w19.RightAttach = ((uint)(2));
+			w19.XOptions = ((global::Gtk.AttachOptions)(4));
+			w19.YOptions = ((global::Gtk.AttachOptions)(4));
 			// Container child table6.Gtk.Table+TableChild
 			this.txtSharedLibLinker = new global::Gtk.Entry ();
 			this.txtSharedLibLinker.CanFocus = true;
@@ -278,13 +252,13 @@ namespace MonoDevelop.D.OptionPanels
 			this.txtSharedLibLinker.IsEditable = true;
 			this.txtSharedLibLinker.InvisibleChar = '•';
 			this.table6.Add (this.txtSharedLibLinker);
-			global::Gtk.Table.TableChild w22 = ((global::Gtk.Table.TableChild)(this.table6 [this.txtSharedLibLinker]));
-			w22.TopAttach = ((uint)(4));
-			w22.BottomAttach = ((uint)(5));
-			w22.LeftAttach = ((uint)(1));
-			w22.RightAttach = ((uint)(2));
-			w22.XOptions = ((global::Gtk.AttachOptions)(4));
-			w22.YOptions = ((global::Gtk.AttachOptions)(4));
+			global::Gtk.Table.TableChild w20 = ((global::Gtk.Table.TableChild)(this.table6 [this.txtSharedLibLinker]));
+			w20.TopAttach = ((uint)(4));
+			w20.BottomAttach = ((uint)(5));
+			w20.LeftAttach = ((uint)(1));
+			w20.RightAttach = ((uint)(2));
+			w20.XOptions = ((global::Gtk.AttachOptions)(4));
+			w20.YOptions = ((global::Gtk.AttachOptions)(4));
 			// Container child table6.Gtk.Table+TableChild
 			this.txtStaticLibLinker = new global::Gtk.Entry ();
 			this.txtStaticLibLinker.CanFocus = true;
@@ -292,18 +266,18 @@ namespace MonoDevelop.D.OptionPanels
 			this.txtStaticLibLinker.IsEditable = true;
 			this.txtStaticLibLinker.InvisibleChar = '•';
 			this.table6.Add (this.txtStaticLibLinker);
-			global::Gtk.Table.TableChild w23 = ((global::Gtk.Table.TableChild)(this.table6 [this.txtStaticLibLinker]));
-			w23.TopAttach = ((uint)(5));
-			w23.BottomAttach = ((uint)(6));
-			w23.LeftAttach = ((uint)(1));
-			w23.RightAttach = ((uint)(2));
-			w23.XOptions = ((global::Gtk.AttachOptions)(4));
-			w23.YOptions = ((global::Gtk.AttachOptions)(4));
+			global::Gtk.Table.TableChild w21 = ((global::Gtk.Table.TableChild)(this.table6 [this.txtStaticLibLinker]));
+			w21.TopAttach = ((uint)(5));
+			w21.BottomAttach = ((uint)(6));
+			w21.LeftAttach = ((uint)(1));
+			w21.RightAttach = ((uint)(2));
+			w21.XOptions = ((global::Gtk.AttachOptions)(4));
+			w21.YOptions = ((global::Gtk.AttachOptions)(4));
 			this.vbox8.Add (this.table6);
-			global::Gtk.Box.BoxChild w24 = ((global::Gtk.Box.BoxChild)(this.vbox8 [this.table6]));
-			w24.Position = 0;
-			w24.Expand = false;
-			w24.Fill = false;
+			global::Gtk.Box.BoxChild w22 = ((global::Gtk.Box.BoxChild)(this.vbox8 [this.table6]));
+			w22.Position = 0;
+			w22.Expand = false;
+			w22.Fill = false;
 			// Container child vbox8.Gtk.Box+BoxChild
 			this.notebook2 = new global::Gtk.Notebook ();
 			this.notebook2.CanFocus = true;
@@ -326,17 +300,11 @@ namespace MonoDevelop.D.OptionPanels
 			this.text_DefaultLibraries.Name = "text_DefaultLibraries";
 			this.GtkScrolledWindow.Add (this.text_DefaultLibraries);
 			this.vbox2.Add (this.GtkScrolledWindow);
-			global::Gtk.Box.BoxChild w26 = ((global::Gtk.Box.BoxChild)(this.vbox2 [this.GtkScrolledWindow]));
-			w26.Position = 0;
+			global::Gtk.Box.BoxChild w24 = ((global::Gtk.Box.BoxChild)(this.vbox2 [this.GtkScrolledWindow]));
+			w24.Position = 0;
 			// Container child vbox2.Gtk.Box+BoxChild
 			this.check_enableLibPrefixing = new global::Gtk.CheckButton ();
-			w6.SetTip (this.check_enableLibPrefixing, @"If checked, all referenced libraries that can not be found locally will be stripped by their file extensions and get a ""-L-l"" prefix as they are passed to the compiler during project building.
-'../myCustomLib/bin/myCustomLib.a' remains untouched.
-'libphobos2.a' becomes '-L-llibphobos2' on compilation.
-This is mainly activated when using the gdc compiler.", @"If checked, all referenced libraries that can not be found locally will be stripped by their file extensions and get a ""-L-l"" prefix as they are passed to the compiler during project building.
-'../myCustomLib/bin/myCustomLib.a' remains untouched.
-'libphobos2.a' becomes '-L-llibphobos2' on compilation.
-This is mainly activated when using the gdc compiler.");
+			w6.SetTip (this.check_enableLibPrefixing, "If checked, all referenced libraries that can not be found locally will be stripped by their file extensions and get a \"-L-l\" prefix as they are passed to the compiler during project building.\n'../myCustomLib/bin/myCustomLib.a' remains untouched.\n'libphobos2.a' becomes '-L-llibphobos2' on compilation.\nThis is mainly activated when using the gdc compiler.", "If checked, all referenced libraries that can not be found locally will be stripped by their file extensions and get a \"-L-l\" prefix as they are passed to the compiler during project building.\n'../myCustomLib/bin/myCustomLib.a' remains untouched.\n'libphobos2.a' becomes '-L-llibphobos2' on compilation.\nThis is mainly activated when using the gdc compiler.");
 			this.check_enableLibPrefixing.CanFocus = true;
 			this.check_enableLibPrefixing.Name = "check_enableLibPrefixing";
 			this.check_enableLibPrefixing.Label = global::MonoDevelop.Core.GettextCatalog.GetString ("Enable gdc-specific import lib prefix stripping (e.g. libopengl32.a -> opengl32)");
@@ -344,10 +312,10 @@ This is mainly activated when using the gdc compiler.");
 			this.check_enableLibPrefixing.DrawIndicator = true;
 			this.check_enableLibPrefixing.UseUnderline = true;
 			this.vbox2.Add (this.check_enableLibPrefixing);
-			global::Gtk.Box.BoxChild w27 = ((global::Gtk.Box.BoxChild)(this.vbox2 [this.check_enableLibPrefixing]));
-			w27.Position = 1;
-			w27.Expand = false;
-			w27.Fill = false;
+			global::Gtk.Box.BoxChild w25 = ((global::Gtk.Box.BoxChild)(this.vbox2 [this.check_enableLibPrefixing]));
+			w25.Position = 1;
+			w25.Expand = false;
+			w25.Fill = false;
 			this.notebook2.Add (this.vbox2);
 			// Notebook tab
 			this.label12 = new global::Gtk.Label ();
@@ -362,9 +330,7 @@ This is mainly activated when using the gdc compiler.");
 			this.table2.ColumnSpacing = ((uint)(6));
 			// Container child table2.Gtk.Table+TableChild
 			this.GtkScrolledWindow1 = new global::Gtk.ScrolledWindow ();
-			w6.SetTip (this.GtkScrolledWindow1, "Line-separated list of paths where the compiler (and the code completion engine!)" +
-			" shall look in to resolve imports.", "Line-separated list of paths where the compiler (and the code completion engine!)" +
-			" shall look in to resolve imports.");
+			w6.SetTip (this.GtkScrolledWindow1, "Line-separated list of paths where the compiler (and the code completion engine!) shall look in to resolve imports.", "Line-separated list of paths where the compiler (and the code completion engine!) shall look in to resolve imports.");
 			this.GtkScrolledWindow1.Name = "GtkScrolledWindow1";
 			this.GtkScrolledWindow1.ShadowType = ((global::Gtk.ShadowType)(1));
 			// Container child GtkScrolledWindow1.Gtk.Container+ContainerChild
@@ -385,17 +351,17 @@ This is mainly activated when using the gdc compiler.");
 			this.button_AddInclude.UseUnderline = true;
 			this.button_AddInclude.Label = global::MonoDevelop.Core.GettextCatalog.GetString ("Browse & Add");
 			this.table3.Add (this.button_AddInclude);
-			global::Gtk.Table.TableChild w31 = ((global::Gtk.Table.TableChild)(this.table3 [this.button_AddInclude]));
-			w31.XOptions = ((global::Gtk.AttachOptions)(4));
-			w31.YOptions = ((global::Gtk.AttachOptions)(4));
+			global::Gtk.Table.TableChild w29 = ((global::Gtk.Table.TableChild)(this.table3 [this.button_AddInclude]));
+			w29.XOptions = ((global::Gtk.AttachOptions)(4));
+			w29.YOptions = ((global::Gtk.AttachOptions)(4));
 			this.table2.Add (this.table3);
-			global::Gtk.Table.TableChild w32 = ((global::Gtk.Table.TableChild)(this.table2 [this.table3]));
-			w32.LeftAttach = ((uint)(1));
-			w32.RightAttach = ((uint)(2));
-			w32.XOptions = ((global::Gtk.AttachOptions)(4));
+			global::Gtk.Table.TableChild w30 = ((global::Gtk.Table.TableChild)(this.table2 [this.table3]));
+			w30.LeftAttach = ((uint)(1));
+			w30.RightAttach = ((uint)(2));
+			w30.XOptions = ((global::Gtk.AttachOptions)(4));
 			this.notebook2.Add (this.table2);
-			global::Gtk.Notebook.NotebookChild w33 = ((global::Gtk.Notebook.NotebookChild)(this.notebook2 [this.table2]));
-			w33.Position = 1;
+			global::Gtk.Notebook.NotebookChild w31 = ((global::Gtk.Notebook.NotebookChild)(this.notebook2 [this.table2]));
+			w31.Position = 1;
 			// Notebook tab
 			this.label1 = new global::Gtk.Label ();
 			this.label1.Name = "label1";
@@ -403,8 +369,8 @@ This is mainly activated when using the gdc compiler.");
 			this.notebook2.SetTabLabel (this.table2, this.label1);
 			this.label1.ShowAll ();
 			this.vbox8.Add (this.notebook2);
-			global::Gtk.Box.BoxChild w34 = ((global::Gtk.Box.BoxChild)(this.vbox8 [this.notebook2]));
-			w34.Position = 1;
+			global::Gtk.Box.BoxChild w32 = ((global::Gtk.Box.BoxChild)(this.vbox8 [this.notebook2]));
+			w32.Position = 1;
 			this.Add (this.vbox8);
 			if ((this.Child != null)) {
 				this.Child.ShowAll ();
