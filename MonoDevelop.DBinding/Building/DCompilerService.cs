@@ -57,6 +57,7 @@ namespace MonoDevelop.D.Building
 	/// </summary>
 	public class DCompilerService : ICustomXmlSerializer
 	{
+		#region Properties
 		static DCompilerService _instance = null;
 
 		public static DCompilerService Instance {
@@ -68,6 +69,31 @@ namespace MonoDevelop.D.Building
 				return _instance;
 			}
 		}
+
+		public static string ExecutableExtension {
+			get{ return OS.IsWindows ? ".exe" : (OS.IsMac ? ".app" : null);}	
+		}
+
+		public static string StaticLibraryExtension {
+			get{ return OS.IsWindows ? ".lib" : ".a"; } //FIXME: This is not correct: GDC on windows surely requires .a files..
+		}
+
+		public static string SharedLibraryExtension {
+			get{ return OS.IsWindows ? ".dll" : (OS.IsMac ? ".dylib" : ".so");}	
+		}
+
+		public static string ObjectExtension {
+			get{ return OS.IsWindows ? ".obj" : ".o";} //FIXME: Same here. ".o" object files may be linked in mingw environments..
+		}
+
+		public DDocumentOutlineOptions Outline = new DDocumentOutlineOptions();
+
+		public string DefaultCompiler;
+
+		public static bool IsInitialized { get { return _instance != null; } }
+
+		public readonly List<DCompilerConfiguration> Compilers = new List<DCompilerConfiguration> ();
+		#endregion
 
 		#region Init/Loading & Saving
 		public static void Load ()
@@ -95,30 +121,6 @@ namespace MonoDevelop.D.Building
 
 		const string GlobalPropertyName = "DBinding.DCompiler";
 		#endregion
-		
-		public static string ExecutableExtension {
-			get{ return OS.IsWindows ? ".exe" : (OS.IsMac ? ".app" : null);}	
-		}
-
-		public static string StaticLibraryExtension {
-			get{ return OS.IsWindows ? ".lib" : ".a"; } //FIXME: This is not correct: GDC on windows surely requires .a files..
-		}
-
-		public static string SharedLibraryExtension {
-			get{ return OS.IsWindows ? ".dll" : (OS.IsMac ? ".dylib" : ".so");}	
-		}
-
-		public static string ObjectExtension {
-			get{ return OS.IsWindows ? ".obj" : ".o";} //FIXME: Same here. ".o" object files may be linked in mingw environments..
-		}
-
-		public DDocumentOutlineOptions Outline = new DDocumentOutlineOptions();
-
-		public string DefaultCompiler;
-
-		public static bool IsInitialized { get { return _instance != null; } }
-		
-		public readonly List<DCompilerConfiguration> Compilers = new List<DCompilerConfiguration> ();
 
 		public void UpdateParseCachesAsync ()
 		{
