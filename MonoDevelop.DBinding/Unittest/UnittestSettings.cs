@@ -30,7 +30,8 @@ namespace MonoDevelop.D.Unittest
 {
 	public static class UnittestSettings
 	{
-		public const string UnittestCommand_Default = "rdmd -unittest $main $libs $includes $sources";
+		// $main
+		public const string UnittestCommand_Default = "rdmd -unittest -main $libs $includes $sources";
 		public static string UnittestCommand = UnittestCommand_Default;
 		public const string MainMethodFlag_Default = "-main";
 		public static string MainMethodFlag=MainMethodFlag_Default;
