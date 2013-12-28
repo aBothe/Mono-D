@@ -6,11 +6,6 @@ namespace MonoDevelop.D
 {
 	public class DLanguageBinding: ILanguageBinding
 	{
-		~DLanguageBinding()
-		{
-			DCompilerService.Instance.Save();
-		}
-
 		public static bool IsDFile(string fileName)
 		{
 			return fileName.EndsWith(".d", System.StringComparison.OrdinalIgnoreCase) || fileName.EndsWith(".di", System.StringComparison.OrdinalIgnoreCase);

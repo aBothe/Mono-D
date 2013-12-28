@@ -109,6 +109,10 @@ namespace MonoDevelop.D.Building
 				CompilerPresets.PresetLoader.LoadPresets (_instance);
 			}
 
+			Ide.IdeApp.Workbench.RootWindow.Destroyed += (o, ea) => {
+				_instance.Save();
+			};
+
 			// Init global parse cache
 			_instance.UpdateParseCachesAsync();
 		}
