@@ -37,24 +37,26 @@ namespace MonoDevelop.D.Unittest
 
 		internal static void Load(XmlReader x)
 		{
-			switch (x.LocalName) {
-				case "UnittestCommand":
-					UnittestCommand = x.ReadString ();
-					break;
-				case "MainMethodFlag":
-					MainMethodFlag = x.ReadString ();
-					break;
+			while (x.Read ()) {
+				switch (x.LocalName) {
+					case "UnittestCommand":
+						UnittestCommand = x.ReadString ();
+						break;
+					case "MainMethodFlag":
+						MainMethodFlag = x.ReadString ();
+						break;
+				}
 			}
 		}
 
 		internal static void Save(XmlWriter x)
 		{
 			x.WriteStartElement("UnittestCommand");
-			x.WriteString(UnittestCommand);
+			x.WriteCData(UnittestCommand);
 			x.WriteEndElement();
 
 			x.WriteStartElement("MainMethodFlag");
-			x.WriteString(MainMethodFlag);
+			x.WriteCData(MainMethodFlag);
 			x.WriteEndElement();
 		}
 	}
