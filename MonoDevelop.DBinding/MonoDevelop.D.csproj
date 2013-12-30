@@ -156,7 +156,6 @@
     <Compile Include="Building\ErrorExtracting.cs" />
     <Compile Include="Building\ProjectBuilder.cs" />
     <Compile Include="Completion\AstUpdater.cs" />
-    <Compile Include="Completion\TooltipInfoGenerator.cs" />
     <Compile Include="Formatting\DFormattingPolicy.cs" />
     <Compile Include="Formatting\FormattingPanel.cs" />
     <Compile Include="Formatting\Indentation\DIndentEngine.cs" />
@@ -169,7 +168,6 @@
     <Compile Include="Formatting\DCodeFormatter.cs" />
     <Compile Include="Gui\DModuleOutlineExtension.cs" />
     <Compile Include="Gui\DToolTipProvider.cs" />
-    <Compile Include="Gui\DToolTipWindow.cs" />
     <Compile Include="Gui\EditorPathBarExtension.cs" />
     <Compile Include="Gui\MixinInsightPad.cs" />
     <Compile Include="Highlighting\HighlightUsagesExtension.cs" />
@@ -266,6 +264,10 @@
     <Compile Include="OptionPanels\UnittestOptions.cs" />
     <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.UnittestOptions.cs" />
     <Compile Include="Unittest\UnittestSettings.cs" />
+    <Compile Include="Completion\TooltipMarkupGen.cs" />
+    <Compile Include="Completion\TooltipMarkupGen.Signatures.cs" />
+    <Compile Include="Completion\TooltipInfoGenerator.cs" />
+    <Compile Include="Completion\TooltipInfoGen.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>

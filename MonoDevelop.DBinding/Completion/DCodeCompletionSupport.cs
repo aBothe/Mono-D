@@ -758,21 +758,6 @@ namespace MonoDevelop.D.Completion
 			return iconIdWithProtectionAttr(n, attr + "method", true);
 		}
 
-		/// <summary>
-		/// Returns node string without attributes and without node path
-		/// </summary>
-		public string PureNodeString
-		{
-			get
-			{
-				if (Node is DVariable)
-					return (Node as DVariable).ToString(true,false,false);
-				if (Node is DNode)
-					return (Node as DNode).ToString(true, false);
-				return Node.ToString();
-			}
-		}
-
 		public readonly DNode Node;
 
 		public override string CompletionText
@@ -783,93 +768,13 @@ namespace MonoDevelop.D.Completion
 
 		public override string DisplayText
 		{
-			get { return CompletionText; }
+			get { return Node.Name; }
 			set { }
 		}
 
 		public override TooltipInformation CreateTooltipInformation(bool smartWrap)
 		{
-			var tti = new TooltipInformation();
-
-			var dn = Node;
-
-			var sb = new StringBuilder();
-			sb.Append("<i>(");
-
-			if (dn is DClassLike)
-			{
-				switch ((dn as DClassLike).ClassType)
-				{
-					case DTokens.Class:
-						sb.Append("Class");
-						break;
-					case DTokens.Template:
-						if (dn.ContainsAttribute(DTokens.Mixin))
-							sb.Append("Mixin ");
-						sb.Append("Template");
-						break;
-					case DTokens.Struct:
-						sb.Append("Struct");
-						break;
-					case DTokens.Union:
-						sb.Append("Union");
-						break;
-				}
-			}
-			else if (dn is DEnum)
-			{
-				sb.Append("Enum");
-			}
-			else if (dn is DEnumValue)
-			{
-				sb.Append("Enum Value");
-			}
-			else if (dn is DVariable)
-			{
-				if (dn.Parent is DMethod)
-				{
-					var dm = dn.Parent as DMethod;
-					if (dm.Parameters.Contains(dn))
-						sb.Append("Parameters");
-					else
-						sb.Append("Local");
-				}
-				else if (dn.Parent is DClassLike)
-					sb.Append("Field");
-				else
-					sb.Append("Variable");
-			}
-			else if (dn is DMethod)
-			{
-				sb.Append("Method");
-			}
-			else if (dn is TemplateParameter.Node)
-			{
-				sb.Append("Template Parameter");
-			}
-
-			sb.Append(")</i> ");
-
-			tti.SignatureMarkup = sb.Append(AmbienceService.EscapeText(PureNodeString)).ToString();
-
-			
-			if(!string.IsNullOrWhiteSpace(dn.Description))
-				tti.SummaryMarkup = AmbienceService.EscapeText(dn.Description);
-
-			return tti;
-		}
-
-		public override string DisplayDescription
-		{
-			get
-			{
-				var s = PureNodeString;
-				if (s.Length > 40)
-					return s.Substring(0, 40) + "...";
-				return s;
-			}
-			set
-			{}
+			return TooltipInfoGen.Create (Node, Ide.IdeApp.Workbench.ActiveDocument.Editor.ColorStyle);
 		}
 
 		public int CompareTo(ICompletionData other)

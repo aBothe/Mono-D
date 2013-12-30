@@ -134,8 +134,7 @@ namespace MonoDevelop.D.Completion
 
 		public override TooltipInformation CreateTooltipInformation(int overload, int currentParameter, bool smartWrap)
 		{
-			selIndex = overload;
-			return TooltipInfoGenerator.Generate(CurrentResult, currentParameter, args.IsTemplateInstanceArguments);
+			return TooltipInfoGen.Create (args.ResolvedTypesOrMethods [overload], doc.Editor.ColorStyle, args.IsTemplateInstanceArguments, currentParameter);
 		}
 
 		

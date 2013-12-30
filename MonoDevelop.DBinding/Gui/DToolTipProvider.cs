@@ -9,14 +9,127 @@ using MonoDevelop.D.Resolver;
 using MonoDevelop.Ide;
 using Pango;
 using System.Collections.Generic;
+using MonoDevelop.Ide.CodeCompletion;
+using System;
+using D_Parser.Resolver;
+using D_Parser.Resolver.TypeResolution;
+using MonoDevelop.D.Highlighting;
+using Mono.TextEditor.Highlighting;
+using System.Text;
+using System.Text.RegularExpressions;
+using D_Parser.Parser;
 
 namespace MonoDevelop.D.Gui
 {
 	/// <summary>
 	/// Description of DToolTipProvider.
 	/// </summary>
-	public class DToolTipProvider:TooltipProvider
+	public class DToolTipProvider:TooltipProvider, IDisposable
 	{
+		#region Properties
+		ISemantic lastNode;
+		static TooltipInformationWindow lastWindow = null;
+		//TooltipItem lastResult;
+		#endregion
+
+		#region Lowlevel
+		static void DestroyLastTooltipWindow ()
+		{
+			if (lastWindow != null) {
+				lastWindow.Destroy ();
+				lastWindow = null;
+			}
+		}
+
+		#region IDisposable implementation
+
+		public void Dispose ()
+		{
+			DestroyLastTooltipWindow ();
+			lastNode = null;
+			//lastResult = null;
+		}
+
+		#endregion
+
+		protected override Gtk.Window CreateTooltipWindow (Mono.TextEditor.TextEditor editor, int offset, Gdk.ModifierType modifierState, TooltipItem item)
+		{
+			var doc = IdeApp.Workbench.ActiveDocument;
+			if (doc == null)
+				return null;
+
+			var titem = (AbstractType[])item.Item;
+
+			if (titem == null || titem.Length < 1)
+				return null;
+
+			var result = new TooltipInformationWindow ();
+			result.ShowArrow = true;
+
+			foreach (var i in titem) {
+				if (i == null)
+					continue;
+				var tooltipInformation = TooltipInfoGen.Create (i, editor.ColorStyle);
+				if (tooltipInformation != null && !string.IsNullOrEmpty (tooltipInformation.SignatureMarkup))
+					result.AddOverload(tooltipInformation);
+			}
+
+			if (result.Overloads < 1) {
+				result.Dispose ();
+				return null;
+			}
+
+			result.RepositionWindow ();
+			return result;
+		}
+
+		public override Gtk.Window ShowTooltipWindow (TextEditor editor, int offset, Gdk.ModifierType modifierState, int mouseX, int mouseY, TooltipItem item)
+		{
+			var titems = (AbstractType[])item.Item;/*
+			if (lastNode != null && lastWindow != null && lastWindow.IsRealized && titem.Result != null && lastNode == titem.Result)
+				return lastWindow;*/
+
+			DestroyLastTooltipWindow ();
+
+			var tipWindow = CreateTooltipWindow (editor, offset, modifierState, item) as TooltipInformationWindow;
+			if (tipWindow == null)
+				return null;
+
+			var titem = titems [0].DeclarationOrExpressionBase;
+			var positionWidget = editor.TextArea;
+
+			Cairo.Point p1, p2;
+
+			if (titem != null) {
+				p1 = editor.LocationToPoint (titem.Location.Line, titem.Location.Column);
+				p2 = editor.LocationToPoint (titem.EndLocation.Line, titem.EndLocation.Column);
+			} else {
+				p1 = editor.LocationToPoint (editor.OffsetToLocation(item.ItemSegment.Offset));
+				p2 = editor.LocationToPoint (editor.OffsetToLocation(item.ItemSegment.EndOffset));
+			}
+
+			var caret = new Gdk.Rectangle ((int)p1.X - positionWidget.Allocation.X, (int)p2.Y - positionWidget.Allocation.Y, (int)(p2.X - p1.X), (int)editor.LineHeight);
+			tipWindow.ShowPopup (positionWidget, caret, PopupPosition.Top);
+			
+
+			lastWindow = tipWindow;
+
+			tipWindow.EnterNotifyEvent += delegate {
+				editor.HideTooltip (false);
+			};
+
+			//lastNode = titem.Result;
+			return tipWindow;
+		}
+
+		protected override void GetRequiredPosition (TextEditor editor, Window tipWindow, out int requiredWidth, out double xalign)
+		{
+			var win = (TooltipInformationWindow)tipWindow;
+			requiredWidth = win.Allocation.Width;
+			xalign = 0.5;
+		}
+		#endregion
+
 		public override TooltipItem GetItem(TextEditor editor, int offset)
 		{
 			// Note: Normally, the document already should be open
@@ -37,7 +150,7 @@ namespace MonoDevelop.D.Gui
 			// Create editor context
 			var line=editor.GetLineByOffset(offset);
 
-			var EditorContext = new EditorData {
+			var ed = new EditorData {
 				CaretOffset=offset,
 				CaretLocation = new CodeLocation(offset - line.Offset, editor.OffsetToLineNumber(offset)),
 				ModuleCode = editor.Text,
@@ -46,69 +159,13 @@ namespace MonoDevelop.D.Gui
 			};
 
 			// Let the engine build all contents
-			var ttContents= AbstractTooltipProvider.BuildToolTip(EditorContext);
+			DResolver.NodeResolutionAttempt att;
+			var rr = DResolver.ResolveTypeLoosely(ed, out att);
 
 			// Create tool tip item
-			if (ttContents != null)
-				return new TooltipItem(ttContents, offset, 1);
+			if (rr != null)
+				return new TooltipItem(rr, offset, 1);
 			return null;
-		}
-		
-		protected override Window CreateTooltipWindow(TextEditor editor, int offset, Gdk.ModifierType modifierState, TooltipItem item)
-		{
-			//create a message string from all the results
-			var results = item.Item as IEnumerable<AbstractTooltipContent>;
-
-			var win = new DToolTipWindow();
-
-			var pack = new Gtk.VBox();
-			
-			foreach (var r in results)
-			{
-				var titleLabel = new Label(r.Title);
-
-				// Make left-bound
-				titleLabel.SetAlignment(0, 0);
-
-				// Make the title bold
-				titleLabel.ModifyFont(new Pango.FontDescription() {Weight=Weight.Bold, AbsoluteSize=12*(int)Pango.Scale.PangoScale});
-				
-				pack.Add(titleLabel);
-
-				if (!string.IsNullOrEmpty( r.Description))
-				{
-					const int maximumDescriptionLength = 300;
-					var descLabel = new Label(r.Description.Length>maximumDescriptionLength ? (r.Description.Substring(0,maximumDescriptionLength)+"...") : r.Description);
-
-					descLabel.ModifyFont(new Pango.FontDescription() { AbsoluteSize = 10 * (int)Pango.Scale.PangoScale });
-					descLabel.SetAlignment(0, 0);
-
-					pack.Add(descLabel);
-				}
-			}
-
-			win.Add(pack);
-
-			return win;
-		}
-		
-		protected override void GetRequiredPosition(TextEditor editor, Gtk.Window tipWindow, out int requiredWidth, out double xalign)
-		{
-			var win = (TooltipWindow)tipWindow;
-
-			// Code taken from LanugageItemWindow (public int SetMaxWidth (int maxWidth))
-			var label = win.Child as VBox;
-			if (label == null)
-				requiredWidth = win.Allocation.Width;
-			else
-				requiredWidth = label.WidthRequest;
-
-			xalign = 0.5;
-		}
-		
-		public override bool IsInteractive(TextEditor editor, Gtk.Window tipWindow)
-		{
-			return false;
 		}
 	}
 }
