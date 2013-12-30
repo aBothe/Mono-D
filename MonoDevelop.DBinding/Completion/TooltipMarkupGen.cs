@@ -137,35 +137,35 @@ namespace MonoDevelop.D.Completion
 				switch (macroName) {
 					case "I":
 						if(firstParam != null)
-							sb.Append ("<i>").Append(firstParam).Append("</i>");
+							sb.Append ("<i>").Append(DDocToMarkup(st,firstParam)).Append("</i>");
 						break;
 					case "U":
 						if(firstParam != null)
-							sb.Append ("<u>").Append(firstParam).Append("</u>");
+							sb.Append ("<u>").Append(DDocToMarkup(st,firstParam)).Append("</u>");
 						break;
 					case "B":
 						if(firstParam != null)
-							sb.Append ("<b>").Append(firstParam).Append("</b>");
+							sb.Append ("<b>").Append(DDocToMarkup(st,firstParam)).Append("</b>");
 						break;
 					case "D_CODE":
 					case "D":
 						if (firstParam != null)
-							sb.Append(DCodeToMarkup (st, firstParam));
+							sb.Append(DCodeToMarkup (st, DDocToMarkup(st,firstParam)));
 						break;
 					case "BR":
 						sb.AppendLine ();
 						break;
 					case "RED":
 						if (firstParam != null)
-							sb.Append("<span color=\"red\">").Append(firstParam).Append("</span>");
+							sb.Append("<span color=\"red\">").Append(DDocToMarkup(st,firstParam)).Append("</span>");
 						break;
 					case "BLUE":
 						if (firstParam != null)
-							sb.Append("<span color=\"blue\">").Append(firstParam).Append("</span>");
+							sb.Append("<span color=\"blue\">").Append(DDocToMarkup(st,firstParam)).Append("</span>");
 						break;
 					case "GREEN":
 						if (firstParam != null)
-							sb.Append("<span color=\"green\">").Append(firstParam).Append("</span>");
+							sb.Append("<span color=\"green\">").Append(DDocToMarkup(st,firstParam)).Append("</span>");
 						break;
 					case "YELLOW":
 						if (firstParam != null)
@@ -173,15 +173,15 @@ namespace MonoDevelop.D.Completion
 						break;
 					case "BLACK":
 						if (firstParam != null)
-							sb.Append("<span color=\"black\">").Append(firstParam).Append("</span>");
+							sb.Append("<span color=\"black\">").Append(DDocToMarkup(st,firstParam)).Append("</span>");
 						break;
 					case "WHITE":
 						if (firstParam != null)
-							sb.Append("<span color=\"white\">").Append(firstParam).Append("</span>");
+							sb.Append("<span color=\"white\">").Append(DDocToMarkup(st,firstParam)).Append("</span>");
 						break;
 					default:
 						if (firstParam != null) {
-							sb.Append (firstParam);
+							sb.Append(DDocToMarkup(st,firstParam));
 						}
 						break;
 				}
