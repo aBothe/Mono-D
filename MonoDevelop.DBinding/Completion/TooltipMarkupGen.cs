@@ -84,11 +84,7 @@ namespace MonoDevelop.D.Completion
 		void AssignToCategories(Dictionary<string,string> cats, string catName, string rawContent)
 		{
 			rawContent = rawContent.Trim ();
-
-			if (catName.ToLower ().StartsWith ("example"))
-				cats [catName] = HandleExampleCode (rawContent);
-			else
-				cats [catName] = DDocToMarkup(rawContent);
+			cats [catName] = catName.ToLower ().StartsWith ("example") ? HandleExampleCode (DDocToMarkup(rawContent)) : DDocToMarkup(rawContent);
 		}
 
 		const char ExampleCodeInit='-';

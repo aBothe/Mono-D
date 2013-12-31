@@ -163,7 +163,7 @@ namespace MonoDevelop.D.Completion
 
 						var tps = deducedTypes != null ? deducedTypes [param] : null;
 						if (tps != null && tps.Base != null)
-							sb.Append(GenTooltipSignature(tps.Base));
+							sb.Append(DCodeToMarkup(tps.Base.ToCode()));
 						else
 							sb.Append (DCodeToMarkup(param.ToString ()));
 
