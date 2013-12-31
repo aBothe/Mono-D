@@ -33,6 +33,7 @@ using Mono.TextEditor;
 using MonoDevelop.D.Highlighting;
 using D_Parser.Resolver;
 using D_Parser.Dom;
+using D_Parser.Resolver.Templates;
 
 namespace MonoDevelop.D.Completion
 {
@@ -40,8 +41,9 @@ namespace MonoDevelop.D.Completion
 	{
 		public string GenTooltipSignature(AbstractType t, bool templateParamCompletion = false, int currentMethodParam = -1)
 		{
-			if (t is DSymbol)
-				return GenTooltipSignature ((t as DSymbol).Definition, templateParamCompletion, currentMethodParam);
+			var ds = t as DSymbol;
+			if (ds != null)
+				return GenTooltipSignature (ds.Definition, templateParamCompletion, currentMethodParam, ds.Base != null ? ds.Base.TypeDeclarationOf : null, ds.DeducedTypes != null ? new DeducedTypeDictionary(ds) : null);
 
 			if (t is PackageSymbol) {
 				var pack = (t as PackageSymbol).Package;
@@ -51,25 +53,27 @@ namespace MonoDevelop.D.Completion
 			return DCodeToMarkup (t.ToCode ());
 		}
 
-		public string GenTooltipSignature(DNode dn, bool templateParamCompletion = false, int currentMethodParam = -1)
+		public string GenTooltipSignature(DNode dn, bool templateParamCompletion = false, 
+			int currentMethodParam = -1, ITypeDeclaration baseType=null, DeducedTypeDictionary deducedType = null)
 		{
 			var sb = new StringBuilder();
 
 			if (dn is DMethod)
-				S (dn as DMethod, sb, templateParamCompletion, currentMethodParam);
+				S (dn as DMethod, sb, templateParamCompletion, currentMethodParam, baseType, deducedType);
 			else if (dn is DModule) {
 				sb.Append ("<i>(Module)</i> ").Append ((dn as DModule).ModuleName);
 			} else if (dn is DClassLike)
-				S (dn as DClassLike, sb);
+				S (dn as DClassLike, sb, deducedType);
 			else
 				AttributesTypeAndName (dn, sb);
 
 			return sb.ToString ();
 		}
 
-		void S(DMethod dm, StringBuilder sb, bool templArgs = false, int curArg = -1)
+		void S(DMethod dm, StringBuilder sb, bool templArgs = false, int curArg = -1, ITypeDeclaration baseType = null,
+			DeducedTypeDictionary deducedTypes = null)
 		{
-			AttributesTypeAndName(dm, sb, templArgs ? curArg : -1);
+			AttributesTypeAndName(dm, sb, baseType, templArgs ? curArg : -1, deducedTypes);
 
 			// Parameters
 			sb.Append ('(');
@@ -81,6 +85,7 @@ namespace MonoDevelop.D.Completion
 					if (!templArgs && curArg == i)
 						sb.Append ("<u>");
 
+					//TODO: Show deduced parameters
 					AttributesTypeAndName(dm.Parameters [i] as DNode, sb);
 
 					if (!templArgs && curArg == i)
@@ -95,15 +100,15 @@ namespace MonoDevelop.D.Completion
 			sb.Append (')');
 		}
 
-		void S(DClassLike dc, StringBuilder sb)
+		void S(DClassLike dc, StringBuilder sb, DeducedTypeDictionary deducedTypes = null)
 		{
 			AppendAttributes (dc, sb);
 
-			//TODO: Highlight e.g. 'class'
-			sb.Append (' ').Append(DTokens.GetTokenString(dc.ClassType)).Append(' ');
+			sb.Append(DCodeToMarkup(DTokens.GetTokenString(dc.ClassType))).Append(' ');
 
-			//TODO: Highlight Name as user type
-			sb.Append (dc.Name);
+			sb.Append (DCodeToMarkup(dc.Name));
+
+			AppendTemplateParams (dc, sb, -1, deducedTypes);
 
 			if (dc.BaseClasses != null && dc.BaseClasses.Count != 0) {
 				sb.AppendLine (" : ");
@@ -115,13 +120,15 @@ namespace MonoDevelop.D.Completion
 			}
 		}
 
-		void AttributesTypeAndName(DNode dn, StringBuilder sb, int highlightTemplateParam = -1)
+		void AttributesTypeAndName(DNode dn, StringBuilder sb, 
+			ITypeDeclaration baseType = null, int highlightTemplateParam = -1,
+			DeducedTypeDictionary deducedTypes = null)
 		{
 			AppendAttributes (dn, sb);
 
-			if (dn.Type != null)
+			if (dn.Type != null || baseType != null)
 			{
-				sb.Append(DCodeToMarkup(dn.Type.ToString(true))).Append(' ');
+				sb.Append(DCodeToMarkup((dn.Type ?? baseType).ToString(true))).Append(' ');
 			}
 			else if (dn.Attributes != null && dn.Attributes.Count != 0)
 			{
@@ -140,6 +147,11 @@ namespace MonoDevelop.D.Completion
 			// Maybe highlight variables/method names?
 			sb.Append(dn.Name);
 
+			AppendTemplateParams (dn, sb, highlightTemplateParam, deducedTypes);
+		}
+
+		void AppendTemplateParams(DNode dn, StringBuilder sb, int highlightTemplateParam = -1, DeducedTypeDictionary deducedTypes = null)
+		{
 			if (dn.TemplateParameters != null && dn.TemplateParameters.Length > 0) {
 				sb.Append ('(');
 
@@ -148,7 +160,13 @@ namespace MonoDevelop.D.Completion
 					if (param != null) {
 						if (i == highlightTemplateParam)
 							sb.Append ("<u>");
-						sb.Append (DCodeToMarkup(param.ToString ()));
+
+						var tps = deducedTypes != null ? deducedTypes [param] : null;
+						if (tps != null && tps.Base != null)
+							sb.Append(GenTooltipSignature(tps.Base));
+						else
+							sb.Append (DCodeToMarkup(param.ToString ()));
+
 						if (i == highlightTemplateParam)
 							sb.Append ("</u>");
 						sb.Append (',');
@@ -163,9 +181,12 @@ namespace MonoDevelop.D.Completion
 
 		void AppendAttributes(DNode dn, StringBuilder sb)
 		{
-
+			if (dn.Attributes != null && dn.Attributes.Count != 0) {
+				foreach (var attr in dn.Attributes)
+					if (!(attr is DeclarationCondition))
+						sb.Append (DCodeToMarkup (attr.ToString ())).Append (' ');
+			}
 		}
-
 
 		static void RemoveLastChar(StringBuilder sb,char c)
 		{

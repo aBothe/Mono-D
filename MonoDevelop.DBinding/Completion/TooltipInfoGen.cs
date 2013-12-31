@@ -40,7 +40,7 @@ namespace MonoDevelop.D.Completion
 			var markupGen = new TooltipMarkupGen (st);
 
 			var tti = new TooltipInformation { 
-				SignatureMarkup = markupGen.GenTooltipSignature (t)
+				SignatureMarkup = markupGen.GenTooltipSignature (t, templateParamCompletion, currentMethodParam)
 			};
 
 			var ds = t as DSymbol;
