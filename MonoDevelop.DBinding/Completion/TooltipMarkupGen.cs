@@ -139,16 +139,16 @@ namespace MonoDevelop.D.Completion
 				//TODO: Have proper macro infrastructure
 				switch (macroName) {
 					case "I":
-						if(firstParam != null)
-							sb.Append ("<i>").Append(DDocToMarkup(firstParam)).Append("</i>");
+						if (firstParam != null)
+							AppendFormat (DDocToMarkup (firstParam), sb, FormatFlags.Italic);
 						break;
 					case "U":
 						if(firstParam != null)
-							sb.Append ("<u>").Append(DDocToMarkup(firstParam)).Append("</u>");
+							AppendFormat (DDocToMarkup (firstParam), sb, FormatFlags.Underline);
 						break;
 					case "B":
 						if(firstParam != null)
-							sb.Append ("<b>").Append(DDocToMarkup(firstParam)).Append("</b>");
+							AppendFormat (DDocToMarkup (firstParam), sb, FormatFlags.Bold);
 						break;
 					case "D_CODE":
 					case "D":
@@ -160,27 +160,27 @@ namespace MonoDevelop.D.Completion
 						break;
 					case "RED":
 						if (firstParam != null)
-							sb.Append("<span color=\"red\">").Append(DDocToMarkup(firstParam)).Append("</span>");
+							AppendFormat (DDocToMarkup (firstParam), sb, FormatFlags.Color, 1.0);
 						break;
 					case "BLUE":
 						if (firstParam != null)
-							sb.Append("<span color=\"blue\">").Append(DDocToMarkup(firstParam)).Append("</span>");
+							AppendFormat (DDocToMarkup (firstParam), sb, FormatFlags.Color, 0,0,1.0);
 						break;
 					case "GREEN":
 						if (firstParam != null)
-							sb.Append("<span color=\"green\">").Append(DDocToMarkup(firstParam)).Append("</span>");
+							AppendFormat (DDocToMarkup (firstParam), sb, FormatFlags.Color, 0,1,0);
 						break;
 					case "YELLOW":
 						if (firstParam != null)
-							sb.Append("<span color=\"yellow\">").Append(DDocToMarkup(firstParam)).Append("</span>");
+							AppendFormat (DDocToMarkup (firstParam), sb, FormatFlags.Color, 1,1,0);
 						break;
 					case "BLACK":
 						if (firstParam != null)
-							sb.Append("<span color=\"black\">").Append(DDocToMarkup(firstParam)).Append("</span>");
+							AppendFormat (DDocToMarkup (firstParam), sb, FormatFlags.Color);
 						break;
 					case "WHITE":
 						if (firstParam != null)
-							sb.Append("<span color=\"white\">").Append(DDocToMarkup(firstParam)).Append("</span>");
+							AppendFormat (DDocToMarkup (firstParam), sb, FormatFlags.Color, 1,1,1);
 						break;
 					default:
 						if (firstParam != null) {
@@ -194,6 +194,34 @@ namespace MonoDevelop.D.Completion
 				sb.Append (ddoc [i++]);
 
 			return sb.ToString ();
+		}
+
+		[Flags]
+		protected enum FormatFlags{
+			None=0,Color=1<<0,Underline=1<<1,Bold=1<<2,Italic=1<<3
+		}
+
+		protected virtual void AppendFormat(string content, StringBuilder sb, FormatFlags flags, double r=0.0, double g=0.0, double b=0.0)
+		{
+			if (flags == FormatFlags.None) {
+				sb.Append (content);
+				return;
+			}
+
+			sb.Append ("<span");
+
+			if ((flags & FormatFlags.Bold) != 0)
+				sb.Append (" weight='bold'");
+			if ((flags & FormatFlags.Italic) != 0)
+				sb.Append (" font_style='italic'");
+			if ((flags & FormatFlags.Underline) != 0)
+				sb.Append (" underline='single'");
+			if ((flags & FormatFlags.Color) != 0) {
+				sb.Append (string.Format (" color='#{0:x2}{1:x2}{2:x2}'", 
+					(int)(r * 255.0), (int)(g * 255.0), (int)(b * 255.0)));
+			}
+
+			sb.Append ('>').Append(content).Append("</span>");
 		}
 
 		#region Pseudo-Highlighting
@@ -227,10 +255,8 @@ namespace MonoDevelop.D.Completion
 					}
 
 					var col = st.GetForeground (s);
-					//TODO: Apply Underline/weight/other styles?
-					sb.Append (string.Format("<span color=\"#{0:x2}{1:x2}{2:x2}\">", (int)(col.R * 255.0), (int)(col.G * 255.0), (int)(col.B * 255.0)));
-					sb.Append(textDoc.GetTextAt(chunk.Offset, chunk.Length));
-					sb.Append ("</span>");
+					// TODO: Have other format flags applied?
+					AppendFormat (textDoc.GetTextAt (chunk.Offset, chunk.Length), sb, FormatFlags.Color, col.R, col.G, col.B);
 				}
 
 				if (i < lineCount)

@@ -82,14 +82,18 @@ namespace MonoDevelop.D.Completion
 				for (int i = 0; i < dm.Parameters.Count; i++) {
 					sb.AppendLine ();
 					sb.Append ("  ");
-					if (!templArgs && curArg == i)
-						sb.Append ("<u>");
+
+					var indexBackup = sb.Length;
 
 					//TODO: Show deduced parameters
 					AttributesTypeAndName(dm.Parameters [i] as DNode, sb);
 
-					if (!templArgs && curArg == i)
-						sb.Append ("</u>");
+					if (!templArgs && curArg == i) {
+						//TODO: Optimize
+						var contentToUnderline = sb.ToString(indexBackup, sb.Length-indexBackup);
+						sb.Remove (indexBackup, contentToUnderline.Length);
+						AppendFormat (contentToUnderline, sb, FormatFlags.Underline);
+					}
 					sb.Append (',');
 				}
 
@@ -158,17 +162,10 @@ namespace MonoDevelop.D.Completion
 				for (int i = 0; i < dn.TemplateParameters.Length; i++) {
 					var param = dn.TemplateParameters [i];
 					if (param != null) {
-						if (i == highlightTemplateParam)
-							sb.Append ("<u>");
-
 						var tps = deducedTypes != null ? deducedTypes [param] : null;
-						if (tps != null && tps.Base != null)
-							sb.Append(DCodeToMarkup(tps.Base.ToCode()));
-						else
-							sb.Append (DCodeToMarkup(param.ToString ()));
-
-						if (i == highlightTemplateParam)
-							sb.Append ("</u>");
+						AppendFormat(
+							DCodeToMarkup(tps != null && tps.Base != null ? tps.Base.ToCode() : param.ToString()),
+							sb, i != highlightTemplateParam ? FormatFlags.None : FormatFlags.Underline);
 						sb.Append (',');
 					}
 				}
