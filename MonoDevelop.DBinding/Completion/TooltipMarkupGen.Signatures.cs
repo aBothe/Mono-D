@@ -128,7 +128,7 @@ namespace MonoDevelop.D.Completion
 
 			if (dn.Type != null || baseType != null)
 			{
-				sb.Append(DCodeToMarkup((dn.Type ?? baseType).ToString(true))).Append(' ');
+				sb.Append(DCodeToMarkup((baseType ?? dn.Type).ToString(true))).Append(' ');
 			}
 			else if (dn.Attributes != null && dn.Attributes.Count != 0)
 			{
