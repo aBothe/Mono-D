@@ -34,36 +34,41 @@ namespace MonoDevelop.D.Completion
 {
 	public static class TooltipInfoGen
 	{
+		//TODO: Für semantisches Highlighting den TypeRefFinder benutzen und einfach pauschal alle Ids entsprechend highlighten
 		public static TooltipInformation Create(AbstractType t, ColorScheme st, bool templateParamCompletion = false, int currentMethodParam = -1)
 		{
+			var markupGen = new TooltipMarkupGen (st);
+
 			var tti = new TooltipInformation { 
-				SignatureMarkup = TooltipMarkupGen.GenTooltipSignature (t, st)
+				SignatureMarkup = markupGen.GenTooltipSignature (t)
 			};
 
 			var ds = t as DSymbol;
 			if (ds != null)
-				CreateTooltipBody (ds.Definition, st, tti);
+				CreateTooltipBody (markupGen, ds.Definition, tti);
 
 			return tti;
 		}
 
 		public static TooltipInformation Create(DNode dn, ColorScheme st, bool templateParamCompletion = false, int currentMethodParam = -1)
 		{
+			var markupGen = new TooltipMarkupGen (st);
+
 			var tti = new TooltipInformation { 
-				SignatureMarkup = TooltipMarkupGen.GenTooltipSignature(dn, st, templateParamCompletion, currentMethodParam)
+				SignatureMarkup = markupGen.GenTooltipSignature(dn, templateParamCompletion, currentMethodParam)
 			};
 
-			CreateTooltipBody (dn, st, tti);
+			CreateTooltipBody (markupGen, dn, tti);
 
 			return tti;
 		}
 
-		static void CreateTooltipBody(DNode dn, ColorScheme st, TooltipInformation tti)
+		static void CreateTooltipBody(TooltipMarkupGen markupGen, DNode dn, TooltipInformation tti)
 		{
 			string summary;
 			Dictionary<string,string> categories;
 
-			TooltipMarkupGen.GenToolTipBody (dn, st, out summary, out categories);
+			markupGen.GenToolTipBody (dn, out summary, out categories);
 
 			tti.SummaryMarkup = summary;
 			if (categories != null)

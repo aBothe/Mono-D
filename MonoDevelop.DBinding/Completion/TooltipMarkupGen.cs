@@ -38,7 +38,14 @@ namespace MonoDevelop.D.Completion
 {
 	public partial class TooltipMarkupGen
 	{
-		public static void GenToolTipBody(DNode n, ColorScheme st, out string summary, out Dictionary<string,string> categories)
+		ColorScheme st;
+
+		public TooltipMarkupGen(ColorScheme st)
+		{
+			this.st = st;
+		}
+
+		public void GenToolTipBody(DNode n, out string summary, out Dictionary<string,string> categories)
 		{
 			categories = null;
 			summary = null;
@@ -50,11 +57,11 @@ namespace MonoDevelop.D.Completion
 				var match = ddocSectionRegex.Match (desc);
 
 				if (!match.Success) {
-					summary = DDocToMarkup(st, desc).Trim();
+					summary = DDocToMarkup(desc).Trim();
 					return;
 				}
 
-				summary = DDocToMarkup (st, desc.Substring (0, match.Index - 1)).Trim();
+				summary = DDocToMarkup (desc.Substring (0, match.Index - 1)).Trim();
 				if (string.IsNullOrWhiteSpace (summary))
 					summary = null;
 
@@ -62,7 +69,7 @@ namespace MonoDevelop.D.Completion
 				while((k = match.Index + match.Length) < desc.Length) {
 					var nextMatch = ddocSectionRegex.Match (desc, k);
 					if (nextMatch.Success) {
-						AssignToCategories (st, categories, match.Groups ["cat"].Value, desc.Substring (k, nextMatch.Index - k));
+						AssignToCategories (categories, match.Groups ["cat"].Value, desc.Substring (k, nextMatch.Index - k));
 						match = nextMatch;
 					}
 					else
@@ -70,22 +77,22 @@ namespace MonoDevelop.D.Completion
 				}
 
 				// Handle last match
-				AssignToCategories (st, categories, match.Groups ["cat"].Value, desc.Substring (k));
+				AssignToCategories (categories, match.Groups ["cat"].Value, desc.Substring (k));
 			}
 		}
 
-		static void AssignToCategories(ColorScheme st,Dictionary<string,string> cats, string catName, string rawContent)
+		void AssignToCategories(Dictionary<string,string> cats, string catName, string rawContent)
 		{
 			rawContent = rawContent.Trim ();
 
 			if (catName.ToLower ().StartsWith ("example"))
-				cats [catName] = HandleExampleCode (st, rawContent);
+				cats [catName] = HandleExampleCode (rawContent);
 			else
-				cats [catName] = DDocToMarkup(st,rawContent);
+				cats [catName] = DDocToMarkup(rawContent);
 		}
 
 		const char ExampleCodeInit='-';
-		static string HandleExampleCode(ColorScheme st,string categoryContent)
+		string HandleExampleCode(string categoryContent)
 		{
 			int i = categoryContent.IndexOf(ExampleCodeInit);
 			if (i >= 0) {
@@ -102,13 +109,13 @@ namespace MonoDevelop.D.Completion
 					lastI--;
 			}
 
-			return DCodeToMarkup(st, categoryContent.Substring(i, lastI-i));
+			return DCodeToMarkup(categoryContent.Substring(i, lastI-i));
 		}
 
-		private static System.Text.RegularExpressions.Regex ddocSectionRegex = new System.Text.RegularExpressions.Regex(
+		static System.Text.RegularExpressions.Regex ddocSectionRegex = new System.Text.RegularExpressions.Regex(
 			@"^\s*(?<cat>[\w][\w\d_]*):",RegexOptions.Compiled | RegexOptions.Multiline | RegexOptions.ExplicitCapture);
 
-		static string DDocToMarkup(ColorScheme st, string ddoc)
+		string DDocToMarkup(string ddoc)
 		{
 			if (ddoc == null)
 				return string.Empty;
@@ -137,51 +144,51 @@ namespace MonoDevelop.D.Completion
 				switch (macroName) {
 					case "I":
 						if(firstParam != null)
-							sb.Append ("<i>").Append(DDocToMarkup(st,firstParam)).Append("</i>");
+							sb.Append ("<i>").Append(DDocToMarkup(firstParam)).Append("</i>");
 						break;
 					case "U":
 						if(firstParam != null)
-							sb.Append ("<u>").Append(DDocToMarkup(st,firstParam)).Append("</u>");
+							sb.Append ("<u>").Append(DDocToMarkup(firstParam)).Append("</u>");
 						break;
 					case "B":
 						if(firstParam != null)
-							sb.Append ("<b>").Append(DDocToMarkup(st,firstParam)).Append("</b>");
+							sb.Append ("<b>").Append(DDocToMarkup(firstParam)).Append("</b>");
 						break;
 					case "D_CODE":
 					case "D":
 						if (firstParam != null)
-							sb.Append(DCodeToMarkup (st, DDocToMarkup(st,firstParam)));
+							sb.Append(DCodeToMarkup (DDocToMarkup(firstParam)));
 						break;
 					case "BR":
 						sb.AppendLine ();
 						break;
 					case "RED":
 						if (firstParam != null)
-							sb.Append("<span color=\"red\">").Append(DDocToMarkup(st,firstParam)).Append("</span>");
+							sb.Append("<span color=\"red\">").Append(DDocToMarkup(firstParam)).Append("</span>");
 						break;
 					case "BLUE":
 						if (firstParam != null)
-							sb.Append("<span color=\"blue\">").Append(DDocToMarkup(st,firstParam)).Append("</span>");
+							sb.Append("<span color=\"blue\">").Append(DDocToMarkup(firstParam)).Append("</span>");
 						break;
 					case "GREEN":
 						if (firstParam != null)
-							sb.Append("<span color=\"green\">").Append(DDocToMarkup(st,firstParam)).Append("</span>");
+							sb.Append("<span color=\"green\">").Append(DDocToMarkup(firstParam)).Append("</span>");
 						break;
 					case "YELLOW":
 						if (firstParam != null)
-							sb.Append("<span color=\"yellow\">").Append(firstParam).Append("</span>");
+							sb.Append("<span color=\"yellow\">").Append(DDocToMarkup(firstParam)).Append("</span>");
 						break;
 					case "BLACK":
 						if (firstParam != null)
-							sb.Append("<span color=\"black\">").Append(DDocToMarkup(st,firstParam)).Append("</span>");
+							sb.Append("<span color=\"black\">").Append(DDocToMarkup(firstParam)).Append("</span>");
 						break;
 					case "WHITE":
 						if (firstParam != null)
-							sb.Append("<span color=\"white\">").Append(DDocToMarkup(st,firstParam)).Append("</span>");
+							sb.Append("<span color=\"white\">").Append(DDocToMarkup(firstParam)).Append("</span>");
 						break;
 					default:
 						if (firstParam != null) {
-							sb.Append(DDocToMarkup(st,firstParam));
+							sb.Append(DDocToMarkup(firstParam));
 						}
 						break;
 				}
@@ -197,7 +204,7 @@ namespace MonoDevelop.D.Completion
 		//TODO: Use DLexer to walk through code and highlight tokens (also comments and meta tokens)
 		static TextDocument markupDummyTextDoc = new TextDocument ();
 		static DSyntaxMode markupDummySyntaxMode = new DSyntaxMode ();
-		static string DCodeToMarkup(ColorScheme st,string code)
+		string DCodeToMarkup(string code)
 		{
 			//TODO: Semantic highlighting
 			var sb = new StringBuilder ();

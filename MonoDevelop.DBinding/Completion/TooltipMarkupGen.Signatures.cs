@@ -38,71 +38,139 @@ namespace MonoDevelop.D.Completion
 {
 	public partial class TooltipMarkupGen
 	{
-		public static string GenTooltipSignature(AbstractType t, ColorScheme st, bool templateParamCompletion = false, int currentMethodParam = -1)
+		public string GenTooltipSignature(AbstractType t, bool templateParamCompletion = false, int currentMethodParam = -1)
 		{
-			return DCodeToMarkup (st, t.ToCode ());
+			if (t is DSymbol)
+				return GenTooltipSignature ((t as DSymbol).Definition, templateParamCompletion, currentMethodParam);
+
+			if (t is PackageSymbol) {
+				var pack = (t as PackageSymbol).Package;
+				return "<i>(Package)</i> "+pack.ToString();
+			}
+
+			return DCodeToMarkup (t.ToCode ());
 		}
 
-		public static string GenTooltipSignature(DNode dn, ColorScheme st, bool templateParamCompletion = false, int currentMethodParam = -1)
+		public string GenTooltipSignature(DNode dn, bool templateParamCompletion = false, int currentMethodParam = -1)
 		{
 			var sb = new StringBuilder();
-			sb.Append("<i>(");
 
-			if (dn is DClassLike)
+			if (dn is DMethod)
+				S (dn as DMethod, sb, templateParamCompletion, currentMethodParam);
+			else if (dn is DModule) {
+				sb.Append ("<i>(Module)</i> ").Append ((dn as DModule).ModuleName);
+			} else if (dn is DClassLike)
+				S (dn as DClassLike, sb);
+			else
+				AttributesTypeAndName (dn, sb);
+
+			return sb.ToString ();
+		}
+
+		void S(DMethod dm, StringBuilder sb, bool templArgs = false, int curArg = -1)
+		{
+			AttributesTypeAndName(dm, sb, templArgs ? curArg : -1);
+
+			// Parameters
+			sb.Append ('(');
+
+			if (dm.Parameters.Count != 0) {
+				for (int i = 0; i < dm.Parameters.Count; i++) {
+					sb.AppendLine ();
+					sb.Append ("  ");
+					if (!templArgs && curArg == i)
+						sb.Append ("<u>");
+
+					AttributesTypeAndName(dm.Parameters [i] as DNode, sb);
+
+					if (!templArgs && curArg == i)
+						sb.Append ("</u>");
+					sb.Append (',');
+				}
+
+				RemoveLastChar (sb, ',');
+				sb.AppendLine ();
+			}
+
+			sb.Append (')');
+		}
+
+		void S(DClassLike dc, StringBuilder sb)
+		{
+			AppendAttributes (dc, sb);
+
+			//TODO: Highlight e.g. 'class'
+			sb.Append (' ').Append(DTokens.GetTokenString(dc.ClassType)).Append(' ');
+
+			//TODO: Highlight Name as user type
+			sb.Append (dc.Name);
+
+			if (dc.BaseClasses != null && dc.BaseClasses.Count != 0) {
+				sb.AppendLine (" : ");
+				sb.Append (" ");
+				foreach (var bc in dc.BaseClasses)
+					sb.Append(' ').Append (DCodeToMarkup(bc.ToString())).Append(',');
+
+				RemoveLastChar (sb, ',');
+			}
+		}
+
+		void AttributesTypeAndName(DNode dn, StringBuilder sb, int highlightTemplateParam = -1)
+		{
+			AppendAttributes (dn, sb);
+
+			if (dn.Type != null)
 			{
-				switch ((dn as DClassLike).ClassType)
+				sb.Append(DCodeToMarkup(dn.Type.ToString(true))).Append(' ');
+			}
+			else if (dn.Attributes != null && dn.Attributes.Count != 0)
+			{
+				foreach (var attr in dn.Attributes)
 				{
-					case DTokens.Class:
-						sb.Append("Class");
+					var m = attr as Modifier;
+					if (m != null && DTokens.StorageClass[m.Token])
+					{
+						//TODO: Highlighting
+						sb.Append(DTokens.GetTokenString(m.Token)).Append(' ');
 						break;
-					case DTokens.Template:
-						if (dn.ContainsAttribute(DTokens.Mixin))
-							sb.Append("Mixin ");
-						sb.Append("Template");
-						break;
-					case DTokens.Struct:
-						sb.Append("Struct");
-						break;
-					case DTokens.Union:
-						sb.Append("Union");
-						break;
+					}
 				}
 			}
-			else if (dn is DEnum)
-			{
-				sb.Append("Enum");
-			}
-			else if (dn is DEnumValue)
-			{
-				sb.Append("Enum Value");
-			}
-			else if (dn is DVariable)
-			{
-				if (dn.Parent is DMethod)
-				{
-					var dm = dn.Parent as DMethod;
-					if (dm.Parameters.Contains(dn))
-						sb.Append("Parameters");
-					else
-						sb.Append("Local");
+
+			// Maybe highlight variables/method names?
+			sb.Append(dn.Name);
+
+			if (dn.TemplateParameters != null && dn.TemplateParameters.Length > 0) {
+				sb.Append ('(');
+
+				for (int i = 0; i < dn.TemplateParameters.Length; i++) {
+					var param = dn.TemplateParameters [i];
+					if (param != null) {
+						if (i == highlightTemplateParam)
+							sb.Append ("<u>");
+						sb.Append (DCodeToMarkup(param.ToString ()));
+						if (i == highlightTemplateParam)
+							sb.Append ("</u>");
+						sb.Append (',');
+					}
 				}
-				else if (dn.Parent is DClassLike)
-					sb.Append("Field");
-				else
-					sb.Append("Variable");
-			}
-			else if (dn is DMethod)
-			{
-				sb.Append("Method");
-			}
-			else if (dn is TemplateParameter.Node)
-			{
-				sb.Append("Template Parameter");
-			}
 
-			sb.Append(")</i> ");
+				RemoveLastChar (sb, ',');
 
-			return sb.Append (dn.ToString(false,false)).ToString ();
+				sb.Append (')');
+			}
+		}
+
+		void AppendAttributes(DNode dn, StringBuilder sb)
+		{
+
+		}
+
+
+		static void RemoveLastChar(StringBuilder sb,char c)
+		{
+			if (sb [sb.Length - 1] == c)
+				sb.Remove (sb.Length - 1, 1);
 		}
 	}
 }
