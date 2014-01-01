@@ -83,14 +83,21 @@ namespace MonoDevelop.D.Completion
 
 		void AssignToCategories(Dictionary<string,string> cats, string catName, string rawContent)
 		{
-			rawContent = rawContent.Trim ();
-			cats [catName] = catName.ToLower ().StartsWith ("example") ? HandleExampleCode (DDocToMarkup(rawContent)) : DDocToMarkup(rawContent);
-		}
+			var n = catName.ToLower ();
 
-		const char ExampleCodeInit='-';
-		string HandleExampleCode(string categoryContent)
+			// Don't show any documentation except parameter & return value description -- It's a tooltip, not a full-blown viewer!
+			if (n.StartsWith ("param") || n.StartsWith ("returns")) {
+				rawContent = rawContent.Trim ();
+				// n.StartsWith ("example") ? HandleExampleCode (DDocToMarkup(rawContent)) : 
+				cats [catName] = DDocToMarkup (rawContent);
+			}
+		}
+		/*
+		const char ExampleCodeInit = '-';
+
+		string HandleExampleCode (string categoryContent)
 		{
-			int i = categoryContent.IndexOf(ExampleCodeInit);
+			int i = categoryContent.IndexOf (ExampleCodeInit);
 			if (i >= 0) {
 				while (i < categoryContent.Length && categoryContent [i] == ExampleCodeInit)
 					i++;
@@ -105,11 +112,10 @@ namespace MonoDevelop.D.Completion
 					lastI--;
 			}
 
-			return DCodeToMarkup(categoryContent.Substring(i, lastI-i));
-		}
-
-		static System.Text.RegularExpressions.Regex ddocSectionRegex = new System.Text.RegularExpressions.Regex(
-			@"^\s*(?<cat>[\w][\w\d_]*):",RegexOptions.Compiled | RegexOptions.Multiline | RegexOptions.ExplicitCapture);
+			return DCodeToMarkup (categoryContent.Substring (i, lastI - i));
+		}*/
+		static System.Text.RegularExpressions.Regex ddocSectionRegex = new System.Text.RegularExpressions.Regex (
+			                                                               @"^\s*(?<cat>[\w][\w\d_]*):", RegexOptions.Compiled | RegexOptions.Multiline | RegexOptions.ExplicitCapture);
 
 		string DDocToMarkup(string ddoc)
 		{
