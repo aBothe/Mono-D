@@ -40,39 +40,38 @@ namespace MonoDevelop.D.Completion
 	{
 		ColorScheme st;
 
-		public TooltipMarkupGen(ColorScheme st)
+		public TooltipMarkupGen (ColorScheme st)
 		{
 			this.st = st;
 		}
 
-		public void GenToolTipBody(DNode n, out string summary, out Dictionary<string,string> categories)
+		public void GenToolTipBody (DNode n, out string summary, out Dictionary<string,string> categories)
 		{
 			categories = null;
 			summary = null;
 
 			var desc = n.Description;
-			if (!string.IsNullOrWhiteSpace(desc)) {
-				categories = new Dictionary<string, string>();
+			if (!string.IsNullOrWhiteSpace (desc)) {
+				categories = new Dictionary<string, string> ();
 
 				var match = ddocSectionRegex.Match (desc);
 
 				if (!match.Success) {
-					summary = DDocToMarkup(desc).Trim();
+					summary = DDocToMarkup (desc).Trim ();
 					return;
 				}
 
-				summary = DDocToMarkup (desc.Substring (0, match.Index - 1)).Trim();
+				summary = DDocToMarkup (desc.Substring (0, match.Index - 1)).Trim ();
 				if (string.IsNullOrWhiteSpace (summary))
 					summary = null;
 
 				int k = 0;
-				while((k = match.Index + match.Length) < desc.Length) {
+				while ((k = match.Index + match.Length) < desc.Length) {
 					var nextMatch = ddocSectionRegex.Match (desc, k);
 					if (nextMatch.Success) {
 						AssignToCategories (categories, match.Groups ["cat"].Value, desc.Substring (k, nextMatch.Index - k));
 						match = nextMatch;
-					}
-					else
+					} else
 						break;
 				}
 
@@ -81,7 +80,7 @@ namespace MonoDevelop.D.Completion
 			}
 		}
 
-		void AssignToCategories(Dictionary<string,string> cats, string catName, string rawContent)
+		void AssignToCategories (Dictionary<string,string> cats, string catName, string rawContent)
 		{
 			var n = catName.ToLower ();
 
@@ -117,7 +116,7 @@ namespace MonoDevelop.D.Completion
 		static System.Text.RegularExpressions.Regex ddocSectionRegex = new System.Text.RegularExpressions.Regex (
 			                                                               @"^\s*(?<cat>[\w][\w\d_]*):", RegexOptions.Compiled | RegexOptions.Multiline | RegexOptions.ExplicitCapture);
 
-		string DDocToMarkup(string ddoc)
+		string DDocToMarkup (string ddoc)
 		{
 			if (ddoc == null)
 				return string.Empty;
@@ -128,9 +127,9 @@ namespace MonoDevelop.D.Completion
 
 				string macroName;
 				Dictionary<string, string> parameters;
-				var k = i+len;
+				var k = i + len;
 
-				DDocParser.FindNextMacro(ddoc, i+len, out i, out len, out macroName, out parameters);
+				DDocParser.FindNextMacro (ddoc, i + len, out i, out len, out macroName, out parameters);
 
 				if (i < 0) {
 					i = k;
@@ -140,7 +139,7 @@ namespace MonoDevelop.D.Completion
 				while (k < i)
 					sb.Append (ddoc [k++]);
 
-				var firstParam = parameters != null ? parameters["$0"] : null;
+				var firstParam = parameters != null ? parameters ["$0"] : null;
 
 				//TODO: Have proper macro infrastructure
 				switch (macroName) {
@@ -149,17 +148,17 @@ namespace MonoDevelop.D.Completion
 							AppendFormat (DDocToMarkup (firstParam), sb, FormatFlags.Italic);
 						break;
 					case "U":
-						if(firstParam != null)
+						if (firstParam != null)
 							AppendFormat (DDocToMarkup (firstParam), sb, FormatFlags.Underline);
 						break;
 					case "B":
-						if(firstParam != null)
+						if (firstParam != null)
 							AppendFormat (DDocToMarkup (firstParam), sb, FormatFlags.Bold);
 						break;
 					case "D_CODE":
 					case "D":
 						if (firstParam != null)
-							sb.Append(DCodeToMarkup (DDocToMarkup(firstParam)));
+							sb.Append (DCodeToMarkup (DDocToMarkup (firstParam)));
 						break;
 					case "BR":
 						sb.AppendLine ();
@@ -170,15 +169,15 @@ namespace MonoDevelop.D.Completion
 						break;
 					case "BLUE":
 						if (firstParam != null)
-							AppendFormat (DDocToMarkup (firstParam), sb, FormatFlags.Color, 0,0,1.0);
+							AppendFormat (DDocToMarkup (firstParam), sb, FormatFlags.Color, 0, 0, 1.0);
 						break;
 					case "GREEN":
 						if (firstParam != null)
-							AppendFormat (DDocToMarkup (firstParam), sb, FormatFlags.Color, 0,1,0);
+							AppendFormat (DDocToMarkup (firstParam), sb, FormatFlags.Color, 0, 1, 0);
 						break;
 					case "YELLOW":
 						if (firstParam != null)
-							AppendFormat (DDocToMarkup (firstParam), sb, FormatFlags.Color, 1,1,0);
+							AppendFormat (DDocToMarkup (firstParam), sb, FormatFlags.Color, 1, 1, 0);
 						break;
 					case "BLACK":
 						if (firstParam != null)
@@ -186,11 +185,11 @@ namespace MonoDevelop.D.Completion
 						break;
 					case "WHITE":
 						if (firstParam != null)
-							AppendFormat (DDocToMarkup (firstParam), sb, FormatFlags.Color, 1,1,1);
+							AppendFormat (DDocToMarkup (firstParam), sb, FormatFlags.Color, 1, 1, 1);
 						break;
 					default:
 						if (firstParam != null) {
-							sb.Append(DDocToMarkup(firstParam));
+							sb.Append (DDocToMarkup (firstParam));
 						}
 						break;
 				}
@@ -203,11 +202,16 @@ namespace MonoDevelop.D.Completion
 		}
 
 		[Flags]
-		protected enum FormatFlags{
-			None=0,Color=1<<0,Underline=1<<1,Bold=1<<2,Italic=1<<3
+		protected enum FormatFlags
+		{
+			None = 0,
+			Color = 1 << 0,
+			Underline = 1 << 1,
+			Bold = 1 << 2,
+			Italic = 1 << 3
 		}
 
-		protected virtual void AppendFormat(string content, StringBuilder sb, FormatFlags flags, double r=0.0, double g=0.0, double b=0.0)
+		protected virtual void AppendFormat (string content, StringBuilder sb, FormatFlags flags, double r = 0.0, double g = 0.0, double b = 0.0)
 		{
 			if (flags == FormatFlags.None) {
 				sb.Append (content);
@@ -227,14 +231,16 @@ namespace MonoDevelop.D.Completion
 					(int)(r * 255.0), (int)(g * 255.0), (int)(b * 255.0)));
 			}
 
-			sb.Append ('>').Append(content).Append("</span>");
+			sb.Append ('>').Append (content).Append ("</span>");
 		}
 
 		#region Pseudo-Highlighting
+
 		//TODO: Use DLexer to walk through code and highlight tokens (also comments and meta tokens)
 		static TextDocument markupDummyTextDoc = new TextDocument ();
 		static DSyntaxMode markupDummySyntaxMode = new DSyntaxMode ();
-		string DCodeToMarkup(string code)
+
+		string DCodeToMarkup (string code)
 		{
 			//TODO: Semantic highlighting
 			var sb = new StringBuilder ();
@@ -242,7 +248,7 @@ namespace MonoDevelop.D.Completion
 			var syntaxMode = markupDummySyntaxMode;
 
 			textDoc.Text = code;
-			if(syntaxMode.Document == null)
+			if (syntaxMode.Document == null)
 				syntaxMode.Document = textDoc;
 
 			var plainText = st.PlainText;
@@ -256,7 +262,7 @@ namespace MonoDevelop.D.Completion
 
 					// Avoid unnecessary non-highlighting
 					if (s == plainText) {
-						sb.Append(textDoc.GetTextAt(chunk.Offset, chunk.Length));
+						sb.Append (textDoc.GetTextAt (chunk.Offset, chunk.Length));
 						continue;
 					}
 
@@ -271,6 +277,7 @@ namespace MonoDevelop.D.Completion
 
 			return sb.ToString ();
 		}
+
 		#endregion
 	}
 }
