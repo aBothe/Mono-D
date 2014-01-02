@@ -15,12 +15,12 @@ using D_Parser.Misc;
 using System.Collections.Concurrent;
 using System.Reflection;
 using D_Parser.Dom.Expressions;
+using D_Parser.Parser;
 
 namespace MonoDevelop.D.Highlighting
 {
 	public class DSyntaxMode : SyntaxMode, IDisposable
 	{
-		public const string UserTypesStyle = "User Types";
 		static SyntaxMode baseMode;
 		Document guiDoc;
 		internal Document GuiDocument
@@ -199,21 +199,20 @@ namespace MonoDevelop.D.Highlighting
 
 				foreach (var kv in textLocationsToHighlight) {
 					var line = doc.GetLine (kv.Key);
-					foreach (var sr in kv.Value) {
+					foreach (var kvv in kv.Value) {
+						var sr = kvv.Key;
 						if (sr is INode) {
 							var n = sr as INode;
 							var nameLine = n.NameLocation.Line == kv.Key ? line : doc.GetLine (n.NameLocation.Line);
 							off = nameLine.Offset + n.NameLocation.Column - 1;
 							len = n.Name.Length;
 						} else {
-							var sr_ = sr;
-							GetIdentifier(ref sr_);
-							off = line.Offset + sr_.Location.Column - 1;
-							len = sr_.EndLocation.Column - sr_.Location.Column;
+							GetIdentifier(ref sr);
+							off = line.Offset + sr.Location.Column - 1;
+							len = sr.EndLocation.Column - sr.Location.Column;
 						}
 
-						var marker = new TypeIdSegmMarker (off, len);
-						segmentMarkerTree.Add (marker);
+						segmentMarkerTree.Add (new TypeIdSegmMarker (off, len, kvv.Value));
 					}
 				}
 			}
@@ -240,7 +239,26 @@ namespace MonoDevelop.D.Highlighting
 
 		class TypeIdSegmMarker : TextSegmentMarker
 		{
-			public TypeIdSegmMarker(int off, int len) : base(off,len){}
+			public byte SemanticType;
+			public string Style;
+			public TypeIdSegmMarker(int off, int len, byte type) : base(off,len){
+				this.SemanticType = type;
+				this.Style = GetSemanticStyle(type);
+			}
+
+			public static string GetSemanticStyle(byte type)
+			{
+				switch (type) {
+					case DTokens.Enum:
+						return "User Types(Enums)";
+					case DTokens.Interface:
+						return "User Types(Interfaces)";
+					case DTokens.Not: // template parameters
+						return "User Types(Type parameters)";
+					default:
+						return "User Types";
+				}
+			}
 		}
 
 		public override ChunkParser CreateChunkParser (SpanParser spanParser, ColorScheme style, DocumentLine line)
@@ -266,11 +284,11 @@ namespace MonoDevelop.D.Highlighting
 					{
 						var endLoc = tm.EndOffset;
 						if (endLoc < chunk.EndOffset) {
-							base.AddRealChunk (new Chunk (chunk.Offset, endLoc - chunk.Offset, DSyntaxMode.UserTypesStyle));
+							base.AddRealChunk (new Chunk (chunk.Offset, endLoc - chunk.Offset, tm.Style));
 							base.AddRealChunk (new Chunk (endLoc, chunk.EndOffset - endLoc, chunk.Style));
 							return;
 						}
-						chunk.Style = DSyntaxMode.UserTypesStyle;
+						chunk.Style = tm.Style;
 						break;
 					}
 				}
