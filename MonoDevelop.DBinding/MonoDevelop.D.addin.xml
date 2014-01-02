@@ -104,13 +104,13 @@
 					insertbefore="AllFiles"
 					_label = "D Files"
 								extensions = "*.d,*.di"/>
-		<FileFilter id ="dubPrj" insertafter="D" _label ="Dub projects" extensions ="package.json"/>
-		<FileFilter id ="visualdprj" insertafter="D" _label ="VisualD projects" extensions ="*.visualdproj"/>
+		<FileFilter id ="dubPrj" insertafter="D" _label ="Dub Projects" extensions ="package.json"/>
+		<FileFilter id ="visualdprj" insertafter="D" _label ="VisualD Projects" extensions ="*.visualdproj"/>
 		<FileFilter id="RC"
 								insertbefore="AllFiles"
 								_label="Resource Scripts"
 								extensions="*.rc"/>
-		<FileFilter id="diet" insertafter="D" _label="Diet template definition" extensions="*.dt"/>
+		<FileFilter id="diet" insertafter="D" _label="Diet Template Definition" extensions="*.dt"/>
 	</Extension>
 
 	<Extension path = "/MonoDevelop/Core/MimeTypes">
@@ -130,7 +130,7 @@
 
 	<Extension path = "/MonoDevelop/ProjectModel/Gui/MimeTypePolicyPanels">
 		<Panel id = "DFormatting" _label = "D Format" mimeType="text/x-d" class="MonoDevelop.D.Formatting.FormattingPanel" />
-		<Panel id="DietFormatting" _label = "Diet templates" mimeType="text/x-dt" class="MonoDevelop.D.Formatting.DietTemplateFormattingPanel"/>
+		<Panel id="DietFormatting" _label = "Diet Templates" mimeType="text/x-dt" class="MonoDevelop.D.Formatting.DietTemplateFormattingPanel"/>
 	</Extension>
 
 	<Extension path = "/MonoDevelop/ProjectModel/PolicySets/Mono" >
@@ -206,11 +206,11 @@
 	<Extension path = "/MonoDevelop/Ide/GlobalOptionsDialog/Preferences/DGlobalOptions">
 		<Section
 			id = "DCompilerOptions"
-			_label = "Compiler toolchains"
+			_label = "Compiler Toolchains"
 			class = "MonoDevelop.D.OptionPanels.DCompilerOptionsBinding"/>
 		<Section
 			id = "DDubOptions"
-			_label = "Dub options"
+			_label = "Dub Options"
 			class = "MonoDevelop.D.OptionPanels.DubOptionPanelBinding"/>
 		<Section
 			id = "DUnittestOptions"
