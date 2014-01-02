@@ -141,7 +141,7 @@
 
 	<Extension path = "/MonoDevelop/ProjectModel/LanguageBindings">
 		<LanguageBinding id    = "D"
-						 supportedextensions = ".d,.di,.rc"
+						 supportedextensions = ".d,.di,.rc,.dt"
 						 class = "MonoDevelop.D.DLanguageBinding" />
 	</Extension>
 
