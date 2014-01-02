@@ -292,6 +292,20 @@
 		<NodeBuilder id = "DPrjRefNodeExtension" class = "MonoDevelop.D.Projects.ProjectPad.DProjectReferenceNodeBuilder"/>
 	</Extension>
 
+	<Extension path = "/MonoDevelop/Ide/ContextMenu/ProjectPad">
+		<Condition id="ItemType" value="MonoDevelop.D.Projects.DProject">
+			<ItemSet id = "unittests" _label = "Unittests">
+				<CommandItem id = "MonoDevelop.D.Unittest.Commands.UnittestCommands.Run" />
+				<CommandItem id = "MonoDevelop.D.Unittest.Commands.UnittestCommands.RunExternal" />
+			</ItemSet>
+		</Condition>
+
+		<Condition id="FileType" fileExtensions=".d,.di">
+			<CommandItem id = "MonoDevelop.D.Unittest.Commands.UnittestCommands.RunSingle" />
+			<CommandItem id = "MonoDevelop.D.Unittest.Commands.UnittestCommands.RunSingleExternally" />
+		</Condition>
+	</Extension>
+
 	<Extension path = "/MonoDevelop/SourceEditor2/ContextMenu/Editor">
 		<Condition id="FileType" fileExtensions=".d,.di">
 			<CommandItem id = "MonoDevelop.D.Refactoring.Commands.ContextMenuRefactoringCommands"  insertafter="MonoDevelop.SourceEditor.SourceEditorCommands.MarkerOperations"/>
@@ -326,11 +340,17 @@
 
 	<Extension path = "/MonoDevelop/Ide/Commands">
 		<Command id = "MonoDevelop.D.Unittest.Commands.UnittestCommands.Run"
-                 defaultHandler = "MonoDevelop.D.Unittest.Commands.UnittestCommandHandler"
-                 _label = "Run unittest" />
+			defaultHandler = "MonoDevelop.D.Unittest.Commands.UnittestCommandHandler"
+			_label = "Run Unittest" />
 		<Command id = "MonoDevelop.D.Unittest.Commands.UnittestCommands.RunExternal"
-                 defaultHandler = "MonoDevelop.D.Unittest.Commands.UnittestCommandHandler"
-                 _label = "Run unittest external" />
+			defaultHandler = "MonoDevelop.D.Unittest.Commands.UnittestCommandHandler"
+			_label = "Run Unittest Externally" />
+        <Command id = "MonoDevelop.D.Unittest.Commands.UnittestCommands.RunSingle"
+			defaultHandler = "MonoDevelop.D.Unittest.Commands.UnittestCommandHandler"
+			_label = "Run Module Unittest" />
+		<Command id = "MonoDevelop.D.Unittest.Commands.UnittestCommands.RunSingleExternally"
+			defaultHandler = "MonoDevelop.D.Unittest.Commands.UnittestCommandHandler"
+			_label = "Run Module Unittest Externally" />
 	</Extension>
 	
 	
@@ -338,8 +358,6 @@
 	
 	<Extension path = "/MonoDevelop/Ide/MainMenu/Tools">
 		<ItemSet id = "D" _label = "D">
-			<CommandItem id = "MonoDevelop.D.Unittest.Commands.UnittestCommands.Run" />
-			<CommandItem id = "MonoDevelop.D.Unittest.Commands.UnittestCommands.RunExternal" />
 			<CommandItem id = "MonoDevelop.D.Profiler.Commands.ProfilerCommands.SwitchProfilerMode" />
 		</ItemSet>
 	</Extension>

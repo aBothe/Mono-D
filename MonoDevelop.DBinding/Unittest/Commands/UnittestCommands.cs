@@ -16,6 +16,9 @@ namespace MonoDevelop.D.Unittest.Commands
 	{
 		Run,
 		RunExternal,
+
+		RunSingle,
+		RunSingleExternally,
 	}
 }
 

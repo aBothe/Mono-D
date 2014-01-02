@@ -16,7 +16,7 @@ using MonoDevelop.Ide.Gui;
 using MonoDevelop.D.Projects;
 
 namespace MonoDevelop.D.Unittest.Commands
-{
+{//TODO: Implement RunSingle/RunSingleExternally
 	public class UnittestCommandHandler : CommandHandler
 	{
 		CommandInfo commandInfo;
