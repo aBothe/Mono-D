@@ -12,7 +12,7 @@
 		<Word>block</Word>
 	</Keywords>
 
-	<Keywords color="Keyword(Modifier)">
+	<Keywords color="Keyword(Modifiers)">
 		<Word>extends</Word>
 	</Keywords>
 
