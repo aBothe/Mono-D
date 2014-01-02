@@ -206,6 +206,11 @@ namespace MonoDevelop.D.Highlighting
 							var nameLine = n.NameLocation.Line == kv.Key ? line : doc.GetLine (n.NameLocation.Line);
 							off = nameLine.Offset + n.NameLocation.Column - 1;
 							len = n.Name.Length;
+						} else if(sr is TemplateParameter) {
+							var tp = sr as TemplateParameter;
+							var nameLine = tp.NameLocation.Line == kv.Key ? line : doc.GetLine (tp.NameLocation.Line);
+							off = nameLine.Offset + tp.NameLocation.Column - 1;
+							len = tp.Name.Length;
 						} else {
 							GetIdentifier(ref sr);
 							off = line.Offset + sr.Location.Column - 1;
