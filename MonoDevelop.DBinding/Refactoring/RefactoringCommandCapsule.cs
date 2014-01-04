@@ -86,8 +86,8 @@ namespace MonoDevelop.D.Refactoring
 			if (n != null && n.NodeRoot is DModule)
 				MonoDevelop.Ide.IdeApp.Workbench.OpenDocument(
 					((DModule)n.NodeRoot).FileName,
-					n.Location.Line,
-					n.Location.Column);
+					n.NameLocation.Line,
+					n.NameLocation.Column);
 		}
 
 		public void FindReferences(bool allOverloads = false)
