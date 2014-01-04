@@ -35,7 +35,7 @@ namespace MonoDevelop.D.Refactoring
 				if (t.Length == 2)
 				{
 					if(t[0].Equals("a"))
-						RefactoringCommandCapsule.GenerateImportStatementForNode(t[1] as INode, caps.ed, (loc, s) =>
+						ImportStmtCreation.GenerateImportStatementForNode(t[1] as INode, caps.ed, (loc, s) =>
 						{
 							var doc = IdeApp.Workbench.ActiveDocument.Editor;
 							doc.Insert(doc.LocationToOffset(loc.Line, loc.Column), s);

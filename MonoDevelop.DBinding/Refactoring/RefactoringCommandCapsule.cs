@@ -140,17 +140,11 @@ namespace MonoDevelop.D.Refactoring
 				new DRenameHandler().Start(n);
 		}
 
-		public static void GenerateImportStatementForNode(INode n, IEditorData ed, Action<CodeLocation, string> ci)
-		{
-			var loc = new CodeLocation(0, DParser.FindLastImportStatementEndLocation(ed.SyntaxTree, ed.ModuleCode).Line+1);
-			ci(loc, "import " + (n.NodeRoot as DModule).ModuleName + ";\n");
-		}
-
 		public void TryImportMissingSymbol()
 		{
 			var t = GetResult ();
 			if (t is DSymbol)
-				GenerateImportStatementForNode ((t as DSymbol).Definition, ed, (loc, s) => {
+				ImportStmtCreation.GenerateImportStatementForNode ((t as DSymbol).Definition, ed, (loc, s) => {
 					var doc = IdeApp.Workbench.ActiveDocument.Editor;
 					doc.Insert (doc.LocationToOffset (loc.Line, loc.Column), s);
 				});

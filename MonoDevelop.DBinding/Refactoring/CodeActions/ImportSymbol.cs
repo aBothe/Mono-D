@@ -88,11 +88,7 @@ namespace MonoDevelop.D.Refactoring.CodeActions
         /// </summary>
         static void ApplySolution(string import, Document doc)
         {
-            var eData = DResolverWrapper.CreateEditorData(doc);
-            var loc = new CodeLocation(0, DParser.FindLastImportStatementEndLocation(eData.SyntaxTree, eData.ModuleCode).Line + 1);
-            doc.Editor.Insert(doc.Editor.GetLine(loc.Line).Offset, import.Trim() + doc.Editor.EolMarker);
             
-            //IOInterface.InsertIntoCode(loc, "import " + mod.ModuleName + ";\n");
         }
 
         /// <summary>
