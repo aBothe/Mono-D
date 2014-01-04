@@ -203,7 +203,6 @@
     <Compile Include="Projects\Dub\PackageJsonParser.cs" />
     <Compile Include="Projects\ProjectJsonConfig.cs" />
     <Compile Include="Refactoring\CodeActions\DCodeActionSource.cs" />
-    <Compile Include="Refactoring\CodeActions\ImportSymbol.cs" />
     <Compile Include="Gui\EditorPathbarProvider.cs" />
     <Compile Include="Refactoring\RefactoringCommandsExtension.cs" />
     <Compile Include="Refactoring\ReferenceFinding.cs" />
@@ -268,6 +267,7 @@
     <Compile Include="Completion\TooltipMarkupGen.Signatures.cs" />
     <Compile Include="Completion\TooltipInfoGenerator.cs" />
     <Compile Include="Completion\TooltipInfoGen.cs" />
+    <Compile Include="Refactoring\CodeActions\ImportSymbolAction.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>

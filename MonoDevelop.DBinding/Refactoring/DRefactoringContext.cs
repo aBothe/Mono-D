@@ -24,34 +24,45 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 using System;
-using MonoDevelop.Ide.TypeSystem;
 using MonoDevelop.Ide.Gui;
+using MonoDevelop.Ide.TypeSystem;
+using MonoDevelop.D.Parser;
+using D_Parser.Resolver;
+using MonoDevelop.D.Resolver;
+using D_Parser.Completion;
+using D_Parser.Resolver.TypeResolution;
 
 namespace MonoDevelop.D.Refactoring
 {
-	public class DisposableWrapper : IDisposable
-	{
-		public object Object;
-
-		public virtual void Dispose () {
-			if (Object is IDisposable)
-				(Object as IDisposable).Dispose ();
-		}
-	}
-
-	public interface IRefactoringContext { IDisposable CreateScript(); }
-
 	public class DRefactoringContext : IRefactoringContext
 	{
 		public readonly Document Doc;
-		public DRefactoringContext (Document doc)
+		public readonly ParsedDModule ParsedDoc;
+		AbstractType[] lastResults;
+
+		public ResolutionContext ctxt;
+		public IEditorData ed;
+		public DResolver.NodeResolutionAttempt resultResolutionAttempt;
+
+		public AbstractType[] CurrentResults
 		{
+			get{
+				if (lastResults == null)
+					lastResults = DResolverWrapper.ResolveHoveredCodeLoosely (out ctxt, out ed, out resultResolutionAttempt, Doc);
+
+				return lastResults;
+			}
+		}
+
+		public DRefactoringContext (Document doc, ParsedDModule mod)
+		{
+			this.ParsedDoc = mod;
 			this.Doc = doc;
 		}
 
 		public IDisposable CreateScript ()
 		{
-			return new DisposableWrapper{ Object = Doc };
+			return null;
 		}
 	}
 }
