@@ -2,6 +2,6 @@
 	<Project platforms="Mac Linux Win32">
 		<AddinFile>MonoDevelop.DBinding/bin/Debug/MonoDevelop.D.dll</AddinFile>
 		<BuildFile>MonoDevelop.DBinding.sln</BuildFile>
-		<BuildConfiguration>Debug</BuildConfiguration>
+		<BuildConfiguration>AddinBuilder</BuildConfiguration>
 	</Project>
 </AddinProject>
