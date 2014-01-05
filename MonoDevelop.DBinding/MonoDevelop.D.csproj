@@ -132,8 +132,8 @@
       <HintPath>..\ext\Xwt.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="MonoDevelop.Ide, Version=2.6.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\ext\MonoDevelop.Ide.dll</HintPath>
+    <Reference Include="MonoDevelop.Ide">
+      <HintPath>..\ext\MonoDevelop.Ide_.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
