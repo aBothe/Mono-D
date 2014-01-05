@@ -389,7 +389,7 @@
     <WarningLevel>4</WarningLevel>
     <CustomCommands>
       <CustomCommands>
-        <Command type="Build" command="xbuild" workingdir="${ProjectDir}" />
+        <Command type="Build" command="sh buildit.sh" workingdir="${ProjectDir}" />
       </CustomCommands>
     </CustomCommands>
   </PropertyGroup>
