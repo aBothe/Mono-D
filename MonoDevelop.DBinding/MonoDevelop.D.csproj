@@ -106,10 +106,6 @@
       <HintPath>..\ext\MonoDevelop.Core.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="MonoDevelop.Ide">
-      <HintPath>..\ext\MonoDevelop.Ide.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="MonoDevelop.Refactoring">
       <HintPath>..\ext\MonoDevelop.Refactoring.dll</HintPath>
       <Private>False</Private>
@@ -133,6 +129,10 @@
     <Reference Include="Mono.Cairo" />
     <Reference Include="Xwt">
       <HintPath>..\ext\Xwt.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="MonoDevelop.Ide, Version=2.6.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\ext\MonoDevelop.Ide.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
