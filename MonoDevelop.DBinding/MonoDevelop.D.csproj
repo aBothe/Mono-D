@@ -132,8 +132,8 @@
       <HintPath>..\ext\Xwt.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="MonoDevelop.Ide">
-      <HintPath>..\ext\MonoDevelop.Ide_.dll</HintPath>
+    <Reference Include="MonoDevelop.Ide, Version=2.6.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\ext\aMonoDevelop.Ide.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
@@ -382,16 +382,6 @@
     <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
     <StartAction>Program</StartAction>
     <StartProgram>..\..\tutorial.lib\MonoDevelop\main\build\bin\MonoDevelop.exe</StartProgram>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'AddinBuilder|AnyCPU' ">
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug</OutputPath>
-    <WarningLevel>4</WarningLevel>
-    <CustomCommands>
-      <CustomCommands>
-        <Command type="Build" command="sh buildit.sh" workingdir="${ProjectDir}" />
-      </CustomCommands>
-    </CustomCommands>
   </PropertyGroup>
   <ItemGroup>
     <None Include="Formatting\Indentation\doc.txt" />
