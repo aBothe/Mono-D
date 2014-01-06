@@ -590,7 +590,7 @@ namespace MonoDevelop.D.Completion
 			try
 			{
 				if (n == null)
-					return null;
+					return IconId.Null;
 
 				if (n is DClassLike)
 				{
@@ -688,7 +688,7 @@ namespace MonoDevelop.D.Completion
 				}
 			}
 			catch (Exception ex) { LoggingService.LogError("Error while getting node icon", ex); }
-			return null;
+			return IconId.Null;
 		}
 
 		/// <summary>
