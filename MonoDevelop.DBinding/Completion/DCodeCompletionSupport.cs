@@ -376,7 +376,7 @@ namespace MonoDevelop.D.Completion
 
 		public PackageCompletionData()
 		{
-			DisplayFlags = ICSharpCode.NRefactory.Completion.DisplayFlags.DescriptionHasMarkup;
+			DisplayFlags = ICSharpCode.NRefactory.Completion.DisplayFlags.DescriptionHasMarkup | DisplayFlags.IsImportCompletion;
 		}
 
 		public override string CompletionText
@@ -460,7 +460,7 @@ namespace MonoDevelop.D.Completion
 		public NamespaceCompletionData(DModule mod)
 		{
 			this.Module = mod;
-			DisplayFlags = ICSharpCode.NRefactory.Completion.DisplayFlags.DescriptionHasMarkup;
+			DisplayFlags = ICSharpCode.NRefactory.Completion.DisplayFlags.DescriptionHasMarkup | DisplayFlags.IsImportCompletion;
 			modName = ModuleNameHelper.ExtractModuleName(mod.ModuleName);
 		}
 
