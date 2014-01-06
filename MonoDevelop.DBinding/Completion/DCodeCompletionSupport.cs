@@ -631,6 +631,8 @@ namespace MonoDevelop.D.Completion
 
 					return methodIconIdWithProtectionAttr(n);
 				}
+				else if(n is NamedTemplateMixinNode)
+					return iconIdWithProtectionAttr(n,"template");
 				else if (n is DVariable)
 				{
                     if (((DVariable)n).IsAlias)
