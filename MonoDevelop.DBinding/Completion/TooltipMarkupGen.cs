@@ -82,15 +82,38 @@ namespace MonoDevelop.D.Completion
 
 		void AssignToCategories (Dictionary<string,string> cats, string catName, string rawContent)
 		{
-			var n = catName.ToLower ();
+			var n = catName.ToLower (System.Globalization.CultureInfo.InvariantCulture);
 
 			// Don't show any documentation except parameter & return value description -- It's a tooltip, not a full-blown viewer!
-			if (n.StartsWith ("param") || n.StartsWith ("returns")) {
+			if (n.StartsWith ("param")) {
+				cats [catName] = HandleParamsCode(DDocToMarkup (rawContent));
+			}
+			else if (n.StartsWith ("returns")) {
 				rawContent = rawContent.Trim ();
 				// n.StartsWith ("example") ? HandleExampleCode (DDocToMarkup(rawContent)) : 
 				cats [catName] = DDocToMarkup (rawContent);
 			}
 		}
+
+		static System.Text.RegularExpressions.Regex paramsSectionRegex = new System.Text.RegularExpressions.Regex(
+			@"^\s*(?<name>[\w_]+)\s*=\s*(?<desc>(.|\n(?!\s*[\w_]+\s*=))*)\s*", 
+			RegexOptions.Compiled | RegexOptions.Multiline | RegexOptions.ExplicitCapture);
+
+		string HandleParamsCode(string rawContent)
+		{
+			var sb = new StringBuilder ();
+
+			foreach (System.Text.RegularExpressions.Match match in paramsSectionRegex.Matches(rawContent)) {
+				if (!match.Success)
+					continue;
+
+				AppendFormat (match.Groups ["name"].Value, sb, FormatFlags.Italic | FormatFlags.Bold);
+				sb.Append (' ').AppendLine (match.Groups["desc"].Value);
+			}
+
+			return sb.ToString ();
+		}
+
 		/*
 		const char ExampleCodeInit = '-';
 
