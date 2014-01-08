@@ -39,7 +39,10 @@ namespace MonoDevelop.D.Projects.Dub
 			var cfg = prj.GetConfiguration (sel) as DubProjectConfiguration;
 			if (cfg != null){
 				cfg.BuildSettings.TryGetTargetTypeProperty (prj, sel, ref targetType);
-				if (targetType != null && targetType.ToLower () == "sourcelibrary") {
+				if(string.IsNullOrWhiteSpace(targetType))
+					prj.CommonBuildSettings.TryGetTargetTypeProperty (prj, sel, ref targetType);
+
+				if (targetType != null && targetType.ToLower ().Contains("sourcelibrary")) {
 					br.BuildCount = 1;
 					return br;
 				}
