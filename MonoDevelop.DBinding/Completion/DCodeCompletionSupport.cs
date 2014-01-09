@@ -633,6 +633,8 @@ namespace MonoDevelop.D.Completion
 				}
 				else if(n is NamedTemplateMixinNode)
 					return iconIdWithProtectionAttr(n,"template");
+				else if (n is DModule)
+					return new IconId("d-file");
 				else if (n is DVariable)
 				{
                     if (((DVariable)n).IsAlias)
@@ -657,9 +659,6 @@ namespace MonoDevelop.D.Completion
 					}
 
 					var realParent = n.Parent as DNode;
-
-					if (realParent == null)
-						return DCodeCompletionSupport.GetNodeImage("local");
 
                     if (realParent is DClassLike || n.Parent is DModule)
 					{
@@ -687,6 +686,8 @@ namespace MonoDevelop.D.Completion
 					TemplateParameter tpar;
 					if (realParent.TryGetTemplateParameter(n.NameHash, out tpar))
 						return DCodeCompletionSupport.GetNodeImage("parameter");
+
+					return DCodeCompletionSupport.GetNodeImage("local");
 				}
 			}
 			catch (Exception ex) { LoggingService.LogError("Error while getting node icon", ex); }
