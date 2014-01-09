@@ -37,6 +37,7 @@ using D_Parser.Resolver.TypeResolution;
 using MonoDevelop.D.Completion;
 using D_Parser.Resolver;
 using MonoDevelop.D.Resolver;
+using D_Parser.Dom;
 
 namespace MonoDevelop.D.Gui
 {
@@ -92,7 +93,9 @@ namespace MonoDevelop.D.Gui
 
 				var o = DResolver.GetScopedCodeObject(editorData);
 
-				if(o != null)
+				if (o is INode)
+					expression = (o as INode).Name;
+				else if(o != null)
 					expression = o.ToString();
 			}
 			
@@ -105,7 +108,7 @@ namespace MonoDevelop.D.Gui
 				cachedValues [expression] = val;
 			}
 			
-			if (val == null || val.IsUnknown || val.IsNotSupported)
+			if (val == null || val.IsUnknown || val.IsError || val.IsNotSupported)
 				return null;
 			
 			val.Name = expression;
