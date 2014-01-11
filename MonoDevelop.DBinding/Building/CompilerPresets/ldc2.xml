@@ -7,14 +7,14 @@
 	
 	<Patterns>
 		<obj>"{0}"</obj>
-		<include>"-I{0}"</include>
+		<include>"-I={0}"</include>
 		<version>-d-version</version>
 		<debug>-d-debug</debug>
 		<unittest>-unittest</unittest>
 		<profile></profile>
 		<ddFlag>-D</ddFlag>
 		<ddMacroDefinition>"{0}"</ddMacroDefinition>
-		<ddDir>"-Dd{0}"</ddDir>
+		<ddDir>"-Dd={0}"</ddDir>
 		<linkerRedirectFlag>-L</linkerRedirectFlag>
 		<commandFile alsoForLinking="true">"@{0}"</commandFile>
 	</Patterns>
@@ -22,37 +22,37 @@
 	<TargetConfiguration Target="Executable">
 		<LinkerCommand>ldc2</LinkerCommand>
 		<DebugArgs>
-			<CompilerArg>-c "$src" "-of$obj" $includes -g</CompilerArg>
-			<LinkerArgs>"-of$target" -g $objs $libs</LinkerArgs>
-			<OneStepBuildArgs>-g $sources $libs $includes "-od$objectsDirectory" "-of$exe"</OneStepBuildArgs>
+			<CompilerArg>-c "$src" "-of=$obj" $includes -g</CompilerArg>
+			<LinkerArgs>"-of=$target" -g $objs $libs</LinkerArgs>
+			<OneStepBuildArgs>-g $sources $libs $includes "-od=$objectsDirectory" "-of=$exe"</OneStepBuildArgs>
 		</DebugArgs>
 		<ReleaseArgs>
-			<CompilerArg>-c "$src" -release "-of$obj" $includes -O3</CompilerArg>
-			<LinkerArgs>"-of$target" -release -O3 $objs $libs</LinkerArgs>
-			<OneStepBuildArgs>-O3 -release $sources $libs $includes "-od$objectsDirectory" "-of$exe"</OneStepBuildArgs>
+			<CompilerArg>-c "$src" -release "-of=$obj" $includes -O3</CompilerArg>
+			<LinkerArgs>"-of=$target" -release -O3 $objs $libs</LinkerArgs>
+			<OneStepBuildArgs>-O3 -release $sources $libs $includes "-od=$objectsDirectory" "-of=$exe"</OneStepBuildArgs>
 		</ReleaseArgs>
 	</TargetConfiguration>
 
 	<TargetConfiguration Target="SharedLibrary">
 		<LinkerCommand>ldc2</LinkerCommand>
 		<DebugArgs>
-			<CompilerArg>-fPIC -c "$src" "-of$obj" $includes -g</CompilerArg>
-			<LinkerArgs>"-o$target" -g $objs $libs -shared</LinkerArgs>
+			<CompilerArg>-relocation-model=pic -c "$src" "-of=$obj" $includes -g</CompilerArg>
+			<LinkerArgs>"-of=$target" -g $objs $libs -shared</LinkerArgs>
 		</DebugArgs>
 		<ReleaseArgs>
-			<CompilerArg>-fPIC -release -c "$src" "-of$obj" $includes -O3</CompilerArg>
-			<LinkerArgs>"-of$target" -release -O3 $objs $libs -shared</LinkerArgs>
+			<CompilerArg>-relocation-model=pic -release -c "$src" "-of=$obj" $includes -O3</CompilerArg>
+			<LinkerArgs>"-of=$target" -release -O3 $objs $libs -shared</LinkerArgs>
 		</ReleaseArgs>
 	</TargetConfiguration>
 
 	<TargetConfiguration Target="StaticLibrary">
 		<LinkerCommand>ar</LinkerCommand>
 		<DebugArgs>
-			<CompilerArg>-c "$src" "-of$obj" $includes -g</CompilerArg>
+			<CompilerArg>-c "$src" "-of=$obj" $includes -g</CompilerArg>
 			<LinkerArgs>rcs "$target" $objs</LinkerArgs>
 		</DebugArgs>
 		<ReleaseArgs>
-			<CompilerArg>-c "$src" "-of$obj" $includes -release -O3</CompilerArg>
+			<CompilerArg>-c "$src" "-of=$obj" $includes -release -O3</CompilerArg>
 			<LinkerArgs>rcs "$target" $objs</LinkerArgs>
 		</ReleaseArgs>
 	</TargetConfiguration>

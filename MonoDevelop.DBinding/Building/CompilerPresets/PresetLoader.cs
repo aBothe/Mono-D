@@ -3,17 +3,30 @@ using System.Xml;
 using MonoDevelop.D.Building;
 using System.IO;
 using System.Collections.Generic;
+using System.Reflection;
+using System.Resources;
 
 namespace MonoDevelop.D.Building.CompilerPresets
 {
 	public class PresetLoader
 	{
-		static Dictionary<string, string> presetFileContents = new Dictionary<string, string> {
-			{"DMD2", ConfigPresets.dmd}, //TODO: Make specific preset for dmd2/1
-			{"DMD", ConfigPresets.dmd},
-			{"GDC", ConfigPresets.gdc},
-			{"ldc2", ConfigPresets.ldc2}
-		};
+		public static string GetString(Assembly ass, string name)
+		{
+			using (var s = ass.GetManifestResourceStream (name))
+			using (var r = new System.IO.StreamReader (s))
+				return r.ReadToEnd ();
+		}
+
+		static PresetLoader()
+		{
+			var ass = typeof(PresetLoader).Assembly;
+
+			presetFileContents ["DMD2"] = presetFileContents["DMD"] = GetString (ass,"CompilerPresets.dmd.xml");
+			presetFileContents ["GDC"] = GetString (ass,"CompilerPresets.gdc.xml");
+			presetFileContents ["ldc2"] = GetString (ass,"CompilerPresets.ldc2.xml");
+		}
+
+		static Dictionary<string, string> presetFileContents = new Dictionary<string, string>();
 
 		public static void LoadPresets(DCompilerService svc)
 		{

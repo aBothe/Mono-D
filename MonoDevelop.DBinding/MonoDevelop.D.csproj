@@ -145,15 +145,14 @@
       <LogicalName>DietTemplateSyntaxDefinition.xml</LogicalName>
       <Gettext-ScanForTranslations>False</Gettext-ScanForTranslations>
     </EmbeddedResource>
+    <EmbeddedResource Include="Building\CompilerPresets\ldc2.xml">
+      <SubType>Designer</SubType>
+      <LogicalName>CompilerPresets.ldc2.xml</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="Building\ArgumentMacroProvider.cs" />
-    <Compile Include="Building\CompilerPresets\ConfigPresets.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>ConfigPresets.resx</DependentUpon>
-    </Compile>
     <Compile Include="Building\ErrorExtracting.cs" />
     <Compile Include="Building\ProjectBuilder.cs" />
     <Compile Include="Completion\AstUpdater.cs" />
@@ -284,10 +283,6 @@
     </MonoDevelop>
   </ProjectExtensions>
   <ItemGroup>
-    <EmbeddedResource Include="Building\CompilerPresets\ConfigPresets.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>ConfigPresets.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
     <EmbeddedResource Include="icons\dfile16.png">
       <LogicalName>dfile16.png</LogicalName>
     </EmbeddedResource>
@@ -353,14 +348,13 @@
     <EmbeddedResource Include="templates\EmptyRCFile.xft.xml" />
     <EmbeddedResource Include="Building\CompilerPresets\dmd.xml">
       <SubType>Designer</SubType>
+      <LogicalName>CompilerPresets.dmd.xml</LogicalName>
     </EmbeddedResource>
     <EmbeddedResource Include="Building\CompilerPresets\gdc.xml">
       <SubType>Designer</SubType>
+      <LogicalName>CompilerPresets.gdc.xml</LogicalName>
     </EmbeddedResource>
     <EmbeddedResource Include="Formatting\DPolicy.xml" />
-    <Content Include="Building\CompilerPresets\ldc2.xml">
-      <SubType>Designer</SubType>
-    </Content>
     <EmbeddedResource Include="icons\element-alias-16.png" />
     <EmbeddedResource Include="MonoDevelop.D.addin.xml">
       <SubType>Designer</SubType>
