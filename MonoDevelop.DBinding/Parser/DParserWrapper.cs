@@ -188,36 +188,6 @@ namespace MonoDevelop.D.Parser
 				}
 			}
 
-			// Update UFCS
-			ModulePackage pack;
-			if((pack=GlobalParseCache.GetPackage(ast, false)) != null && (pack = pack.Root) != null)
-			{
-				// If the file is not associated with any project,
-				// check if the file is located in an imported/included directory
-				// and update the respective cache.
-				// Note: ParseCache.Remove() also affects the Ufcs cache,
-				// but when adding it again, the UfcsCache has to be updated manually
-				ParseCacheView pcw;
-				bool containsPack = false;
-				if (prj != null) {
-					pcw = dprj.ParseCache;
-					containsPack = true;
-				} else {
-					// Find out which compiler environment fits most
-					pcw = null;
-					foreach (var cmp in DCompilerService.Instance.Compilers) {
-						pcw = cmp.GenParseCacheView ();
-						foreach (var r in pack as IEnumerable<ModulePackage>)
-							if (r == pack) {
-								containsPack = true;
-								break;
-							}
-						if (containsPack)
-							break;
-					}
-				}
-			}
-
 			return doc;
 		}
 
