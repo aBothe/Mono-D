@@ -155,18 +155,61 @@ namespace MonoDevelop.D.Projects.Dub
 			Items.Clear ();
 		}
 
+
+		void _addFile(string baseDir, string dir, string f)
+		{
+			if(CanContainFile(f)) {
+				if (f.StartsWith (baseDir))
+					Items.Add (new ProjectFile (f));
+				else
+					Items.Add (new ProjectFile (f) { Link = f.Substring (dir.Length + 1) });
+			}
+		}
+
 		internal void EndLoad()
 		{
+			// Load project's files
 			var baseDir = BaseDirectory;
+			var baseDirs = new List<string> ();
 
-			foreach (var dir in GetSourcePaths((ConfigurationSelector)null))
+			foreach (var dir in GetSourcePaths((ConfigurationSelector)null)) {
+				baseDirs.Add (dir);
 				foreach (var f in Directory.GetFiles(dir, "*", SearchOption.AllDirectories))
-					if(CanContainFile(f)) {
-						if (f.StartsWith (baseDir))
-							Items.Add (new ProjectFile (f));
-						else
-							Items.Add (new ProjectFile (f) { Link = f.Substring (dir.Length + 1) });
-					}
+					_addFile (baseDir, dir, f);
+			}
+
+			#region Add files specified via sourceFiles
+			var additionalFiles = new List<string> ();
+			List<DubBuildSetting> l;
+
+			if (CommonBuildSettings.TryGetValue (DubBuildSettings.SourceFilesProperty, out l))
+				foreach (var sett in l)
+					foreach (var f in sett.Values)
+						additionalFiles.Add (f);
+
+			foreach(DubProjectConfiguration cfg in Configurations)
+				if (cfg.BuildSettings.TryGetValue (DubBuildSettings.SourceFilesProperty, out l))
+					foreach (var sett in l)
+						foreach (var f in sett.Values)
+							additionalFiles.Add (f);
+
+			foreach (var f in additionalFiles) {
+				if (string.IsNullOrWhiteSpace (f))
+					continue;
+
+				if (Path.IsPathRooted (f)) {
+					bool skip = false;
+					foreach (var dir in baseDirs)
+						if (f.StartsWith (dir)) {
+							skip = true;
+							break;
+						}
+					if (!skip)
+						Items.Add (new ProjectFile (f));
+				} else
+					Items.Add (new ProjectFile(baseDir.Combine(f).ToString()));
+			}
+			#endregion
 
 			OnEndLoad ();
 			loading = false;
