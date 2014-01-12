@@ -83,9 +83,6 @@ namespace MonoDevelop.D.Projects.Dub
 			if (sourcePaths.Length > 0 && !string.IsNullOrWhiteSpace(sourcePaths[0]))
 				sub.VirtualBasePath = new FilePath(sourcePaths [0]);
 
-			foreach(var f in sub.GetItemFiles(false))
-				sub.Items.Add(new ProjectFile(f));
-
 			PackageJsonParser.LoadDubProjectReferences (sub, monitor);
 
 			// TODO: What to do with new configurations that were declared in this sub package? Add them to all other packages as well?

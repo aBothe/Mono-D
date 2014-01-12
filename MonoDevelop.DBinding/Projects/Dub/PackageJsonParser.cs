@@ -162,9 +162,6 @@ namespace MonoDevelop.D.Projects.Dub
 
 			defaultPackage.Items.Add(new ProjectFile(packageJsonPath, BuildAction.None));
 
-			foreach (var f in defaultPackage.GetItemFiles(true))
-				defaultPackage.Items.Add(new ProjectFile(f));
-
 			defaultPackage.EndLoad ();
 			return defaultPackage;
 		}

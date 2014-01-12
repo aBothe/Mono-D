@@ -72,14 +72,21 @@ namespace MonoDevelop.D.Projects.Dub
 				return loading;
 			}
 		}
+
+		static readonly char[] PathSep = new[] {Path.DirectorySeparatorChar};
+		public static bool CanContainFile(string f)
+		{
+			var i= f.LastIndexOfAny(PathSep);
+			return i < -1 ? !f.StartsWith (".") : f [i + 1] != '.';
+		}
+
 		protected override List<FilePath> OnGetItemFiles(bool includeReferencedFiles)
 		{
 			var files = new List<FilePath>();
-			int i=0;
-			var cha = new[] {Path.DirectorySeparatorChar};
+
 			foreach(var dir in GetSourcePaths((ConfigurationSelector)null))
 				foreach (var f in Directory.GetFiles(dir, "*", SearchOption.AllDirectories))
-					if((i = f.LastIndexOfAny(cha)) < -1 ? !f.StartsWith(".") : f[i+1] != '.')
+					if(CanContainFile(f))
 						files.Add(new FilePath(f));
 
 			return files;
@@ -145,10 +152,22 @@ namespace MonoDevelop.D.Projects.Dub
 		{
 			loading = true;
 			OnBeginLoad ();
+			Items.Clear ();
 		}
 
 		internal void EndLoad()
 		{
+			var baseDir = BaseDirectory;
+
+			foreach (var dir in GetSourcePaths((ConfigurationSelector)null))
+				foreach (var f in Directory.GetFiles(dir, "*", SearchOption.AllDirectories))
+					if(CanContainFile(f)) {
+						if (f.StartsWith (baseDir))
+							Items.Add (new ProjectFile (f));
+						else
+							Items.Add (new ProjectFile (f) { Link = f.Substring (dir.Length + 1) });
+					}
+
 			OnEndLoad ();
 			loading = false;
 		}
