@@ -4,6 +4,7 @@ using MonoDevelop.Core;
 using System.Xml;
 using D_Parser.Misc;
 using MonoDevelop.D.Unittest;
+using System.IO;
 
 namespace MonoDevelop.D.Building
 {
@@ -107,6 +108,7 @@ namespace MonoDevelop.D.Building
 			if (_instance == null || _instance.Compilers.Count == 0) {
 				_instance = new DCompilerService ();
 				CompilerPresets.PresetLoader.LoadPresets (_instance);
+				LoadDefaultDmd2Paths (_instance.GetCompiler ("DMD2"));
 			}
 
 			Ide.IdeApp.Workbench.RootWindow.Destroyed += (o, ea) => {
@@ -125,6 +127,64 @@ namespace MonoDevelop.D.Building
 		}
 
 		const string GlobalPropertyName = "DBinding.DCompiler";
+
+		static void LoadDefaultDmd2Paths(DCompilerConfiguration cmp)
+		{
+			if (cmp == null)
+				return;
+
+			if (OS.IsWindows) {
+				foreach (var drv in Directory.GetLogicalDrives()) {
+					string dir, p;
+
+					if (string.IsNullOrEmpty(cmp.BinPath))
+					{
+						dir = Path.Combine(drv, "D\\dmd2\\windows\\bin");
+						if (Directory.Exists(dir))
+							cmp.BinPath = dir;
+					}
+
+					dir = Path.Combine (drv,"D\\dmd2\\src");
+					p = Path.Combine (dir, "druntime\\import");
+					if (Directory.Exists (p))
+						cmp.IncludePaths.Add (p);
+					p = Path.Combine (dir, "phobos");
+					if (Directory.Exists(p))
+					{
+						cmp.IncludePaths.Add(p);
+						break;
+					}
+				}
+				return;
+			}
+
+			Dictionary<string,string> defaults;
+
+			if (OS.IsLinux)
+				defaults = new Dictionary<string,string> {
+				{ "/usr/local/include/dlang/dmd/",null },
+				{ "/usr/include/dlang/dmd/",null },
+				{ "/usr/include/dmd", null },
+				{ "/usr/local/include/dmd", null },
+				};
+			else if (OS.IsMac)
+				defaults = new Dictionary<string,string> {
+				{ "/usr/share/dmd/src/druntime/import", "/usr/share/dmd/src/phobos" },
+				{ "/usr/local/opt/dmd/libexec/src/druntime", "/usr/local/opt/dmd/libexec/src/phobos" },
+				{ "/usr/opt/dmd/libexec/src/druntime", "/usr/opt/dmd/libexec/src/phobos" },
+				{ "/opt/dmd/libexec/src/druntime", "/opt/dmd/libexec/src/phobos" },
+				};
+			else
+				return;
+
+			foreach (var kv in defaults) {
+				if (Directory.Exists (kv.Key)) {
+					cmp.IncludePaths.Add (kv.Key);
+					if (kv.Value != null && Directory.Exists (kv.Value))
+						cmp.IncludePaths.Add (kv.Value);
+				}
+			}
+		}
 		#endregion
 
 		public void UpdateParseCachesAsync ()

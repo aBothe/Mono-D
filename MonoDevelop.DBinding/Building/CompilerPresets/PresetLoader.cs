@@ -38,7 +38,7 @@ namespace MonoDevelop.D.Building.CompilerPresets
 				svc.Compilers.Add(cmp);
 			}
 
-			svc.DefaultCompiler = svc.Compilers[0].Vendor;
+			svc.DefaultCompiler = "DMD2";
 		}
 
 		public static bool HasPresetsAvailable(DCompilerConfiguration compiler)
