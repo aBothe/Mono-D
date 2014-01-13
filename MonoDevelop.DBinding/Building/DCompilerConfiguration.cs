@@ -374,6 +374,7 @@ namespace MonoDevelop.D.Building
 		{
 			ObjectFileLinkPattern = c.ObjectFileLinkPattern;
 			IncludePathPattern = c.IncludePathPattern;
+			LinkerRedirectPrefix = c.LinkerRedirectPrefix;
 			VersionDefinition = c.VersionDefinition;
 			DebugDefinition = c.DebugDefinition;
 			UnittestFlag = c.UnittestFlag;
