@@ -637,7 +637,8 @@ namespace MonoDevelop.D.Completion
 					return new IconId("d-file");
 				else if (n is DVariable)
 				{
-                    if (((DVariable)n).IsAlias)
+					var dv = n as DVariable;
+					if (dv.IsAlias)
                     {
 						// TODO: does declaring an alias private/protected/package actually have a meaning?
 						return iconIdWithProtectionAttr(n, "alias");
@@ -653,7 +654,7 @@ namespace MonoDevelop.D.Completion
 						return iconIdWithProtectionAttr(n, "delegate");
 					}
 
-					if (n.ContainsAttribute(DTokens.Const))
+					if (n.ContainsAttribute(DTokens.Const) || (n.ContainsAttribute(DTokens.Enum) && dv.Initializer == null))
 					{
 						return iconIdWithProtectionAttr(n, "literal", true);
 					}
