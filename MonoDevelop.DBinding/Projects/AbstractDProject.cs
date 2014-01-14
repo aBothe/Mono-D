@@ -85,6 +85,27 @@ namespace MonoDevelop.D.Projects
 					needsFullRebuild = true;
 			}
 		}
+
+		protected override void OnFilePropertyChangedInProject (ProjectFileEventArgs e)
+		{
+			NeedsFullRebuild = true;
+			base.OnFilePropertyChangedInProject (e);
+		}
+		protected override void OnFileChangedInProject (ProjectFileEventArgs e)
+		{
+			NeedsFullRebuild = true;
+			base.OnFileChangedInProject (e);
+		}
+		protected override void OnExecutionTargetsChanged ()
+		{
+			NeedsFullRebuild = true;
+			base.OnExecutionTargetsChanged ();
+		}
+		protected override void OnSaved (SolutionItemEventArgs args)
+		{
+			NeedsFullRebuild = true;
+			base.OnSaved (args);
+		}
 		#endregion
 
 		#region Parsed project modules
