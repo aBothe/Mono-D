@@ -684,7 +684,7 @@ namespace MonoDevelop.D.Completion
 					}
 
 					TemplateParameter tpar;
-					if (realParent.TryGetTemplateParameter(n.NameHash, out tpar))
+					if (realParent != null && realParent.TryGetTemplateParameter(n.NameHash, out tpar))
 						return DCodeCompletionSupport.GetNodeImage("parameter");
 
 					return DCodeCompletionSupport.GetNodeImage("local");
