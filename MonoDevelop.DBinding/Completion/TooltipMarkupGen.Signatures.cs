@@ -50,7 +50,7 @@ namespace MonoDevelop.D.Completion
 				return "<i>(Package)</i> "+pack.ToString();
 			}
 
-			return DCodeToMarkup (t.ToCode ());
+			return DCodeToMarkup (t != null ? t.ToCode () : "null");
 		}
 
 		public string GenTooltipSignature(DNode dn, bool templateParamCompletion = false, 
