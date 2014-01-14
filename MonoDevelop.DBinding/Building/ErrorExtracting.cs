@@ -78,7 +78,6 @@ namespace MonoDevelop.D.Building
 				{
 					if (!Path.IsPathRooted(error.FileName))
 						error.FileName = Project.GetAbsoluteChildPath(error.FileName);
-
 					br.Append(error);
 				}
 			}
@@ -86,11 +85,15 @@ namespace MonoDevelop.D.Building
 			reader.Close();
 		}
 
+		public static bool IsWarning(string type)
+		{
+			type = type.ToLowerInvariant ();
+			return type != "error"; 
+		}
+
         public static BuildError FindError(string errorString, TextReader reader)
         {
             var error = new BuildError();
-            string warning = GettextCatalog.GetString("warning");
-            string note = GettextCatalog.GetString("note");
 
             var match = dmdCompileRegex.Match(errorString);
             int line = 0;
@@ -100,7 +103,7 @@ namespace MonoDevelop.D.Building
                 error.FileName = match.Groups["file"].Value;
                 int.TryParse(match.Groups["line"].Value, out line);
                 error.Line = line;
-                error.IsWarning = match.Groups["type"].Value == "Warning" || match.Groups["type"].Value == "Note";
+				error.IsWarning = IsWarning(match.Groups ["type"].Value);
                 error.ErrorText = match.Groups["message"].Value;
 
                 return error;
@@ -114,8 +117,7 @@ namespace MonoDevelop.D.Building
                 error.FileName = match.Groups["file"].Value;
                 error.Line = int.Parse(match.Groups["line"].Value);
                 error.Column = int.Parse(match.Groups["column"].Value);
-                error.IsWarning = (match.Groups["level"].Value.Equals(warning, StringComparison.Ordinal) ||
-                                   match.Groups["level"].Value.Equals(note, StringComparison.Ordinal));
+				error.IsWarning = IsWarning(match.Groups ["level"].Value);
                 error.ErrorText = match.Groups["message"].Value;
 
                 return error;
@@ -127,8 +129,7 @@ namespace MonoDevelop.D.Building
             {
                 error.FileName = match.Groups["file"].Value;
                 error.Line = int.Parse(match.Groups["line"].Value);
-                error.IsWarning = (match.Groups["level"].Value.Equals(warning, StringComparison.Ordinal) ||
-                                   match.Groups["level"].Value.Equals(note, StringComparison.Ordinal));
+				error.IsWarning = IsWarning(match.Groups ["level"].Value);
                 error.ErrorText = match.Groups["message"].Value;
 
                 // Skip messages that begin with ( and end with ), since they're generic.
@@ -153,9 +154,7 @@ namespace MonoDevelop.D.Building
 				int i;
 				int.TryParse(match.Groups["line"].Value, out i);
 				error.Line = i;
-
-                error.IsWarning = (match.Groups["level"].Value.Equals(warning, StringComparison.Ordinal) ||
-                                   match.Groups["level"].Value.Equals(note, StringComparison.Ordinal));
+				error.IsWarning = IsWarning(match.Groups ["level"].Value);
                 error.ErrorText = match.Groups["message"].Value;
 
 				if(error.FileName.Length > 0 || error.ErrorText.Length > 0)
@@ -167,16 +166,10 @@ namespace MonoDevelop.D.Building
             {
                 error.FileName = match.Groups["file"].Value;
                 error.Line = int.Parse(match.Groups["line"].Value);
-
-                error.IsWarning = (match.Groups["level"].Value.Equals(warning, StringComparison.Ordinal) ||
-                                   match.Groups["level"].Value.Equals(note, StringComparison.Ordinal));
+				error.IsWarning = IsWarning(match.Groups ["level"].Value);
                 error.ErrorText = match.Groups["message"].Value;
-
-
                 return error;
             }
-
-
             return null;
         }
 
