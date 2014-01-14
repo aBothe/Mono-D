@@ -15,7 +15,7 @@
 		<ddFlag>-D</ddFlag>
 		<ddMacroDefinition>"{0}"</ddMacroDefinition>
 		<ddDir>"-Dd={0}"</ddDir>
-		<linkerRedirectFlag>-L</linkerRedirectFlag>
+		<linkerRedirectFlag>-L=</linkerRedirectFlag>
 		<commandFile alsoForLinking="true">"@{0}"</commandFile>
 	</Patterns>
 

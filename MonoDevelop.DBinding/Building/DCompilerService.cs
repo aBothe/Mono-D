@@ -135,13 +135,25 @@ namespace MonoDevelop.D.Building
 
 			if (OS.IsWindows) {
 				foreach (var drv in Directory.GetLogicalDrives()) {
-					var dir = Path.Combine (drv,"D\\dmd2\\src");
-					var p = Path.Combine (dir, "druntime\\import");
-					if (Directory.Exists (p))
-						cmp.IncludePaths.Add (p);
+					string dir, p;
+
+					if (string.IsNullOrEmpty(cmp.BinPath))
+					{
+						dir = Path.Combine(drv, "D\\dmd2\\windows\\bin");
+						if (Directory.Exists(dir))
+							cmp.BinPath = dir;
+					}
+
+					dir = Path.Combine (drv,"D\\dmd2\\src");
 					p = Path.Combine (dir, "druntime\\import");
 					if (Directory.Exists (p))
 						cmp.IncludePaths.Add (p);
+					p = Path.Combine (dir, "phobos");
+					if (Directory.Exists(p))
+					{
+						cmp.IncludePaths.Add(p);
+						break;
+					}
 				}
 				return;
 			}

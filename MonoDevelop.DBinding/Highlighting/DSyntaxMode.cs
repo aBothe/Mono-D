@@ -208,6 +208,8 @@ namespace MonoDevelop.D.Highlighting
 							len = n.Name.Length;
 						} else if(sr is TemplateParameter) {
 							var tp = sr as TemplateParameter;
+							if (tp.NameLocation.IsEmpty)
+								continue;
 							var nameLine = tp.NameLocation.Line == kv.Key ? line : doc.GetLine (tp.NameLocation.Line);
 							off = nameLine.Offset + tp.NameLocation.Column - 1;
 							len = tp.Name.Length;
