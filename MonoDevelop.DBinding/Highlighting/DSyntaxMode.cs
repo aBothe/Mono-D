@@ -256,12 +256,17 @@ namespace MonoDevelop.D.Highlighting
 			public static string GetSemanticStyle(byte type)
 			{
 				switch (type) {
+					case DTokens.Delegate:
+					case DTokens.Function:
+						return "User Types(Delegates)";
 					case DTokens.Enum:
 						return "User Types(Enums)";
 					case DTokens.Interface:
 						return "User Types(Interfaces)";
 					case DTokens.Not: // template parameters
 						return "User Types(Type parameters)";
+					case DTokens.Struct:
+						return "User Types(Value types)";
 					default:
 						return "User Types";
 				}
