@@ -1,11 +1,6 @@
 using System;
 using MonoDevelop.D.Building;
 using MonoDevelop.Ide.Gui.Dialogs;
-using MonoDevelop.Core;
-using MonoDevelop.Projects;
-using System.Linq;
-using Gtk;
-using System.Collections;
 using MonoDevelop.D.Projects;
 
 namespace MonoDevelop.D.OptionPanels
@@ -146,7 +141,7 @@ namespace MonoDevelop.D.OptionPanels
 			cmbCompiler.Sensitive = (!cbUseDefaultCompiler.Active);	
 		}
 				
-		protected void cbUseDefaultCompiler_Clicked (object sender, System.EventArgs e)
+		protected void cbUseDefaultCompiler_Clicked (object sender, EventArgs e)
 		{
 			OnUseDefaultCompilerChanged ();
 		}

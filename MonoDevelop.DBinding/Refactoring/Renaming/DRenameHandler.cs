@@ -1,7 +1,5 @@
 // by Alexander Bothe (info@alexanderbothe.com)
-using System;
 using D_Parser.Dom;
-using D_Parser.Resolver;
 using MonoDevelop.Refactoring;
 
 namespace MonoDevelop.D.Refactoring
@@ -21,7 +19,7 @@ namespace MonoDevelop.D.Refactoring
 			var doc = Ide.IdeApp.Workbench.ActiveDocument;
 
 			if(doc!=null)
-				this.Run(new RefactoringOptions(doc) { SelectedItem = (INode)data });
+				this.Run(new RefactoringOptions(doc) { SelectedItem = data });
 		}
 		
 		protected override void Run (RefactoringOptions options)

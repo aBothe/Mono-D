@@ -38,9 +38,7 @@ namespace MonoDevelop.D.Formatting
 			// Container child table1.Gtk.Table+TableChild
 			this.check_KeepAlignmentSpaces = new global::Gtk.CheckButton ();
 			global::Gtk.Tooltips w2 = new Gtk.Tooltips ();
-			w2.SetTip (this.check_KeepAlignmentSpaces, "If unchecked, spaces that are not used for indentation but for final code alignme" +
-			"nt will be converted to tabs, too.", "If unchecked, spaces that are not used for indentation but for final code alignme" +
-			"nt will be converted to tabs, too.");
+			w2.SetTip (this.check_KeepAlignmentSpaces, "If unchecked, spaces that are not used for indentation but for final code alignment will be converted to tabs, too.", "If unchecked, spaces that are not used for indentation but for final code alignment will be converted to tabs, too.");
 			this.check_KeepAlignmentSpaces.CanFocus = true;
 			this.check_KeepAlignmentSpaces.Name = "check_KeepAlignmentSpaces";
 			this.check_KeepAlignmentSpaces.Label = global::MonoDevelop.Core.GettextCatalog.GetString ("Keep spaces for code aligment");

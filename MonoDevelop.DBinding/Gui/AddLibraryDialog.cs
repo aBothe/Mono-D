@@ -29,10 +29,6 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 using System;
-using System.IO;
-
-using Mono.Addins;
-
 namespace MonoDevelop.D
 {
 	public partial class AddLibraryDialog : Gtk.Dialog

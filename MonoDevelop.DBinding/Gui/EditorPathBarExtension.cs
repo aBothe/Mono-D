@@ -16,7 +16,7 @@ namespace MonoDevelop.D.Gui
 	class EditorPathBarExtension : TextEditorExtension, IPathedDocument
 	{
 		public event EventHandler<DocumentPathChangedEventArgs> PathChanged;
-		public MonoDevelop.Components.PathEntry[] CurrentPath
+		public PathEntry[] CurrentPath
 		{
 			get;
 			private set;
@@ -33,23 +33,23 @@ namespace MonoDevelop.D.Gui
 
 		class NoSelectionCustomNode : DNode
 		{
-			public NoSelectionCustomNode(D_Parser.Dom.INode parent)
+			public NoSelectionCustomNode(INode parent)
 			{
 				this.Parent = parent;
 			}
 
 			public override void Accept(NodeVisitor vis)
 			{
-				throw new System.NotImplementedException();
+				throw new NotImplementedException();
 			}
 
 			public override R Accept<R>(NodeVisitor<R> vis)
 			{
-				throw new System.NotImplementedException();
+				throw new NotImplementedException();
 			}
 		}	
 
-		public Gtk.Widget CreatePathWidget(int index)
+		public Widget CreatePathWidget(int index)
 		{
 			PathEntry[] path = CurrentPath;
 			if (null == path || 0 > index || path.Length <= index)
@@ -59,7 +59,7 @@ namespace MonoDevelop.D.Gui
 
 			object tag = path[index].Tag;
 			DropDownBoxListWindow.IListDataProvider provider = null;
-			if (!((tag is D_Parser.Dom.IBlockNode) || (tag is DEnumValue) || (tag is NoSelectionCustomNode)))
+			if (!((tag is IBlockNode) || (tag is DEnumValue) || (tag is NoSelectionCustomNode)))
 			{
 				return null;
 			}
@@ -92,7 +92,7 @@ namespace MonoDevelop.D.Gui
 			// Resolve the hovered piece of code
 			var loc = new CodeLocation(Document.Editor.Caret.Location.Column, Document.Editor.Caret.Location.Line);
 			IStatement stmt = null;
-			var currentblock = DResolver.SearchBlockAt(SyntaxTree, loc, out stmt) as IBlockNode;
+			var currentblock = DResolver.SearchBlockAt (SyntaxTree, loc, out stmt);
 
 			//could be an enum value, which is not IBlockNode
 			if (currentblock is DEnum)

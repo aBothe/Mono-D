@@ -180,7 +180,7 @@ namespace MonoDevelop.D.Projects.Dub
 						if(!string.IsNullOrWhiteSpace(outp))
 							DubListOutputs[baseDir] = outp;
 					} catch (Exception ex) {
-						MonoDevelop.Core.LoggingService.LogError ("Error while resolving dub dependencies via executing 'dub list-installed'", ex);
+						LoggingService.LogError ("Error while resolving dub dependencies via executing 'dub list-installed'", ex);
 					}
 				}
 			}

@@ -1,15 +1,14 @@
-using System;
 using MonoDevelop.D.Building;
 using System.Collections.Generic;
 using Gtk;
 
 namespace MonoDevelop.D.OptionPanels
 {
-	public partial class BuildArgumentOptions : Gtk.Dialog
+	public partial class BuildArgumentOptions : Dialog
 	{		
 		public bool IsDebug{ get; private set; }
 
-		Gtk.ListStore model_compileTarget = new Gtk.ListStore (typeof(string), typeof(DCompileTarget));
+		ListStore model_compileTarget = new ListStore (typeof(string), typeof(DCompileTarget));
 		Dictionary<DCompileTarget,BuildConfiguration> argsStore = new Dictionary<DCompileTarget, BuildConfiguration> (4);
 		BuildConfiguration _currArgCfg;
 		

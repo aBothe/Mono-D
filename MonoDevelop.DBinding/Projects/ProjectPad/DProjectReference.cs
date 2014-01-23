@@ -24,8 +24,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 using System;
-using System.Collections.Generic;
-using D_Parser.Misc;
 using MonoDevelop.D.Projects;
 using System.ComponentModel;
 using MonoDevelop.Projects;

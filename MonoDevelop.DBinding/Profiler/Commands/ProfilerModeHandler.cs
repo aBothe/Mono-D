@@ -23,7 +23,6 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-using System;
 using MonoDevelop.Components.Commands;
 using MonoDevelop.D.Profiler.Gui;
 using MonoDevelop.Ide.Gui;
@@ -58,8 +57,8 @@ namespace MonoDevelop.D.Profiler.Commands
 		{
 			IsProfilerMode = !IsProfilerMode;
 			
-			if(IsProfilerMode == false)
-				DProfilerPad.ShowPad(false);
+			if (!IsProfilerMode)
+				DProfilerPad.ShowPad (false);
 		}
 	}
 }

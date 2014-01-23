@@ -2,27 +2,15 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Xml;
-using D_Parser.Dom;
-using D_Parser.Parser;
 using MonoDevelop.Core;
 using MonoDevelop.Core.Execution;
 using MonoDevelop.Core.ProgressMonitoring;
 using MonoDevelop.Core.Serialization;
 using MonoDevelop.D.Building;
-using MonoDevelop.D.Completion;
 using MonoDevelop.Ide;
 using MonoDevelop.Projects;
-using D_Parser.Misc;
-using MonoDevelop.D.Parser;
-using D_Parser.Resolver;
-using MonoDevelop.D.Profiler;
-using MonoDevelop.Ide.Gui;
-using MonoDevelop.Components.Commands;
 using MonoDevelop.D.Profiler.Commands;
-using MonoDevelop.D.Resolver;
 using Newtonsoft.Json;
-using System.Collections.ObjectModel;
-
 namespace MonoDevelop.D.Projects
 {
 	[DataInclude(typeof(DProjectConfiguration))]

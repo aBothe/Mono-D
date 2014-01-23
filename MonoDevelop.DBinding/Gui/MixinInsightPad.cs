@@ -1,16 +1,11 @@
 ﻿using D_Parser.Dom;
 using D_Parser.Dom.Statements;
 using D_Parser.Resolver;
-using D_Parser.Resolver.TypeResolution;
 using Mono.TextEditor;
 using MonoDevelop.Core;
-using MonoDevelop.D.Parser;
 using MonoDevelop.Ide;
 using MonoDevelop.Ide.Gui;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 
 namespace MonoDevelop.D.Gui
@@ -86,7 +81,7 @@ namespace MonoDevelop.D.Gui
 		#region GUI Interaction
 		bool CanAbort
 		{
-			set { DispatchService.GuiDispatch(() => { abortButton.Sensitive = value; }); }
+			set { DispatchService.GuiDispatch(() => abortButton.Sensitive = value); }
 		}
 
 		void AbortExecution()

@@ -6,7 +6,6 @@ using D_Parser.Resolver;
 using System.Collections.Generic;
 using MonoDevelop.D.Parser;
 using D_Parser.Misc;
-using MonoDevelop.D.Building;
 using D_Parser.Dom;
 using MonoDevelop.Core;
 using MonoDevelop.Ide;
@@ -55,7 +54,7 @@ namespace MonoDevelop.D.Refactoring
 
 			var modules = new List<DModule>();
 			if(project == null)
-				modules.Add((Ide.IdeApp.Workbench.ActiveDocument.ParsedDocument as ParsedDModule).DDom);
+				modules.Add((IdeApp.Workbench.ActiveDocument.ParsedDocument as ParsedDModule).DDom);
 			else
 				foreach(var p in project.GetSourcePaths())
 					modules.AddRange(GlobalParseCache.EnumModulesRecursively(p));

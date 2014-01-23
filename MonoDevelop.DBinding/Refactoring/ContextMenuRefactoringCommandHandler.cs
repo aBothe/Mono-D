@@ -6,7 +6,6 @@ using MonoDevelop.Components.Commands;
 using MonoDevelop.Ide;
 using MonoDevelop.Ide.Commands;
 using MonoDevelop.Refactoring;
-using MonoDevelop.Ide.Gui.Content;
 using System.Linq;
 using MonoDevelop.Core;
 using D_Parser.Refactoring;
@@ -50,23 +49,19 @@ namespace MonoDevelop.D.Refactoring
 				if (caps.resultResolutionAttempt != DResolver.NodeResolutionAttempt.RawSymbolLookup) {
 					var refactoringMenu = new CommandInfoSet { Text = GettextCatalog.GetString ("Refactoring") };
 
-					if(caps.lastResults.Any((t)=> t is DSymbol && DRenameRefactoring.CanRenameNode((t as DSymbol).Definition)))
+					if(caps.lastResults.Any(t => t is DSymbol && DRenameRefactoring.CanRenameNode ((t as DSymbol).Definition)))
 						refactoringMenu.CommandInfos.Add (IdeApp.CommandService.GetCommandInfo (EditCommands.Rename), new Action (caps.RenameSymbol));
 
 					if (refactoringMenu.CommandInfos.Count > 0)
 						info.Add (refactoringMenu);
 
 					info.Add (IdeApp.CommandService.GetCommandInfo (RefactoryCommands.GotoDeclaration), new Action (caps.GotoDeclaration));
-					info.Add (IdeApp.CommandService.GetCommandInfo (RefactoryCommands.FindReferences), new Action (() => {
-						caps.FindReferences (false);
-					}));
+					info.Add (IdeApp.CommandService.GetCommandInfo (RefactoryCommands.FindReferences), new Action (() => caps.FindReferences (false)));
 
-					if (caps.lastResults.Any ((t) => t is DSymbol && (t as DSymbol).Definition.Parent is DClassLike))
-						info.Add (IdeApp.CommandService.GetCommandInfo (RefactoryCommands.FindAllReferences), new Action (() => {
-							caps.FindReferences (true);
-						}));
+					if (caps.lastResults.Any (t => t is DSymbol && (t as DSymbol).Definition.Parent is DClassLike))
+						info.Add (IdeApp.CommandService.GetCommandInfo (RefactoryCommands.FindAllReferences), new Action (() => caps.FindReferences (true)));
 
-					if (caps.lastResults.Any ((t) => {
+					if (caps.lastResults.Any (t => {
 						var ds = DResolver.StripMemberSymbols (t);
 						return ds is ClassType || ds is InterfaceType;
 					}))
@@ -83,7 +78,7 @@ namespace MonoDevelop.D.Refactoring
 						if (m != null && !alreadyAddedItems.Contains (m)) {
 							alreadyAddedItems.Add (m);
 							importSymbolMenu.CommandInfos.Add (new CommandInfo {
-								Text = "import " + DNode.GetNodePath (m, true) + ";", 
+								Text = "import " + AbstractNode.GetNodePath (m, true) + ";", 
 								Icon = MonoDevelop.Ide.Gui.Stock.AddNamespace
 							}, new object[]{ "a", ds.Definition });
 						}

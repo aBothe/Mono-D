@@ -1,9 +1,5 @@
 ﻿using MonoDevelop.Projects;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
 namespace MonoDevelop.D.Projects.Dub
 {
 	/// <summary>
@@ -48,7 +44,7 @@ namespace MonoDevelop.D.Projects.Dub
 			if (s == null)
 				return new BuildResult{ FailedBuildCount = 1, CompilerOutput = "No default package specified!", BuildCount = 0 };
 
-			return (StartupItem as Project).Build(monitor, configuration);
+			return StartupItem.Build(monitor, configuration);
 		}
 	}
 }

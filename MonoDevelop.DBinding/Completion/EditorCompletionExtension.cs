@@ -1,8 +1,4 @@
 using D_Parser.Dom;
-using D_Parser.Dom.Statements;
-using D_Parser.Resolver.TypeResolution;
-using ICSharpCode.NRefactory.Completion;
-using MonoDevelop.Core;
 using MonoDevelop.D.Completion;
 using MonoDevelop.D.Parser;
 using MonoDevelop.Ide.CodeCompletion;

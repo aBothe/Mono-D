@@ -3,19 +3,17 @@ using D_Parser.Dom;
 using D_Parser.Misc;
 using D_Parser.Resolver;
 using D_Parser.Resolver.TypeResolution;
-using MonoDevelop.Core;
 using MonoDevelop.D.Building;
 using MonoDevelop.D.Parser;
 using MonoDevelop.D.Projects;
 using MonoDevelop.Ide;
 using MonoDevelop.Ide.CodeCompletion;
 using MonoDevelop.Ide.Gui;
-using MonoDevelop.Ide.Gui.Content;
 using System;
 
 namespace MonoDevelop.D.Resolver
 {
-	public class DResolverWrapper
+	public static class DResolverWrapper
 	{
 		public static EditorData CreateEditorData(Document EditorDocument)
 		{
@@ -34,7 +32,7 @@ namespace MonoDevelop.D.Resolver
 			ctx.TriggerLineOffset = EditorDocument.Editor.Caret.Column;
 			ctx.TriggerOffset = EditorDocument.Editor.Caret.Offset;
 
-			return CreateEditorData(EditorDocument, dpd.DDom as DModule, ctx);
+			return CreateEditorData (EditorDocument, dpd.DDom, ctx);
 		}
 
 		public static EditorData CreateEditorData(Document EditorDocument, DModule Ast, CodeCompletionContext ctx, char triggerChar = '\0')
@@ -58,7 +56,7 @@ namespace MonoDevelop.D.Resolver
 
 			if (EditorDocument.HasProject)
 			{
-				var cfg = EditorDocument.Project.GetConfiguration(Ide.IdeApp.Workspace.ActiveConfiguration) as DProjectConfiguration;
+				var cfg = EditorDocument.Project.GetConfiguration(IdeApp.Workspace.ActiveConfiguration) as DProjectConfiguration;
 
 				if (cfg != null)
 				{
@@ -98,7 +96,7 @@ namespace MonoDevelop.D.Resolver
 
 		public static AbstractType[] ResolveHoveredCode(
 			out ResolutionContext ResolverContext, out IEditorData edData, 
-			MonoDevelop.Ide.Gui.Document doc=null)
+			Document doc=null)
 		{
 			edData = CreateEditorData(doc);
 

@@ -1,5 +1,4 @@
 using MonoDevelop.Core;
-using MonoDevelop.D.Building;
 using MonoDevelop.Projects;
 
 namespace MonoDevelop.D

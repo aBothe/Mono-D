@@ -26,8 +26,6 @@
 
 using System;
 using MonoDevelop.Ide.Gui.Components;
-using MonoDevelop.Components.Commands;
-using MonoDevelop.Ide.Commands;
 using System.Collections.Generic;
 using MonoDevelop.D.Projects;
 using MonoDevelop.Projects;
@@ -90,12 +88,12 @@ namespace MonoDevelop.D.Projects.ProjectPad
 			}
 		}
 
-		public override bool HasChildNodes (MonoDevelop.Ide.Gui.Components.ITreeBuilder builder, object dataObject)
+		public override bool HasChildNodes (ITreeBuilder builder, object dataObject)
 		{
 			return !(dataObject as DProjectReference).IsValid;
 		}
 
-		public override void BuildChildNodes (MonoDevelop.Ide.Gui.Components.ITreeBuilder treeBuilder, object dataObject)
+		public override void BuildChildNodes (ITreeBuilder treeBuilder, object dataObject)
 		{
 			var pref = (DProjectReference) dataObject;
 			if (!pref.IsValid)

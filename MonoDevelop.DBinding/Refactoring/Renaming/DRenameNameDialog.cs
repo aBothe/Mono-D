@@ -1,8 +1,6 @@
 // by Alexander Bothe (info@alexanderbothe.com)
 using System;
 using D_Parser.Dom;
-using D_Parser.Parser;
-using D_Parser.Resolver;
 using Gtk;
 using MonoDevelop.D.Refactoring;
 using MonoDevelop.Ide;
@@ -14,7 +12,7 @@ using MonoDevelop.Refactoring.Rename;
 
 namespace MonoDevelop.D
 {
-	public partial class DRenameNameDialog : Gtk.Dialog
+	public partial class DRenameNameDialog : Dialog
 	{
 		DRenameRefactoring rename;
 		RefactoringOptions options;

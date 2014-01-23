@@ -1,8 +1,6 @@
-using System;
 using MonoDevelop.Ide.Gui.Pads;
 using MonoDevelop.D.Profiler.Gui;
 using MonoDevelop.Ide.Gui.Components;
-using MonoDevelop.D.Building;
 using MonoDevelop.Ide.Gui;
 using MonoDevelop.D.Profiler.Commands;
 using MonoDevelop.D.Projects;

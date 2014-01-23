@@ -5,7 +5,6 @@ using D_Parser.Dom;
 using D_Parser.Misc;
 using D_Parser.Parser;
 using MonoDevelop.Core;
-using MonoDevelop.D.Building;
 using MonoDevelop.Ide.CodeCompletion;
 using MonoDevelop.Ide.Gui;
 using ICSharpCode.NRefactory.Completion;
@@ -15,7 +14,6 @@ using D_Parser.Dom.Statements;
 using D_Parser.Resolver.TypeResolution;
 using MonoDevelop.Ide;
 using MonoDevelop.Ide.TypeSystem;
-using System.Text;
 using MonoDevelop.D.Resolver;
 
 namespace MonoDevelop.D.Completion
@@ -43,7 +41,7 @@ namespace MonoDevelop.D.Completion
 					if (ast != null)
 					{
 						IStatement stmt;
-						var caret = new D_Parser.Dom.CodeLocation(doc.Editor.Caret.Column, doc.Editor.Caret.Line);
+						var caret = new CodeLocation(doc.Editor.Caret.Column, doc.Editor.Caret.Line);
 						var bn = DResolver.SearchBlockAt(ast, caret, out stmt);
 						var dbn = bn as DBlockNode;
 						if (stmt == null && dbn != null)
@@ -75,12 +73,12 @@ namespace MonoDevelop.D.Completion
 		public static ResolutionContext CreateCurrentContext()
 		{
 			Document doc = null;
-			DispatchService.GuiSyncDispatch(() => doc = Ide.IdeApp.Workbench.ActiveDocument);
+			DispatchService.GuiSyncDispatch(() => doc = IdeApp.Workbench.ActiveDocument);
 			return CreateContext (doc);
 		}
 
 		#region Image helper
-		static readonly Dictionary<string, Core.IconId> images = new Dictionary<string, IconId>();
+		static readonly Dictionary<string, IconId> images = new Dictionary<string, IconId>();
 		static bool wasInitialized = false;
 
 		static void InitImages()
@@ -211,7 +209,7 @@ namespace MonoDevelop.D.Completion
 			wasInitialized = true;
 		}
 
-		public static Core.IconId GetNodeImage(string key)
+		public static IconId GetNodeImage(string key)
 		{
 			if (!wasInitialized)
 				InitImages();
@@ -415,7 +413,7 @@ namespace MonoDevelop.D.Completion
 			return tti;
 		}
 
-		public override Core.IconId Icon
+		public override IconId Icon
 		{
 			get
 			{
@@ -475,7 +473,7 @@ namespace MonoDevelop.D.Completion
 			return tti;
 		}
 
-		public override Core.IconId Icon
+		public override IconId Icon
 		{
 			get
 			{
@@ -585,7 +583,7 @@ namespace MonoDevelop.D.Completion
 			}
 		}
 
-		public static Core.IconId GetNodeIcon(DNode n)
+		public static IconId GetNodeIcon(DNode n)
 		{
 			try
 			{
@@ -699,7 +697,7 @@ namespace MonoDevelop.D.Completion
 		/// Returns node icon id looked up from the provided base string plus the protection
 		/// attribute (and, optionally, the staticness) of node.
 		/// </summary>
-		private static Core.IconId iconIdWithProtectionAttr ( DNode n, string image,
+		private static IconId iconIdWithProtectionAttr ( DNode n, string image,
         	bool allow_static = false )
 		{
 			string attr = "";
@@ -722,7 +720,7 @@ namespace MonoDevelop.D.Completion
 		/// Returns node icon id for a class, including the protection attribute, staticness and
 		/// abstractness.
 		/// </summary>
-		private static Core.IconId classIconIdWithProtectionAttr ( DNode n )
+		private static IconId classIconIdWithProtectionAttr ( DNode n )
 		{
 			// Only nested class may be static
 			bool static_allowed = n.IsClassMember;
@@ -740,7 +738,7 @@ namespace MonoDevelop.D.Completion
 		/// Returns node icon id for a method, including the protection attribute, staticness
 		/// and abstractness.
 		/// </summary>
-		private static Core.IconId methodIconIdWithProtectionAttr ( DNode n )
+		private static IconId methodIconIdWithProtectionAttr ( DNode n )
 		{
 			string attr = "";
 
@@ -778,7 +776,7 @@ namespace MonoDevelop.D.Completion
 
 		public override TooltipInformation CreateTooltipInformation(bool smartWrap)
 		{
-			return TooltipInfoGen.Create (Node, Ide.IdeApp.Workbench.ActiveDocument.Editor.ColorStyle);
+			return TooltipInfoGen.Create (Node, IdeApp.Workbench.ActiveDocument.Editor.ColorStyle);
 		}
 
 		public int CompareTo(ICompletionData other)

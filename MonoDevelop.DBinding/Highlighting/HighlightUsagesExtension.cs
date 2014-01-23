@@ -4,15 +4,12 @@ using System.Linq;
 using D_Parser.Dom;
 using D_Parser.Misc;
 using D_Parser.Resolver;
-using D_Parser.Resolver.TypeResolution;
 using Mono.TextEditor;
 using MonoDevelop.Core;
 using MonoDevelop.D.Building;
 using MonoDevelop.D.Parser;
-using MonoDevelop.D.Refactoring;
 using MonoDevelop.D.Resolver;
 using MonoDevelop.Ide.Gui.Content;
-using ICSharpCode.NRefactory.Editor;
 using MonoDevelop.D.Projects;
 
 // Code taken and modified from MonoDevelop.CSharp.Highlighting.HighlightUsagesExtension.cs
@@ -90,7 +87,7 @@ namespace MonoDevelop.D.Highlighting
 
 		void HandleTextEditorDataCaretPositionChanged(object sender, DocumentLocationEventArgs e)
 		{
-			if (!MonoDevelop.Core.PropertyService.Get<bool>("EnableHighlightUsages"))
+			if (!PropertyService.Get<bool>("EnableHighlightUsages"))
 				return;
 			if (!textEditorData.IsSomethingSelected && markers.Values.Any(m => m.Contains(textEditorData.Caret.Offset)))
 				return;
@@ -196,8 +193,8 @@ namespace MonoDevelop.D.Highlighting
 						to = startXPos + (int)(x_pos / Pango.Scale.PangoScale);
 					}
 
-					@from = System.Math.Max(@from, editor.TextViewMargin.XOffset);
-					to = System.Math.Max(to, editor.TextViewMargin.XOffset);
+					@from = Math.Max(@from, editor.TextViewMargin.XOffset);
+					to = Math.Max(to, editor.TextViewMargin.XOffset);
 					if (@from < to)
 					{
 						cr.Color = color_Bg;

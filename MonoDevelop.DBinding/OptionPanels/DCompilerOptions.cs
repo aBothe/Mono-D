@@ -1,6 +1,4 @@
 using System;
-using System.Linq;
-
 using MonoDevelop.Core;
 using MonoDevelop.Ide.Gui.Dialogs;
 using MonoDevelop.D.Building;
@@ -8,18 +6,15 @@ using MonoDevelop.Ide;
 using Gtk;
 using MonoDevelop.D.Building.CompilerPresets;
 using System.IO;
-using D_Parser.Misc;
-using System.Collections.Generic;
-
 namespace MonoDevelop.D.OptionPanels
 {
 	/// <summary>
 	/// This panel provides UI access to project independent D settings such as generic compiler configurations, library and import paths etc.
 	/// </summary>
-	public partial class DCompilerOptions : Gtk.Bin
+	public partial class DCompilerOptions : Bin
 	{
 		#region Properties & Init
-		private Gtk.ListStore compilerStore = new Gtk.ListStore (typeof(string), typeof(DCompilerConfiguration));
+		private ListStore compilerStore = new ListStore (typeof(string), typeof(DCompilerConfiguration));
 		private DCompilerConfiguration configuration;
 		string defaultCompilerVendor;
 		private BuildArgumentOptions releaseArgumentsDialog = null;
@@ -65,9 +60,9 @@ namespace MonoDevelop.D.OptionPanels
 			}
 		}
 		
-		protected void OnCmbCompilersChanged (object sender, System.EventArgs e)
+		protected void OnCmbCompilersChanged (object sender, EventArgs e)
 		{
-			Gtk.TreeIter iter;
+			TreeIter iter;
 			if (cmbCompilers.GetActiveIter (out iter)) {
 				var newConfig = cmbCompilers.Model.GetValue (iter, 1) as DCompilerConfiguration;
 
@@ -91,7 +86,7 @@ namespace MonoDevelop.D.OptionPanels
 			}
 		}
 
-		protected void OnTogglebuttonMakeDefaultPressed (object sender, System.EventArgs e)
+		protected void OnTogglebuttonMakeDefaultPressed (object sender, EventArgs e)
 		{
 			if (configuration != null && configuration.Vendor == defaultCompilerVendor)
 				btnMakeDefault.Active = true;
@@ -161,7 +156,7 @@ namespace MonoDevelop.D.OptionPanels
 
 			DCompilerService.Instance.Compilers.Clear ();
 
-			Gtk.TreeIter iter;
+			TreeIter iter;
 			compilerStore.GetIterFirst (out iter);
 			do {
 				var virtCmp = compilerStore.GetValue (iter, 1) as DCompilerConfiguration;
@@ -231,30 +226,30 @@ namespace MonoDevelop.D.OptionPanels
 			MessageService.RunCustomDialog (dialog, IdeApp.Workbench.RootWindow);
 		}
 		
-		protected void btnReleaseArguments_Clicked (object sender, System.EventArgs e)
+		protected void btnReleaseArguments_Clicked (object sender, EventArgs e)
 		{			
 			ShowArgumentsDialog (false);						
 		}
 
-		protected void btnDebugArguments_Clicked (object sender, System.EventArgs e)
+		protected void btnDebugArguments_Clicked (object sender, EventArgs e)
 		{
 			ShowArgumentsDialog (true);			
 		}
 
 		string lastDir;
-		protected void OnButtonAddIncludeClicked (object sender, System.EventArgs e)
+		protected void OnButtonAddIncludeClicked (object sender, EventArgs e)
 		{
-			Gtk.FileChooserDialog dialog = new Gtk.FileChooserDialog (
+			FileChooserDialog dialog = new FileChooserDialog (
 				"Select D Source Folder",
-				Ide.IdeApp.Workbench.RootWindow,
-				Gtk.FileChooserAction.SelectFolder,
+				IdeApp.Workbench.RootWindow,
+				FileChooserAction.SelectFolder,
 				"Cancel",
-				Gtk.ResponseType.Cancel,
+				ResponseType.Cancel,
 				"Ok",
-				Gtk.ResponseType.Ok) 
+				ResponseType.Ok) 
 			{ 
-				TransientFor=Toplevel as Gtk.Window,
-				WindowPosition = Gtk.WindowPosition.Center
+				TransientFor=Toplevel as Window,
+				WindowPosition = WindowPosition.Center
 			};
 
 			if (lastDir != null)
@@ -263,7 +258,7 @@ namespace MonoDevelop.D.OptionPanels
 				dialog.SetCurrentFolder(txtBinPath.Text);
 
 			try {
-				if (dialog.Run() == (int)Gtk.ResponseType.Ok)
+				if (dialog.Run() == (int)ResponseType.Ok)
 				{
 					lastDir = dialog.Filename;
 					text_Includes.Buffer.Text += (text_Includes.Buffer.CharCount == 0 ? "" : "\n") + dialog.Filename;
@@ -273,23 +268,23 @@ namespace MonoDevelop.D.OptionPanels
 			}
 		}
 
-		protected void OnButtonBinPathBrowserClicked (object sender, System.EventArgs e)
+		protected void OnButtonBinPathBrowserClicked (object sender, EventArgs e)
 		{
-			var dialog = new Gtk.FileChooserDialog ("Select Compiler's bin path", null, Gtk.FileChooserAction.SelectFolder, "Cancel", Gtk.ResponseType.Cancel, "Ok", Gtk.ResponseType.Ok)
+			var dialog = new FileChooserDialog ("Select Compiler's bin path", null, FileChooserAction.SelectFolder, "Cancel", ResponseType.Cancel, "Ok", ResponseType.Ok)
 			{
-				TransientFor = Toplevel as Gtk.Window,
-				WindowPosition = Gtk.WindowPosition.Center
+				TransientFor = Toplevel as Window,
+				WindowPosition = WindowPosition.Center
 			};
 
 			try {
-				if (dialog.Run () == (int)Gtk.ResponseType.Ok)
+				if (dialog.Run () == (int)ResponseType.Ok)
 					txtBinPath.Text = dialog.Filename;
 			} finally {
 				dialog.Destroy ();
 			}
 		}
 
-		protected void OnBtnDefaultsClicked (object sender, System.EventArgs e)
+		protected void OnBtnDefaultsClicked (object sender, EventArgs e)
 		{
 			if (configuration == null)
 				return;
@@ -310,7 +305,7 @@ namespace MonoDevelop.D.OptionPanels
 	{
 		private DCompilerOptions panel;
 		
-		public override Gtk.Widget CreatePanelWidget ()
+		public override Widget CreatePanelWidget ()
 		{
 			panel = new DCompilerOptions ();
 			LoadConfigData ();

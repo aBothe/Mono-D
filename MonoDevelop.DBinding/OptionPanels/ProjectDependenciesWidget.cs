@@ -8,7 +8,7 @@ using MonoDevelop.Projects;
 namespace MonoDevelop.D
 {
 	[System.ComponentModel.ToolboxItem(true)]
-	public partial class ProjectDependenciesWidget : Gtk.Bin
+	public partial class ProjectDependenciesWidget : Bin
 	{
 		public readonly DProject Project;
 		public readonly DProjectConfiguration CurrentConfig;
@@ -38,7 +38,7 @@ namespace MonoDevelop.D
 				if (prj == Project)
 					continue;
 				
-				var cb = new Gtk.CheckButton(prj.Name){
+				var cb = new CheckButton(prj.Name){
 					CanFocus=true,
 					DrawIndicator=true,
 					UseUnderline=false,

@@ -1,11 +1,6 @@
 ﻿using System;
-using MonoDevelop.Ide.Gui.Pads.ProjectPad;
-using MonoDevelop.Projects;
-using MonoDevelop.Ide.Gui.Components;
-using System.IO;
 using MonoDevelop.Ide;
 using Gtk;
-using D_Parser.Parser;
 using D_Parser.Dom;
 using MonoDevelop.D.Profiler.Commands;
 using MonoDevelop.Core;
@@ -14,7 +9,7 @@ using MonoDevelop.D.Projects;
 namespace MonoDevelop.D.Profiler.Gui
 {
 	[System.ComponentModel.ToolboxItem(true)]
-	public partial class ProfilerPadWidget : Gtk.Bin
+	public partial class ProfilerPadWidget : Bin
 	{
 		ListStore traceFunctionsStore;
 		DProfilerPad profilerPad;
@@ -62,7 +57,7 @@ namespace MonoDevelop.D.Profiler.Gui
 		
 		private void AddColumn(string title, int index)
 		{
-			TreeViewColumn column = nodeView.AppendColumn (title, new Gtk.CellRendererText (), "text", index);
+			TreeViewColumn column = nodeView.AppendColumn (title, new CellRendererText (), "text", index);
 			column.Resizable = true;
 			column.SortColumnId = index;
 			column.SortIndicator = true;
@@ -96,7 +91,7 @@ namespace MonoDevelop.D.Profiler.Gui
 			TreeModel model;
 			nodeView.Selection.GetSelected(out model, out iter);
 		
-			if(model == null || nodeView.Selection.IterIsSelected(iter) == false)
+			if(model == null || !nodeView.Selection.IterIsSelected (iter))
 				return;
 				
 			long numCalls = (long)model.GetValue(iter,0);
@@ -119,7 +114,7 @@ namespace MonoDevelop.D.Profiler.Gui
 			TreeModel model;
 			nodeView.Selection.GetSelected(out model, out iter);
 			
-			if(model == null || nodeView.Selection.IterIsSelected(iter) == false)
+			if(model == null || !nodeView.Selection.IterIsSelected (iter))
 				return;
 				
 			var n = model.GetValue(iter,5) as DNode;

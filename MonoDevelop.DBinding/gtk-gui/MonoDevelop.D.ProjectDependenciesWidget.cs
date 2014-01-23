@@ -24,8 +24,7 @@ namespace MonoDevelop.D
 			this.label16 = new global::Gtk.Label ();
 			this.label16.Name = "label16";
 			this.label16.Xalign = 0F;
-			this.label16.LabelProp = global::MonoDevelop.Core.GettextCatalog.GetString ("Checking a project in this list will add an include (that points to the respectiv" +
-			"e project\'s base directory) to this project automatically.");
+			this.label16.LabelProp = global::MonoDevelop.Core.GettextCatalog.GetString ("Checking a project in this list will add an include (that points to the respective project's base directory) to this project automatically.");
 			this.label16.Wrap = true;
 			this.vbox2.Add (this.label16);
 			global::Gtk.Box.BoxChild w1 = ((global::Gtk.Box.BoxChild)(this.vbox2 [this.label16]));

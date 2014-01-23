@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Text;
 
-using D_Parser.Parser;
 using Mono.TextEditor;
 using MonoDevelop.Core;
 using MonoDevelop.Ide.CodeCompletion;

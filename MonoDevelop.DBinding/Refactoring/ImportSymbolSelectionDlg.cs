@@ -12,7 +12,7 @@ namespace MonoDevelop.D
 			var dlg = new ImportSymbolSelectionDlg(items, nameGetter);
 			dlg.Title = title;
 
-			if(MessageService.RunCustomDialog(dlg, Ide.IdeApp.Workbench.RootWindow) != (int)ResponseType.Ok)
+			if(MessageService.RunCustomDialog(dlg, IdeApp.Workbench.RootWindow) != (int)ResponseType.Ok)
 				return default(T);
 
 			var n = dlg.SelectedNode;

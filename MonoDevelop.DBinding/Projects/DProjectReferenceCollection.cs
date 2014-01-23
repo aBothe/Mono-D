@@ -26,8 +26,6 @@
 using System;
 using MonoDevelop.D.Projects;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using MonoDevelop.Projects;
 using MonoDevelop.D.Building;
 using System.IO;
 
@@ -89,7 +87,7 @@ namespace MonoDevelop.D.Projects
 		public virtual IEnumerable<string> ReferencedProjectIds {get { return new string[0];}}
 		public virtual bool HasReferences {get { return RawIncludes.Count > 0; }}
 
-		public DProjectReferenceCollection(AbstractDProject owner)
+		protected DProjectReferenceCollection(AbstractDProject owner)
 		{
 			this.owner = new WeakReference(owner);
 			includeMacros = new LocalIncludesMacroProvider (this.owner);

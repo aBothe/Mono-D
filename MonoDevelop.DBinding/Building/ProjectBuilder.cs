@@ -1,15 +1,8 @@
 ﻿using System;
-using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
-
-using D_Parser.Dom;
-using D_Parser.Misc;
-using D_Parser.Resolver;
-using D_Parser.Resolver.TypeResolution;
 using MonoDevelop.Core;
 using MonoDevelop.Core.ProgressMonitoring;
 using MonoDevelop.D.Profiler.Commands;
@@ -544,8 +537,9 @@ namespace MonoDevelop.D.Building
 
 		public static IEnumerable<string> GetLibraries(DProjectConfiguration projCfg, DCompilerConfiguration compiler)
 		{
-			var libraries = (IEnumerable<string>)FillInMacros(projCfg.GetReferencedLibraries(projCfg.Selector),
-				new PrjPathMacroProvider { slnPath = projCfg.Project.ParentSolution != null ? projCfg.Project.ParentSolution.BaseDirectory.ToString() : "" });
+			IEnumerable<string> libraries = FillInMacros (projCfg.GetReferencedLibraries (projCfg.Selector), new PrjPathMacroProvider {
+				slnPath = projCfg.Project.ParentSolution != null ? projCfg.Project.ParentSolution.BaseDirectory.ToString () : ""
+			});
 
 			if (compiler.EnableGDCLibPrefixing)
 				libraries = HandleGdcSpecificLibraryReferencing(libraries, projCfg.Project.BaseDirectory);

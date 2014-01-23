@@ -24,13 +24,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 using System;
-using System.Collections.Generic;
 using System.Text;
-using System.Text.RegularExpressions;
-using Mono.TextEditor.Highlighting;
 using D_Parser.Parser;
-using Mono.TextEditor;
-using MonoDevelop.D.Highlighting;
 using D_Parser.Resolver;
 using D_Parser.Dom;
 using D_Parser.Resolver.Templates;

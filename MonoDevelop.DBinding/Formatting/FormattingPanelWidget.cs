@@ -8,7 +8,7 @@ namespace MonoDevelop.D.Formatting
 		public void Save(DFormattingPolicy p)
 		{
 			if (p == null)
-				throw new ArgumentNullException("policy");
+				throw new ArgumentNullException("p");
 
 			p.CommentOutStandardHeaders = chk_CommentOutStdHeaders.Active;
 			p.InsertStarAtCommentNewLine = chk_InsertStarAtCommentNewLine.Active;
@@ -19,7 +19,7 @@ namespace MonoDevelop.D.Formatting
 		public void Load(DFormattingPolicy p)
 		{
 			if (p == null)
-				throw new ArgumentNullException("policy");
+				throw new ArgumentNullException("p");
 
 			chk_CommentOutStdHeaders.Active = p.CommentOutStandardHeaders;
 			chk_InsertStarAtCommentNewLine.Active = p.InsertStarAtCommentNewLine;

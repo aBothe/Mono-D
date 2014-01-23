@@ -3,14 +3,11 @@ using D_Parser.Parser;
 using D_Parser.Resolver;
 using D_Parser.Resolver.TypeResolution;
 using MonoDevelop.Ide.CodeCompletion;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace MonoDevelop.D.Completion
 {
-	class TooltipInfoGenerator
+	static class TooltipInfoGenerator
 	{
 		public static TooltipInformation Generate(AbstractType t, int currentParameter = -1, bool isInTemplateArgInsight = false)
 		{

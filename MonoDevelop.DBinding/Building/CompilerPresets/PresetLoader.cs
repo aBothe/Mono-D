@@ -1,19 +1,16 @@
-using System;
 using System.Xml;
 using MonoDevelop.D.Building;
 using System.IO;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Resources;
-
 namespace MonoDevelop.D.Building.CompilerPresets
 {
-	public class PresetLoader
+	public static class PresetLoader
 	{
 		public static string GetString(Assembly ass, string name)
 		{
 			using (var s = ass.GetManifestResourceStream (name))
-			using (var r = new System.IO.StreamReader (s))
+			using (var r = new StreamReader (s))
 				return r.ReadToEnd ();
 		}
 

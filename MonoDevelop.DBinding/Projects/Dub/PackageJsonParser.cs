@@ -2,11 +2,8 @@
 using MonoDevelop.Projects.Extensions;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Newtonsoft.Json;
 using System.IO;
-using Newtonsoft.Json.Converters;
 using MonoDevelop.Projects;
 
 namespace MonoDevelop.D.Projects.Dub
@@ -42,7 +39,7 @@ namespace MonoDevelop.D.Projects.Dub
 			return new List<FilePath>();
 		}
 
-		public Core.FilePath GetValidFormatName(object obj, Core.FilePath fileName)
+		public FilePath GetValidFormatName(object obj, FilePath fileName)
 		{
 			return fileName.ParentDirectory.Combine(PackageJsonFile);
 		}
@@ -176,7 +173,7 @@ namespace MonoDevelop.D.Projects.Dub
 			get { return true; }
 		}
 
-		public void WriteFile(Core.FilePath file, object obj, Core.IProgressMonitor monitor)
+		public void WriteFile(FilePath file, object obj, IProgressMonitor monitor)
 		{
 			//monitor.ReportError ("Can't write dub package information! Change it manually in the definition file!", new InvalidOperationException ());
 		}

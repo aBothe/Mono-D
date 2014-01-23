@@ -83,7 +83,7 @@ namespace MonoDevelop.D.Projects.VisualD
 		{
 			try
 			{
-				using (var x = new XmlTextWriter(file, System.Text.Encoding.UTF8))
+				using (var x = new XmlTextWriter(file, Encoding.UTF8))
 					Write(obj as VisualDProject, x);
 			}
 			catch (Exception ex)

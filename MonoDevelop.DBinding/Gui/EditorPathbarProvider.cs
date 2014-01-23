@@ -16,14 +16,14 @@ namespace MonoDevelop.D.Gui
 	{
 		object tag;
 		DModule syntaxTree;
-		List<D_Parser.Dom.INode> memberList = new List<D_Parser.Dom.INode> ();
+		List<INode> memberList = new List<INode> ();
 		
 		Document document { get; set; }
 		
 		public EditorPathbarProvider (Document doc, object tag)
 		{
 			this.document = doc;
-			this.tag = ((D_Parser.Dom.INode)tag).Parent;
+			this.tag = ((INode)tag).Parent;
 			
 			var ast = document.ParsedDocument as ParsedDModule;
 			if (ast != null)			
