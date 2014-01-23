@@ -201,6 +201,7 @@ namespace MonoDevelop.D.Highlighting
 					var line = doc.GetLine (kv.Key);
 					foreach (var kvv in kv.Value) {
 						var sr = kvv.Key;
+						var ident = "";
 						if (sr is INode) {
 							var n = sr as INode;
 							var nameLine = n.NameLocation.Line == kv.Key ? line : doc.GetLine (n.NameLocation.Line);
@@ -214,12 +215,16 @@ namespace MonoDevelop.D.Highlighting
 							off = nameLine.Offset + tp.NameLocation.Column - 1;
 							len = tp.Name.Length;
 						} else {
-							GetIdentifier(ref sr);
+							var templ = sr as TemplateInstanceExpression;
+							if (templ != null)
+								ident = templ.TemplateId;
+							GetIdentifier (ref sr);
 							off = line.Offset + sr.Location.Column - 1;
 							len = sr.EndLocation.Column - sr.Location.Column;
+
 						}
 
-						segmentMarkerTree.Add (new TypeIdSegmMarker (off, len, kvv.Value));
+						segmentMarkerTree.Add (new TypeIdSegmMarker (ident, off, len, kvv.Value));
 					}
 				}
 			}
@@ -248,20 +253,38 @@ namespace MonoDevelop.D.Highlighting
 		{
 			public byte SemanticType;
 			public string Style;
-			public TypeIdSegmMarker(int off, int len, byte type) : base(off,len){
+
+			public TypeIdSegmMarker(string ident, int off, int len, byte type) : base(off,len){
 				this.SemanticType = type;
-				this.Style = GetSemanticStyle(type);
+				this.Style = GetSemanticStyle(ident, type);
 			}
 
-			public static string GetSemanticStyle(byte type)
+			public static string GetSemanticStyle(string ident, byte type)
 			{
 				switch (type) {
+					case DTokens.Delegate:
+					case DTokens.Function:
+						return "User Types(Delegates)";
 					case DTokens.Enum:
 						return "User Types(Enums)";
 					case DTokens.Interface:
 						return "User Types(Interfaces)";
 					case DTokens.Not: // template parameters
 						return "User Types(Type parameters)";
+					case DTokens.Struct:
+						return "User Types(Value types)";
+					case DTokens.Template:
+						if (ident.Length > 0 && char.IsLower (ident [0])) {
+							if (
+								(ident.Length > 1 && ident.Substring (0, 2) == "is")
+								|| (ident.Length > 2 && ident.Substring (0, 3) == "has")) {
+								return "User Method Usage";
+							}
+							else
+								return "User Types(Enums)";
+						}
+						else
+							return "User Types";
 					default:
 						return "User Types";
 				}
