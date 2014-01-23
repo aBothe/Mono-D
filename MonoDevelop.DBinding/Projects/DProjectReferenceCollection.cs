@@ -89,7 +89,7 @@ namespace MonoDevelop.D.Projects
 		public virtual IEnumerable<string> ReferencedProjectIds {get { return new string[0];}}
 		public virtual bool HasReferences {get { return RawIncludes.Count > 0; }}
 
-		public DProjectReferenceCollection(AbstractDProject owner)
+		protected DProjectReferenceCollection(AbstractDProject owner)
 		{
 			this.owner = new WeakReference(owner);
 			includeMacros = new LocalIncludesMacroProvider (this.owner);
