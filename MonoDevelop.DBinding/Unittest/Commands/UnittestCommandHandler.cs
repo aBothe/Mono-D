@@ -8,11 +8,9 @@
 //
 // Copyright (c) 2013
 
-using System;
 using MonoDevelop.Components.Commands;
 using MonoDevelop.Ide;
 using MonoDevelop.Projects;
-using MonoDevelop.Ide.Gui;
 using MonoDevelop.D.Projects;
 
 namespace MonoDevelop.D.Unittest.Commands

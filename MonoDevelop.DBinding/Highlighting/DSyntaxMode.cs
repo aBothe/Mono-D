@@ -4,7 +4,6 @@ using System.Xml;
 using Mono.TextEditor;
 using Mono.TextEditor.Highlighting;
 using System.IO;
-using MonoDevelop.Ide.Tasks;
 using System;
 using MonoDevelop.Ide.Gui;
 using MonoDevelop.Core;
@@ -12,8 +11,6 @@ using System.Threading;
 using D_Parser.Refactoring;
 using D_Parser.Dom;
 using D_Parser.Misc;
-using System.Collections.Concurrent;
-using System.Reflection;
 using D_Parser.Dom.Expressions;
 using D_Parser.Parser;
 
@@ -39,7 +36,7 @@ namespace MonoDevelop.D.Highlighting
 
 		public DSyntaxMode()
 		{
-			var matches = new List<Mono.TextEditor.Highlighting.Match>();
+			var matches = new List<Match>();
 
 			if (baseMode == null)
 			{

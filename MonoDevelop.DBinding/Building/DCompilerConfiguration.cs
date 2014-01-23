@@ -3,9 +3,6 @@ using System;
 using System.Xml;
 using MonoDevelop.Core;
 using D_Parser.Misc;
-using D_Parser.Dom;
-using System.Threading;
-
 namespace MonoDevelop.D.Building
 {
 	/// <summary>
@@ -41,10 +38,10 @@ namespace MonoDevelop.D.Building
 		#region Ctor/Init
 		static DCompilerConfiguration()
 		{
-			GlobalParseCache.ParseTaskFinished+= (ea) => LoggingService.LogInfo(
+			GlobalParseCache.ParseTaskFinished+= ea => LoggingService.LogInfo (
 				"Parsed {0} files in \"{1}\" in {2}ms ({3}ms;{4}% parse time) (~{5}ms/{6}ms per file)",
-				ea.FileAmount,ea.Directory,ea.Duration, ea.ParseDuration, 
-				Math.Truncate(ea.Duration > 0 ? (double)ea.ParseDuration/(double)ea.Duration * 100.0 : 0.0) ,ea.FileDuration,ea.FileParseDuration);
+				ea.FileAmount, ea.Directory, ea.Duration, ea.ParseDuration, 
+				Math.Truncate (ea.Duration > 0 ? (double)ea.ParseDuration / (double)ea.Duration * 100.0 : 0.0), ea.FileDuration, ea.FileParseDuration);
 		}
 
 		public DCompilerConfiguration() {
@@ -151,7 +148,7 @@ namespace MonoDevelop.D.Building
 			HadInitialParse = o.HadInitialParse;
 		}
 
-		public void ReadFrom (System.Xml.XmlReader x)
+		public void ReadFrom (XmlReader x)
 		{
 			XmlReader s = null;
 
@@ -211,7 +208,7 @@ namespace MonoDevelop.D.Building
 				}
 		}
 
-		public void SaveTo (System.Xml.XmlWriter x)
+		public void SaveTo (XmlWriter x)
 		{
 			x.WriteStartElement ("BinaryPath");
 			x.WriteCData (BinPath);
@@ -282,7 +279,7 @@ namespace MonoDevelop.D.Building
 			ReleaseArguments.CopyFrom (o.ReleaseArguments);
 		}
 
-		public void SaveTo (System.Xml.XmlWriter x)
+		public void SaveTo (XmlWriter x)
 		{
 			x.WriteAttributeString ("Target", TargetType.ToString ());
 
@@ -299,7 +296,7 @@ namespace MonoDevelop.D.Building
 			x.WriteEndElement ();
 		}
 
-		public bool LoadFrom (DCompilerConfiguration cmpCfg,System.Xml.XmlReader x)
+		public bool LoadFrom (DCompilerConfiguration cmpCfg,XmlReader x)
 		{
 			if (x.ReadState == ReadState.Initial)
 				x.Read ();

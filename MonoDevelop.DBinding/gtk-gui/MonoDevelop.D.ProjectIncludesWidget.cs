@@ -31,9 +31,7 @@ namespace MonoDevelop.D
 			// Container child table2.Gtk.Table+TableChild
 			this.GtkScrolledWindow1 = new global::Gtk.ScrolledWindow ();
 			global::Gtk.Tooltips w1 = new Gtk.Tooltips ();
-			w1.SetTip (this.GtkScrolledWindow1, "Line-separated list of paths where the compiler (and the code completion engine!)" +
-			" shall look in to resolve imports.", "Line-separated list of paths where the compiler (and the code completion engine!)" +
-			" shall look in to resolve imports.");
+			w1.SetTip (this.GtkScrolledWindow1, "Line-separated list of paths where the compiler (and the code completion engine!) shall look in to resolve imports.", "Line-separated list of paths where the compiler (and the code completion engine!) shall look in to resolve imports.");
 			this.GtkScrolledWindow1.Name = "GtkScrolledWindow1";
 			this.GtkScrolledWindow1.ShadowType = ((global::Gtk.ShadowType)(1));
 			// Container child GtkScrolledWindow1.Gtk.Container+ContainerChild
@@ -50,7 +48,7 @@ namespace MonoDevelop.D
 			this.label14 = new global::Gtk.Label ();
 			this.label14.Name = "label14";
 			this.label14.Xalign = 0F;
-			this.label14.LabelProp = global::MonoDevelop.Core.GettextCatalog.GetString ("Note: Relative paths will be related to the project\'s base directory!");
+			this.label14.LabelProp = global::MonoDevelop.Core.GettextCatalog.GetString ("Note: Relative paths will be related to the project's base directory!");
 			this.table2.Add (this.label14);
 			global::Gtk.Table.TableChild w4 = ((global::Gtk.Table.TableChild)(this.table2 [this.label14]));
 			w4.YOptions = ((global::Gtk.AttachOptions)(4));

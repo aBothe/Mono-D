@@ -26,8 +26,6 @@
 using System;
 using MonoDevelop.D.Projects;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using MonoDevelop.Projects;
 using MonoDevelop.D.Building;
 using System.IO;
 

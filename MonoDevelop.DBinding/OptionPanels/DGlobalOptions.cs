@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using MonoDevelop.Ide.Gui.Dialogs;
+﻿using MonoDevelop.Ide.Gui.Dialogs;
 using MonoDevelop.D.Building;
 using MonoDevelop.D.Formatting;
 using D_Parser.Misc;

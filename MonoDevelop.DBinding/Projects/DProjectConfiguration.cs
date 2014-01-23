@@ -5,8 +5,6 @@ using MonoDevelop.Core.Serialization;
 using MonoDevelop.D.Building;
 using MonoDevelop.Projects;
 using MonoDevelop.Core;
-using MonoDevelop.D.Profiler;
-using MonoDevelop.D.Profiler.Commands;
 using System.Collections;
 using MonoDevelop.D.Projects.Dub;
 

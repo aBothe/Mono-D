@@ -1,7 +1,5 @@
 using System;
 using MonoDevelop.Ide.Gui;
-using MonoDevelop.D.Parser;
-using D_Parser.Resolver.TypeResolution;
 using D_Parser.Dom.Statements;
 using D_Parser.Dom;
 using D_Parser.Resolver;
@@ -9,14 +7,10 @@ using System.Text;
 using MonoDevelop.Ide;
 using MonoDevelop.Core;
 using D_Parser.Parser;
-using ICSharpCode.NRefactory.TypeSystem;
-using System.Collections.Generic;
 using D_Parser.Resolver.ExpressionSemantics;
 using Mono.TextEditor;
 using D_Parser.Dom.Expressions;
 using System.Threading;
-using D_Parser.Misc;
-
 namespace MonoDevelop.D
 {
 	public class ExpressionEvaluationPad : AbstractPadContent
@@ -192,7 +186,7 @@ namespace MonoDevelop.D
 				BuildModuleCode(sb, ds.Definition);
 			}
 			else if (result is ErrorValue)
-				sb.Append((result as ISymbolValue).ToString());
+				sb.Append(result.ToString());
 			else if (result is ISymbolValue)
 				sb.Append((result as ISymbolValue).ToCode());
 			else if (result is IStatement)

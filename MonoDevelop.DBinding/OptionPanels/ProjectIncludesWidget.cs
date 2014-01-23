@@ -1,10 +1,6 @@
 using System;
-using MonoDevelop.D.Building;
 using MonoDevelop.Core;
 using MonoDevelop.D.Projects;
-using D_Parser.Misc;
-using System.Linq;
-
 namespace MonoDevelop.D
 {
 	[System.ComponentModel.ToolboxItem(true)]
@@ -53,7 +49,7 @@ namespace MonoDevelop.D
 			}
 		}
 
-		protected void OnButtonAddIncludeClicked(object sender, System.EventArgs e)
+		protected void OnButtonAddIncludeClicked(object sender, EventArgs e)
 		{
 			var dialog = new Gtk.FileChooserDialog(
 				"Select D Source Folder",

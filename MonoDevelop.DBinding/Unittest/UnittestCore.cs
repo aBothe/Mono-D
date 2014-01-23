@@ -13,19 +13,12 @@ using MonoDevelop.D.Projects;
 using MonoDevelop.D.Building;
 using MonoDevelop.Core;
 using MonoDevelop.Ide.Gui;
-using System.Text;
-using System.Threading;
 using System.Collections.Generic;
 using System.IO;
-using MonoDevelop.Core.ProgressMonitoring;
 using MonoDevelop.Core.Execution;
-using GLib;
-using System.Text.RegularExpressions;
-
-
 namespace MonoDevelop.D.Unittest
 {
-	public class UnittestCore
+	public static class UnittestCore
 	{
 		private static ProgressMonitorManager manager;
 		private static IProgressMonitor monitor;
@@ -105,8 +98,8 @@ namespace MonoDevelop.D.Unittest
 		static string GetExecDir(DProject project, DProjectConfiguration conf)
 		{
 				string execDir = conf.OutputDirectory.FullPath;
-				if(Directory.Exists(execDir) == false)
-					execDir = project.BaseDirectory.FullPath;
+			if (!Directory.Exists (execDir))
+				execDir = project.BaseDirectory.FullPath;
 			return execDir;
 		}
 	}

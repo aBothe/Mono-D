@@ -8,7 +8,6 @@
 //
 // Copyright (c) 2013
 
-using System;
 
 namespace MonoDevelop.D.Unittest.Commands
 {

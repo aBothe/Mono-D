@@ -111,9 +111,7 @@ namespace MonoDevelop.D.Building
 				LoadDefaultDmd2Paths (_instance.GetCompiler ("DMD2"));
 			}
 
-			Ide.IdeApp.Workbench.RootWindow.Destroyed += (o, ea) => {
-				_instance.Save();
-			};
+			Ide.IdeApp.Workbench.RootWindow.Destroyed += (o, ea) => _instance.Save ();
 
 			// Init global parse cache
 			_instance.UpdateParseCachesAsync();
@@ -350,7 +348,7 @@ namespace MonoDevelop.D.Building
 		}
 	}
 	
-	public class OS
+	public static class OS
 	{
 		public static bool IsWindows {
 			get{ return !IsMac && !IsLinux;} // acceptable here..	

@@ -34,11 +34,6 @@ using MonoDevelop.Core;
 using MonoDevelop.Ide.FindInFiles;
 using System.Threading;
 using MonoDevelop.D.Resolver;
-using D_Parser.Dom.Expressions;
-using D_Parser.Resolver.ExpressionSemantics;
-using D_Parser.Completion;
-using D_Parser.Parser;
-
 namespace MonoDevelop.D.Refactoring
 {
 	class RefactoringCommandCapsule
@@ -84,7 +79,7 @@ namespace MonoDevelop.D.Refactoring
 		public static void GotoDeclaration(INode n)
 		{
 			if (n != null && n.NodeRoot is DModule)
-				MonoDevelop.Ide.IdeApp.Workbench.OpenDocument(
+				IdeApp.Workbench.OpenDocument(
 					((DModule)n.NodeRoot).FileName,
 					n.NameLocation.Line,
 					n.NameLocation.Column);
@@ -119,7 +114,7 @@ namespace MonoDevelop.D.Refactoring
 				foreach (var res in ClassInterfaceDerivativeFinder.SearchForClassDerivatives(t_ as TemplateIntermediateType, ctxt)) {
 					var dc = res.Definition;
 					var file = (dc.NodeRoot as DModule).FileName;
-					var targetDoc = Ide.TextFileProvider.Instance.GetTextEditorData(new FilePath(file));
+					var targetDoc = TextFileProvider.Instance.GetTextEditorData(new FilePath(file));
 
 					monitor.ReportResult(new SearchResult(new FileProvider(file, IdeApp.Workspace.GetProjectContainingFile(file)),
 						targetDoc.LocationToOffset(dc.NameLocation.Line,dc.NameLocation.Column),dc.Name.Length));

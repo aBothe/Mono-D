@@ -4,11 +4,9 @@ using D_Parser.Completion;
 using D_Parser.Dom;
 using D_Parser.Dom.Expressions;
 using D_Parser.Resolver;
-using ICSharpCode.NRefactory.Completion;
 using MonoDevelop.D.Resolver;
 using MonoDevelop.Ide.CodeCompletion;
 using MonoDevelop.Ide.Gui;
-using D_Parser.Parser;
 using D_Parser.Resolver.TypeResolution;
 
 namespace MonoDevelop.D.Completion
@@ -30,8 +28,8 @@ namespace MonoDevelop.D.Completion
 			{
 				var tir = cur as DSymbol;
 
-				if (tir.Definition is DClassLike && ((DClassLike)tir.Definition).TemplateParameters!=null)
-					return ((DClassLike)tir.Definition).TemplateParameters;
+				if (tir.Definition is DClassLike && tir.Definition.TemplateParameters!=null)
+					return tir.Definition.TemplateParameters;
 
 				var dm = tir.Definition as DMethod;
 				if (dm != null)
@@ -109,7 +107,7 @@ namespace MonoDevelop.D.Completion
 			selIndex = args.CurrentlyCalledMethod;
 		}
 		
-		public static string GetNodeParamString (D_Parser.Dom.INode node)
+		public static string GetNodeParamString (INode node)
 		{
 			var dm = node as DMethod;
 			if (dm != null) {

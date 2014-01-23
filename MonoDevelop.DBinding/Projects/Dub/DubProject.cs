@@ -3,16 +3,9 @@ using MonoDevelop.Projects;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
 using System.Text;
 using MonoDevelop.D.Building;
-using System.Text.RegularExpressions;
-using MonoDevelop.Ide.TypeSystem;
-using MonoDevelop.Components.Commands;
-using MonoDevelop.Ide;
-using MonoDevelop.Ide.Gui;
 using MonoDevelop.Core.Execution;
 
 namespace MonoDevelop.D.Projects.Dub

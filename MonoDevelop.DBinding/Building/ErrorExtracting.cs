@@ -1,14 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.IO;
-using System.CodeDom.Compiler;
 using MonoDevelop.Core;
 using MonoDevelop.Projects;
 using MonoDevelop.D.Projects;
-using D_Parser.Misc;
 using D_Parser.Resolver;
 using D_Parser.Dom;
 
@@ -17,7 +12,7 @@ namespace MonoDevelop.D.Building
     /// <summary>
     /// Contains methods which care about finding and extracting compiler errors from output strings
     /// </summary>
-    class ErrorExtracting
+    static class ErrorExtracting
     {
         static Regex dmdCompileRegex = new Regex(@"\s*(?<file>.*)\((?<line>\d*)\):\s*(?<type>Error|Warning|Note):(\s*)(?<message>.*)",
             RegexOptions.Compiled | RegexOptions.ExplicitCapture);

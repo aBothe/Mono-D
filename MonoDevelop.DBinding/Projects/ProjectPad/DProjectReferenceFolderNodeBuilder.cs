@@ -26,14 +26,10 @@
 
 using MonoDevelop.Ide.Gui.Components;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using MonoDevelop.Core;
 using MonoDevelop.Ide.Gui;
 using MonoDevelop.Projects;
 using MonoDevelop.Ide;
-using System.Collections.Specialized;
 using MonoDevelop.Components.Commands;
 using MonoDevelop.Ide.Commands;
 

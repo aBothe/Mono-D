@@ -1,7 +1,5 @@
-using System;
 using MonoDevelop.Components.Commands;
 using MonoDevelop.Ide;
-using MonoDevelop.Projects;
 using MonoDevelop.Ide.Gui;
 using MonoDevelop.D.Profiler.Gui;
 using MonoDevelop.D.Projects;
@@ -18,7 +16,7 @@ namespace MonoDevelop.D.Profiler.Commands
 				if(project == null)
 					return;
 				
-				Pad pad =Ide.IdeApp.Workbench.GetPad<DProfilerPad>();
+				Pad pad =IdeApp.Workbench.GetPad<DProfilerPad>();
 				if(pad == null || !(pad.Content is DProfilerPad))
 					return;
 					

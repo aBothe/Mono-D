@@ -1,7 +1,5 @@
 ﻿using MonoDevelop.Projects;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using MonoDevelop.D.Building;
 using MonoDevelop.Core;
@@ -14,7 +12,7 @@ namespace MonoDevelop.D.Projects.Dub
 	{
 		public static readonly DubBuilder Instance = new DubBuilder();
 
-		public void BuildCommonArgAppendix(StringBuilder sr,DubProject prj, ConfigurationSelector sel)
+		public static void BuildCommonArgAppendix(StringBuilder sr,DubProject prj, ConfigurationSelector sel)
 		{
 			sr.Append (' ').Append(prj.packageName);
 
@@ -50,7 +48,7 @@ namespace MonoDevelop.D.Projects.Dub
 
 			var args = new StringBuilder("build");
 
-			Instance.BuildCommonArgAppendix(args, prj, sel);
+			BuildCommonArgAppendix(args, prj, sel);
 
 			string output;
 			string errDump;
@@ -82,7 +80,7 @@ namespace MonoDevelop.D.Projects.Dub
 			var sr = new StringBuilder();
 			if (!isDebug) {
 				sr.Append ("run");
-				Instance.BuildCommonArgAppendix (sr, prj, configuration);
+				BuildCommonArgAppendix (sr, prj, configuration);
 			}
 
 			try

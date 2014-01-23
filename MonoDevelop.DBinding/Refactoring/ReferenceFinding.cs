@@ -70,10 +70,10 @@ namespace MonoDevelop.D.Refactoring
 				foreach (var p in project.GetSourcePaths(IdeApp.Workspace.ActiveConfiguration))
 					modules.AddRange (GlobalParseCache.EnumModulesRecursively (p, null));
 			else
-				modules.Add ((Ide.IdeApp.Workbench.ActiveDocument.ParsedDocument as MonoDevelop.D.Parser.ParsedDModule).DDom);
+				modules.Add ((IdeApp.Workbench.ActiveDocument.ParsedDocument as MonoDevelop.D.Parser.ParsedDModule).DDom);
 
 			if (monitor != null)
-				monitor.BeginStepTask("Scan for references", modules.Count(), 1);
+				monitor.BeginStepTask ("Scan for references", modules.Count, 1);
 
 			List<ISyntaxRegion> references = null;
 			var ctxt = ResolutionContext.Create (parseCache, null, null);
@@ -96,7 +96,7 @@ namespace MonoDevelop.D.Refactoring
 					references.Sort(new IdLocationComparer());
 
 					// Get actual document code
-					var targetDoc = Ide.TextFileProvider.Instance.GetTextEditorData(new FilePath(mod.FileName));
+					var targetDoc = TextFileProvider.Instance.GetTextEditorData(new FilePath(mod.FileName));
 
 					foreach (var reference in references)
 					{
@@ -105,7 +105,7 @@ namespace MonoDevelop.D.Refactoring
 						if (reference is AbstractTypeDeclaration)
 							loc = ((AbstractTypeDeclaration)reference).NonInnerTypeDependendLocation;
 						else if (reference is IExpression)
-							loc = ((IExpression)reference).Location;
+							loc = reference.Location;
 						else
 							continue;
 

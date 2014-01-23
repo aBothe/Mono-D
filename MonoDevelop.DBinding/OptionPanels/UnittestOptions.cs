@@ -25,7 +25,6 @@
 // THE SOFTWARE.
 using System;
 using MonoDevelop.Ide.Gui.Dialogs;
-using MonoDevelop.D.Building;
 using MonoDevelop.D.Unittest;
 
 namespace MonoDevelop.D.OptionPanels

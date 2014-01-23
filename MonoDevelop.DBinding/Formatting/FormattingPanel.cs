@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using MonoDevelop.Ide.Gui.Dialogs;
+﻿using MonoDevelop.Ide.Gui.Dialogs;
 using Gtk;
 
 namespace MonoDevelop.D.Formatting

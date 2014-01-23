@@ -1,4 +1,3 @@
-using System;
 using MonoDevelop.D.Building;
 using MonoDevelop.Ide.Gui.Dialogs;
 

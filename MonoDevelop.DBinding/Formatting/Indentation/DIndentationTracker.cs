@@ -6,10 +6,10 @@ namespace MonoDevelop.D.Formatting.Indentation
 {
 	public class DIndentationTracker: IIndentationTracker
 	{
-		Mono.TextEditor.TextEditorData data;
+		TextEditorData data;
 		DocumentStateTracker<DIndentEngine> stateTracker;
 
-		public DIndentationTracker (Mono.TextEditor.TextEditorData data, DocumentStateTracker<DIndentEngine> stateTracker)
+		public DIndentationTracker (TextEditorData data, DocumentStateTracker<DIndentEngine> stateTracker)
 		{
 			this.data = data;
 			this.stateTracker = stateTracker;

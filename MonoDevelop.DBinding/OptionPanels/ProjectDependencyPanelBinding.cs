@@ -1,4 +1,3 @@
-using System;
 using MonoDevelop.Ide.Gui.Dialogs;
 using Gtk;
 using MonoDevelop.D.Projects;

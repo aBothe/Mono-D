@@ -1,7 +1,6 @@
 using System;
 using MonoDevelop.Ide.Gui.Content;
 using System.Threading;
-using MonoDevelop.Ide;
 using MonoDevelop.Core;
 
 namespace MonoDevelop.D.Gui

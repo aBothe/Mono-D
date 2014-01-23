@@ -15,7 +15,6 @@ using MonoDevelop.DesignerSupport;
 using MonoDevelop.Ide;
 using MonoDevelop.Ide.Gui;
 using MonoDevelop.Ide.Gui.Content;
-using MonoDevelop.Refactoring;
 
 namespace MonoDevelop.D.Gui
 {
@@ -58,7 +57,7 @@ namespace MonoDevelop.D.Gui
 			}
 		}
 
-		void MonoDevelop.DesignerSupport.IOutlinedDocument.ReleaseOutlineWidget()
+		void IOutlinedDocument.ReleaseOutlineWidget()
 		{
 			if (TreeView == null)
 				return;
@@ -78,7 +77,7 @@ namespace MonoDevelop.D.Gui
 		#endregion
 
 		#region GUI low level
-		public Gtk.Widget GetOutlineWidget()
+		public Widget GetOutlineWidget()
 		{
 			if (TreeView != null)
 				return TreeView;
@@ -136,7 +135,7 @@ namespace MonoDevelop.D.Gui
 		void nameCell_Edited(object o, EditedArgs args)
 		{
 			TreeIter iter;
-			TreeStore.GetIter(out iter, new Gtk.TreePath(args.Path));
+			TreeStore.GetIter(out iter, new TreePath(args.Path));
 
 			var n=TreeStore.GetValue(iter, 0) as INode;
 
@@ -156,7 +155,7 @@ namespace MonoDevelop.D.Gui
 			}
 		}
 
-		public IEnumerable<Gtk.Widget> GetToolbarWidgets()
+		public IEnumerable<Widget> GetToolbarWidgets()
 		{
 			return null;
 		}
@@ -168,10 +167,10 @@ namespace MonoDevelop.D.Gui
 			if (o is DNode)
 			{
 				var icon=DCompletionData.GetNodeIcon(o as DNode);
-				if(icon!=(Core.IconId)null)
+				if(icon!=(IconId)null)
 					pixRenderer.Pixbuf = ImageService.GetPixbuf(icon.Name, IconSize.Menu);
 			}
-			else if (o is D_Parser.Dom.Statements.StatementContainingStatement)
+			else if (o is StatementContainingStatement)
 			{
 				pixRenderer.Pixbuf = ImageService.GetPixbuf("gtk-add", IconSize.Menu);
 			}
@@ -185,17 +184,23 @@ namespace MonoDevelop.D.Gui
 
 			var dm = n as DMethod;
 			if (dm != null) {
-				if (dm.SpecialType == DMethod.MethodType.Unittest)
-					label = "(Unittest)";
-				else if (dm.SpecialType == DMethod.MethodType.ClassInvariant)
-					label = "(Class Invariant)";
-				else if (dm.SpecialType == DMethod.MethodType.Allocator)
-					label = "(Class Allocator)";
-				else if (dm.SpecialType == DMethod.MethodType.Deallocator)
-					label = "(Class Deallocator)";
-				else {
-					if (DCompilerService.Instance.Outline.ShowFuncParams)
-						label = String.Format ("{0}({1})", label, FunctionParamsToString (dm.Parameters));
+				switch (dm.SpecialType) {
+					case DMethod.MethodType.Unittest:
+						label = "(Unittest)";
+						break;
+					case DMethod.MethodType.ClassInvariant:
+						label = "(Class Invariant)";
+						break;
+					case DMethod.MethodType.Allocator:
+						label = "(Class Allocator)";
+						break;
+					case DMethod.MethodType.Deallocator:
+						label = "(Class Deallocator)";
+						break;
+					default:
+						if (DCompilerService.Instance.Outline.ShowFuncParams)
+							label = String.Format ("{0}({1})", label, FunctionParamsToString (dm.Parameters));
+						break;
 				}
 			}
 

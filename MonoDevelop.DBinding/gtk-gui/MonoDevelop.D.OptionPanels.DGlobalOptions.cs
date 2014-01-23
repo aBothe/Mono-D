@@ -54,9 +54,7 @@ namespace MonoDevelop.D.OptionPanels
 			w2.YOptions = ((global::Gtk.AttachOptions)(4));
 			// Container child table1.Gtk.Table+TableChild
 			this.check_EnableSuggestionMode = new global::Gtk.CheckButton ();
-			w1.SetTip (this.check_EnableSuggestionMode, "If true, the selected text in the completion box will not be inserted into the co" +
-			"de unless the <Return> key has been pressed.", "If true, the selected text in the completion box will not be inserted into the co" +
-			"de unless the <Return> key has been pressed.");
+			w1.SetTip (this.check_EnableSuggestionMode, "If true, the selected text in the completion box will not be inserted into the code unless the <Return> key has been pressed.", "If true, the selected text in the completion box will not be inserted into the code unless the <Return> key has been pressed.");
 			this.check_EnableSuggestionMode.CanFocus = true;
 			this.check_EnableSuggestionMode.Name = "check_EnableSuggestionMode";
 			this.check_EnableSuggestionMode.Label = global::MonoDevelop.Core.GettextCatalog.GetString ("Enable suggestive completion mode");
@@ -114,8 +112,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.check_IndentInsteadFormatCode = new global::Gtk.CheckButton ();
 			this.check_IndentInsteadFormatCode.CanFocus = true;
 			this.check_IndentInsteadFormatCode.Name = "check_IndentInsteadFormatCode";
-			this.check_IndentInsteadFormatCode.Label = global::MonoDevelop.Core.GettextCatalog.GetString ("Only indent code lines instead of rearrange code parts\r\n(because the actual forma" +
-			"tter isn\'t finished currently)");
+			this.check_IndentInsteadFormatCode.Label = global::MonoDevelop.Core.GettextCatalog.GetString ("Only indent code lines instead of rearrange code parts\n(because the actual formatter isn't finished currently)");
 			this.check_IndentInsteadFormatCode.Active = true;
 			this.check_IndentInsteadFormatCode.DrawIndicator = true;
 			this.check_IndentInsteadFormatCode.UseUnderline = true;
@@ -181,8 +178,8 @@ namespace MonoDevelop.D.OptionPanels
 			w11.Fill = false;
 			// Container child hbox2.Gtk.Box+BoxChild
 			this.combo_ExpansionBehaviour = global::Gtk.ComboBox.NewText ();
-			this.combo_ExpansionBehaviour.AppendText (global::MonoDevelop.Core.GettextCatalog.GetString ("Collapse All\r"));
-			this.combo_ExpansionBehaviour.AppendText (global::MonoDevelop.Core.GettextCatalog.GetString ("Leave expanded nodes expanded\r"));
+			this.combo_ExpansionBehaviour.AppendText (global::MonoDevelop.Core.GettextCatalog.GetString ("Collapse All"));
+			this.combo_ExpansionBehaviour.AppendText (global::MonoDevelop.Core.GettextCatalog.GetString ("Leave expanded nodes expanded"));
 			this.combo_ExpansionBehaviour.AppendText (global::MonoDevelop.Core.GettextCatalog.GetString ("Expand All"));
 			this.combo_ExpansionBehaviour.Name = "combo_ExpansionBehaviour";
 			this.combo_ExpansionBehaviour.Active = 0;

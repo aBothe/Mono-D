@@ -4,13 +4,11 @@ using System.IO;
 using System.Text.RegularExpressions;
 
 using D_Parser.Dom;
-using D_Parser.Misc;
 using D_Parser.Misc.Mangling;
 using D_Parser.Parser;
 using D_Parser.Resolver;
 using D_Parser.Resolver.TypeResolution;
 using MonoDevelop.D.Building;
-using MonoDevelop.D.Profiler.Commands;
 using MonoDevelop.D.Profiler.Gui;
 using MonoDevelop.D.Refactoring;
 using MonoDevelop.D.Projects;
@@ -36,14 +34,14 @@ namespace MonoDevelop.D.Profiler
 			
 			if (config == null || 
 			    config.CompileTarget != DCompileTarget.Executable || 
-			    project.Compiler.HasProfilerSupport == false)
+			    !project.Compiler.HasProfilerSupport)
 			{
 				return null;
 			}
 			
 			
 			string file = Path.Combine(config.OutputDirectory, "trace.log");
-			if(File.Exists(file) == false)
+			if (!File.Exists (file))
 				return null;
 			return file;
 		}

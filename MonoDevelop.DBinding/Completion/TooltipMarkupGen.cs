@@ -31,7 +31,6 @@ using Mono.TextEditor.Highlighting;
 using D_Parser.Parser;
 using Mono.TextEditor;
 using MonoDevelop.D.Highlighting;
-using D_Parser.Resolver;
 using D_Parser.Dom;
 
 namespace MonoDevelop.D.Completion

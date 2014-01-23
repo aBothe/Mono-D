@@ -1,14 +1,10 @@
 ﻿using D_Parser.Dom;
 using D_Parser.Dom.Statements;
-using D_Parser.Resolver;
 using ICSharpCode.NRefactory.TypeSystem;
-using MonoDevelop.D.Projects;
 using MonoDevelop.Ide.TypeSystem;
 using System.Collections.Generic;
 using D_Parser.Misc;
 using MonoDevelop.D.Refactoring;
-using System.Reflection;
-
 namespace MonoDevelop.D.Parser
 {
 	public class ParsedDModule : ParsedDocument

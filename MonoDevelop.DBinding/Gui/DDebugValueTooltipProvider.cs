@@ -32,10 +32,7 @@ using System.Collections.Generic;
 using MonoDevelop.Debugger;
 using MonoDevelop.SourceEditor;
 using Mono.Debugging.Client;
-using MonoDevelop.D.Parser;
 using D_Parser.Resolver.TypeResolution;
-using MonoDevelop.D.Completion;
-using D_Parser.Resolver;
 using MonoDevelop.D.Resolver;
 using D_Parser.Dom;
 
@@ -58,7 +55,7 @@ namespace MonoDevelop.D.Gui
 		
 		#region ITooltipProvider implementation 
 		
-		public override TooltipItem GetItem (Mono.TextEditor.TextEditor editor, int offset)
+		public override TooltipItem GetItem (TextEditor editor, int offset)
 		{
 			if (offset >= editor.Document.TextLength)
 				return null;
@@ -89,7 +86,7 @@ namespace MonoDevelop.D.Gui
 					return null;
 				editorData.CaretOffset = offset;
 				var edLoc = ed.OffsetToLocation(offset);
-				editorData.CaretLocation = new D_Parser.Dom.CodeLocation(edLoc.Column,edLoc.Line);
+				editorData.CaretLocation = new CodeLocation(edLoc.Column,edLoc.Line);
 
 				var o = DResolver.GetScopedCodeObject(editorData);
 
@@ -116,12 +113,12 @@ namespace MonoDevelop.D.Gui
 			return new TooltipItem (val, startOffset, length);
 		}
 		
-		protected override Gtk.Window CreateTooltipWindow (Mono.TextEditor.TextEditor editor, int offset, Gdk.ModifierType modifierState, TooltipItem item)
+		protected override Gtk.Window CreateTooltipWindow (TextEditor editor, int offset, Gdk.ModifierType modifierState, TooltipItem item)
 		{
 			return new DebugValueWindow (editor, offset, DebuggingService.CurrentFrame, (ObjectValue) item.Item, null);
 		}
 		
-		public override bool IsInteractive (Mono.TextEditor.TextEditor editor, Gtk.Window tipWindow)
+		public override bool IsInteractive (TextEditor editor, Gtk.Window tipWindow)
 		{
 			return true;
 		}

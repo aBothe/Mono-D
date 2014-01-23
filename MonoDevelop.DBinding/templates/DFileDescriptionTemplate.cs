@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using D_Parser.Dom;
 using MonoDevelop.Core;
 using MonoDevelop.D.Formatting;

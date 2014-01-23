@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Text;
-
 using D_Parser.Dom;
 using D_Parser.Formatting;
 using D_Parser.Parser;
@@ -45,8 +42,8 @@ namespace MonoDevelop.D.Formatting
 			}
 			else
 			{
-				policy = MonoDevelop.Projects.Policies.PolicyService.GetDefaultPolicy<DFormattingPolicy> (Indentation.DTextEditorIndentation.mimeTypes);
-				textStyle = MonoDevelop.Projects.Policies.PolicyService.GetDefaultPolicy<TextStylePolicy> (Indentation.DTextEditorIndentation.mimeTypes);
+				policy = PolicyService.GetDefaultPolicy<DFormattingPolicy> (Indentation.DTextEditorIndentation.mimeTypes);
+				textStyle = PolicyService.GetDefaultPolicy<TextStylePolicy> (Indentation.DTextEditorIndentation.mimeTypes);
 			}
 			
 			if(IndentCorrectionOnly)
@@ -65,13 +62,13 @@ namespace MonoDevelop.D.Formatting
 			if(dpd == null)
 				return;
 			
-			var formattingVisitor = new DFormattingVisitor(policy.Options, new DocAdapt(doc), dpd.DDom as D_Parser.Dom.DModule, new TextStyleAdapter(textStyle));
+			var formattingVisitor = new DFormattingVisitor(policy.Options, new DocAdapt(doc), dpd.DDom, new TextStyleAdapter(textStyle));
 			
 			formattingVisitor.CheckFormattingBoundaries = true;
 			var dl = doc.OffsetToLocation(startOffset);
-			formattingVisitor.FormattingStartLocation = new D_Parser.Dom.CodeLocation(dl.Column, dl.Line);
+			formattingVisitor.FormattingStartLocation = new CodeLocation(dl.Column, dl.Line);
 			dl = doc.OffsetToLocation(endOffset);
-			formattingVisitor.FormattingEndLocation = new D_Parser.Dom.CodeLocation(dl.Column, dl.Line);
+			formattingVisitor.FormattingEndLocation = new CodeLocation(dl.Column, dl.Line);
 			
 			formattingVisitor.WalkThroughAst();
 			
@@ -156,7 +153,7 @@ namespace MonoDevelop.D.Formatting
 				}
 			}
 			
-			public int ToOffset(D_Parser.Dom.CodeLocation loc)
+			public int ToOffset(CodeLocation loc)
 			{
 				return doc.LocationToOffset(loc.Line, loc.Column);
 			}
@@ -166,10 +163,10 @@ namespace MonoDevelop.D.Formatting
 				return doc.LocationToOffset(line,column);
 			}
 			
-			public D_Parser.Dom.CodeLocation ToLocation(int offset)
+			public CodeLocation ToLocation(int offset)
 			{
 				var dl = doc.OffsetToLocation(offset);
-				return new D_Parser.Dom.CodeLocation(dl.Column, dl.Line);
+				return new CodeLocation(dl.Column, dl.Line);
 			}
 			
 			public int LineCount {
@@ -200,7 +197,7 @@ namespace MonoDevelop.D.Formatting
 				return data.Text;
 			}
 			
-			var ast = DParser.ParseString(input, false, true) as DModule;
+			var ast = DParser.ParseString (input, false, true);
 			var formattingVisitor = new DFormattingVisitor(policy.Options, new DocAdapt(data.Document), ast, new TextStyleAdapter(textPolicy));
 			
 			// Only clip to a region if it's necessary
@@ -208,9 +205,9 @@ namespace MonoDevelop.D.Formatting
 			{
 				formattingVisitor.CheckFormattingBoundaries = true;
 				var dl = data.Document.OffsetToLocation(startOffset);
-				formattingVisitor.FormattingStartLocation = new D_Parser.Dom.CodeLocation(dl.Column, dl.Line);
+				formattingVisitor.FormattingStartLocation = new CodeLocation(dl.Column, dl.Line);
 				dl = data.Document.OffsetToLocation(endOffset);
-				formattingVisitor.FormattingEndLocation = new D_Parser.Dom.CodeLocation(dl.Column, dl.Line);
+				formattingVisitor.FormattingEndLocation = new CodeLocation(dl.Column, dl.Line);
 			}
 			
 			formattingVisitor.WalkThroughAst();

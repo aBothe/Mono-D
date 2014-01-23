@@ -7,10 +7,7 @@ using MonoDevelop.Ide.TypeSystem;
 using MonoDevelop.Projects;
 using System.Collections.Generic;
 using D_Parser.Misc;
-using MonoDevelop.D.Building;
 using MonoDevelop.D.Projects;
-using D_Parser.Resolver;
-
 namespace MonoDevelop.D.Parser
 {
 	/// <summary>
@@ -326,7 +323,7 @@ namespace MonoDevelop.D.Parser
 			return null;
 		}
 		*/
-		public static string BuildTypeNamespace(D_Parser.Dom.INode n)
+		public static string BuildTypeNamespace(INode n)
 		{
 			return (n.NodeRoot as DModule).ModuleName;
 		}

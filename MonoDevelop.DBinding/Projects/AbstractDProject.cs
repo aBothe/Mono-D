@@ -2,14 +2,12 @@
 using D_Parser.Misc;
 using D_Parser.Parser;
 using MonoDevelop.D.Building;
-using MonoDevelop.D.Resolver;
 using MonoDevelop.Projects;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using MonoDevelop.Core;
 using System.Reflection;
-using System.Collections.ObjectModel;
 using MonoDevelop.Core.Execution;
 
 namespace MonoDevelop.D.Projects
@@ -144,7 +142,7 @@ namespace MonoDevelop.D.Projects
 				{
 					var r = new MutableRootPackage();
 					foreach (var f in hasFileLinks)
-						r.AddModule(DParser.ParseFile(f.FilePath) as DModule);
+						r.AddModule (DParser.ParseFile (f.FilePath));
 					fileLinkModulesRoot = r;
 				}) { IsBackground = true }.Start();
 		}

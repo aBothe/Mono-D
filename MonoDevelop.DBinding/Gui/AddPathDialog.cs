@@ -33,10 +33,6 @@
 
 
 using System;
-using System.IO;
-
-using Mono.Addins;
-
 namespace MonoDevelop.D
 {
 	public partial class AddPathDialog : Gtk.Dialog

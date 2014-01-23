@@ -7,18 +7,10 @@ using MonoDevelop.D.Completion;
 using MonoDevelop.D.Parser;
 using MonoDevelop.D.Resolver;
 using MonoDevelop.Ide;
-using Pango;
-using System.Collections.Generic;
 using MonoDevelop.Ide.CodeCompletion;
 using System;
 using D_Parser.Resolver;
 using D_Parser.Resolver.TypeResolution;
-using MonoDevelop.D.Highlighting;
-using Mono.TextEditor.Highlighting;
-using System.Text;
-using System.Text.RegularExpressions;
-using D_Parser.Parser;
-
 namespace MonoDevelop.D.Gui
 {
 	/// <summary>
@@ -52,7 +44,7 @@ namespace MonoDevelop.D.Gui
 
 		#endregion
 
-		protected override Gtk.Window CreateTooltipWindow (Mono.TextEditor.TextEditor editor, int offset, Gdk.ModifierType modifierState, TooltipItem item)
+		protected override Window CreateTooltipWindow (TextEditor editor, int offset, Gdk.ModifierType modifierState, TooltipItem item)
 		{
 			var doc = IdeApp.Workbench.ActiveDocument;
 			if (doc == null)
@@ -83,7 +75,7 @@ namespace MonoDevelop.D.Gui
 			return result;
 		}
 
-		public override Gtk.Window ShowTooltipWindow (TextEditor editor, int offset, Gdk.ModifierType modifierState, int mouseX, int mouseY, TooltipItem item)
+		public override Window ShowTooltipWindow (TextEditor editor, int offset, Gdk.ModifierType modifierState, int mouseX, int mouseY, TooltipItem item)
 		{
 			var titems = (AbstractType[])item.Item;/*
 			if (lastNode != null && lastWindow != null && lastWindow.IsRealized && titem.Result != null && lastNode == titem.Result)
@@ -108,7 +100,7 @@ namespace MonoDevelop.D.Gui
 				p2 = editor.LocationToPoint (editor.OffsetToLocation(item.ItemSegment.EndOffset));
 			}
 
-			var caret = new Gdk.Rectangle ((int)p1.X - positionWidget.Allocation.X, (int)p2.Y - positionWidget.Allocation.Y, (int)(p2.X - p1.X), (int)editor.LineHeight);
+			var caret = new Gdk.Rectangle (p1.X - positionWidget.Allocation.X, p2.Y - positionWidget.Allocation.Y, (p2.X - p1.X), (int)editor.LineHeight);
 			tipWindow.ShowPopup (positionWidget, caret, PopupPosition.Top);
 			
 
@@ -155,7 +147,7 @@ namespace MonoDevelop.D.Gui
 				CaretLocation = new CodeLocation(offset - line.Offset, editor.OffsetToLineNumber(offset)),
 				ModuleCode = editor.Text,
 				ParseCache = codeCache,
-				SyntaxTree=ast as DModule
+				SyntaxTree = ast
 			};
 
 			// Let the engine build all contents

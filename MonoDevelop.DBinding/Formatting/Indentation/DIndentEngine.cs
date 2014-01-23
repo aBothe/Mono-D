@@ -1,5 +1,4 @@
-﻿using System;
-using D_Parser.Formatting;
+﻿using D_Parser.Formatting;
 using D_Parser.Formatting.Indent;
 using MonoDevelop.Ide.Gui.Content;
 
