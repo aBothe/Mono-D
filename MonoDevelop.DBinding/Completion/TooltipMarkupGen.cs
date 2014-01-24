@@ -60,9 +60,13 @@ namespace MonoDevelop.D.Completion
 					return;
 				}
 
-				summary = DDocToMarkup (desc.Substring (0, match.Index - 1)).Trim ();
-				if (string.IsNullOrWhiteSpace (summary))
+				if (match.Index < 1)
 					summary = null;
+				else {
+					summary = DDocToMarkup (desc.Substring (0, match.Index - 1)).Trim ();
+					if (string.IsNullOrWhiteSpace (summary))
+						summary = null;
+				}
 
 				int k = 0;
 				while ((k = match.Index + match.Length) < desc.Length) {
