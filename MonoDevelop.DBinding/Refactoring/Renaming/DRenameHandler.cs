@@ -1,5 +1,4 @@
 // by Alexander Bothe (info@alexanderbothe.com)
-using D_Parser.Dom;
 using MonoDevelop.Refactoring;
 
 namespace MonoDevelop.D.Refactoring

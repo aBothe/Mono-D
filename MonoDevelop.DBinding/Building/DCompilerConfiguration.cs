@@ -484,7 +484,7 @@ namespace MonoDevelop.D.Building
 		public string LinkerArguments;
 
 		/// <summary>
-		/// An argument string that is used for compiling & linking all project files together at once
+		/// An argument string that is used for compiling &amp; linking all project files together at once
 		/// </summary>
 		public string OneStepBuildArguments;
 		
