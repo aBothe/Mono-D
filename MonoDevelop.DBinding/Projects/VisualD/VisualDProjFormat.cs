@@ -123,8 +123,8 @@ namespace MonoDevelop.D.Projects.VisualD
 			VisualDProject prj = null;
 
 			using (var s = File.OpenText (file))
-			using (var r = new XmlTextReader (s))
-				prj = Read (file, r);
+				using (var r = new XmlTextReader (s))
+					prj = Read (file, r);
 
 			if (typeof(Project).IsSubclassOf (expectedType))
 				return prj;
