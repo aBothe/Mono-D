@@ -66,7 +66,7 @@ namespace MonoDevelop.D.Projects.Dub
 			}
 		}
 
-		static readonly char[] PathSep = new[] {Path.DirectorySeparatorChar};
+		static readonly char[] PathSep = {Path.DirectorySeparatorChar};
 		public static bool CanContainFile(string f)
 		{
 			var i= f.LastIndexOfAny(PathSep);
