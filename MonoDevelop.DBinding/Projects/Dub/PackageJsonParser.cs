@@ -11,10 +11,11 @@ namespace MonoDevelop.D.Projects.Dub
 	public class PackageJsonParser : IFileFormat
 	{
 		public const string PackageJsonFile = "package.json";
+		public const string DubJsonFile = "dub.json";
 
 		public bool CanReadFile(FilePath file, Type expectedObjectType)
 		{
-			return file.FileName == PackageJsonFile &&
+			return (file.FileName == DubJsonFile || file.FileName == PackageJsonFile) &&
 				(expectedObjectType.Equals(typeof(WorkspaceItem)) ||
 				expectedObjectType.Equals(typeof(SolutionEntityItem)));
 		}
@@ -41,7 +42,7 @@ namespace MonoDevelop.D.Projects.Dub
 
 		public FilePath GetValidFormatName(object obj, FilePath fileName)
 		{
-			return fileName.ParentDirectory.Combine(PackageJsonFile);
+			return fileName;
 		}
 
 		[ThreadStatic]
@@ -122,10 +123,14 @@ namespace MonoDevelop.D.Projects.Dub
 
 				if (sub != null)
 					sub.useOriginalBasePath = true;
-				var packageJsonToLoad = Path.Combine(defaultPackage.GetAbsPath(Building.ProjectBuilder.EnsureCorrectPathSeparators(dep.Path)), PackageJsonFile);
+				var packageDir = defaultPackage.GetAbsPath(Building.ProjectBuilder.EnsureCorrectPathSeparators(dep.Path));
+
 				if(sub != null)
 					sub.useOriginalBasePath = false;
-				if (File.Exists(packageJsonToLoad))
+
+				string packageJsonToLoad;
+				if (File.Exists(packageJsonToLoad = Path.Combine(packageDir, PackageJsonFile)) || 
+					File.Exists(packageJsonToLoad = Path.Combine(packageDir, DubJsonFile)))
 				{
 					var prj = ReadFile_(packageJsonToLoad, typeof(Project), monitor) as DubProject;
 					if (prj != null) {
