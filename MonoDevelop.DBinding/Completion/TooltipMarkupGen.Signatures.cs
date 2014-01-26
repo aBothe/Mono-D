@@ -126,22 +126,7 @@ namespace MonoDevelop.D.Completion
 			AppendAttributes (dn, sb);
 
 			if (dn.Type != null || baseType != null)
-			{
 				sb.Append(DCodeToMarkup((baseType ?? dn.Type).ToString(true))).Append(' ');
-			}
-			else if (dn.Attributes != null && dn.Attributes.Count != 0)
-			{
-				foreach (var attr in dn.Attributes)
-				{
-					var m = attr as Modifier;
-					if (m != null && DTokens.StorageClass[m.Token])
-					{
-						//TODO: Highlighting
-						sb.Append(DTokens.GetTokenString(m.Token)).Append(' ');
-						break;
-					}
-				}
-			}
 
 			// Maybe highlight variables/method names?
 			sb.Append(dn.Name);
