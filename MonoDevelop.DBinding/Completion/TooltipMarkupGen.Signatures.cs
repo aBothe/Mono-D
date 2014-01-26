@@ -59,7 +59,7 @@ namespace MonoDevelop.D.Completion
 				sb.Append ("<i>(Module)</i> ").Append ((dn as DModule).ModuleName);
 			} else if (dn is DClassLike)
 				S (dn as DClassLike, sb, deducedType);
-			else
+			else if(dn != null)
 				AttributesTypeAndName (dn, sb);
 
 			return sb.ToString ();
