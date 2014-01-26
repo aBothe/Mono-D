@@ -126,7 +126,12 @@ namespace MonoDevelop.D.OptionPanels
 			
 			// Store libs
 			configuration.ExtraLibraries.Clear ();
-			Misc.StringHelper.AddLineSplittedString (configuration.ExtraLibraries, text_Libraries.Buffer.Text);
+			foreach (var p in text_Libraries.Buffer.Text.Split('\n'))
+			{
+				var p_ = p.Trim();
+				if (!String.IsNullOrWhiteSpace(p_))
+					configuration.ExtraLibraries.Add(p_);
+			}
 
 			if (oldHash != configuration.GetHashCode () && 
 				Ide.IdeApp.Workspace.ActiveConfigurationId == configuration.Id) {

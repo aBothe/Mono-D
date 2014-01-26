@@ -244,7 +244,6 @@
     <Compile Include="Projects\Dub\DubReferencesCollection.cs" />
     <Compile Include="Projects\DefaultDReferencesCollection.cs" />
     <Compile Include="Refactoring\DRefactoringContext.cs" />
-    <Compile Include="Misc\StringHelper.cs" />
     <Compile Include="Unittest\Commands\UnittestCommandHandler.cs" />
     <Compile Include="Unittest\Commands\UnittestCommands.cs" />
     <Compile Include="Unittest\UnittestCore.cs" />

@@ -29,7 +29,7 @@ namespace MonoDevelop.D
 				oldHash += p.GetHashCode ();
 			refs.Clear ();
 
-			foreach (var p in Misc.StringHelper.SplitLines(text_Includes.Buffer.Text)) {
+			foreach (var p in text_Includes.Buffer.Text.Split('\n')) {
 				var p_ = p.Trim().TrimEnd ('\\', '/');
 				if (string.IsNullOrWhiteSpace(p_))
 					continue;

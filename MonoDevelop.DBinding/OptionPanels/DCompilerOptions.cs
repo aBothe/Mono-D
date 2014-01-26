@@ -191,11 +191,16 @@ namespace MonoDevelop.D.OptionPanels
 			debugArgumentsDialog.Store ();					
 			
 			configuration.DefaultLibraries.Clear ();
-			Misc.StringHelper.AddLineSplittedString(configuration.DefaultLibraries,text_DefaultLibraries.Buffer.Text);
+			foreach (var p in text_DefaultLibraries.Buffer.Text.Split('\n'))
+			{
+				var p_ = p.Trim();
+				if (!String.IsNullOrWhiteSpace(p_))
+					configuration.DefaultLibraries.Add(p_);
+			}
 			
 			#region Store new include paths
 			configuration.IncludePaths.Clear();
-			foreach (var p in Misc.StringHelper.SplitLines(text_Includes.Buffer.Text))
+			foreach (var p in text_Includes.Buffer.Text.Split('\n'))
 			{
 				var p_ = p.Trim().TrimEnd('\\', '/');
 				if (!string.IsNullOrWhiteSpace(p_))
