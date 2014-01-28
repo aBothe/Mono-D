@@ -18,6 +18,18 @@ namespace MonoDevelop.D.Highlighting
 {
 	public class DSyntaxMode : SyntaxMode, IDisposable
 	{
+		public const string DiffBasedHighlightingProp = "DiffbasedHighlighting";
+		public static bool EnableDiffBasedHighlighting
+		{
+			get {
+				return PropertyService.Get(DiffBasedHighlightingProp, false);
+			}
+			set
+			{
+				PropertyService.Set(DiffBasedHighlightingProp, value);
+			}
+		}
+
 		static SyntaxMode baseMode;
 		Document guiDoc;
 		internal Document GuiDocument
@@ -46,7 +58,7 @@ namespace MonoDevelop.D.Highlighting
 				using (Stream s = provider.Open())
 					baseMode = SyntaxMode.Read(s);
 			}
-
+			
 			this.rules = new List<Rule>(baseMode.Rules);
 			this.keywords = new List<Keywords>(baseMode.Keywords);
 			this.spans = new List<Span>(baseMode.Spans.Where(span => span.Begin.Pattern != "#")).ToArray();
@@ -74,7 +86,7 @@ namespace MonoDevelop.D.Highlighting
 			SemanticHighlightingEnabled = PropertyService.Get ("EnableSemanticHighlighting", true);
 			PropertyService.PropertyChanged += HandlePropertyChanged;
 			GlobalParseCache.ParseTaskFinished += GlobalParseCacheFilled;
-
+			
 			this.matches = matches.ToArray();
 		}
 
@@ -138,10 +150,18 @@ namespace MonoDevelop.D.Highlighting
 
 		void HandlePropertyChanged (object sender, PropertyChangedEventArgs e)
 		{
-			if (e.Key == "EnableSemanticHighlighting") {
-				SemanticHighlightingEnabled = PropertyService.Get ("EnableSemanticHighlighting", true);
+			if (e.Key == DiffBasedHighlightingProp && EnableDiffBasedHighlighting)
+			{
+				SemanticHighlightingEnabled = false;
+				RemoveOldTypeMarkers(true);
+				return;
+			}
+
+			if (e.Key == "EnableSemanticHighlighting")
+			{
+				SemanticHighlightingEnabled = PropertyService.Get("EnableSemanticHighlighting", true);
 				if (!SemanticHighlightingEnabled)
-					RemoveOldTypeMarkers ();
+					RemoveOldTypeMarkers();
 			}
 		}
 
@@ -255,7 +275,7 @@ namespace MonoDevelop.D.Highlighting
 				this.SemanticType = type;
 				this.Style = GetSemanticStyle(ident, type);
 			}
-
+			
 			public static string GetSemanticStyle(string ident, byte type)
 			{
 				switch (type) {
@@ -290,14 +310,20 @@ namespace MonoDevelop.D.Highlighting
 
 		public override ChunkParser CreateChunkParser (SpanParser spanParser, ColorScheme style, DocumentLine line)
 		{
-			return new DChunkParser(this, spanParser, style, line);
+			if(SemanticHighlightingEnabled)
+				return new DChunkParser(this, spanParser, style, line);
+			
+			if(!EnableDiffBasedHighlighting)
+				return base.CreateChunkParser(spanParser, style, line);
+
+			return new DiffbasedChunkParser(this, spanParser, style, line);
 		}
 
 		class DChunkParser : ChunkParser
 		{
 			public DChunkParser(DSyntaxMode syn,SpanParser s, ColorScheme st, DocumentLine ln)
 				: base(syn, s, st, ln) {}
-
+			
 			protected override void AddRealChunk (Chunk chunk)
 			{
 				if (spanParser.CurSpan != null && (spanParser.CurSpan.Rule == "Comment" || spanParser.CurSpan.Rule == "PreProcessorComment")) {
@@ -321,6 +347,22 @@ namespace MonoDevelop.D.Highlighting
 				}
 
 				base.AddRealChunk (chunk);
+			}
+		}
+		#endregion
+
+		#region Diffbased coloring
+		public 
+
+		class DiffbasedChunkParser : ChunkParser
+		{
+			public DiffbasedChunkParser(DSyntaxMode syn, SpanParser s, ColorScheme st, DocumentLine ln)
+				: base(syn, s, st, ln) {}
+
+			protected override void AddRealChunk(Chunk chunk)
+			{
+				
+				base.AddRealChunk(chunk);
 			}
 		}
 		#endregion
