@@ -69,7 +69,9 @@ namespace MonoDevelop.D.Projects
 
 		public override bool AddReference ()
 		{
-			throw new NotImplementedException ();
+            //TODO: Show dialog where a user may put in includes/library files or such..
+			//throw new NotImplementedException ();
+            return false;
 		}
 
 		public override bool CanDelete {

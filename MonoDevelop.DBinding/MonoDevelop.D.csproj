@@ -58,7 +58,7 @@
     <BaseAddress>4194304</BaseAddress>
     <FileAlignment>4096</FileAlignment>
     <StartAction>Program</StartAction>
-    <StartProgram>..\..\tutorial.lib\MonoDevelop\main\build\bin\MonoDevelop.exe</StartProgram>
+    <StartProgram>C:\Program Files (x86)\Xamarin Studio\bin\XamarinStudio.exe</StartProgram>
     <DebugSymbols>True</DebugSymbols>
     <CustomCommands>
       <CustomCommands>
@@ -244,7 +244,6 @@
     <Compile Include="Projects\Dub\DubReferencesCollection.cs" />
     <Compile Include="Projects\DefaultDReferencesCollection.cs" />
     <Compile Include="Refactoring\DRefactoringContext.cs" />
-    <Compile Include="Misc\StringHelper.cs" />
     <Compile Include="Unittest\Commands\UnittestCommandHandler.cs" />
     <Compile Include="Unittest\Commands\UnittestCommands.cs" />
     <Compile Include="Unittest\UnittestCore.cs" />
@@ -363,7 +362,7 @@
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
     <StartAction>Program</StartAction>
-    <StartProgram>..\..\tutorial.lib\MonoDevelop\main\build\bin\MonoDevelop.exe</StartProgram>
+    <StartProgram>C:\Program Files (x86)\Xamarin Studio\bin\XamarinStudio.exe</StartProgram>
     <DefineConstants>DEBUG</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Platform)' == 'AnyCPU' ">
@@ -375,7 +374,7 @@
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
     <StartAction>Program</StartAction>
-    <StartProgram>..\..\tutorial.lib\MonoDevelop\main\build\bin\MonoDevelop.exe</StartProgram>
+    <StartProgram>C:\Program Files (x86)\Xamarin Studio\bin\XamarinStudio.exe</StartProgram>
   </PropertyGroup>
   <ItemGroup>
     <None Include="Formatting\Indentation\doc.txt" />
