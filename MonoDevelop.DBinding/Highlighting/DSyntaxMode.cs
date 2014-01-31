@@ -415,8 +415,6 @@ namespace MonoDevelop.D.Highlighting
 					this.v = v;
 				}
 
-				public bool IsEmpty { get { return h <= 0.0 && s <= 0.0 && v <= 0.0; } }
-
 				public static implicit operator Cairo.Color(HSV hsv)
 				{
 					double r = 0, g = 0, b = 0;
