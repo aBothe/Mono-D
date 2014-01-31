@@ -2,6 +2,7 @@
 using MonoDevelop.D.Building;
 using MonoDevelop.D.Formatting;
 using D_Parser.Misc;
+using MonoDevelop.Core;
 
 namespace MonoDevelop.D.OptionPanels
 {
@@ -21,6 +22,7 @@ namespace MonoDevelop.D.OptionPanels
 			check_EnableMixinAnalysis.Active = !CompletionOptions.Instance.DisableMixinAnalysis;
 			check_EnableSuggestionMode.Active = CompletionOptions.Instance.EnableSuggestionMode;
 			check_HideDeprecatedItems.Active = CompletionOptions.Instance.HideDeprecatedNodes;
+			check_EnableDiffbasedColoring.Active = Highlighting.DSyntaxMode.EnableDiffBasedHighlighting;
 
 			var outline = DCompilerService.Instance.Outline;
 			check_ShowFunctionParams.Active = outline.ShowFuncParams;
@@ -53,6 +55,7 @@ namespace MonoDevelop.D.OptionPanels
 			CompletionOptions.Instance.DisableMixinAnalysis = !check_EnableMixinAnalysis.Active;
 			CompletionOptions.Instance.EnableSuggestionMode = check_EnableSuggestionMode.Active;
 			CompletionOptions.Instance.HideDeprecatedNodes = check_HideDeprecatedItems.Active;
+			PropertyService.Set (Highlighting.DSyntaxMode.DiffBasedHighlightingProp, check_EnableDiffbasedColoring.Active);
 
 			var outline = DCompilerService.Instance.Outline;
 			outline.ShowFuncParams = check_ShowFunctionParams.Active;

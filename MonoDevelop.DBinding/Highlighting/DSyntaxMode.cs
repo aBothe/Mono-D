@@ -18,18 +18,6 @@ namespace MonoDevelop.D.Highlighting
 {
 	public class DSyntaxMode : SyntaxMode, IDisposable
 	{
-		public const string DiffBasedHighlightingProp = "DiffbasedHighlighting";
-		public static bool EnableDiffBasedHighlighting
-		{
-			get {
-				return PropertyService.Get(DiffBasedHighlightingProp, false);
-			}
-			set
-			{
-				PropertyService.Set(DiffBasedHighlightingProp, value);
-			}
-		}
-
 		static SyntaxMode baseMode;
 		Document guiDoc;
 		internal Document GuiDocument
@@ -40,6 +28,9 @@ namespace MonoDevelop.D.Highlighting
 					guiDoc.DocumentParsed -= HandleDocumentParsed;
 				guiDoc = value;
 				if (value != null) {
+					if (EnableDiffBasedHighlighting)
+						TryInjectDiffbasedMarker();
+
 					HandleDocumentParsed (this, EventArgs.Empty);
 					guiDoc.DocumentParsed += HandleDocumentParsed;
 				}
@@ -150,20 +141,25 @@ namespace MonoDevelop.D.Highlighting
 
 		void HandlePropertyChanged (object sender, PropertyChangedEventArgs e)
 		{
-			if (e.Key == DiffBasedHighlightingProp && EnableDiffBasedHighlighting)
+			if (e.Key == DiffBasedHighlightingProp)
 			{
-				SemanticHighlightingEnabled = false;
-				RemoveOldTypeMarkers(true);
-				return;
+				if (EnableDiffBasedHighlighting)
+				{
+					TryInjectDiffbasedMarker();
+					SemanticHighlightingEnabled = false;
+					RemoveOldTypeMarkers(true);
+				}
+				else
+					TryRemoveDiffbasedMarker();
 			}
-
-			if (e.Key == "EnableSemanticHighlighting")
+			else if (e.Key == "EnableSemanticHighlighting")
 			{
 				SemanticHighlightingEnabled = PropertyService.Get("EnableSemanticHighlighting", true);
 				if (!SemanticHighlightingEnabled)
 					RemoveOldTypeMarkers();
 			}
 		}
+
 
 		void HandleDocumentParsed (object sender, EventArgs e)
 		{
@@ -310,13 +306,9 @@ namespace MonoDevelop.D.Highlighting
 
 		public override ChunkParser CreateChunkParser (SpanParser spanParser, ColorScheme style, DocumentLine line)
 		{
-			if(SemanticHighlightingEnabled)
-				return new DChunkParser(this, spanParser, style, line);
-			
-			if(!EnableDiffBasedHighlighting)
-				return base.CreateChunkParser(spanParser, style, line);
-
-			return new DiffbasedChunkParser(this, spanParser, style, line);
+			return SemanticHighlightingEnabled && !EnableDiffBasedHighlighting ? 
+				new DChunkParser(this, spanParser, style, line) : 
+				base.CreateChunkParser(spanParser, style, line);
 		}
 
 		class DChunkParser : ChunkParser
@@ -352,17 +344,174 @@ namespace MonoDevelop.D.Highlighting
 		#endregion
 
 		#region Diffbased coloring
-		public 
-
-		class DiffbasedChunkParser : ChunkParser
+		public const string DiffBasedHighlightingProp = "DiffbasedHighlighting";
+		public static bool EnableDiffBasedHighlighting
 		{
-			public DiffbasedChunkParser(DSyntaxMode syn, SpanParser s, ColorScheme st, DocumentLine ln)
-				: base(syn, s, st, ln) {}
-
-			protected override void AddRealChunk(Chunk chunk)
+			get
 			{
+				return PropertyService.Get(DiffBasedHighlightingProp, false);
+			}
+			set
+			{
+				PropertyService.Set(DiffBasedHighlightingProp, value);
+			}
+		}
+		DiffbasedMarker diffMarker;
+
+		void TryInjectDiffbasedMarker()
+		{
+			if (doc != null && diffMarker == null)
+				doc.AddMarker(diffMarker = new DiffbasedMarker(guiDoc != null ? guiDoc.Editor.Length : doc.TextLength));
+		}
+
+		void TryRemoveDiffbasedMarker()
+		{
+			if (doc != null && diffMarker != null)
+				doc.RemoveMarker(diffMarker);
+			diffMarker = null;
+		}
+
+		class DiffbasedMarker : TextSegmentMarker, IChunkMarker
+		{
+			public DiffbasedMarker(int len)	: base(0, len) {}
+
+			static List<int> colorUsed = new List<int>{
+					26, // m_ prefix 
+					17, // _ prefix
+					35, // i,j,k
+				};
+			static Dictionary<string, HslColor> colorPrefixGroups = new Dictionary<string,HslColor>{
+				{"m_", HslColor.FromHsl(150.0/360.0, 0.99, 0.6)},
+				{"_", HslColor.FromHsl(225.0/360.0, 0.99, 0.6)},
+			};
+			static Dictionary<string, double> nextPrefixGroupValue = new Dictionary<string, double> { 
+				{"m_",0.6},
+				{"_",0.6},
+			};
+			static Dictionary<string, double> nextPrefixGroupSaturation = new Dictionary<string, double>{ 
+				{"m_",0.95},
+				{"_",0.95},
+			};
+			static Dictionary<int, HslColor> colorCache = new Dictionary<int, HslColor> { 
+				{"i".GetHashCode(), HslColor.FromHsl(300.0/360.0, 0.99, 0.6)},
+				{"j".GetHashCode(), HslColor.FromHsl(300.0/360.0, 0.99, 0.55)},
+				{"k".GetHashCode(), HslColor.FromHsl(300.0/360.0, 0.99, 0.5)},
+			};
+			static List<HslColor> palette = new List<HslColor>();
+			static double[] excludeHues = { 50.0, 75.0, 100.0 };
+
+			static DiffbasedMarker(){
+				for(int i = 0; i <= 15; i++){
+					if (!excludeHues.Contains(i*25.0)){ // remove some too light colors
+						palette.Add(HslColor.FromHsl((i * 25.0)/360.0, 0.6, 0.99));
+					}
+					palette.Add(HslColor.FromHsl((i * 25.0)/360.0, 0.8, 0.8));
+					palette.Add(HslColor.FromHsl((i * 25.0)/360.0, 0.99, 0.6));
+				}
+				/* Uncomment this to see the grouping colors
+				foreach (i; iota(0.0,0.4,0.05)){
+		
+					HSV col3 = { h: 225.0, s: 0.99, v: 0.6+i };
+					palette ~= col3;
+				}
+				*/
+			}
+
+			static HslColor GetColor(string str)
+			{
+				var hash = str.GetHashCode();
+				HslColor col;
+				if (colorCache.TryGetValue(hash, out col))
+					return col;
+
+				foreach (var kv in colorPrefixGroups){
+					var key = kv.Key;
+					if (str.StartsWith(key)){
+						col = kv.Value;
+						col.L = nextPrefixGroupValue[key];
+						col.S = nextPrefixGroupSaturation[key];
+						if (nextPrefixGroupValue[key] < 1.00 && nextPrefixGroupValue[key] >= 0.55)
+							nextPrefixGroupValue[key] += 0.05; // lighten it up a bit for the next var in this group
+						else if (nextPrefixGroupValue[key] >= 1.00)
+							nextPrefixGroupValue[key] = 0.50;
+						else if (nextPrefixGroupValue[key] <= 0.20){
+							nextPrefixGroupSaturation[key] -= 0.05;
+						}
+						else if (nextPrefixGroupSaturation[key] <= 0.20){
+							nextPrefixGroupValue[key] = 0.60;
+							nextPrefixGroupSaturation[key] = 0.60;
+						}
+						return colorCache[hash] = col;
+					}
+				}
+
+				var match = 255 - (hash & 0xFF); // 0..255
+				var @base = ((double)match/255.0); // hue is chosen from hash
 				
-				base.AddRealChunk(chunk);
+				int lastUsed = 0;
+				for (int i = 0 ; i < palette.Count ; i++){
+					col = palette[i];
+					if (colorUsed.Contains(i))
+						lastUsed = 0;
+					else
+						++lastUsed;
+
+					if ((@base - (col.H)) <= 1/(palette.Count/2.0)){ // select the nearest hue in palette
+						if (lastUsed <= 3 && lastUsed >= 0) // either used or too near a used one
+							col = getAnyUnused(i, hash);
+
+						if (!colorUsed.Contains(i))
+							colorUsed.Add(i);
+						colorCache[hash] = col;
+
+						return col;
+					}
+				}
+
+				return palette[palette.Count-1];
+			}
+
+			// this function is executed when the hue is already in use
+			static HslColor getAnyUnused(int start, int fallBackHash){
+					for (int i = 0 ; i < palette.Count ; i++){
+						if (i <= start+1) // git some room to change hue more obviously
+							continue;
+						if (!colorUsed.Contains(i)) // color isn't used
+							return palette[i];
+					}
+					for (int i = 0 ; i < palette.Count ; i++){	// start from the beginning
+						if (i >= start)
+							break;
+						if (!colorUsed.Contains(i)) // color isn't used
+							return palette[i];
+					}
+
+					return new HslColor(((fallBackHash >> 16) & 0xFF)/255.0, ((fallBackHash >> 8) & 0xFF)/255.0, (fallBackHash & 0xFF)/255.0); // gen color from hash
+			}
+
+			public void ChangeForeColor(TextEditor editor, Chunk chunk, ref Cairo.Color color)
+			{
+				if (chunk.Length < 1)
+					return;
+				if (chunk.Style.StartsWith("Keyword"))
+				{
+					chunk.Style = "Plain Text";
+					return;
+				}
+				else if(chunk.Style == "Plain Text")
+					color = GetColor(editor.GetTextAt(chunk).Trim());
+			}
+
+			public override ChunkStyle GetStyle(ChunkStyle baseStyle)
+			{
+				return base.GetStyle(baseStyle);
+			}
+
+			public void TransformChunks(List<Chunk> chunks)	{
+				// Unhighlight each normal keyword
+				foreach (var c in chunks)
+					if (c.Style.StartsWith("Key"))
+						c.Style = "Plain Text____";
 			}
 		}
 		#endregion
