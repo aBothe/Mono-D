@@ -330,9 +330,16 @@ namespace MonoDevelop.D.Highlighting
 
 		public override ChunkParser CreateChunkParser(SpanParser spanParser, ColorScheme style, DocumentLine line)
 		{
-			return SemanticHighlightingEnabled && !EnableDiffBasedHighlighting ?
-				new DChunkParser(this, spanParser, style, line) :
-				base.CreateChunkParser(spanParser, style, line);
+			switch ((SemanticHighlightingEnabled ? 2 : 0) + (EnableDiffBasedHighlighting ? 1 : 0))
+			{
+				case 1:
+				case 3:
+					return new DiffbasedChunkParser(this, spanParser, style, line);
+				case 2:
+					return new DChunkParser(this, spanParser, style, line);
+				default:
+					return base.CreateChunkParser(spanParser, style, line);
+			}
 		}
 
 		class DChunkParser : ChunkParser
@@ -396,6 +403,25 @@ namespace MonoDevelop.D.Highlighting
 			if (doc != null && diffMarker != null)
 				doc.RemoveMarker(diffMarker);
 			diffMarker = null;
+		}
+
+		class DiffbasedChunkParser : ChunkParser
+		{
+			public DiffbasedChunkParser(DSyntaxMode syn, SpanParser s, ColorScheme st, DocumentLine ln)
+				: base(syn, s, st, ln) { }
+
+			bool a;
+			protected override void AddRealChunk(Chunk chunk)
+			{
+				if (chunk.Style == "Plain Text")
+				{
+					// Prevent 'Plain Text' chunk concatenation by giving following chunks a different style name.
+					if (a = !a)
+						chunk.Style = "Plain Texta";
+				}
+
+				base.AddRealChunk(chunk);
+			}
 		}
 
 		class DiffbasedMarker : TextSegmentMarker, IChunkMarker
@@ -621,13 +647,8 @@ namespace MonoDevelop.D.Highlighting
 					chunk.Style = "Plain Text";
 					return;
 				}
-				else if (chunk.Style == "Plain Text")
+				else if (chunk.Style == "Plain Text" || chunk.Style == "Plain Texta") // Texta due to chunk concat prevention
 					color = GetColor(editor.GetTextAt(chunk).Trim());
-			}
-
-			public override ChunkStyle GetStyle(ChunkStyle baseStyle)
-			{
-				return base.GetStyle(baseStyle);
 			}
 
 			public void TransformChunks(List<Chunk> chunks)

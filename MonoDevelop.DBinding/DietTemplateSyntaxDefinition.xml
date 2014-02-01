@@ -124,6 +124,9 @@
 			<Word>;</Word>
 			<Word>,</Word>
 			<Word>.</Word>
+
+			<Word>~</Word>
+			<Word>!</Word>
 		</Keywords>
 
 		<Keywords color = "Punctuation(Brackets)">
