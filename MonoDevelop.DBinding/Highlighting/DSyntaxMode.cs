@@ -601,7 +601,7 @@ namespace MonoDevelop.D.Highlighting
 
 							for (int k = 0; k < palette.Count; k++)
 							{
-								if (k <= i + 1) // git some room to change hue more obviously
+								if (k <= i + 3) // git some room to change hue more obviously
 									continue;
 								if (!colorUsed.Contains(k)) // color isn't used
 								{
@@ -611,10 +611,8 @@ namespace MonoDevelop.D.Highlighting
 								}
 							}
 							if(!colorFound)
-							for (int k = 0; k < palette.Count; k++)
+							for (int k = palette.Count - 2; k > 0; k--)
 							{	// start from the beginning
-								if (k >= i)
-									break;
 								if (!colorUsed.Contains(k)) // color isn't used
 								{
 									colorFound = true;
