@@ -649,6 +649,8 @@ namespace MonoDevelop.D.Highlighting
 				}
 				else if (chunk.Style == "Plain Text" || chunk.Style == "Plain Texta") // Texta due to chunk concat prevention
 					color = GetColor(editor.GetTextAt(chunk).Trim());
+				else if (chunk.Style == "String")
+					color = new Cairo.Color(0.8, 0, 0);
 			}
 
 			public void TransformChunks(List<Chunk> chunks)
