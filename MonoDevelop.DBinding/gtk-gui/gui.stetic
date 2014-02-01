@@ -1221,7 +1221,7 @@ If empty, the project will be assumed as being built correctly.</property>
                 <property name="MemberName" />
                 <property name="Tooltip" translatable="yes">If enabled, deadlocks might occur if mixins are used too often</property>
                 <property name="CanFocus">True</property>
-                <property name="Label" translatable="yes">Enable diff-based syntax highlighting</property>
+                <property name="Label" translatable="yes">Enable diff-based syntax highlighting (shortcut: Ctrl+Alt+K)</property>
                 <property name="DrawIndicator">True</property>
                 <property name="HasLabel">True</property>
                 <property name="UseUnderline">True</property>

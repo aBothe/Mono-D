@@ -326,7 +326,12 @@
         		 type = "check"
         		 defaultHandler = "MonoDevelop.D.Profiler.Commands.ProfilerModeHandler"
 				 _description = "enable/disable profiling mode"
-                 _label = "Activate Profiling" />
+                 _label = "Activate Profiling"/>
+
+		<Command id ="MonoDevelop.D.Highlighting.ToggleDiffbasedHighlighthandler.ToggleCmdId"
+				 defaultHandler ="MonoDevelop.D.Highlighting.ToggleDiffbasedHighlighthandler"
+				 _label ="Toggle diff-based highlighting"
+				 shortcut="Control+Alt+K"/>
 	</Extension>
 
 	<Extension path = "/MonoDevelop/Ide/Pads">

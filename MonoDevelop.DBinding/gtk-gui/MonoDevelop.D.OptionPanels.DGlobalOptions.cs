@@ -44,7 +44,7 @@ namespace MonoDevelop.D.OptionPanels
 			w1.SetTip (this.check_EnableDiffbasedColoring, "If enabled, deadlocks might occur if mixins are used too often", "If enabled, deadlocks might occur if mixins are used too often");
 			this.check_EnableDiffbasedColoring.CanFocus = true;
 			this.check_EnableDiffbasedColoring.Name = "check_EnableDiffbasedColoring";
-			this.check_EnableDiffbasedColoring.Label = global::MonoDevelop.Core.GettextCatalog.GetString ("Enable diff-based syntax highlighting");
+			this.check_EnableDiffbasedColoring.Label = global::MonoDevelop.Core.GettextCatalog.GetString ("Enable diff-based syntax highlighting (shortcut: Ctrl+Alt+K)");
 			this.check_EnableDiffbasedColoring.DrawIndicator = true;
 			this.check_EnableDiffbasedColoring.UseUnderline = true;
 			this.table1.Add (this.check_EnableDiffbasedColoring);
