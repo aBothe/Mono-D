@@ -6,6 +6,6 @@ rem to save copying the lib files over and over again
 rem This batch file must be ran as admin!
 
 rem TODO: Fit to target path
-mklink /D /J ..\tutorial.lib\monodevelop\main\build\AddIns\BackendBindings\d MonoDevelop.DBinding\bin\Debug
+mklink /D /J "C:\Program Files (x86)\Xamarin Studio\AddIns\mono-d" MonoDevelop.DBinding\bin\Debug
 
 pause
