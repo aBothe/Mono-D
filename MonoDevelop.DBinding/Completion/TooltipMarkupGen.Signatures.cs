@@ -60,7 +60,7 @@ namespace MonoDevelop.D.Completion
 			} else if (dn is DClassLike)
 				S (dn as DClassLike, sb, deducedType);
 			else if(dn != null)
-				AttributesTypeAndName (dn, sb);
+				AttributesTypeAndName (dn, sb, baseType, -1, deducedType);
 
 			return sb.ToString ();
 		}
@@ -123,7 +123,7 @@ namespace MonoDevelop.D.Completion
 			ITypeDeclaration baseType = null, int highlightTemplateParam = -1,
 			DeducedTypeDictionary deducedTypes = null)
 		{
-			AppendAttributes (dn, sb);
+			AppendAttributes (dn, sb, baseType == null);
 
 			if (dn.Type != null || baseType != null)
 				sb.Append(DCodeToMarkup((baseType ?? dn.Type).ToString(true))).Append(' ');
@@ -156,11 +156,30 @@ namespace MonoDevelop.D.Completion
 			}
 		}
 
-		void AppendAttributes(DNode dn, StringBuilder sb)
+		static bool CanShowAttribute(DAttribute attr, bool showStorageClasses)
+		{
+			if (attr is DeclarationCondition)
+				return false;
+
+			var mod = attr as Modifier;
+			if (showStorageClasses || mod == null)
+				return true;
+
+			switch (mod.Token)
+			{
+				case DTokens.Auto:
+				case DTokens.Enum:
+					return false;
+				default:
+					return true;
+			}
+		}
+
+		void AppendAttributes(DNode dn, StringBuilder sb, bool showStorageClasses = true)
 		{
 			if (dn.Attributes != null && dn.Attributes.Count != 0) {
 				foreach (var attr in dn.Attributes)
-					if (!(attr is DeclarationCondition))
+					if (CanShowAttribute(attr, showStorageClasses))
 						sb.Append (DCodeToMarkup (attr.ToString ())).Append (' ');
 			}
 		}
