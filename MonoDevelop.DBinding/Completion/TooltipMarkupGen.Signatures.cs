@@ -143,9 +143,19 @@ namespace MonoDevelop.D.Completion
 					var param = dn.TemplateParameters [i];
 					if (param != null) {
 						var tps = deducedTypes != null ? deducedTypes [param] : null;
-						AppendFormat(
-							DCodeToMarkup(tps != null && tps.Base != null ? tps.Base.ToCode() : param.ToString()),
-							sb, i != highlightTemplateParam ? FormatFlags.None : FormatFlags.Underline);
+
+						string str;
+
+						if (tps == null)
+							str = param.ToString();
+						else if (tps.ParameterValue != null)
+							str = tps.ParameterValue.ToCode();
+						else if (tps.Base != null)
+							str = tps.Base.ToCode();
+						else
+							str = param.ToString();
+
+						AppendFormat(DCodeToMarkup(str),sb, i != highlightTemplateParam ? FormatFlags.None : FormatFlags.Underline);
 						sb.Append (',');
 					}
 				}
