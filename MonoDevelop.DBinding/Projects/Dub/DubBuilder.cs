@@ -14,13 +14,13 @@ namespace MonoDevelop.D.Projects.Dub
 
 		public static void BuildCommonArgAppendix(StringBuilder sr,DubProject prj, ConfigurationSelector sel)
 		{
-			sr.Append (' ').Append(prj.packageName);
+			sr.Append (" \"").Append(prj.packageName).Append("\"");
 
 			if(!string.IsNullOrWhiteSpace(DubSettings.Instance.CommonArgs))
 				sr.Append(' ').Append (DubSettings.Instance.CommonArgs);
 
-			if (prj.Configurations.Count > 1 && sel.GetConfiguration(prj).Id != "Default")
-				sr.Append(" --config=").Append(sel.GetConfiguration(prj).Id);
+			if (prj.Configurations.Count > 1 && sel.GetConfiguration(prj).Name.ToLower() != "default")
+				sr.Append(" \"--config=").Append(sel.GetConfiguration(prj).Name).Append("\"");
 		}
 
 		public void BuildProgramArgAppendix(StringBuilder sr, DubProject prj, DubProjectConfiguration cfg)
