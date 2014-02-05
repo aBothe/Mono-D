@@ -426,12 +426,7 @@ namespace MonoDevelop.D.Highlighting
 			{
 				if (chunk.Length < 1)
 					return;
-				if (chunk.Style.StartsWith("Keyword"))
-				{
-					chunk.Style = "Plain Text";
-					return;
-				}
-
+				
 				switch (chunk.Style)
 				{
 					case "Plain Text":
@@ -448,6 +443,10 @@ namespace MonoDevelop.D.Highlighting
 						break;
 					case "String":
 						color = new Cairo.Color(0.8, 0, 0);
+						break;
+					default:
+						if (chunk.Style.StartsWith("Keyword"))
+							chunk.Style = "Plain Text";
 						break;
 				}
 			}
