@@ -415,7 +415,12 @@ namespace MonoDevelop.D.Highlighting
 
 		class DiffbasedMarker : TextSegmentMarker, IChunkMarker
 		{
-			public DiffbasedMarker(int len) : base(0, len) { }
+			bool hasEvaluatedBackgroundBrightness;
+			bool IsDarkBackground;
+
+			public DiffbasedMarker(int len) : base(0, len) { 
+				
+			}
 
 			public void ChangeForeColor(TextEditor editor, Chunk chunk, ref Cairo.Color color)
 			{
@@ -426,10 +431,25 @@ namespace MonoDevelop.D.Highlighting
 					chunk.Style = "Plain Text";
 					return;
 				}
-				else if (chunk.Style == "Plain Text" || chunk.Style == "Plain Texta") // Texta due to chunk concat prevention
-					color = DiffbasedHighlighting.GetColor(editor.GetTextAt(chunk).Trim());
-				else if (chunk.Style == "String")
-					color = new Cairo.Color(0.8, 0, 0);
+
+				switch (chunk.Style)
+				{
+					case "Plain Text":
+					case "Plain Texta":
+						if (!hasEvaluatedBackgroundBrightness)
+						{
+							hasEvaluatedBackgroundBrightness = true;
+							IsDarkBackground = HslColor.Brightness(editor.ColorStyle.PlainText.Background) < 0.5;
+						}
+
+						color = DiffbasedHighlighting.GetColor(editor.GetTextAt(chunk).Trim());
+						if (IsDarkBackground)
+							color = new Cairo.Color(1.0 - color.R, 1.0 - color.G, 1.0 - color.B, color.A);
+						break;
+					case "String":
+						color = new Cairo.Color(0.8, 0, 0);
+						break;
+				}
 			}
 
 			public void TransformChunks(List<Chunk> chunks)
