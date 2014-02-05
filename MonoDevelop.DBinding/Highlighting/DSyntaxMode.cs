@@ -384,7 +384,7 @@ namespace MonoDevelop.D.Highlighting
 		void TryInjectDiffbasedMarker()
 		{
 			if (doc != null && diffMarker == null)
-				doc.AddMarker(diffMarker = new DiffbasedMarker(guiDoc != null ? guiDoc.Editor.Length : doc.TextLength));
+				doc.AddMarker(diffMarker = new DiffbasedMarker(guiDoc != null && guiDoc.Editor != null ? guiDoc.Editor.Length : doc.TextLength));
 		}
 
 		void TryRemoveDiffbasedMarker()
