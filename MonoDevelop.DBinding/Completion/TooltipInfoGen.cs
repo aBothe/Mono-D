@@ -43,8 +43,9 @@ namespace MonoDevelop.D.Completion
 			};
 
 			var ds = t as DSymbol;
-			if (ds != null)
-				CreateTooltipBody (markupGen, ds.Definition, tti);
+			DNode n;
+			if (ds != null && (n = ds.Definition) != null)
+				CreateTooltipBody (markupGen, n, tti);
 
 			return tti;
 		}
