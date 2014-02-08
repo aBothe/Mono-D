@@ -24,7 +24,7 @@ namespace MonoDevelop.D.Projects
 		public readonly List<string> BuiltObjects = new List<string> ();
 		[ItemProperty("PreferOneStepBuild")]
 		public bool PreferOneStepBuild = true;
-		string defaultBinPathStub = ".";
+		string defaultBinPathStub = "bin";
 
 		public const string ConfigJson = "projectconfig.json";
 		public ExtendedProjectConfig ExtendedConfiguration;
@@ -236,7 +236,7 @@ namespace MonoDevelop.D.Projects
 				c.ExtraLinkerArguments = defConfig.ExtraLinkerArguments;
 				c.ExtraCompilerArguments = defConfig.ExtraCompilerArguments;
 			} else {
-				c.OutputDirectory = Path.Combine (this.GetRelativeChildPath (defaultBinPathStub), name);
+				c.OutputDirectory = this.GetAbsoluteChildPath (defaultBinPathStub).Combine(name);
 				c.ObjectDirectory += Path.DirectorySeparatorChar + name;
 			}
 
@@ -257,7 +257,7 @@ namespace MonoDevelop.D.Projects
 		{
 			var cfg = GetConfiguration (configuration) as DProjectConfiguration;
 
-            return cfg.OutputDirectory.IsAbsolute ? cfg.OutputDirectory.Combine(cfg.CompiledOutputName) : cfg.OutputDirectory.Combine(cfg.CompiledOutputName).ToAbsolute(BaseDirectory);
+            return cfg.OutputDirectory.Combine(cfg.CompiledOutputName).ToAbsolute(BaseDirectory);
 		}
 
 		static List<string> alreadyBuiltProjects = new List<string>();

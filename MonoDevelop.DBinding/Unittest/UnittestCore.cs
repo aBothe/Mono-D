@@ -97,7 +97,7 @@ namespace MonoDevelop.D.Unittest
 		
 		static string GetExecDir(DProject project, DProjectConfiguration conf)
 		{
-				string execDir = conf.OutputDirectory.FullPath;
+			string execDir = conf.OutputDirectory.FullPath;
 			if (!Directory.Exists (execDir))
 				execDir = project.BaseDirectory.FullPath;
 			return execDir;

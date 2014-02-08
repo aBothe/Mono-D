@@ -152,7 +152,7 @@ namespace MonoDevelop.D.Building
 				Includes = FillCommonMacros(Project.IncludePaths),
 				Libraries = GetLibraries(BuildConfig, Compiler),
 
-				RelativeTargetDirectory = BuildConfig.OutputDirectory,
+				RelativeTargetDirectory = BuildConfig.OutputDirectory.ToRelative(Project.BaseDirectory),
 				ObjectsDirectory = ObjectDirectory,
 				TargetFile = target,
 			}, commonMacros);
