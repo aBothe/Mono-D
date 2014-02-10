@@ -87,6 +87,7 @@ namespace MonoDevelop.D.Projects.Dub
 
 		public override IEnumerable<string> GetSourcePaths(ConfigurationSelector sel)
 		{
+			var dirs = new List<string>();
 			List<DubBuildSetting> l;
 			string d;
 			bool returnedOneItem = false;
@@ -106,25 +107,27 @@ namespace MonoDevelop.D.Projects.Dub
 
 							// Ignore os/arch/version constraints for now
 
-							if (!Directory.Exists (d))
+							if (dirs.Contains(d) || !Directory.Exists (d))
 								continue;
 
-							yield return d;
+							dirs.Add(d);
 						}
 					}
 				}
 			}
 
-			if (returnedOneItem)
-				yield break;
+			if (!returnedOneItem)
+			{
+				d = BaseDirectory.Combine("source").ToString();
+				if (Directory.Exists(d))
+					dirs.Add(d);
 
-			d = BaseDirectory.Combine("source").ToString();
-			if (Directory.Exists(d))
-				yield return d;
+				d = BaseDirectory.Combine("src").ToString();
+				if (Directory.Exists(d))
+					dirs.Add(d);
+			}
 
-			d = BaseDirectory.Combine("src").ToString();
-			if (Directory.Exists(d))
-				yield return d;
+			return dirs;
 		}
 
 		public override string ToString ()
