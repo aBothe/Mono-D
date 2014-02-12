@@ -60,7 +60,7 @@ namespace MonoDevelop.D.Projects
 			
 			bool takeDefSelector = configSelector == null;
 			var prj = Project;
-			var referencedItems = LinkinThirdPartyLibraries ? prj.ParentSolution.GetAllProjectsWithTopologicalSort (configSelector) : prj.GetReferencedItems (configSelector);
+			var referencedItems = LinkinThirdPartyLibraries ? prj.ParentSolution.GetAllProjectsWithTopologicalSort (configSelector) : prj.GetReferencedDProjects (configSelector) as IEnumerable<Project>;
 			foreach (var dep_ in referencedItems)
 			{
 				if (dep_ == prj) // Prohibit linking to itself - will occur when enlisting all projects via GetAllProjectsWithTopologicalSort

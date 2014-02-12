@@ -301,6 +301,11 @@ namespace MonoDevelop.D.Projects.Dub
 		#endregion
 
 		#region Building
+		public override IEnumerable<SolutionItem> GetReferencedItems(ConfigurationSelector configuration)
+		{
+			return new SolutionItem[0];
+		}
+
 		public bool BuildSettingMatchesConfiguration(DubBuildSetting sett, ConfigurationSelector config)
 		{
 			return true;

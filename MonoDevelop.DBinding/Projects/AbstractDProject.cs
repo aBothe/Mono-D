@@ -56,6 +56,14 @@ namespace MonoDevelop.D.Projects
 					yield return p;
 		}
 
+		public virtual IEnumerable<AbstractDProject> GetReferencedDProjects(ConfigurationSelector configuration)
+		{
+			AbstractDProject p;
+			foreach (var dep in References.ReferencedProjectIds)
+				if ((p = ParentSolution.GetSolutionItem(dep) as AbstractDProject) != null)
+					yield return p;
+		}
+
 		public IEnumerable<string> IncludePaths
 		{
 			get
@@ -65,10 +73,9 @@ namespace MonoDevelop.D.Projects
 				foreach (var p in LocalIncludes)
 					yield return p;
 				var sel = Ide.IdeApp.Workspace.ActiveConfiguration;
-				foreach (var dep in GetReferencedItems(sel))
-					if (dep is AbstractDProject)
-						foreach (var s in (dep as AbstractDProject).GetSourcePaths(sel))
-							yield return s;
+				foreach (var dep in GetReferencedDProjects(sel))
+					foreach (var s in dep.GetSourcePaths(sel))
+						yield return s;
 			}
 		}
 
