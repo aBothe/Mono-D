@@ -278,6 +278,24 @@ namespace MonoDevelop.D.Completion
 		{
 			CompletionDataList.Add(new PackageCompletionData { Path = packageName, Name = ModuleNameHelper.ExtractModuleName(packageName) });
 		}
+
+		public void AddCodeGeneratingNodeItem(INode Node, string codeToGenerate)
+		{
+			if (Node == null || Node.NameHash == 0)
+				return;
+
+			DCompletionData dc;
+			if (overloadCheckDict.TryGetValue(Node.NameHash, out dc))
+			{
+				dc.AddOverload(Node);
+			}
+			else
+			{
+				CompletionDataList.Add(overloadCheckDict[Node.NameHash] = new DCompletionData(Node, Node.Parent == scopedBlock){
+					CompletionText = codeToGenerate
+				});
+			}
+		}
 	}
 
 	public class TokenCompletionData : CompletionData
@@ -761,11 +779,43 @@ namespace MonoDevelop.D.Completion
 		}
 
 		public readonly DNode Node;
+		string customCompletionText;
 
 		public override string CompletionText
 		{
-			get { return Node.Name; }
-			set { }
+			get { return customCompletionText ?? Node.Name; }
+			set { customCompletionText = value; }
+		}
+
+		public override void InsertCompletionText(CompletionListWindow window, ref KeyActions ka, Gdk.Key closeChar, char keyChar, Gdk.ModifierType modifier)
+		{
+			if (customCompletionText == null)
+			{
+				base.InsertCompletionText(window, ref ka, closeChar, keyChar, modifier);
+				return;
+			}
+
+			Ide.Gui.Document guiDoc = null;
+			var ed = window.CompletionWidget as SourceEditor.SourceEditorView;
+
+			foreach(var gdoc in Ide.IdeApp.Workbench.Documents)
+				if (gdoc.Editor.Document == ed.Document)
+				{
+					guiDoc = gdoc;
+					break;
+				}
+
+			if (guiDoc == null)
+				return;
+			
+			var f = new Formatting.DCodeFormatter();
+			var insertionOffset = window.CodeCompletionContext.TriggerOffset;
+			
+			ed.Document.Insert(insertionOffset, customCompletionText, ICSharpCode.NRefactory.Editor.AnchorMovementType.AfterInsertion);
+
+			guiDoc.UpdateParseDocument();
+
+			f.OnTheFlyFormat(guiDoc, insertionOffset, insertionOffset + customCompletionText.Length);
 		}
 
 		public override string DisplayText
