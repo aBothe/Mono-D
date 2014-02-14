@@ -71,6 +71,10 @@
       <HintPath>..\ext\Mono.Addins.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="MonoDevelop.Ide">
+      <HintPath>..\ext\MonoDevelop.Ide.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\ext\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -130,10 +134,6 @@
     <Reference Include="Mono.Cairo" />
     <Reference Include="Xwt">
       <HintPath>..\ext\Xwt.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="MonoDevelop.Ide, Version=2.6.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\ext\aMonoDevelop.Ide.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
