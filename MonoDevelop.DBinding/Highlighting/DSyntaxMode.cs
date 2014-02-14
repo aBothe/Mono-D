@@ -189,7 +189,8 @@ namespace MonoDevelop.D.Highlighting
 				{
 					try
 					{
-						doc.CommitDocumentUpdate();
+						if(doc != null)
+							doc.CommitDocumentUpdate();
 					}
 					catch (Exception ex)
 					{
