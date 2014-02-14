@@ -170,6 +170,7 @@
     <Compile Include="Gui\DToolTipProvider.cs" />
     <Compile Include="Gui\EditorPathBarExtension.cs" />
     <Compile Include="Gui\MixinInsightPad.cs" />
+    <Compile Include="Highlighting\AbstractUsagesExtension.cs" />
     <Compile Include="Highlighting\DiffbasedHighlighting.cs" />
     <Compile Include="Highlighting\HighlightUsagesExtension.cs" />
     <Compile Include="Highlighting\DSyntaxMode.cs" />
