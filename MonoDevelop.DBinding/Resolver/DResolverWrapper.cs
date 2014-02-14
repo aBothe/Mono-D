@@ -37,7 +37,7 @@ namespace MonoDevelop.D.Resolver
 
 		public static EditorData CreateEditorData(Document EditorDocument, DModule Ast, CodeCompletionContext ctx, char triggerChar = '\0')
 		{
-			bool removeChar = char.IsLetter(triggerChar) || triggerChar == '_' || triggerChar == '@';
+			bool removeChar = char.IsLetter(triggerChar) || triggerChar == '_';
 
 			var deltaOffset = 0;//removeChar ? 1 : 0;
 
