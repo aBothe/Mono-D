@@ -153,7 +153,11 @@ namespace MonoDevelop.D.Highlighting
 					RemoveOldTypeMarkers(true);
 				}
 				else
+				{
 					TryRemoveDiffbasedMarker();
+					if(SemanticHighlightingEnabled = PropertyService.Get("EnableSemanticHighlighting", true))
+						HandleDocumentParsed(sender, e);
+				}
 			}
 			else if (e.Key == "EnableSemanticHighlighting")
 			{
