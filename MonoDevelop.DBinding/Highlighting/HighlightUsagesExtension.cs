@@ -21,10 +21,19 @@ namespace MonoDevelop.D.Highlighting
 {
 	class HighlightUsagesExtension : AbstractUsagesExtension<Tuple<ResolutionContext, DSymbol>>
 	{
-		TextEditorData textEditorData;
 		public DModule SyntaxTree
 		{
 			get { return Document.ParsedDocument != null ? (Document.ParsedDocument as ParsedDModule).DDom : null; }
+		}
+
+		public override void Initialize()
+		{
+			base.Initialize();
+
+			// Enable proper semantic highlighting because the syntaxmode won't be given the editor doc by default.
+			var sm = Document.Editor.Document.SyntaxMode as DSyntaxMode;
+			if (sm != null)
+				sm.GuiDocument = Document;
 		}
 
 		protected override bool TryResolve(out Tuple<ResolutionContext, DSymbol> resolveResult)
