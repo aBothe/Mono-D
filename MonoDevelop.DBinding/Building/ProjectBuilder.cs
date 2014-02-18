@@ -686,6 +686,8 @@ namespace MonoDevelop.D.Building
 				operationMonitor.AddOperation (p); //handles cancellation
 
 			p.WaitForOutput ();
+			swError.Flush ();
+			swOutput.Flush ();
 			errorOutput = swError.ToString ();
 			programOutput = swOutput.ToString ();
 			exitCode = p.ExitCode;
