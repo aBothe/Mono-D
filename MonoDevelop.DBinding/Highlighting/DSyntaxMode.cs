@@ -19,6 +19,13 @@ namespace MonoDevelop.D.Highlighting
 {
 	public class DSyntaxMode : SyntaxMode, IDisposable
 	{
+		public const string EnableConditionalHighlightingProp = "EnableConditionalHighlightingInD";
+		public static bool EnableConditionalHighlighting
+		{
+			get { return PropertyService.Get(EnableConditionalHighlightingProp, true); }
+			set { PropertyService.Set(EnableConditionalHighlightingProp, value); }
+		}
+
 		static SyntaxMode baseMode;
 		Document guiDoc;
 		internal Document GuiDocument
@@ -379,6 +386,55 @@ namespace MonoDevelop.D.Highlighting
 				}
 
 				base.AddRealChunk(chunk);
+			}
+		}
+		#endregion
+
+		#region Conditional highlighting
+		/*public override SyntaxMode.SpanParser CreateSpanParser(DocumentLine line, CloneableStack<Span> spanStack)
+		{
+			return base.CreateSpanParser(line, spanStack);
+		}*/
+
+		class DSpanParser : SpanParser
+		{
+			DSyntaxMode SyntaxMode { get { return mode as DSyntaxMode; } }
+			
+			public DSpanParser(DSyntaxMode syn, DocumentLine line, CloneableStack<Span> spanStack)
+				: base(syn, spanStack)
+			{
+				
+			}
+
+			protected override bool ScanSpan(ref int i)
+			{
+				int textOffset = i - StartOffset;
+				switch(CurRule.Name)
+				{
+					case "Comment":
+					case "String":
+					case "VerbatimString":
+						return base.ScanSpan(ref i);
+					default:
+						if(!DSyntaxMode.EnableConditionalHighlighting)
+							return base.ScanSpan(ref i);
+
+						break;
+				}
+				/*
+				if ( && textOffset < CurText.Length && 
+					CurRule.Name != "Comment" && 
+					CurRule.Name != "String" && 
+					CurRule.Name != "VerbatimString")
+				{
+					if( && CurText [textOffset] == '#' && IsFirstNonWsChar (textOffset))
+				}*/
+				return base.ScanSpan(ref i);
+			}
+
+			protected override bool ScanSpanEnd(Span cur, ref int i)
+			{
+				return base.ScanSpanEnd(cur, ref i);
 			}
 		}
 		#endregion
