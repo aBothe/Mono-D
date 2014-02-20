@@ -38,6 +38,7 @@ namespace MonoDevelop.D.Building
 		#region Ctor/Init
 		static DCompilerConfiguration()
 		{
+			//GlobalParseCache.ParseException += (file, ex) => LoggingService.LogError("Exception while parsing " + file, ex);
 			GlobalParseCache.ParseTaskFinished+= ea => LoggingService.LogInfo (
 				"Parsed {0} files in \"{1}\" in {2}ms ({3}ms;{4}% parse time) (~{5}ms/{6}ms per file)",
 				ea.FileAmount, ea.Directory, ea.Duration, ea.ParseDuration, 
