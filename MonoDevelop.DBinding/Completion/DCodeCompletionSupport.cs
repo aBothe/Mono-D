@@ -21,10 +21,10 @@ namespace MonoDevelop.D.Completion
 	public static class DCodeCompletionSupport
 	{
 		public static void BuildCompletionData(Document EditorDocument, 
-			DModule SyntaxTree, 
-			CodeCompletionContext ctx, 
-			CompletionDataList l, 
-			char triggerChar)
+		                                        DModule SyntaxTree, 
+		                                        CodeCompletionContext ctx, 
+		                                        CompletionDataList l, 
+		                                        char triggerChar)
 		{
 			var ed = DResolverWrapper.CreateEditorData(EditorDocument, SyntaxTree, ctx, triggerChar);
 			CodeCompletion.GenerateCompletionData(ed, new CompletionDataGenerator(l, null), triggerChar);
@@ -74,13 +74,131 @@ namespace MonoDevelop.D.Completion
 		{
 			Document doc = null;
 			DispatchService.GuiSyncDispatch(() => doc = IdeApp.Workbench.ActiveDocument);
-			return CreateContext (doc);
+			return CreateContext(doc);
 		}
 
 		#region Image helper
+
 		static readonly Dictionary<string, IconId> images = new Dictionary<string, IconId>();
 		static bool wasInitialized = false;
 
+		public static class DIcons
+		{
+
+			#region Class-like structures
+			public static readonly IconId Template = new IconId("md-template");
+			public static readonly IconId Template_Internal = new IconId("md-internal-template");
+			public static readonly IconId Template_Private = new IconId("md-private-template");
+			public static readonly IconId Template_Protected = new IconId("md-protected-template");
+
+			#region Class
+			public static readonly IconId Class = new IconId("md-class");
+			public static readonly IconId Class_Internal = new IconId("md-internal-class");
+			public static readonly IconId Class_Private = new IconId("md-private-class");
+			public static readonly IconId Class_Protected = new IconId("md-protected-class");
+
+			public static readonly IconId Static_Class = new IconId("md-class-static");
+			public static readonly IconId Static_Class_Internal = new IconId("md-internal-class-static");
+			public static readonly IconId Static_Class_Private = new IconId("md-private-class-static");
+			public static readonly IconId Static_Class_Protected = new IconId("md-protected-class-static");
+
+			public static readonly IconId Abstract_Class = new IconId("md-class-abstract");
+			public static readonly IconId Abstract_Class_Internal = new IconId("md-internal-class-abstract");
+			public static readonly IconId Abstract_Class_Private = new IconId("md-private-class-abstract");
+			public static readonly IconId Abstract_Class_Protected = new IconId("md-protected-class-abstract");
+
+			public static readonly IconId Static_Abstract_Class = new IconId("md-class-static-abstract");
+			public static readonly IconId Static_Abstract_Class_Internal = new IconId("md-internal-class-static-abstract");
+			public static readonly IconId Static_Abstract_Class_Private = new IconId("md-private-class-static-abstract");
+			public static readonly IconId Static_Abstract_Class_Protected = new IconId("md-protected-class-static-abstract");
+			#endregion
+
+			public static readonly IconId Struct = new IconId("md-struct");
+			public static readonly IconId Struct_Internal = new IconId("md-internal-struct");
+			public static readonly IconId Struct_Private = new IconId("md-private-struct");
+			public static readonly IconId Struct_Protected = new IconId("md-protected-struct");
+
+			public static readonly IconId Interface = new IconId("md-interface");
+			public static readonly IconId Interface_Internal = new IconId("md-internal-interface");
+			public static readonly IconId Interface_Private = new IconId("md-private-interface");
+			public static readonly IconId Interface_Protected = new IconId("md-protected-interface");
+
+			public static readonly IconId Enum = new IconId("md-enum");
+			public static readonly IconId Enum_Internal = new IconId("md-internal-enum");
+			public static readonly IconId Enum_Private = new IconId("md-private-enum");
+			public static readonly IconId Enum_Protected = new IconId("md-protected-enum");
+
+			public static readonly IconId Union = new IconId("md-union");
+			public static readonly IconId Union_Internal = new IconId("md-internal-union");
+			public static readonly IconId Union_Private = new IconId("md-private-union");
+			public static readonly IconId Union_Protected = new IconId("md-protected-union");
+			#endregion
+
+			#region Methods
+			public static readonly IconId Method = new IconId("md-method");
+			public static readonly IconId Method_Internal = new IconId("md-internal-method");
+			public static readonly IconId Method_Private = new IconId("md-private-method");
+			public static readonly IconId Method_Protected = new IconId("md-protected-method");
+
+			public static readonly IconId Static_Method = new IconId("md-method-static");
+			public static readonly IconId Static_Method_Internal = new IconId("md-internal-method-static");
+			public static readonly IconId Static_Method_Private = new IconId("md-private-method-static");
+			public static readonly IconId Static_Method_Protected = new IconId("md-protected-method-static");
+
+			public static readonly IconId Abstract_Method = new IconId("md-method-abstract");
+			public static readonly IconId Abstract_Method_Internal = new IconId("md-internal-method-abstract");
+			public static readonly IconId Abstract_Method_Protected = new IconId("md-protected-method-abstract");
+
+			public static readonly IconId Override_Method = new IconId("md-method-override");
+			public static readonly IconId Override_Method_Internal = new IconId("md-internal-method-override");
+			public static readonly IconId Override_Method_Protected = new IconId("md-protected-method-override");
+			#endregion
+
+			#region Variables
+			public static readonly IconId Parameter = new IconId("d-parameter");
+			public static readonly IconId Ref_Parameter = new IconId("d-ref-parameter");
+			public static readonly IconId Out_Parameter = new IconId("d-out-parameter");
+			public static readonly IconId Lazy_Parameter = new IconId("d-lazy-parameter");
+
+			public static readonly IconId Local = new IconId("md-field"); // TODO: what's the difference between local & field?
+
+			public static readonly IconId Field = new IconId("md-field");
+			public static readonly IconId Field_Internal = new IconId("md-internal-field");
+			public static readonly IconId Field_Private = new IconId("md-private-field");
+			public static readonly IconId Field_Protected = new IconId("md-protected-field");
+
+			public static readonly IconId Static_Field = new IconId("md-field-static");
+			public static readonly IconId Static_Field_Internal = new IconId("md-internal-field-static");
+			public static readonly IconId Static_Field_Private = new IconId("md-private-field-static");
+			public static readonly IconId Static_Field_Protected = new IconId("md-protected-field-static");
+
+			public static readonly IconId Alias = new IconId("d-alias");
+			public static readonly IconId Alias_Internal = new IconId("d-internal-alias");
+			public static readonly IconId Alias_Private = new IconId("d-private-alias");
+			public static readonly IconId Alias_Protected = new IconId("d-protected-alias");
+
+			public static readonly IconId Property = new IconId("md-property");
+			public static readonly IconId Property_Internal = new IconId("md-internal-property");
+			public static readonly IconId Property_Private = new IconId("md-private-property");
+			public static readonly IconId Property_Protected = new IconId("md-protected-property");
+
+			public static readonly IconId Delegate = new IconId("md-delegate");
+			public static readonly IconId Delegate_Internal = new IconId("md-internal-delegate");
+			public static readonly IconId Delegate_Private = new IconId("md-private-delegate");
+			public static readonly IconId Delegate_Protected = new IconId("md-protected-delegate");
+
+			public static readonly IconId Literal = new IconId("md-literal");
+			public static readonly IconId Literal_Internal = new IconId("md-internal-literal");
+			public static readonly IconId Literal_Private = new IconId("md-private-literal");
+			public static readonly IconId Literal_Protected = new IconId("md-protected-literal");
+
+			public static readonly IconId Static_Literal = new IconId("md-literal-static");
+			public static readonly IconId Static_Literal_Internal = new IconId("md-internal-literal-static");
+			public static readonly IconId Static_Literal_Private = new IconId("md-private-literal-static");
+			public static readonly IconId Static_Literal_Protected = new IconId("md-protected-literal-static");
+			#endregion
+
+		}
 		static void InitImages()
 		{
 			if (wasInitialized)
@@ -88,118 +206,10 @@ namespace MonoDevelop.D.Completion
 
 			try
 			{
-				#region Class-like structures
-				images["template"] = new IconId("md-template");
-				images["template_internal"] = new IconId("md-internal-template");
-				images["template_private"] = new IconId("md-private-template");
-				images["template_protected"] = new IconId("md-protected-template");
-
-				#region Class
-				images["class"] = new IconId("md-class");
-				images["class_internal"] = new IconId("md-internal-class");
-				images["class_private"] = new IconId("md-private-class");
-				images["class_protected"] = new IconId("md-protected-class");
-
-				images["static_class"] = new IconId("md-class-static");
-				images["static_class_internal"] = new IconId("md-internal-class-static");
-				images["static_class_private"] = new IconId("md-private-class-static");
-				images["static_class_protected"] = new IconId("md-protected-class-static");
-
-				images["abstract_class"] = new IconId("md-class-abstract");
-				images["abstract_class_internal"] = new IconId("md-internal-class-abstract");
-				images["abstract_class_private"] = new IconId("md-private-class-abstract");
-				images["abstract_class_protected"] = new IconId("md-protected-class-abstract");
-
-				images["static_abstract_class"] = new IconId("md-class-static-abstract");
-				images["static_abstract_class_internal"] = new IconId("md-internal-class-static-abstract");
-				images["static_abstract_class_private"] = new IconId("md-private-class-static-abstract");
-				images["static_abstract_class_protected"] = new IconId("md-protected-class-static-abstract");
-				#endregion
-
-				images["struct"] = new IconId("md-struct");
-				images["struct_internal"] = new IconId("md-internal-struct");
-				images["struct_private"] = new IconId("md-private-struct");
-				images["struct_protected"] = new IconId("md-protected-struct");
-
-				images["interface"] = new IconId("md-interface");
-				images["interface_internal"] = new IconId("md-internal-interface");
-				images["interface_private"] = new IconId("md-private-interface");
-				images["interface_protected"] = new IconId("md-protected-interface");
-
-				images["enum"] = new IconId("md-enum");
-				images["enum_internal"] = new IconId("md-internal-enum");
-				images["enum_private"] = new IconId("md-private-enum");
-				images["enum_protected"] = new IconId("md-protected-enum");
-
-				images["union"] = new IconId("md-union");
-				images["union_internal"] = new IconId("md-internal-union");
-				images["union_private"] = new IconId("md-private-union");
-				images["union_protected"] = new IconId("md-protected-union");
-				#endregion
-
-				#region Methods
-				images["method"] = new IconId("md-method");
-				images["method_internal"] = new IconId("md-internal-method");
-				images["method_private"] = new IconId("md-private-method");
-				images["method_protected"] = new IconId("md-protected-method");
-
-				images["static_method"] = new IconId("md-method-static");
-				images["static_method_internal"] = new IconId("md-internal-method-static");
-				images["static_method_private"] = new IconId("md-private-method-static");
-				images["static_method_protected"] = new IconId("md-protected-method-static");
-
-				images["abstract_method"] = new IconId("md-method-abstract");
-				images["abstract_method_internal"] = new IconId("md-internal-method-abstract");
-				images["abstract_method_protected"] = new IconId("md-protected-method-abstract");
-
-				images["override_method"] = new IconId("md-method-override");
-				images["override_method_internal"] = new IconId("md-internal-method-override");
-				images["override_method_protected"] = new IconId("md-protected-method-override");
-				#endregion
-
-				#region Variables
-				images["parameter"] = new IconId("d-parameter");
-				images["ref_parameter"] = new IconId("d-ref-parameter");
-				images["out_parameter"] = new IconId("d-out-parameter");
-				images["lazy_parameter"] = new IconId("d-lazy-parameter");
-
-				images["local"] = new IconId("md-field"); // TODO: what's the difference between local & field?
-
-				images["field"] = new IconId("md-field");
-				images["field_internal"] = new IconId("md-internal-field");
-				images["field_private"] = new IconId("md-private-field");
-				images["field_protected"] = new IconId("md-protected-field");
-
-				images["static_field"] = new IconId("md-field-static");
-				images["static_field_internal"] = new IconId("md-internal-field-static");
-				images["static_field_private"] = new IconId("md-private-field-static");
-				images["static_field_protected"] = new IconId("md-protected-field-static");
-
-                images["alias"] = new IconId("d-alias");
-                images["alias_internal"] = new IconId("d-internal-alias");
-                images["alias_private"] = new IconId("d-private-alias");
-                images["alias_protected"] = new IconId("d-protected-alias");
-
-				images["property"] = new IconId("md-property");
-				images["property_internal"] = new IconId("md-internal-property");
-				images["property_private"] = new IconId("md-privated-property");
-				images["property_protected"] = new IconId("md-protected-property");
-
-				images["delegate"] = new IconId("md-delegate");
-				images["delegate_internal"] = new IconId("md-internal-delegate");
-				images["delegate_private"] = new IconId("md-private-delegate");
-				images["delegate_protected"] = new IconId("md-protected-delegate");
-
-				images["literal"] = new IconId("md-literal");
-				images["literal_private"] = new IconId("md-private-literal");
-				images["literal_protected"] = new IconId("md-protected-literal");
-				images["literal_internal"] = new IconId("md-internal-literal");
-
-				images["static_literal"] = new IconId("md-literal-static");
-				images["static_literal_private"] = new IconId("md-private-literal-static");
-				images["static_literal_protected"] = new IconId("md-protected-literal-static");
-				images["static_literal_internal"] = new IconId("md-internal-literal-static");
-				#endregion
+				foreach (var f in typeof(DIcons).GetFields())
+				{
+					images.Add(f.Name.ToLower(), (IconId)f.GetValue(null));
+				}
 			}
 			catch (Exception ex)
 			{
@@ -218,6 +228,7 @@ namespace MonoDevelop.D.Completion
 				return images[key];
 			return null;
 		}
+
 		#endregion
 	}
 
@@ -232,12 +243,13 @@ namespace MonoDevelop.D.Completion
 			this.scopedBlock = scopedBlock;
 		}
 
-		~CompletionDataGenerator()
+		~CompletionDataGenerator ()
 		{
 			DCompletionData.catCache.Clear();
 		}
 
 		Dictionary<int, DCompletionData> overloadCheckDict = new Dictionary<int, DCompletionData>();
+
 		public void Add(INode Node)
 		{
 			if (Node == null || Node.NameHash == 0)
@@ -250,7 +262,7 @@ namespace MonoDevelop.D.Completion
 			}
 			else
 			{
-				CompletionDataList.Add(overloadCheckDict[Node.NameHash]=new DCompletionData(Node, Node.Parent == scopedBlock));
+				CompletionDataList.Add(overloadCheckDict[Node.NameHash] = new DCompletionData(Node, Node.Parent == scopedBlock));
 			}
 		}
 
@@ -261,7 +273,7 @@ namespace MonoDevelop.D.Completion
 
 		public void AddPropertyAttribute(string AttributeText)
 		{
-			CompletionDataList.Add(new CompletionData("@"+AttributeText,new IconId("md-keyword"), DTokens.GetDescription("@"+AttributeText)) { CompletionText = AttributeText });
+			CompletionDataList.Add(new CompletionData("@" + AttributeText, new IconId("md-keyword"), DTokens.GetDescription("@" + AttributeText)) { CompletionText = AttributeText });
 		}
 
 		public void AddTextItem(string Text, string Description)
@@ -273,10 +285,13 @@ namespace MonoDevelop.D.Completion
 		{
 			CompletionDataList.Add(new NamespaceCompletionData(module));
 		}
-		
+
 		public void AddPackage(string packageName)
 		{
-			CompletionDataList.Add(new PackageCompletionData { Path = packageName, Name = ModuleNameHelper.ExtractModuleName(packageName) });
+			CompletionDataList.Add(new PackageCompletionData {
+				Path = packageName,
+				Name = ModuleNameHelper.ExtractModuleName(packageName)
+			});
 		}
 
 		public void AddCodeGeneratingNodeItem(INode Node, string codeToGenerate)
@@ -291,7 +306,7 @@ namespace MonoDevelop.D.Completion
 			}
 			else
 			{
-				CompletionDataList.Add(overloadCheckDict[Node.NameHash] = new DCompletionData(Node, Node.Parent == scopedBlock){
+				CompletionDataList.Add(overloadCheckDict[Node.NameHash] = new DCompletionData(Node, Node.Parent == scopedBlock) {
 					CompletionText = codeToGenerate
 				});
 			}
@@ -401,7 +416,7 @@ namespace MonoDevelop.D.Completion
 			{
 				return Name;
 			}
-			set{}
+			set{ }
 		}
 
 		public override string DisplayDescription
@@ -410,7 +425,7 @@ namespace MonoDevelop.D.Completion
 			{
 				return "<i>(Package)</i>";
 			}
-			set{}
+			set{ }
 		}
 
 		public override string DisplayText
@@ -419,7 +434,7 @@ namespace MonoDevelop.D.Completion
 			{
 				return Name;
 			}
-			set{}
+			set{ }
 		}
 
 		public override TooltipInformation CreateTooltipInformation(bool smartWrap)
@@ -499,8 +514,6 @@ namespace MonoDevelop.D.Completion
 			}
 		}
 
-		
-
 		public override string DisplayText
 		{
 			get { return modName; }
@@ -518,7 +531,7 @@ namespace MonoDevelop.D.Completion
 				return Module.FileName;
 			}
 			set
-			{}
+			{ }
 		}
 	}
 
@@ -580,7 +593,7 @@ namespace MonoDevelop.D.Completion
 				NodeCompletionCategory cat;
 				var par = Node.Parent as DNode;
 
-				if(par == null)
+				if (par == null)
 					return null;
 
 				if (par is DEnum && par.NameHash == 0)
@@ -591,7 +604,7 @@ namespace MonoDevelop.D.Completion
 				}
 
 				if (!catCache.TryGetValue(par, out cat))
-					catCache[par] = cat = new NodeCompletionCategory(par,parentContainsLocals);
+					catCache[par] = cat = new NodeCompletionCategory(par, parentContainsLocals);
 
 				return cat;
 			}
@@ -613,7 +626,7 @@ namespace MonoDevelop.D.Completion
 					switch ((n as DClassLike).ClassType)
 					{
 						case DTokens.Template:
-							return iconIdWithProtectionAttr(n,"template");
+							return iconIdWithProtectionAttr(n, "template");
 
 						case DTokens.Class:
 							return classIconIdWithProtectionAttr(n);
@@ -647,18 +660,18 @@ namespace MonoDevelop.D.Completion
 
 					return methodIconIdWithProtectionAttr(n);
 				}
-				else if(n is NamedTemplateMixinNode)
-					return iconIdWithProtectionAttr(n,"template");
+				else if (n is NamedTemplateMixinNode)
+					return iconIdWithProtectionAttr(n, "template");
 				else if (n is DModule)
 					return new IconId("d-file");
 				else if (n is DVariable)
 				{
 					var dv = n as DVariable;
 					if (dv.IsAlias)
-                    {
+					{
 						// TODO: does declaring an alias private/protected/package actually have a meaning?
 						return iconIdWithProtectionAttr(n, "alias");
-                    }
+					}
 
 					if (n.ContainsPropertyAttribute())
 					{
@@ -677,7 +690,7 @@ namespace MonoDevelop.D.Completion
 
 					var realParent = n.Parent as DNode;
 
-                    if (realParent is DClassLike || n.Parent is DModule)
+					if (realParent is DClassLike || n.Parent is DModule)
 					{
 						return iconIdWithProtectionAttr(n, "field", true);
 					}
@@ -688,13 +701,13 @@ namespace MonoDevelop.D.Completion
 						if ((realParent as DMethod).Parameters.Contains(n))
 						{
 							if (n.ContainsAttribute(DTokens.Ref))
-							    return DCodeCompletionSupport.GetNodeImage("ref_parameter");
+								return DCodeCompletionSupport.GetNodeImage("ref_parameter");
 							else if (n.ContainsAttribute(DTokens.Lazy))
 								return DCodeCompletionSupport.GetNodeImage("lazy_parameter");
 							else if (n.ContainsAttribute(DTokens.Out))
-							    return DCodeCompletionSupport.GetNodeImage("out_parameter");
+								return DCodeCompletionSupport.GetNodeImage("out_parameter");
 							else
-							    return DCodeCompletionSupport.GetNodeImage("parameter");
+								return DCodeCompletionSupport.GetNodeImage("parameter");
 							// TODO: immutable, scope?
 						}
 						return DCodeCompletionSupport.GetNodeImage("local");
@@ -707,7 +720,10 @@ namespace MonoDevelop.D.Completion
 					return DCodeCompletionSupport.GetNodeImage("local");
 				}
 			}
-			catch (Exception ex) { LoggingService.LogError("Error while getting node icon", ex); }
+			catch (Exception ex)
+			{
+				LoggingService.LogError("Error while getting node icon", ex);
+			}
 			return IconId.Null;
 		}
 
@@ -715,12 +731,12 @@ namespace MonoDevelop.D.Completion
 		/// Returns node icon id looked up from the provided base string plus the protection
 		/// attribute (and, optionally, the staticness) of node.
 		/// </summary>
-		private static IconId iconIdWithProtectionAttr ( DNode n, string image,
-        	bool allow_static = false )
+		private static IconId iconIdWithProtectionAttr(DNode n, string image,
+		                                                bool allow_static = false)
 		{
 			string attr = "";
 
-			if ( allow_static && n.ContainsAttribute(DTokens.Static))
+			if (allow_static && n.ContainsAttribute(DTokens.Static))
 			{
 				attr += "static_";
 			}
@@ -738,13 +754,13 @@ namespace MonoDevelop.D.Completion
 		/// Returns node icon id for a class, including the protection attribute, staticness and
 		/// abstractness.
 		/// </summary>
-		private static IconId classIconIdWithProtectionAttr ( DNode n )
+		private static IconId classIconIdWithProtectionAttr(DNode n)
 		{
 			// Only nested class may be static
 			bool static_allowed = n.IsClassMember;
 
 			string attr = "";
-			if ( n.ContainsAttribute(DTokens.Abstract) )
+			if (n.ContainsAttribute(DTokens.Abstract))
 			{
 				attr += "abstract_";
 			}
@@ -756,20 +772,20 @@ namespace MonoDevelop.D.Completion
 		/// Returns node icon id for a method, including the protection attribute, staticness
 		/// and abstractness.
 		/// </summary>
-		private static IconId methodIconIdWithProtectionAttr ( DNode n )
+		private static IconId methodIconIdWithProtectionAttr(DNode n)
 		{
 			string attr = "";
 
 			// Only class (not struct) methods, and neither static nor private methods may
 			// be abstract/override
-			if ( n.IsClassMember &&
-			    !n.ContainsAttribute(DTokens.Static) && !n.ContainsAttribute(DTokens.Private) )
+			if (n.IsClassMember &&
+			    !n.ContainsAttribute(DTokens.Static) && !n.ContainsAttribute(DTokens.Private))
 			{
-				if ( n.ContainsAttribute(DTokens.Abstract) )
+				if (n.ContainsAttribute(DTokens.Abstract))
 				{
 					attr += "abstract_";
 				}
-				else if ( n.ContainsAttribute(DTokens.Override) )
+				else if (n.ContainsAttribute(DTokens.Override))
 				{
 					attr += "override_";
 				}
@@ -798,7 +814,7 @@ namespace MonoDevelop.D.Completion
 			Ide.Gui.Document guiDoc = null;
 			var ed = window.CompletionWidget as SourceEditor.SourceEditorView;
 
-			foreach(var gdoc in Ide.IdeApp.Workbench.Documents)
+			foreach (var gdoc in Ide.IdeApp.Workbench.Documents)
 				if (gdoc.Editor.Document == ed.Document)
 				{
 					guiDoc = gdoc;
@@ -826,7 +842,7 @@ namespace MonoDevelop.D.Completion
 
 		public override TooltipInformation CreateTooltipInformation(bool smartWrap)
 		{
-			return TooltipInfoGen.Create (Node, IdeApp.Workbench.ActiveDocument.Editor.ColorStyle);
+			return TooltipInfoGen.Create(Node, IdeApp.Workbench.ActiveDocument.Editor.ColorStyle);
 		}
 
 		public int CompareTo(ICompletionData other)
@@ -856,7 +872,7 @@ namespace MonoDevelop.D.Completion
 		{
 			get
 			{
-				return Overloads!=null && Overloads.Count>1;
+				return Overloads != null && Overloads.Count > 1;
 			}
 		}
 
