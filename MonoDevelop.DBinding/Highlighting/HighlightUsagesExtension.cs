@@ -74,7 +74,16 @@ namespace MonoDevelop.D.Highlighting
 						(Document.Project as AbstractDProject).ParseCache :
 						DCompilerService.Instance.GetDefaultCompiler().GenParseCacheView();
 
-			var refs = D_Parser.Refactoring.ReferencesFinder.Scan(SyntaxTree, referencedNode, ctxt);
+			IEnumerable<ISyntaxRegion> refs = null;
+			var task = new System.Threading.Thread(() =>
+			{
+				refs = D_Parser.Refactoring.ReferencesFinder.Scan(SyntaxTree, referencedNode, ctxt);
+			});
+			task.Start();
+			
+			if (!task.Join(3000))
+				task.Abort();
+
 			if(refs != null)
 				foreach (var sym in refs)
 					yield return new Ide.FindInFiles.MemberReference(sym,
