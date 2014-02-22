@@ -115,7 +115,7 @@ namespace MonoDevelop.D.Gui
 			{
 				PathEntry entry;
 
-				var icon = DCompletionData.GetNodeIcon(node as DNode);
+				var icon = DIcons.GetNodeIcon(node as DNode);
 
 				entry = new PathEntry(icon.IsNull?null: ImageService.GetPixbuf(icon.Name, IconSize.Menu), node.Name + DParameterDataProvider.GetNodeParamString(node));
 				entry.Position = EntryPosition.Left;

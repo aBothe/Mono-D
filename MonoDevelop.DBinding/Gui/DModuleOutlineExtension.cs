@@ -166,7 +166,7 @@ namespace MonoDevelop.D.Gui
 			object o = model.GetValue(iter, 0);
 			if (o is DNode)
 			{
-				var icon=DCompletionData.GetNodeIcon(o as DNode);
+				var icon = DIcons.GetNodeIcon(o as DNode);
 				if(icon!=(IconId)null)
 					pixRenderer.Pixbuf = ImageService.GetPixbuf(icon.Name, IconSize.Menu);
 			}

@@ -60,7 +60,7 @@ namespace MonoDevelop.D.Gui
 
 		public Gdk.Pixbuf GetIcon (int n)
 		{			
-			var icon=DCompletionData.GetNodeIcon(memberList[n] as DNode);
+			var icon=DIcons.GetNodeIcon(memberList[n] as DNode);
 			return ImageService.GetPixbuf(icon.Name, IconSize.Menu);
 		}
 
