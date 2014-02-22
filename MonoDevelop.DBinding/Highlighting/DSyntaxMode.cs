@@ -275,8 +275,11 @@ namespace MonoDevelop.D.Highlighting
 
 			Ide.DispatchService.GuiDispatch(() =>
 			{
-				guiDoc.Editor.Parent.TextViewMargin.PurgeLayoutCache();
-				guiDoc.Editor.Parent.QueueDraw();
+				if (guiDoc.Editor != null)
+				{
+					guiDoc.Editor.Parent.TextViewMargin.PurgeLayoutCache();
+					guiDoc.Editor.Parent.QueueDraw();
+				}
 			});
 		}
 
