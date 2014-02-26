@@ -107,25 +107,25 @@
 		<StockIcon stockid="d-reg-xmm" resource="d-reg-xmm-16.png" />
 		<StockIcon stockid="d-reg-ymm" resource="d-reg-ymm-16.png" />
 
-		<StockIcon stockid="d-asm-x86-fpu" icon="res:d-asm-x86-16.png|d-asm-fpu-16.png" size="Menu" />
-		<StockIcon stockid="d-asm-x86-mmx" icon="res:d-asm-x86-16.png|d-asm-mmx-16.png" size="Menu" />
-		<StockIcon stockid="d-asm-x86-sse" icon="res:d-asm-x86-16.png|d-asm-sse-16.png" size="Menu" />
-		<StockIcon stockid="d-asm-x86-sse2" icon="res:d-asm-x86-16.png|d-asm-sse2-16.png" size="Menu" />
-		<StockIcon stockid="d-asm-x86-sse3" icon="res:d-asm-x86-16.png|d-asm-sse3-16.png" size="Menu" />
-		<StockIcon stockid="d-asm-x86-ssse3" icon="res:d-asm-x86-16.png|d-asm-ssse3-16.png" size="Menu" />
-		<StockIcon stockid="d-asm-x86-sse4.1" icon="res:d-asm-x86-16.png|d-asm-sse4.1-16.png" size="Menu" />
-		<StockIcon stockid="d-asm-x86-sse4.2" icon="res:d-asm-x86-16.png|d-asm-sse4.2-16.png" size="Menu" />
-		<StockIcon stockid="d-asm-x86-avx" icon="res:d-asm-x86-16.png|d-asm-avx-16.png" size="Menu" />
+		<StockIcon stockid="d-asm-x86-fpu" icon="res:d-asm-x86-16.png|res:d-asm-fpu-16.png" size="Menu" />
+		<StockIcon stockid="d-asm-x86-mmx" icon="res:d-asm-x86-16.png|res:d-asm-mmx-16.png" size="Menu" />
+		<StockIcon stockid="d-asm-x86-sse" icon="res:d-asm-x86-16.png|res:d-asm-sse-16.png" size="Menu" />
+		<StockIcon stockid="d-asm-x86-sse2" icon="res:d-asm-x86-16.png|res:d-asm-sse2-16.png" size="Menu" />
+		<StockIcon stockid="d-asm-x86-sse3" icon="res:d-asm-x86-16.png|res:d-asm-sse3-16.png" size="Menu" />
+		<StockIcon stockid="d-asm-x86-ssse3" icon="res:d-asm-x86-16.png|res:d-asm-ssse3-16.png" size="Menu" />
+		<StockIcon stockid="d-asm-x86-sse4.1" icon="res:d-asm-x86-16.png|res:d-asm-sse4.1-16.png" size="Menu" />
+		<StockIcon stockid="d-asm-x86-sse4.2" icon="res:d-asm-x86-16.png|res:d-asm-sse4.2-16.png" size="Menu" />
+		<StockIcon stockid="d-asm-x86-avx" icon="res:d-asm-x86-16.png|res:d-asm-avx-16.png" size="Menu" />
 
-		<StockIcon stockid="d-asm-x64-fpu" icon="res:d-asm-x64-16.png|d-asm-fpu-16.png" size="Menu" />
-		<StockIcon stockid="d-asm-x64-mmx" icon="res:d-asm-x64-16.png|d-asm-mmx-16.png" size="Menu" />
-		<StockIcon stockid="d-asm-x64-sse" icon="res:d-asm-x64-16.png|d-asm-sse-16.png" size="Menu" />
-		<StockIcon stockid="d-asm-x64-sse2" icon="res:d-asm-x64-16.png|d-asm-sse2-16.png" size="Menu" />
-		<StockIcon stockid="d-asm-x64-sse3" icon="res:d-asm-x64-16.png|d-asm-sse3-16.png" size="Menu" />
-		<StockIcon stockid="d-asm-x64-ssse3" icon="res:d-asm-x64-16.png|d-asm-ssse3-16.png" size="Menu" />
-		<StockIcon stockid="d-asm-x64-sse4.1" icon="res:d-asm-x64-16.png|d-asm-sse4.1-16.png" size="Menu" />
-		<StockIcon stockid="d-asm-x64-sse4.2" icon="res:d-asm-x64-16.png|d-asm-sse4.2-16.png" size="Menu" />
-		<StockIcon stockid="d-asm-x64-avx" icon="res:d-asm-x64-16.png|d-asm-avx-16.png" size="Menu" />
+		<StockIcon stockid="d-asm-x64-fpu" icon="res:d-asm-x64-16.png|res:d-asm-fpu-16.png" size="Menu" />
+		<StockIcon stockid="d-asm-x64-mmx" icon="res:d-asm-x64-16.png|res:d-asm-mmx-16.png" size="Menu" />
+		<StockIcon stockid="d-asm-x64-sse" icon="res:d-asm-x64-16.png|res:d-asm-sse-16.png" size="Menu" />
+		<StockIcon stockid="d-asm-x64-sse2" icon="res:d-asm-x64-16.png|res:d-asm-sse2-16.png" size="Menu" />
+		<StockIcon stockid="d-asm-x64-sse3" icon="res:d-asm-x64-16.png|res:d-asm-sse3-16.png" size="Menu" />
+		<StockIcon stockid="d-asm-x64-ssse3" icon="res:d-asm-x64-16.png|res:d-asm-ssse3-16.png" size="Menu" />
+		<StockIcon stockid="d-asm-x64-sse4.1" icon="res:d-asm-x64-16.png|res:d-asm-sse4.1-16.png" size="Menu" />
+		<StockIcon stockid="d-asm-x64-sse4.2" icon="res:d-asm-x64-16.png|res:d-asm-sse4.2-16.png" size="Menu" />
+		<StockIcon stockid="d-asm-x64-avx" icon="res:d-asm-x64-16.png|res:d-asm-avx-16.png" size="Menu" />
 
 	</Extension>
 
