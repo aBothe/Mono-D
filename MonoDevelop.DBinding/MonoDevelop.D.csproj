@@ -189,6 +189,7 @@
     <Compile Include="Building\ErrorExtracting.cs" />
     <Compile Include="Building\ProjectBuilder.cs" />
     <Compile Include="Completion\AstUpdater.cs" />
+    <Compile Include="Completion\DIcons.cs" />
     <Compile Include="Formatting\DFormattingPolicy.cs" />
     <Compile Include="Formatting\FormattingPanel.cs" />
     <Compile Include="Formatting\Indentation\DIndentEngine.cs" />
