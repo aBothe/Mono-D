@@ -122,6 +122,11 @@ namespace MonoDevelop.D.Completion
 			CompletionDataList.Add(new CompletionData("@" + AttributeText, new IconId("md-keyword"), DTokens.GetDescription("@" + AttributeText)) { CompletionText = AttributeText });
 		}
 
+		public void AddIconItem(string iconName, string text, string description)
+		{
+			CompletionDataList.Add (new CompletionData (text, new IconId (iconName), description));
+		}
+
 		public void AddTextItem(string Text, string Description)
 		{
 			CompletionDataList.Add(Text, IconId.Null, Description);
