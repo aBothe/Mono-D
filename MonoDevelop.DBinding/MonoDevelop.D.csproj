@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -148,6 +148,39 @@
     <EmbeddedResource Include="Building\CompilerPresets\ldc2.xml">
       <SubType>Designer</SubType>
       <LogicalName>CompilerPresets.ldc2.xml</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="icons\d-asm-avx-16.png">
+      <LogicalName>d-asm-avx-16.png</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="icons\d-asm-fpu-16.png">
+      <LogicalName>d-asm-fpu-16.png</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="icons\d-asm-mmx-16.png">
+      <LogicalName>d-asm-mmx-16.png</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="icons\d-asm-sse-16.png">
+      <LogicalName>d-asm-sse-16.png</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="icons\d-asm-sse2-16.png">
+      <LogicalName>d-asm-sse2-16.png</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="icons\d-asm-sse3-16.png">
+      <LogicalName>d-asm-sse3-16.png</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="icons\d-asm-sse4.1-16.png">
+      <LogicalName>d-asm-sse4.1-16.png</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="icons\d-asm-sse4.2-16.png">
+      <LogicalName>d-asm-sse4.2-16.png</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="icons\d-asm-ssse3-16.png">
+      <LogicalName>d-asm-ssse3-16.png</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="icons\d-asm-x64-16.png">
+      <LogicalName>d-asm-x64-16.png</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="icons\d-asm-x86-16.png">
+      <LogicalName>d-asm-x86-16.png</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
