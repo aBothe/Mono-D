@@ -330,6 +330,10 @@ namespace MonoDevelop.D.Formatting.Indentation
 				if(!(stateTracker.Engine.IsInsideCommentOrString))
 					reIndent = true;
 				break;
+			case 'e':
+				var off = textEditorData.Caret.Offset;
+				reIndent = off > 3 && textEditorData.GetTextAt (off - 4, 4) == "else";
+				break;
 			case '\n':
 				if (FixLineStart (stateTracker.Engine.LineNumber)) 
 					return;
@@ -413,7 +417,7 @@ namespace MonoDevelop.D.Formatting.Indentation
 		{
 			if (stateTracker.Engine.LineBeganInsideString || stateTracker.Engine.LineBeganInsideMultiLineComment)
 				return;
-			string newIndent = string.Empty;
+
 			DocumentLine line = textEditorData.Document.GetLineByOffset (cursor);
 //			stateTracker.UpdateEngine (line.Offset);
 			// Get context to the end of the line w/o changing the main engine's state
@@ -427,7 +431,7 @@ namespace MonoDevelop.D.Formatting.Indentation
 			int offset = cursor > pos + nlwsp ? cursor - (pos + nlwsp) : 0;
 			if (!stateTracker.Engine.LineBeganInsideMultiLineComment || (nlwsp < line.LengthIncludingDelimiter && textEditorData.Document.GetCharAt (line.Offset + nlwsp) == '*')) {
 				// Possibly replace the indent
-				newIndent = ctx.ThisLineIndent;
+				var newIndent = ctx.ThisLineIndent;
 				int newIndentLength = newIndent.Length;
 				if (newIndent != curIndent) {
 					if (CompletionWindowManager.IsVisible) {
