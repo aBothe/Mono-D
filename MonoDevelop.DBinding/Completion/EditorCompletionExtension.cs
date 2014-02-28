@@ -119,6 +119,11 @@ namespace MonoDevelop.D
 					listWindow.PreProcessKey(key, keyChar, modifier);
 					return true;
 				}
+				else if ((keyChar == ' ' || key == Gdk.Key.Return || key == Gdk.Key.ISO_Enter || key == Gdk.Key.Key_3270_Enter || key == Gdk.Key.KP_Enter) && listWindow.CurrentPartialWord == listWindow.CurrentCompletionText)
+				{
+					keyAction = KeyActions.Process | KeyActions.CloseWindow;
+					return true;
+				}
 
 				return false;
 			}
