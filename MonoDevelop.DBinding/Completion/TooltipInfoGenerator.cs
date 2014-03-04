@@ -16,7 +16,7 @@ namespace MonoDevelop.D.Completion
 			{
 				if (ms.Definition is DVariable)
 				{
-					var bt = DResolver.StripAliasSymbol(ms.Base);
+					var bt = ms.Base;
 					if (bt is DelegateType)
 						return TooltipInfoGenerator.Generate(bt as DelegateType, isInTemplateArgInsight, currentParameter);
 				}

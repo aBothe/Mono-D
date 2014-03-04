@@ -50,19 +50,27 @@ namespace MonoDevelop.D.Gui
 			if (doc == null)
 				return null;
 
-			var titem = (AbstractType[])item.Item;
+			var titem = item.Item as AbstractType;
 
-			if (titem == null || titem.Length < 1)
+			if (titem == null)
 				return null;
 
 			var result = new TooltipInformationWindow ();
 			result.ShowArrow = true;
 
-			foreach (var i in titem) {
-				if (i == null)
-					continue;
-				var tooltipInformation = TooltipInfoGen.Create (i, editor.ColorStyle);
-				if (tooltipInformation != null && !string.IsNullOrEmpty (tooltipInformation.SignatureMarkup))
+			if (titem is AmbiguousType)
+				foreach (var i in (titem as AmbiguousType).Overloads)
+				{
+					if (i == null)
+						continue;
+					var tooltipInformation = TooltipInfoGen.Create(i, editor.ColorStyle);
+					if (tooltipInformation != null && !string.IsNullOrEmpty(tooltipInformation.SignatureMarkup))
+						result.AddOverload(tooltipInformation);
+				}
+			else
+			{
+				var tooltipInformation = TooltipInfoGen.Create(titem, editor.ColorStyle);
+				if (tooltipInformation != null && !string.IsNullOrEmpty(tooltipInformation.SignatureMarkup))
 					result.AddOverload(tooltipInformation);
 			}
 
@@ -77,7 +85,7 @@ namespace MonoDevelop.D.Gui
 
 		public override Window ShowTooltipWindow (TextEditor editor, int offset, Gdk.ModifierType modifierState, int mouseX, int mouseY, TooltipItem item)
 		{
-			var titems = (AbstractType[])item.Item;/*
+			var titems = item.Item as AbstractType;/*
 			if (lastNode != null && lastWindow != null && lastWindow.IsRealized && titem.Result != null && lastNode == titem.Result)
 				return lastWindow;*/
 
@@ -87,7 +95,7 @@ namespace MonoDevelop.D.Gui
 			if (tipWindow == null)
 				return null;
 
-			var titem = titems [0].DeclarationOrExpressionBase;
+			var titem = titems.DeclarationOrExpressionBase;
 			var positionWidget = editor.TextArea;
 
 			Cairo.Point p1, p2;

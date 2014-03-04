@@ -43,7 +43,7 @@ namespace MonoDevelop.D.Completion
 					return (tir as EponymousTemplateType).Definition.TemplateParameters;
 
 				if (tir.Definition is DVariable)
-					cur = DResolver.StripAliasSymbol(tir.Base);
+					cur = tir.Base;
 			}
 
 			if (cur is DelegateType)
