@@ -58,18 +58,11 @@ namespace MonoDevelop.D.Gui
 			var result = new TooltipInformationWindow ();
 			result.ShowArrow = true;
 
-			if (titem is AmbiguousType)
-				foreach (var i in (titem as AmbiguousType).Overloads)
-				{
-					if (i == null)
-						continue;
-					var tooltipInformation = TooltipInfoGen.Create(i, editor.ColorStyle);
-					if (tooltipInformation != null && !string.IsNullOrEmpty(tooltipInformation.SignatureMarkup))
-						result.AddOverload(tooltipInformation);
-				}
-			else
+			foreach(var i in AmbiguousType.TryDissolve(titem))
 			{
-				var tooltipInformation = TooltipInfoGen.Create(titem, editor.ColorStyle);
+				if (i == null)
+					continue;
+				var tooltipInformation = TooltipInfoGen.Create(i, editor.ColorStyle);
 				if (tooltipInformation != null && !string.IsNullOrEmpty(tooltipInformation.SignatureMarkup))
 					result.AddOverload(tooltipInformation);
 			}

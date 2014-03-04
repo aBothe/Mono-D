@@ -104,11 +104,7 @@ namespace MonoDevelop.D.Resolver
 
 			// Resolve the hovered piece of code
 			//return DResolver.ResolveType(edData, ctxt: ResolverContext);/*
-			var res = DResolver.ResolveType(edData, ctxt:ResolverContext);
-			if (res is AmbiguousType)
-				return (res as AmbiguousType).Overloads;
-			else
-				return res != null ? new[] { res } : null;
+			return AmbiguousType.TryDissolve(DResolver.ResolveType(edData, ctxt:ResolverContext));
 		}
 
 		public static AbstractType[] ResolveHoveredCodeLoosely(out ResolutionContext ctxt, out IEditorData ed, out DResolver.NodeResolutionAttempt resolutionAttempt, Document doc = null)
@@ -117,11 +113,7 @@ namespace MonoDevelop.D.Resolver
 			ctxt = ResolutionContext.Create(ed);
 
 			//return DResolver.ResolveTypeLoosely(ed, out resolutionAttempt, ctxt);
-			var res = DResolver.ResolveTypeLoosely (ed, out resolutionAttempt, ctxt);
-			if (res is AmbiguousType)
-				return (res as AmbiguousType).Overloads;
-			else
-				return res != null ? new[] { res } : null;
+			return AmbiguousType.TryDissolve(DResolver.ResolveTypeLoosely (ed, out resolutionAttempt, ctxt));
 		}
 	}
 }
