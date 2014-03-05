@@ -38,7 +38,7 @@ namespace MonoDevelop.D.Completion
 		{
 			var ds = t as DSymbol;
 			if (ds != null)
-				return GenTooltipSignature (ds.Definition, templateParamCompletion, currentMethodParam, ds.Base != null ? ds.Base.TypeDeclarationOf : null, ds.DeducedTypes != null ? new DeducedTypeDictionary(ds) : null);
+				return GenTooltipSignature (ds.Definition, templateParamCompletion, currentMethodParam, DTypeToTypeDeclVisitor.GenerateTypeDecl(ds.Base), ds.DeducedTypes != null ? new DeducedTypeDictionary(ds) : null);
 
 			if (t is PackageSymbol) {
 				var pack = (t as PackageSymbol).Package;
