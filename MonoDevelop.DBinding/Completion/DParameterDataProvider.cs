@@ -83,21 +83,17 @@ namespace MonoDevelop.D.Completion
 		{
 			var caretLocation = new CodeLocation (ctx.TriggerLineOffset, ctx.TriggerLine);
 
-			try {
-				var edData = DResolverWrapper.CreateEditorData(doc);
+			var edData = DResolverWrapper.CreateEditorData(doc);
 
-				edData.CaretLocation=caretLocation;
-				edData.CaretOffset=ctx.TriggerOffset;
+			edData.CaretLocation=caretLocation;
+			edData.CaretOffset=ctx.TriggerOffset;
 
-				var argsResult = ParameterInsightResolution.ResolveArgumentContext (edData);
+			var argsResult = ParameterInsightResolution.ResolveArgumentContext (edData);
 				
-				if (argsResult == null || argsResult.ResolvedTypesOrMethods == null || argsResult.ResolvedTypesOrMethods.Length < 1)
-					return null;
-
-				return new DParameterDataProvider(doc, argsResult, ctx.TriggerOffset);
-			} catch {
+			if (argsResult == null || argsResult.ResolvedTypesOrMethods == null || argsResult.ResolvedTypesOrMethods.Length < 1)
 				return null;
-			}
+
+			return new DParameterDataProvider(doc, argsResult, ctx.TriggerOffset);
 		}
 		
 		private DParameterDataProvider (Document doc, ArgumentsResolutionResult argsResult, int startOffset) : base(startOffset)
