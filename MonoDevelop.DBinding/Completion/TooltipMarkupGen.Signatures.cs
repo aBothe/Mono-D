@@ -78,10 +78,12 @@ namespace MonoDevelop.D.Completion
 					sb.AppendLine ();
 					sb.Append ("  ");
 
+					var parm = dm.Parameters [i] as DNode;
+
 					var indexBackup = sb.Length;
 
 					//TODO: Show deduced parameters
-					AttributesTypeAndName(dm.Parameters [i] as DNode, sb);
+					AttributesTypeAndName(parm , sb);
 
 					if (!templArgs && curArg == i) {
 						//TODO: Optimize
@@ -89,6 +91,10 @@ namespace MonoDevelop.D.Completion
 						sb.Remove (indexBackup, contentToUnderline.Length);
 						AppendFormat (contentToUnderline, sb, FormatFlags.Underline);
 					}
+
+					if (parm is DVariable && (parm as DVariable).Initializer != null)
+						sb.Append(" = ").Append((parm as DVariable).Initializer.ToString());
+					
 					sb.Append (',');
 				}
 
