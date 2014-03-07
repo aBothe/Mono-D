@@ -77,7 +77,14 @@ namespace MonoDevelop.D.Highlighting
 			IEnumerable<ISyntaxRegion> refs = null;
 			var task = new System.Threading.Thread(() =>
 			{
-				refs = D_Parser.Refactoring.ReferencesFinder.Scan(SyntaxTree, referencedNode, ctxt);
+				try
+				{
+					refs = D_Parser.Refactoring.ReferencesFinder.Scan(SyntaxTree, referencedNode, ctxt);
+				}
+				catch (Exception ex)
+				{
+					LoggingService.LogInfo("Error during highlighting usages", ex);
+				}
 			});
 			task.Start();
 			
