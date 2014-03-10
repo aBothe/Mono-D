@@ -23,6 +23,7 @@ namespace MonoDevelop.D.OptionPanels
 			check_EnableSuggestionMode.Active = CompletionOptions.Instance.EnableSuggestionMode;
 			check_HideDeprecatedItems.Active = CompletionOptions.Instance.HideDeprecatedNodes;
 			check_EnableDiffbasedColoring.Active = Highlighting.DiffbasedHighlighting.Enabled;
+			check_ShowStructMembersInStructInitOnly.Active = CompletionOptions.Instance.ShowStructMembersInStructInitOnly;
 
 			var outline = DCompilerService.Instance.Outline;
 			check_ShowFunctionParams.Active = outline.ShowFuncParams;
@@ -56,6 +57,7 @@ namespace MonoDevelop.D.OptionPanels
 			CompletionOptions.Instance.EnableSuggestionMode = check_EnableSuggestionMode.Active;
 			CompletionOptions.Instance.HideDeprecatedNodes = check_HideDeprecatedItems.Active;
 			Highlighting.DiffbasedHighlighting.Enabled = check_EnableDiffbasedColoring.Active;
+			CompletionOptions.Instance.ShowStructMembersInStructInitOnly = check_ShowStructMembersInStructInitOnly.Active;
 
 			var outline = DCompilerService.Instance.Outline;
 			outline.ShowFuncParams = check_ShowFunctionParams.Active;
