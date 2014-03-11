@@ -38,7 +38,10 @@ namespace MonoDevelop.D.Completion
 		{
 			var ds = t as DSymbol;
 			if (ds != null)
-				return GenTooltipSignature (ds.Definition, templateParamCompletion, currentMethodParam, DTypeToTypeDeclVisitor.GenerateTypeDecl(ds.Base), ds.DeducedTypes != null ? new DeducedTypeDictionary(ds) : null);
+			{
+				var aliasedSymbol = ds.Tag as D_Parser.Resolver.TypeResolution.TypeDeclarationResolver.AliasTag;
+				return GenTooltipSignature(aliasedSymbol == null ? ds.Definition : aliasedSymbol.aliasDefinition, templateParamCompletion, currentMethodParam, DTypeToTypeDeclVisitor.GenerateTypeDecl(ds.Base), ds.DeducedTypes != null ? new DeducedTypeDictionary(ds) : null);
+			}
 
 			if (t is PackageSymbol) {
 				var pack = (t as PackageSymbol).Package;
