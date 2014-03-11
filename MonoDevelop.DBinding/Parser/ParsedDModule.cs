@@ -93,72 +93,63 @@ namespace MonoDevelop.D.Parser
 			}
 		}
 
-		void GenerateFoldsInternal(List<FoldingRegion> l,IBlockNode block)
+		class FoldingVisitor : DefaultDepthFirstVisitor
 		{
-			if (block == null)
-				return;
+			readonly List<FoldingRegion> l;
 
-			if (!(block is DModule) && !block.Location.IsEmpty && block.EndLocation > block.Location)
+			public FoldingVisitor(List<FoldingRegion> l)
 			{
-				if (block is DMethod)
-				{
-					var dm = block as DMethod;
-
-					if (dm.In != null)
-						GenerateFoldsInternal(l, dm.In);
-					if (dm.Out != null)
-						GenerateFoldsInternal(l, dm.Out);
-					if (dm.Body != null)
-						GenerateFoldsInternal(l, dm.Body);
-				}
-				else
-					l.Add(new FoldingRegion(GetBlockBodyRegion(block),FoldType.Type));
+				this.l = l;
 			}
 
-			if (block.Count > 0)
-				foreach (var n in block)
-					GenerateFoldsInternal(l,n as IBlockNode);
-
-			if (block is DBlockNode)
+			public override void Visit(BlockStatement s)
 			{
-				var dbn = block as DBlockNode;
-				if (dbn.MetaBlocks != null)
-				{
-					for (int i = dbn.MetaBlocks.Count - 1; i >= 0; i--)
-					{
-						var mdb = dbn.MetaBlocks[i] as IMetaDeclarationBlock;
-						if (mdb != null)
-						{
-							l.Add(new FoldingRegion(
+				l.Add(new FoldingRegion(
+								new DomRegion(s.Location.Line, s.Location.Column, s.EndLocation.Line, s.EndLocation.Column),
+								FoldType.Undefined));
+
+				base.Visit(s);
+			}
+
+			public override void Visit(D_Parser.Dom.Expressions.StructInitializer x)
+			{
+				l.Add(new FoldingRegion(
+								new DomRegion(x.Location.Line, x.Location.Column, x.EndLocation.Line, x.EndLocation.Column),
+								FoldType.Undefined));
+
+				base.Visit(x);
+			}
+
+			public override void Visit(DClassLike n)
+			{
+				l.Add(new FoldingRegion(GetBlockBodyRegion(n), FoldType.Type));
+				base.Visit(n);
+			}
+
+			public override void Visit(DEnum n)
+			{
+				l.Add(new FoldingRegion(GetBlockBodyRegion(n), FoldType.Type));
+
+				base.Visit(n);
+			}
+
+			public override void VisitMetaBlock(IMetaDeclarationBlock mdb)
+			{
+				l.Add(new FoldingRegion(
 								new DomRegion(mdb.BlockStartLocation.Line, mdb.BlockStartLocation.Column, mdb.EndLocation.Line, mdb.EndLocation.Column),
 								FoldType.Undefined));
-						}
-					}
-				}
 			}
+		}
+
+		void GenerateFoldsInternal(List<FoldingRegion> l,IBlockNode block)
+		{
+			if (block != null)
+				block.Accept(new FoldingVisitor(l));
 		}
 
 		public static DomRegion GetBlockBodyRegion(IBlockNode n)
 		{
 			return new DomRegion(n.BlockStartLocation.Line, n.BlockStartLocation.Column, n.EndLocation.Line, n.EndLocation.Column + 1);
-		}
-
-		void GenerateFoldsInternal(List<FoldingRegion> l, StatementContainingStatement statement)
-		{
-			// Only let block statements (like { SomeStatement(); SomeOtherStatement++; }) be foldable
-			if(statement is BlockStatement)
-				l.Add(new FoldingRegion(
-					new DomRegion(
-						statement.Location.Line,
-						statement.Location.Column,
-						statement.EndLocation.Line,
-						statement.EndLocation.Column+1),
-					FoldType.Undefined));
-
-			// Do a deep-scan
-			foreach (var s in statement.SubStatements)
-				if (s is StatementContainingStatement)
-					GenerateFoldsInternal(l, s as StatementContainingStatement);
 		}
 		#endregion
 	}
