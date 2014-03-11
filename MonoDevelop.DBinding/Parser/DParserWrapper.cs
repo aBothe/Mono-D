@@ -50,9 +50,9 @@ namespace MonoDevelop.D.Parser
 			// HACK(?) The folds are parsed before the document gets loaded 
 			// - so reuse the last parsed document to save time
 			// -- What if multiple docs are opened?
-			if (LastParsedMod is ParsedDModule && LastParsedMod.FileName == file)
+			var d = LastParsedMod as ParsedDModule;
+			if (d != null && d.FileName == file)
 			{
-				var d = LastParsedMod as ParsedDModule;
 				LastParsedMod = null;
 				return d;
 			}
