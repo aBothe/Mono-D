@@ -91,8 +91,7 @@ namespace MonoDevelop.D.Gui
 
 			// Resolve the hovered piece of code
 			var loc = new CodeLocation(Document.Editor.Caret.Location.Column, Document.Editor.Caret.Location.Line);
-			IStatement stmt = null;
-			var currentblock = DResolver.SearchBlockAt (SyntaxTree, loc, out stmt);
+			var currentblock = DResolver.SearchBlockAt (SyntaxTree, loc);
 
 			//could be an enum value, which is not IBlockNode
 			if (currentblock is DEnum)

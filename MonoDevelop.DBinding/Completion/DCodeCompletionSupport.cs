@@ -40,29 +40,9 @@ namespace MonoDevelop.D.Completion
 					var ast = ddoc.DDom;
 					if (ast != null)
 					{
-						IStatement stmt;
-						var caret = new CodeLocation(doc.Editor.Caret.Column, doc.Editor.Caret.Line);
-						var bn = DResolver.SearchBlockAt(ast, caret, out stmt);
-						var dbn = bn as DBlockNode;
-						if (stmt == null && dbn != null)
-						{
-							//TODO: If inside an expression statement, search the nearest function call or template instance expression - and try to evaluate that one.
-
-							if (dbn.StaticStatements.Count != 0)
-							{
-								foreach (var ss in dbn.StaticStatements)
-								{
-									if (caret >= ss.Location && caret <= ss.EndLocation)
-									{
-										stmt = ss;
-										break;
-									}
-								}
-							}
-						}
-
 						var ed = DResolverWrapper.CreateEditorData(doc);
-						return new ResolutionContext(ed.ParseCache, new ConditionalCompilationFlags(ed), bn, stmt);
+						var bn = DResolver.SearchBlockAt(ast, ed.CaretLocation);
+						return new ResolutionContext(ed.ParseCache, new ConditionalCompilationFlags(ed), bn, ed.CaretLocation);
 					}
 				}
 			}
@@ -161,6 +141,11 @@ namespace MonoDevelop.D.Completion
 					CompletionText = codeToGenerate
 				});
 			}
+		}
+
+		public void NotifyTimeout()
+		{
+			CompletionDataList.Add("<Completion timeout>", new IconId("md-error"), "The completion request took a too long time and therefore was canceled.", string.Empty);
 		}
 	}
 

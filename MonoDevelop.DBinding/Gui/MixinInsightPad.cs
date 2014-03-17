@@ -1,6 +1,7 @@
 ﻿using D_Parser.Dom;
 using D_Parser.Dom.Statements;
 using D_Parser.Resolver;
+using D_Parser.Resolver.TypeResolution;
 using Mono.TextEditor;
 using MonoDevelop.Core;
 using MonoDevelop.Ide;
@@ -100,7 +101,7 @@ namespace MonoDevelop.D.Gui
 			AbortExecution();
 
 			var ctxt = Completion.DCodeCompletionSupport.CreateCurrentContext();
-			var stmt = ctxt.ScopedStatement;
+			var stmt = DResolver.SearchStatementDeeplyAt(ctxt.ScopedBlock, ctxt.CurrentContext.Caret);
 
 			if (stmt == null)
 				return;

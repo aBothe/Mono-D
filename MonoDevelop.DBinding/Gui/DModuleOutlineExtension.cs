@@ -285,12 +285,10 @@ namespace MonoDevelop.D.Gui
 			if (clickedOnOutlineItem || SyntaxTree == null || TreeStore == null)
 				return;
 
-			IStatement stmt;
-			
 			var caretLocation = Document.Editor.Caret.Location;
 			var caretLocationD = new CodeLocation(caretLocation.Column, caretLocation.Line);
 
-			var currentblock = DResolver.SearchBlockAt(SyntaxTree, caretLocationD, out stmt);
+			var currentblock = DResolver.SearchBlockAt(SyntaxTree, caretLocationD);
 
 			INode selectedASTNode = null;
 
@@ -314,7 +312,7 @@ namespace MonoDevelop.D.Gui
 					}
 
 			if (selectedASTNode == null)
-				selectedASTNode = stmt != null ? stmt.ParentNode : currentblock;
+				selectedASTNode = currentblock;
 
 			if (selectedASTNode == null)
 				return;

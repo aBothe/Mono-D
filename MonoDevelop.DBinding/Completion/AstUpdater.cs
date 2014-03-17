@@ -40,7 +40,8 @@ namespace MonoDevelop.D.Completion
 			currentCol = Document.Editor.Caret.Column;
 			currentLine = Document.Editor.Caret.Line;
 			var caret = new CodeLocation(currentCol, currentLine);
-			currentBlock = DResolver.SearchBlockAt(Ast, caret, out currentStmt);
+			currentBlock = DResolver.SearchBlockAt(Ast, caret);
+			currentStmt = DResolver.SearchStatementDeeplyAt(currentBlock, caret);
 
 			isBeforeBlockStart = currentBlock != null && caret <= currentBlock.BlockStartLocation;
 			isAtStmtStart = currentStmt != null && caret == currentStmt.Location;

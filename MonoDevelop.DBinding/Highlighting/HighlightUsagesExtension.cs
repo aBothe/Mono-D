@@ -56,6 +56,7 @@ namespace MonoDevelop.D.Highlighting
 		protected override IEnumerable<Ide.FindInFiles.MemberReference> GetReferences(Tuple<ResolutionContext, DSymbol> tup, System.Threading.CancellationToken token)
 		{
 			var ctxt = tup.Item1;
+			ctxt.Cancel = token;
 			var mr = tup.Item2;
 
 			var referencedNode = mr.Definition;
@@ -75,22 +76,14 @@ namespace MonoDevelop.D.Highlighting
 						DCompilerService.Instance.GetDefaultCompiler().GenParseCacheView();
 
 			IEnumerable<ISyntaxRegion> refs = null;
-			var task = new System.Threading.Thread(() =>
+			try{
+				refs = D_Parser.Refactoring.ReferencesFinder.Scan(SyntaxTree, referencedNode, ctxt);
+			}
+			catch (Exception ex)
 			{
-				try
-				{
-					refs = D_Parser.Refactoring.ReferencesFinder.Scan(SyntaxTree, referencedNode, ctxt);
-				}
-				catch (Exception ex)
-				{
-					LoggingService.LogInfo("Error during highlighting usages", ex);
-				}
-			});
-			task.Start();
+				LoggingService.LogInfo("Error during highlighting usages", ex);
+			}
 			
-			if (!task.Join(3000))
-				task.Abort();
-
 			if(refs != null)
 				foreach (var sym in refs)
 					yield return new Ide.FindInFiles.MemberReference(sym,
