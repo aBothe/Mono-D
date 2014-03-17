@@ -24,6 +24,7 @@ namespace MonoDevelop.D.OptionPanels
 			check_HideDeprecatedItems.Active = CompletionOptions.Instance.HideDeprecatedNodes;
 			check_EnableDiffbasedColoring.Active = Highlighting.DiffbasedHighlighting.Enabled;
 			check_ShowStructMembersInStructInitOnly.Active = CompletionOptions.Instance.ShowStructMembersInStructInitOnly;
+			text_CompletionTimeout.Text = CompletionOptions.Instance.CompletionTimeout.ToString ();
 
 			var outline = DCompilerService.Instance.Outline;
 			check_ShowFunctionParams.Active = outline.ShowFuncParams;
@@ -47,6 +48,10 @@ namespace MonoDevelop.D.OptionPanels
 
 		public bool Validate ()
 		{
+			int i;
+			if (!int.TryParse (text_CompletionTimeout.Text, out i))
+				return false;
+
 			return true;
 		}
 
@@ -58,6 +63,7 @@ namespace MonoDevelop.D.OptionPanels
 			CompletionOptions.Instance.HideDeprecatedNodes = check_HideDeprecatedItems.Active;
 			Highlighting.DiffbasedHighlighting.Enabled = check_EnableDiffbasedColoring.Active;
 			CompletionOptions.Instance.ShowStructMembersInStructInitOnly = check_ShowStructMembersInStructInitOnly.Active;
+			int.TryParse (text_CompletionTimeout.Text,out CompletionOptions.Instance.CompletionTimeout); 
 
 			var outline = DCompilerService.Instance.Outline;
 			outline.ShowFuncParams = check_ShowFunctionParams.Active;
