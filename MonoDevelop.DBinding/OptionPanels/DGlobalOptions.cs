@@ -18,6 +18,8 @@ namespace MonoDevelop.D.OptionPanels
 
 		public void Load ()
 		{
+			var outline = DCompilerService.Instance.Outline; // Access the compiler options once to ensure that all settings are loaded - including the CompletionOptions!!
+
 			check_EnableUFCSCompletion.Active = CompletionOptions.Instance.ShowUFCSItems;
 			check_EnableMixinAnalysis.Active = !CompletionOptions.Instance.DisableMixinAnalysis;
 			check_EnableSuggestionMode.Active = CompletionOptions.Instance.EnableSuggestionMode;
@@ -26,7 +28,6 @@ namespace MonoDevelop.D.OptionPanels
 			check_ShowStructMembersInStructInitOnly.Active = CompletionOptions.Instance.ShowStructMembersInStructInitOnly;
 			text_CompletionTimeout.Text = CompletionOptions.Instance.CompletionTimeout.ToString ();
 
-			var outline = DCompilerService.Instance.Outline;
 			check_ShowFunctionParams.Active = outline.ShowFuncParams;
 			check_ShowFunctionVariables.Active = outline.ShowFuncVariables;
 			check_ShowTypes.Active = outline.ShowBaseTypes;
