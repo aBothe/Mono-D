@@ -43,7 +43,7 @@ namespace MonoDevelop.D.Completion
 					return GenTooltipSignature(ds.Base, false, currentMethodParam);
 
 				var aliasedSymbol = ds.Tag as D_Parser.Resolver.TypeResolution.TypeDeclarationResolver.AliasTag;
-				return GenTooltipSignature(aliasedSymbol == null ? ds.Definition : aliasedSymbol.aliasDefinition, templateParamCompletion, currentMethodParam, DTypeToTypeDeclVisitor.GenerateTypeDecl(ds.Base), ds.DeducedTypes != null ? new DeducedTypeDictionary(ds) : null);
+				return GenTooltipSignature(aliasedSymbol == null || currentMethodParam >= 0 ? ds.Definition : aliasedSymbol.aliasDefinition, templateParamCompletion, currentMethodParam, DTypeToTypeDeclVisitor.GenerateTypeDecl(ds.Base), ds.DeducedTypes != null ? new DeducedTypeDictionary(ds) : null);
 			}
 
 			if (t is PackageSymbol) {
@@ -258,6 +258,10 @@ namespace MonoDevelop.D.Completion
 					if (CanShowAttribute(attr, showStorageClasses))
 						sb.Append (DCodeToMarkup (attr.ToString ())).Append (' ');
 			}
+
+			var dv = dn as DVariable;
+			if(dv != null && dv.IsAlias)
+				sb.Append("alias ");
 		}
 
 		static void RemoveLastChar(StringBuilder sb,char c)
