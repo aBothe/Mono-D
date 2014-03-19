@@ -100,18 +100,16 @@ namespace MonoDevelop.D.Resolver
 			Document doc=null)
 		{
 			edData = CreateEditorData(doc);
-
-			ResolverContext = ResolutionContext.Create(edData);
+			ResolverContext = ResolutionContext.Create(edData, false);
 
 			// Resolve the hovered piece of code
-			//return DResolver.ResolveType(edData, ctxt: ResolverContext);/*
 			return AmbiguousType.TryDissolve(DResolver.ResolveType(edData, ctxt:ResolverContext)).ToArray();
 		}
 
 		public static AbstractType[] ResolveHoveredCodeLoosely(out ResolutionContext ctxt, out IEditorData ed, out DResolver.NodeResolutionAttempt resolutionAttempt, Document doc = null)
 		{
 			ed = CreateEditorData(doc);
-			ctxt = ResolutionContext.Create(ed);
+			ctxt = ResolutionContext.Create(ed, false);
 
 			//return DResolver.ResolveTypeLoosely(ed, out resolutionAttempt, ctxt);
 			return AmbiguousType.TryDissolve(DResolver.ResolveTypeLoosely(ed, out resolutionAttempt, ctxt)).ToArray();
