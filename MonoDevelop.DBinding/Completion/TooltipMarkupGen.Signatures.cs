@@ -39,6 +39,9 @@ namespace MonoDevelop.D.Completion
 			var ds = t as DSymbol;
 			if (ds != null)
 			{
+				if (currentMethodParam >= 0 && !templateParamCompletion && ds.Definition is DVariable && ds.Base != null)
+					return GenTooltipSignature(ds.Base, false, currentMethodParam);
+
 				var aliasedSymbol = ds.Tag as D_Parser.Resolver.TypeResolution.TypeDeclarationResolver.AliasTag;
 				return GenTooltipSignature(aliasedSymbol == null ? ds.Definition : aliasedSymbol.aliasDefinition, templateParamCompletion, currentMethodParam, DTypeToTypeDeclVisitor.GenerateTypeDecl(ds.Base), ds.DeducedTypes != null ? new DeducedTypeDictionary(ds) : null);
 			}
@@ -48,7 +51,13 @@ namespace MonoDevelop.D.Completion
 				return "<i>(Package)</i> "+pack.ToString();
 			}
 
-			return DCodeToMarkup (t != null ? t.ToCode () : "null");
+			if (t is DelegateType)
+			{
+				var dt = t as DelegateType;
+				//TODO
+			}
+
+			return DCodeToMarkup (t != null ? t.ToCode (true) : "null");
 		}
 
 		public string GenTooltipSignature(DNode dn, bool templateParamCompletion = false, 
@@ -68,6 +77,49 @@ namespace MonoDevelop.D.Completion
 			return sb.ToString ();
 		}
 
+		/*void S(DelegateType dt, StringBuilder sb, bool templArgs = false, int curArg = -1)
+		{
+			if (dt.ReturnType != null)
+				sb.Append(DCodeToMarkup(dt.ReturnType.ToCode(true))).Append(' ');
+
+			// Parameters
+			sb.Append('(');
+
+			if (dt.Parameters != null)
+			{
+				for (int i = 0; i < dt.Parameters.Length; i++)
+				{
+					sb.AppendLine();
+					sb.Append("  ");
+
+					var parm = dt.Parameters[i];
+
+					var indexBackup = sb.Length;
+
+					//TODO: Show deduced parameters
+					AttributesTypeAndName(parm, sb);
+
+					if (!templArgs && curArg == i)
+					{
+						//TODO: Optimize
+						var contentToUnderline = sb.ToString(indexBackup, sb.Length - indexBackup);
+						sb.Remove(indexBackup, contentToUnderline.Length);
+						AppendFormat(contentToUnderline, sb, FormatFlags.Underline);
+					}
+
+					if (parm is DVariable && (parm as DVariable).Initializer != null)
+						sb.Append(" = ").Append((parm as DVariable).Initializer.ToString());
+
+					sb.Append(',');
+				}
+
+				RemoveLastChar(sb, ',');
+				sb.AppendLine();
+			}
+
+			sb.Append(')');
+		}*/
+
 		void S(DMethod dm, StringBuilder sb, bool templArgs = false, int curArg = -1, ITypeDeclaration baseType = null,
 			DeducedTypeDictionary deducedTypes = null)
 		{
@@ -85,6 +137,11 @@ namespace MonoDevelop.D.Completion
 
 					var indexBackup = sb.Length;
 
+					var isOpt = parm is DVariable && (parm as DVariable).Initializer != null;
+
+					if(isOpt)
+						sb.Append('[');
+
 					//TODO: Show deduced parameters
 					AttributesTypeAndName(parm , sb);
 
@@ -95,8 +152,8 @@ namespace MonoDevelop.D.Completion
 						AppendFormat (contentToUnderline, sb, FormatFlags.Underline);
 					}
 
-					if (parm is DVariable && (parm as DVariable).Initializer != null)
-						sb.Append(" = ").Append((parm as DVariable).Initializer.ToString());
+					if (isOpt)
+						sb.Append(" = ").Append((parm as DVariable).Initializer.ToString()).Append(']');
 					
 					sb.Append (',');
 				}
