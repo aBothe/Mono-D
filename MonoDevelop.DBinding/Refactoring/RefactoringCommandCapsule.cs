@@ -68,12 +68,7 @@ namespace MonoDevelop.D.Refactoring
 
 		internal static void GotoDeclaration(AbstractType lastResult)
 		{
-			var n = DResolver.GetResultMember (lastResult);
-			// Redirect to the actual definition on import bindings
-			if (n is ImportSymbolAlias)
-				n = DResolver.GetResultMember ((lastResult as DSymbol).Base);
-
-			GotoDeclaration (n);
+			GotoDeclaration (DResolver.GetResultMember (lastResult, true));
 		}
 
 		public static void GotoDeclaration(INode n)
@@ -89,7 +84,7 @@ namespace MonoDevelop.D.Refactoring
 		{
 			AbstractType res = GetResult();
 			INode n;
-			if (res != null && (n = DResolver.GetResultMember(res)) != null)
+			if (res != null && (n = DResolver.GetResultMember(res, true)) != null)
 				ReferenceFinding.StartReferenceSearchAsync(n, allOverloads);
 		}
 
@@ -130,7 +125,7 @@ namespace MonoDevelop.D.Refactoring
 		{
 			AbstractType res = GetResult();
 			INode n;
-			if (res != null && (n = DResolver.GetResultMember(res)) != null &&
+			if (res != null && (n = DResolver.GetResultMember(res, true)) != null &&
 				DRenameRefactoring.CanRenameNode(n))
 				new DRenameHandler().Start(n);
 		}
