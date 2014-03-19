@@ -174,7 +174,7 @@ namespace MonoDevelop.D.Building
 			monitor.Log.WriteLine("Current dictionary: " + Project.BaseDirectory);
 
 			string cmdLineFile;
-			HandleOverLongArgumentStrings (Compiler, true, ref argumentString, out cmdLineFile);
+			HandleOverLongArgumentStrings (monitor,Compiler, true, ref argumentString, out cmdLineFile);
 
 			int exitCode = ExecuteCommand(linkerExecutable, argumentString, Project.BaseDirectory, monitor,
 				out stdError,
@@ -291,7 +291,7 @@ namespace MonoDevelop.D.Building
 			}
 
 			string cmdArgFile;
-			HandleOverLongArgumentStrings (Compiler, false, ref dmdArgs, out cmdArgFile);
+			HandleOverLongArgumentStrings (monitor,Compiler, false, ref dmdArgs, out cmdArgFile);
 
 			int exitCode = ExecuteCommand (compilerExecutable, dmdArgs, Project.BaseDirectory, monitor, out stdError, out stdOutput);
 
@@ -398,7 +398,7 @@ namespace MonoDevelop.D.Building
 			}
 
 			string cmdLineFile;
-			HandleOverLongArgumentStrings (Compiler, true, ref linkArgs, out cmdLineFile);
+			HandleOverLongArgumentStrings (monitor,Compiler, true, ref linkArgs, out cmdLineFile);
 
 			int exitCode = ExecuteCommand (linkerExecutable, linkArgs, Project.BaseDirectory, monitor,
                 out linkerErrorOutput,
@@ -621,7 +621,7 @@ namespace MonoDevelop.D.Building
 				}
 		}
 
-		static void HandleOverLongArgumentStrings(DCompilerConfiguration cmp, bool isLinking,ref string argstring, out string tempFile)
+		static void HandleOverLongArgumentStrings(IProgressMonitor mon,DCompilerConfiguration cmp, bool isLinking,ref string argstring, out string tempFile)
 		{
 			tempFile = null;
 
@@ -638,6 +638,10 @@ namespace MonoDevelop.D.Building
 
 			tempFile = Path.GetTempFileName ();
 			File.WriteAllText (tempFile, argstring);
+
+			mon.Log.WriteLine("Contents of \"{0}\":", tempFile);
+			mon.Log.WriteLine(argstring);
+			mon.Log.Flush();
 
 			argstring = string.Format (cmdFile, tempFile);
 		}
