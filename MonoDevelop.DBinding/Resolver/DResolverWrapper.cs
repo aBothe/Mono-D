@@ -100,6 +100,11 @@ namespace MonoDevelop.D.Resolver
 			Document doc=null)
 		{
 			edData = CreateEditorData(doc);
+			if (edData == null)
+			{
+				ResolverContext = null;
+				return null;
+			}
 			ResolverContext = ResolutionContext.Create(edData, false);
 
 			// Resolve the hovered piece of code
@@ -109,6 +114,12 @@ namespace MonoDevelop.D.Resolver
 		public static AbstractType[] ResolveHoveredCodeLoosely(out ResolutionContext ctxt, out IEditorData ed, out DResolver.NodeResolutionAttempt resolutionAttempt, Document doc = null)
 		{
 			ed = CreateEditorData(doc);
+			if (ed == null)
+			{
+				resolutionAttempt = DResolver.NodeResolutionAttempt.Normal;
+				ctxt = null;
+				return null;
+			}
 			ctxt = ResolutionContext.Create(ed, false);
 
 			//return DResolver.ResolveTypeLoosely(ed, out resolutionAttempt, ctxt);
