@@ -1,6 +1,7 @@
 ﻿using D_Parser.Dom;
 using D_Parser.Dom.Statements;
 using D_Parser.Resolver;
+using D_Parser.Resolver.ExpressionSemantics;
 using D_Parser.Resolver.TypeResolution;
 using Mono.TextEditor;
 using MonoDevelop.Core;
@@ -120,9 +121,10 @@ namespace MonoDevelop.D.Gui
 				var ctxt = tup.Item2;
 
 				object result = null;
+				VariableValue vv;
 
 				if (sr is MixinStatement)
-					result = MixinAnalysis.ParseMixinDeclaration(sr as MixinStatement, ctxt);
+					result = MixinAnalysis.ParseMixinDeclaration(sr as MixinStatement, ctxt, out vv);
 				else if (sr is TemplateMixin)
 					result = D_Parser.Resolver.ASTScanner.AbstractVisitor.GetTemplateMixinContent(ctxt, sr as TemplateMixin);
 
