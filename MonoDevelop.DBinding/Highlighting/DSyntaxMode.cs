@@ -93,14 +93,21 @@ namespace MonoDevelop.D.Highlighting
 
 		public virtual void Dispose()
 		{
-			if (doc != null && segmentMarkerTree != null)
-				segmentMarkerTree.RemoveListener();
+			if (doc != null)
+			{
+				if (segmentMarkerTree != null)
+					segmentMarkerTree.RemoveListener();
+				if (invalidCodeRegionTree != null)
+					invalidCodeRegionTree.RemoveListener();
+			}
+
 			GuiDocument = null;
 			if (cancelTokenSource != null)
 				cancelTokenSource.Cancel();
 			PropertyService.PropertyChanged -= HandlePropertyChanged;
 			GlobalParseCache.ParseTaskFinished -= GlobalParseCacheFilled;
 			segmentMarkerTree = null;
+			invalidCodeRegionTree = null;
 		}
 
 		public static Match workaroundMatchCtor(string color, string regex)
@@ -123,9 +130,14 @@ namespace MonoDevelop.D.Highlighting
 			{
 				segmentMarkerTree = new SegmentTree<TextSegmentMarker>();
 				segmentMarkerTree.InstallListener(doc);
+				invalidCodeRegionTree = new SegmentTree<TreeSegment>();
+				invalidCodeRegionTree.InstallListener(doc);
 			}
 			else
+			{
 				segmentMarkerTree = null;
+				invalidCodeRegionTree = null;
+			}
 		}
 
 		void GlobalParseCacheFilled(ParsingFinishedEventArgs ea)
@@ -177,17 +189,17 @@ namespace MonoDevelop.D.Highlighting
 
 		void HandleDocumentParsed(object sender, EventArgs e)
 		{
-			if (segmentMarkerTree == null)
+			if (segmentMarkerTree == null || invalidCodeRegionTree == null)
 				return;
 
 			if (cancelTokenSource != null)
 				cancelTokenSource.Cancel();
-
+			
 			if (guiDoc != null &&
 				SemanticHighlightingEnabled && guiDoc.ParsedDocument != null)
 			{
 				cancelTokenSource = new CancellationTokenSource();
-				System.Threading.Tasks.Task.Factory.StartNew(updateTypeHighlightings, cancelTokenSource.Token);
+				updateTypeHighlightings();
 			}
 		}
 
@@ -195,6 +207,9 @@ namespace MonoDevelop.D.Highlighting
 		{
 			if (segmentMarkerTree != null)
 				segmentMarkerTree.Clear();
+			if (invalidCodeRegionTree != null)
+				invalidCodeRegionTree.Clear();
+
 			if (commitUpdate)
 				Ide.DispatchService.GuiSyncDispatch(() =>
 				{
@@ -223,15 +238,29 @@ namespace MonoDevelop.D.Highlighting
 
 			RemoveOldTypeMarkers(false);
 
+			var token = cancelTokenSource.Token;
+
+			var ctxt = MonoDevelop.D.Completion.DCodeCompletionSupport.CreateContext(guiDoc, false);
+			token.Register(() => ctxt.CancelOperation = true);
+			var invalidCodeRegions = new List<ISyntaxRegion>();
+
 			try
 			{
-				var textLocationsToHighlight = TypeReferenceFinder.Scan(ast,
-					MonoDevelop.D.Completion.DCodeCompletionSupport.CreateContext(guiDoc));
+				var textLocationsToHighlight = TypeReferenceFinder.Scan(ast, ctxt, invalidCodeRegions);
+
+				foreach (var sr in invalidCodeRegions)
+				{
+					if (sr != null)
+						invalidCodeRegionTree.Add(CreateCondHighlightSegment(sr)); 
+				}
 
 				int off, len;
 
 				foreach (var kv in textLocationsToHighlight)
 				{
+					if (token.IsCancellationRequested)
+						return;
+
 					var line = doc.GetLine(kv.Key);
 					foreach (var kvv in kv.Value)
 					{
@@ -273,14 +302,15 @@ namespace MonoDevelop.D.Highlighting
 				LoggingService.LogError("Error during semantic highlighting", ex);
 			}
 
-			Ide.DispatchService.GuiDispatch(() =>
-			{
-				if (guiDoc.Editor != null)
+			if (!token.IsCancellationRequested)
+				Ide.DispatchService.GuiDispatch(() =>
 				{
-					guiDoc.Editor.Parent.TextViewMargin.PurgeLayoutCache();
-					guiDoc.Editor.Parent.QueueDraw();
-				}
-			});
+					if (guiDoc.Editor != null)
+					{
+						guiDoc.Editor.Parent.TextViewMargin.PurgeLayoutCache();
+						guiDoc.Editor.Parent.QueueDraw();
+					}
+				});
 		}
 
 		static void GetIdentifier(ref ISyntaxRegion sr)
@@ -394,10 +424,25 @@ namespace MonoDevelop.D.Highlighting
 		#endregion
 
 		#region Conditional highlighting
-		/*public override SyntaxMode.SpanParser CreateSpanParser(DocumentLine line, CloneableStack<Span> spanStack)
+		SegmentTree<TreeSegment> invalidCodeRegionTree;
+
+		TreeSegment CreateCondHighlightSegment(ISyntaxRegion sr)
 		{
-			return base.CreateSpanParser(line, spanStack);
-		}*/
+			var loc = sr.Location;
+			int endDiff = 0;
+
+			if (sr is IMetaDeclarationBlock)
+				loc = (sr as IMetaDeclarationBlock).BlockStartLocation;
+
+			var begin = doc.LocationToOffset(loc.Line, loc.Column);
+			var end = doc.LocationToOffset(sr.EndLocation.Line, sr.EndLocation.Column);
+			return new TreeSegment(begin, end - begin + endDiff);
+		}
+
+		public override SyntaxMode.SpanParser CreateSpanParser(DocumentLine line, CloneableStack<Span> spanStack)
+		{
+			return new DSpanParser(this, line, spanStack ?? line.StartSpan.Clone());
+		}
 
 		class DSpanParser : SpanParser
 		{
@@ -407,6 +452,14 @@ namespace MonoDevelop.D.Highlighting
 				: base(syn, spanStack)
 			{
 				
+			}
+
+			class CCSpan : Span
+			{
+				public CCSpan()
+				{
+					Color = "Excluded Code";
+				}
 			}
 
 			protected override bool ScanSpan(ref int i)
@@ -424,14 +477,21 @@ namespace MonoDevelop.D.Highlighting
 
 						break;
 				}
-				/*
-				if ( && textOffset < CurText.Length && 
-					CurRule.Name != "Comment" && 
-					CurRule.Name != "String" && 
-					CurRule.Name != "VerbatimString")
+
+				bool stacked = false;
+
+				foreach (var segm in SyntaxMode.invalidCodeRegionTree.GetSegmentsAt(i))
 				{
-					if( && CurText [textOffset] == '#' && IsFirstNonWsChar (textOffset))
-				}*/
+					stacked = true;
+					var span = new CCSpan();
+					base.FoundSpanBegin(span, segm.Offset, 0);
+					base.FoundSpanEnd(span, i = segm.EndOffset, 0);
+					break;
+				}
+
+				if (stacked)
+					return true;
+
 				return base.ScanSpan(ref i);
 			}
 

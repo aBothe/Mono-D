@@ -30,7 +30,7 @@ namespace MonoDevelop.D.Completion
 			CodeCompletion.GenerateCompletionData(ed, new CompletionDataGenerator(l, null), triggerChar);
 		}
 
-		public static ResolutionContext CreateContext(Document doc)
+		public static ResolutionContext CreateContext(Document doc, bool pushFirstScope = true)
 		{
 			if (doc != null)
 			{
@@ -41,8 +41,9 @@ namespace MonoDevelop.D.Completion
 					if (ast != null)
 					{
 						var ed = DResolverWrapper.CreateEditorData(doc);
-						var bn = DResolver.SearchBlockAt(ast, ed.CaretLocation);
-						return new ResolutionContext(ed.ParseCache, new ConditionalCompilationFlags(ed), bn, ed.CaretLocation);
+						if(pushFirstScope)
+							return new ResolutionContext(ed.ParseCache, new ConditionalCompilationFlags(ed), DResolver.SearchBlockAt(ast, ed.CaretLocation));
+						return new ResolutionContext(ed.ParseCache, new ConditionalCompilationFlags(ed));
 					}
 				}
 			}

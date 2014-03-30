@@ -133,7 +133,7 @@ namespace MonoDevelop.D.Parser
 				base.Visit(n);
 			}
 
-			public override void VisitMetaBlock(IMetaDeclarationBlock mdb)
+			public override void VisitIMetaBlock(IMetaDeclarationBlock mdb)
 			{
 				l.Add(new FoldingRegion(
 								new DomRegion(mdb.BlockStartLocation.Line, mdb.BlockStartLocation.Column, mdb.EndLocation.Line, mdb.EndLocation.Column),
