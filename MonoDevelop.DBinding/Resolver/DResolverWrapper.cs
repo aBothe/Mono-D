@@ -6,10 +6,12 @@ using D_Parser.Resolver.TypeResolution;
 using MonoDevelop.D.Building;
 using MonoDevelop.D.Parser;
 using MonoDevelop.D.Projects;
+using MonoDevelop.D.Projects.Dub;
 using MonoDevelop.Ide;
 using MonoDevelop.Ide.CodeCompletion;
 using MonoDevelop.Ide.Gui;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace MonoDevelop.D.Resolver
@@ -57,20 +59,33 @@ namespace MonoDevelop.D.Resolver
 
 			if (EditorDocument.HasProject)
 			{
-				var cfg = EditorDocument.Project.GetConfiguration(IdeApp.Workspace.ActiveConfiguration) as DProjectConfiguration;
+				var cfg = EditorDocument.Project.GetConfiguration(IdeApp.Workspace.ActiveConfiguration);
 
-				if (cfg != null)
+				if (cfg is DProjectConfiguration)
 				{
-					ed.GlobalDebugIds = cfg.CustomDebugIdentifiers;
-					ed.IsDebug = cfg.DebugMode;
-					ed.DebugLevel = cfg.DebugLevel;
-					ed.GlobalVersionIds = cfg.GlobalVersionIdentifiers;
+					var dcfg = cfg as DProjectConfiguration;
+					ed.GlobalDebugIds = dcfg.CustomDebugIdentifiers;
+					ed.IsDebug = dcfg.DebugMode;
+					ed.DebugLevel = dcfg.DebugLevel;
+					ed.GlobalVersionIds = dcfg.GlobalVersionIdentifiers;
 					double d;
 					int v;
 					if (Double.TryParse(EditorDocument.Project.Version, out d))
 						ed.VersionNumber = (int)d;
 					else if (Int32.TryParse(EditorDocument.Project.Version, out v))
 						ed.VersionNumber = v;
+				}
+				else if (cfg is DubProjectConfiguration)
+				{
+					var versions = new List<string>(VersionIdEvaluation.GetOSAndCPUVersions());
+					
+					var dcfg = cfg as DubProjectConfiguration;
+					ed.IsDebug = dcfg.DebugMode;
+
+					HandleDubSettingsConditionExtraction(versions, (dcfg.ParentItem as DubProject).CommonBuildSettings);
+					HandleDubSettingsConditionExtraction(versions, dcfg.BuildSettings);
+					
+					ed.GlobalVersionIds = versions.ToArray();
 				}
 			}
 
@@ -80,6 +95,19 @@ namespace MonoDevelop.D.Resolver
 			}
 
 			return ed;
+		}
+
+		private static void HandleDubSettingsConditionExtraction(List<string> versions, DubBuildSettings buildSets)
+		{
+			List<DubBuildSetting> sets;
+			if(buildSets == null || !buildSets.TryGetValue(DubBuildSettings.VersionsProperty, out sets))
+				return;
+
+			foreach (var set in sets)
+				if (set.Values != null)
+					foreach (var ver in set.Values)
+						if (!string.IsNullOrWhiteSpace(ver) && !versions.Contains(ver))
+							versions.Add(ver);
 		}
 
 		public static ParseCacheView CreateCacheList(Document Editor)

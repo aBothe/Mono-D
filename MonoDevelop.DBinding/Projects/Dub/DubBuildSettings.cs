@@ -13,6 +13,7 @@ namespace MonoDevelop.D.Projects.Dub
 		public const string SourcePathsProperty = "sourcepaths";
 		public const string SourceFilesProperty = "sourcefiles";
 		public const string ImportPathsProperty = "importpaths";
+		public const string VersionsProperty = "versions";
 
 		public object Clone ()
 		{
@@ -49,7 +50,7 @@ namespace MonoDevelop.D.Projects.Dub
 
 		static HashSet<string> WantedProps = new HashSet<string> {
 			TargetTypeProperty,TargetNameProperty,TargetPathProperty,
-			SourceFilesProperty,SourcePathsProperty,"excludedsourcefiles","versions",ImportPathsProperty,"stringimportpaths"
+			SourceFilesProperty,SourcePathsProperty,"excludedsourcefiles",VersionsProperty,ImportPathsProperty,"stringimportpaths"
 		};
 
 		public void TryGetTargetTypeProperty(DubProject prj, ConfigurationSelector cfg, ref string targetType)
