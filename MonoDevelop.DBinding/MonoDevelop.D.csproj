@@ -299,7 +299,6 @@
     <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.UnittestOptions.cs" />
     <Compile Include="Unittest\UnittestSettings.cs" />
     <Compile Include="Completion\TooltipMarkupGen.cs" />
-    <Compile Include="Completion\TooltipInfoGenerator.cs" />
     <Compile Include="Completion\TooltipInfoGen.cs" />
     <Compile Include="Refactoring\CodeActions\ImportSymbolAction.cs" />
   </ItemGroup>
