@@ -5,6 +5,7 @@ using MonoDevelop.D.Formatting;
 using MonoDevelop.Ide.Gui.Content;
 using MonoDevelop.Ide.StandardHeader;
 using MonoDevelop.Ide.Templates;
+using MonoDevelop.D.Projects;
 
 namespace MonoDevelop.D.templates
 {
@@ -59,9 +60,23 @@ namespace MonoDevelop.D.templates
 			ref Dictionary<string, string> tags)
 		{
 			base.ModifyTags(policyParent, project, language, identifier, fileName, ref tags);
+			const string ModuleNameTag = "ModuleName";
+			if (tags != null) {
+				var dprj = project as AbstractDProject;
+				if (dprj != null) {
+					if(fileName != null)
+						foreach (var basePath in dprj.GetSourcePaths()) {
+							var bp = System.IO.Path.GetFullPath (basePath);
+							if (fileName.StartsWith (bp)) {
+								tags [ModuleNameTag] = DModule.GetModuleName (bp, fileName);
+								break;
+							}
+						}
+				}
 
-			if(tags!=null)
-				tags["ModuleName"] = DModule.GetModuleName(project == null ? string.Empty : project.BaseDirectory.ToString(), fileName ?? identifier ?? string.Empty).Replace(' ','_');
+				if(!tags.ContainsKey(ModuleNameTag))
+					tags [ModuleNameTag] = DModule.GetModuleName (project == null ? string.Empty : project.BaseDirectory.ToString (), fileName ?? identifier ?? string.Empty).Replace (' ', '_');
+			}
 		}
 	}
 }
