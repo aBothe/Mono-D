@@ -14,6 +14,7 @@ using D_Parser.Misc;
 using D_Parser.Dom.Expressions;
 using D_Parser.Parser;
 using MonoDevelop.Components.Commands;
+using System.Threading.Tasks;
 
 namespace MonoDevelop.D.Highlighting
 {
@@ -246,7 +247,9 @@ namespace MonoDevelop.D.Highlighting
 
 			try
 			{
-				var textLocationsToHighlight = TypeReferenceFinder.Scan(ast, ctxt, invalidCodeRegions);
+				Dictionary<int, Dictionary<ISyntaxRegion, byte>> textLocationsToHighlight = null;
+				D_Parser.Completion.CodeCompletion.DoTimeoutableCompletionTask(null, ctxt, 
+					()=>{ textLocationsToHighlight = TypeReferenceFinder.Scan(ast, ctxt, invalidCodeRegions);}, 2000);
 
 				foreach (var sr in invalidCodeRegions)
 				{
@@ -256,6 +259,7 @@ namespace MonoDevelop.D.Highlighting
 
 				int off, len;
 
+				if(textLocationsToHighlight != null)
 				foreach (var kv in textLocationsToHighlight)
 				{
 					if (token.IsCancellationRequested)
