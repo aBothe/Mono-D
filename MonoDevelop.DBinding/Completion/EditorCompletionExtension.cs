@@ -181,21 +181,32 @@ namespace MonoDevelop.D
 		public override bool KeyPress(Gdk.Key key, char keyChar, Gdk.ModifierType modifier)
 		{
 			updater.BeginUpdate();
-			if (this.CompletionWidget != null) {
-				if ((keyChar == '(' || keyChar == ')' || keyChar == ';'))
-					ParameterInformationWindowManager.HideWindow (this, CompletionWidget);
-				else if (lastTriggerOffset >= 0 && char.IsDigit (keyChar)) {
+			if (this.CompletionWidget != null)
+			{
+				switch (keyChar)
+				{
+					case '(':
+					case ')':
+					case ';':
+					case ']':
+						ParameterInformationWindowManager.HideWindow(this, CompletionWidget);
+						break;
+					default:
+						if (lastTriggerOffset >= 0 && char.IsDigit(keyChar))
+						{
+							bool containsDigitsOnly = true;
 
-					bool containsDigitsOnly = true;
+							for (int offset = lastTriggerOffset; offset < CompletionWidget.CaretOffset; offset++)
+								if (!char.IsDigit(CompletionWidget.GetChar(offset)))
+								{
+									containsDigitsOnly = false;
+									break;
+								}
 
-					for(int offset = lastTriggerOffset; offset < CompletionWidget.CaretOffset; offset++)
-						if (!char.IsDigit (CompletionWidget.GetChar(offset))) {
-							containsDigitsOnly = false;
-							break;
+							if (containsDigitsOnly)
+								CompletionWindowManager.HideWindow();
 						}
-
-					if(containsDigitsOnly)
-						CompletionWindowManager.HideWindow ();
+						break;
 				}
 			}
 
@@ -206,11 +217,15 @@ namespace MonoDevelop.D
 		
 		public override ParameterDataProvider HandleParameterCompletion(CodeCompletionContext completionContext, char completionChar)
 		{
-			if (completionChar != ',' &&
-				completionChar != '(' &&
-				completionChar != '!')
+			switch (completionChar)
 			{
-				return null;
+				case ',':
+				case '(':
+				case '!':
+				case '[':
+					break;
+				default:
+					return null;
 			}
 						
 			// Require a parsed D source
