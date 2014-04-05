@@ -76,7 +76,7 @@ namespace MonoDevelop.D.Refactoring
 				monitor.BeginStepTask ("Scan for references", modules.Count, 1);
 
 			List<ISyntaxRegion> references = null;
-			var ctxt = ResolutionContext.Create (parseCache, null, null);
+			var ctxt = ResolutionContext.Create (parseCache, null);
 			foreach (var mod in modules)
 			{
 				if (mod == null)
