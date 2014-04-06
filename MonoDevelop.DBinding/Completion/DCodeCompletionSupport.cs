@@ -42,13 +42,13 @@ namespace MonoDevelop.D.Completion
 					{
 						var ed = DResolverWrapper.CreateEditorData(doc);
 						if(pushFirstScope)
-							return new ResolutionContext(ed.ParseCache, new ConditionalCompilationFlags(ed), DResolver.SearchBlockAt(ast, ed.CaretLocation));
+							return new ResolutionContext(ed.ParseCache, new ConditionalCompilationFlags(ed), ast, ed.CaretLocation);
 						return new ResolutionContext(ed.ParseCache, new ConditionalCompilationFlags(ed));
 					}
 				}
 			}
 			return new ResolutionContext(DResolverWrapper.CreateCacheList(),
-				new ConditionalCompilationFlags(VersionIdEvaluation.GetOSAndCPUVersions(), 1, true), null);
+				new ConditionalCompilationFlags(VersionIdEvaluation.GetOSAndCPUVersions(), 1, true));
 		}
 
 		public static ResolutionContext CreateCurrentContext()

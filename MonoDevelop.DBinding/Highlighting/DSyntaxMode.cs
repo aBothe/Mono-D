@@ -233,23 +233,19 @@ namespace MonoDevelop.D.Highlighting
 			var parsedDoc = guiDoc.ParsedDocument as Parser.ParsedDModule;
 			if (parsedDoc == null || parsedDoc.IsInvalid)
 				return;
-			var ast = (guiDoc.ParsedDocument as Parser.ParsedDModule).DDom;
-			if (ast == null)
-				return;
 
 			RemoveOldTypeMarkers(false);
 
 			var token = cancelTokenSource.Token;
 
-			var ctxt = MonoDevelop.D.Completion.DCodeCompletionSupport.CreateContext(guiDoc, false);
-			token.Register(() => ctxt.CancelOperation = true);
+			var ed = MonoDevelop.D.Resolver.DResolverWrapper.CreateEditorData(guiDoc);
 			var invalidCodeRegions = new List<ISyntaxRegion>();
 
 			try
 			{
-				Dictionary<int, Dictionary<ISyntaxRegion, byte>> textLocationsToHighlight = null;
-				D_Parser.Completion.CodeCompletion.DoTimeoutableCompletionTask(null, ctxt, 
-					()=>{ textLocationsToHighlight = TypeReferenceFinder.Scan(ast, ctxt, invalidCodeRegions);}, 2000);
+				Dictionary<int, Dictionary<ISyntaxRegion, byte>> textLocationsToHighlight;
+
+				textLocationsToHighlight = TypeReferenceFinder.Scan(ed, invalidCodeRegions, System.Diagnostics.Debugger.IsAttached ? -1 : 500);
 
 				foreach (var sr in invalidCodeRegions)
 				{
