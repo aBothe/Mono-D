@@ -412,7 +412,6 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="Formatting\Indentation\doc.txt" />
-    <None Include="Highlighting\TypeHighlightingExtension.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
