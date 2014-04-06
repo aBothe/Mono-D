@@ -484,14 +484,16 @@ namespace MonoDevelop.D.Highlighting
 
 				bool stacked = false;
 
-				foreach (var segm in SyntaxMode.invalidCodeRegionTree.GetSegmentsAt(i))
-				{
-					stacked = true;
-					var span = new CCSpan();
-					base.FoundSpanBegin(span, segm.Offset, 0);
-					base.FoundSpanEnd(span, i = segm.EndOffset, 0);
-					break;
-				}
+				var inv = SyntaxMode.invalidCodeRegionTree;
+				if(inv != null)
+					foreach (var segm in inv.GetSegmentsAt(i))
+					{
+						stacked = true;
+						var span = new CCSpan();
+						base.FoundSpanBegin(span, segm.Offset, 0);
+						base.FoundSpanEnd(span, i = segm.EndOffset, 0);
+						break;
+					}
 
 				if (stacked)
 					return true;
