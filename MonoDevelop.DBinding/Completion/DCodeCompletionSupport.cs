@@ -148,6 +148,11 @@ namespace MonoDevelop.D.Completion
 		{
 			CompletionDataList.Add("<Completion timeout>", new IconId("md-error"), "The completion request took a too long time and therefore was canceled.", string.Empty);
 		}
+
+		public void SetSuggestedItem(string i)
+		{
+			CompletionDataList.DefaultCompletionString = i;
+		}
 	}
 
 	public class TokenCompletionData : CompletionData
