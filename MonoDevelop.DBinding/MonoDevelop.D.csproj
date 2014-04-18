@@ -136,6 +136,18 @@
       <HintPath>..\ext\Xwt.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="MonoDevelop.GtkCore">
+      <HintPath>..\ext\MonoDevelop.GtkCore.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="libstetic">
+      <HintPath>..\ext\libstetic.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="libsteticui">
+      <HintPath>..\ext\libsteticui.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="gtk-gui\gui.stetic">
@@ -301,6 +313,13 @@
     <Compile Include="Completion\TooltipMarkupGen.cs" />
     <Compile Include="Completion\TooltipInfoGen.cs" />
     <Compile Include="Refactoring\CodeActions\ImportSymbolAction.cs" />
+    <Compile Include="GuiBuilder\GuiBuilderDisplayBinding.cs" />
+    <Compile Include="GuiBuilder\GtkDProjectServiceExtension.cs" />
+    <Compile Include="GuiBuilder\GuiBuilderView.cs" />
+    <Compile Include="GuiBuilder\GuiBuilderWindow.cs" />
+    <Compile Include="GuiBuilder\GuiBuilderProject.cs" />
+    <Compile Include="GuiBuilder\GtkDesignInfo.cs" />
+    <Compile Include="GuiBuilder\ProjectResourceProvider.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
@@ -421,4 +440,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />
+  <ItemGroup>
+    <Folder Include="GuiBuilder\" />
+    <Folder Include="GuiBuilder\GtkDCore\" />
+  </ItemGroup>
 </Project>
