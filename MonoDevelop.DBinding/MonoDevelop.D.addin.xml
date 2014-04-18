@@ -330,6 +330,10 @@
 			</ItemSet>
 		</Condition>
 
+		<Condition id="ItemType" value="MonoDevelop.D.Projects.AbstractDProject">
+			<CommandItem id = "MonoDevelop.D.Refactoring.DustMite.InvokeCommandId" />
+		</Condition>
+
 		<Condition id="FileType" fileExtensions=".d,.di">
 			<CommandItem id = "MonoDevelop.D.Unittest.Commands.UnittestCommands.RunSingle" />
 			<CommandItem id = "MonoDevelop.D.Unittest.Commands.UnittestCommands.RunSingleExternally" />
@@ -362,6 +366,10 @@
 				 defaultHandler ="MonoDevelop.D.Highlighting.ToggleDiffbasedHighlighthandler"
 				 _label ="Toggle diff-based highlighting"
 				 shortcut="Control+Alt+K"/>
+
+		<Command id = "MonoDevelop.D.Refactoring.DustMite.InvokeCommandId"
+                 defaultHandler = "MonoDevelop.D.Refactoring.DustMite"
+                 _label = "Invoke DustMite" />
 	</Extension>
 
 	<Extension path = "/MonoDevelop/Ide/Pads">

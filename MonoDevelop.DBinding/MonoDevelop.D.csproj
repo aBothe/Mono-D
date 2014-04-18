@@ -320,6 +320,9 @@
     <Compile Include="GuiBuilder\GuiBuilderProject.cs" />
     <Compile Include="GuiBuilder\GtkDesignInfo.cs" />
     <Compile Include="GuiBuilder\ProjectResourceProvider.cs" />
+    <Compile Include="Refactoring\DustMiteIntegration\DustMite.cs" />
+    <Compile Include="Refactoring\DustMiteIntegration\DustMiteArgDlg.cs" />
+    <Compile Include="gtk-gui\MonoDevelop.D.DustMiteArgDlg.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
@@ -443,5 +446,6 @@
   <ItemGroup>
     <Folder Include="GuiBuilder\" />
     <Folder Include="GuiBuilder\GtkDCore\" />
+    <Folder Include="Refactoring\DustMiteIntegration\" />
   </ItemGroup>
 </Project>
