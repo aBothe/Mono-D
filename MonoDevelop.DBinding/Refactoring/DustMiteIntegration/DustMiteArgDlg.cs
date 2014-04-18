@@ -44,11 +44,13 @@ namespace MonoDevelop.D
 		{
 			this.Project = prj;
 			this.Build ();
+
+			tb_CommandLine.Text = DustMiteCommandLine;
 		}
 
 		protected override void OnClose ()
 		{
-			DustMiteCommandLine = tb_CommandLine
+			DustMiteCommandLine = tb_CommandLine.Text;
 			base.OnClose ();
 		}
 
