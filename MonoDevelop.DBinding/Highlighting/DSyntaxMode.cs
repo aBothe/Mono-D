@@ -262,6 +262,8 @@ namespace MonoDevelop.D.Highlighting
 						return;
 
 					var line = doc.GetLine(kv.Key);
+					if (line == null)
+						continue;
 					foreach (var kvv in kv.Value)
 					{
 						var sr = kvv.Key;
@@ -290,7 +292,6 @@ namespace MonoDevelop.D.Highlighting
 							GetIdentifier(ref sr);
 							off = line.Offset + sr.Location.Column - 1;
 							len = sr.EndLocation.Column - sr.Location.Column;
-
 						}
 
 						segmentMarkerTree.Add(new TypeIdSegmMarker(ident, off, len, kvv.Value));
