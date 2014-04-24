@@ -18,27 +18,25 @@ namespace MonoDevelop.D.Building
 			get { return Project.Compiler; }
 		}
 
-		public DCompileTarget BuildTargetType { get { return BuildConfig.UnittestMode ? DCompileTarget.Executable : BuildConfig.CompileTarget; } }
+		public static DCompileTarget BuildTargetType(DProjectConfiguration BuildConfig) { return BuildConfig.UnittestMode ? DCompileTarget.Executable : BuildConfig.CompileTarget; }
 
-		LinkTargetConfiguration LinkTargetCfg { get { return Compiler.GetOrCreateTargetConfiguration (BuildTargetType); } }
+		public static LinkTargetConfiguration LinkTargetCfg(DProjectConfiguration cfg) { return cfg.Project.Compiler.GetOrCreateTargetConfiguration (BuildTargetType(cfg)); }
 
-		BuildConfiguration BuildArguments { get { return LinkTargetCfg.GetArguments (BuildConfig.DebugMode); } }
+		static BuildConfiguration BuildArguments(DProjectConfiguration cfg) { return LinkTargetCfg(cfg).GetArguments (cfg.DebugMode); }
 
 		DProject Project;
 		DProjectConfiguration BuildConfig;
 
-		string ObjectDirectory
+		static string ObjectDirectory(DProjectConfiguration cfg)
 		{
-			get{ return EnsureCorrectPathSeparators(BuildConfig.ObjectDirectory); }
+			return EnsureCorrectPathSeparators(cfg.ObjectDirectory);
 		}
 
-		string AbsoluteObjectDirectory{
-			get{
-				if (Path.IsPathRooted (BuildConfig.ObjectDirectory))
-					return ObjectDirectory;
-				else
-					return Path.Combine (Project.BaseDirectory, ObjectDirectory);
-			}
+		static string AbsoluteObjectDirectory(DProjectConfiguration cfg){
+			if (Path.IsPathRooted (cfg.ObjectDirectory))
+				return ObjectDirectory(cfg);
+			else
+				return Path.Combine (cfg.Project.BaseDirectory, ObjectDirectory(cfg));
 		}
 		IArgumentMacroProvider commonMacros;
 		readonly IProgressMonitor monitor;
@@ -52,7 +50,7 @@ namespace MonoDevelop.D.Building
 
 		public bool CanDoOneStepBuild {
 			get {
-				return Project.PreferOneStepBuild && BuildArguments.SupportsOneStepBuild;
+				return Project.PreferOneStepBuild && BuildArguments(BuildConfig).SupportsOneStepBuild;
 			}
 		}
         #endregion
@@ -74,6 +72,8 @@ namespace MonoDevelop.D.Building
 		{
 			this.Project = Project;
 			BuildConfig = Project.GetConfiguration (BuildConfigurationSelector) as DProjectConfiguration;
+			if (BuildConfig.Project != Project)
+				throw new InvalidOperationException ("Wrong project configuration");
 			commonMacros = new PrjPathMacroProvider {
 				slnPath = Project.ParentSolution != null ? EnsureCorrectPathSeparators(Project.ParentSolution.BaseDirectory) : ""
 			};
@@ -88,13 +88,49 @@ namespace MonoDevelop.D.Building
 				return targetBuildResult;
 			}
 
-			if (!Directory.Exists (AbsoluteObjectDirectory))
-				Directory.CreateDirectory (AbsoluteObjectDirectory);
+			var absDir = AbsoluteObjectDirectory (BuildConfig);
+			if (!Directory.Exists (absDir))
+				Directory.CreateDirectory (absDir);
 
 			if (CanDoOneStepBuild)
 				return DoOneStepBuild ();
 			else
 				return DoStepByStepBuild ();
+		}
+
+		public static string BuildOneStepBuildString(DProject prj, IEnumerable<string> builtObjects, ConfigurationSelector sel)
+		{
+			var cfg = prj.GetConfiguration (sel) as DProjectConfiguration;
+			var target = prj.GetOutputFileName (sel);
+
+			var rawArgumentString = new StringBuilder();
+			var s = GenAdditionalAttributes (prj.Compiler, cfg);
+			if(!string.IsNullOrWhiteSpace(s) )
+				rawArgumentString.Append(s.Trim()).Append(' ');
+			rawArgumentString.Append(BuildArguments(cfg).OneStepBuildArguments.Trim());
+			if(!string.IsNullOrEmpty(cfg.ExtraCompilerArguments))
+				rawArgumentString.Append(' ').Append(cfg.ExtraCompilerArguments.Trim());
+			if (!string.IsNullOrEmpty(cfg.ExtraLinkerArguments))
+				rawArgumentString.Append(' ').Append(PrefixedExtraLinkerFlags(cfg));
+
+			var commonMacros = new PrjPathMacroProvider {
+				slnPath = prj.ParentSolution != null ? EnsureCorrectPathSeparators(prj.ParentSolution.BaseDirectory) : ""
+			};
+
+			return FillInMacros(rawArgumentString.ToString(),
+				new OneStepBuildArgumentMacroProvider
+				{
+					ObjectsStringPattern = prj.Compiler.ArgumentPatterns.ObjectFileLinkPattern,
+					IncludesStringPattern = prj.Compiler.ArgumentPatterns.IncludePathPattern,
+
+					SourceFiles = builtObjects,
+					Includes = FillInMacros(prj.IncludePaths,commonMacros),
+					Libraries = GetLibraries(cfg, prj.Compiler),
+
+					RelativeTargetDirectory = cfg.OutputDirectory.ToRelative(prj.BaseDirectory),
+					ObjectsDirectory = ObjectDirectory(cfg),
+					TargetFile = target,
+				}, commonMacros);
 		}
 
 		BuildResult DoOneStepBuild ()
@@ -119,7 +155,7 @@ namespace MonoDevelop.D.Building
 					if (!CompileResourceScript (br, pf))
 						return br;
 				} else
-					BuiltObjects.Add (MakeRelativeToPrjBase(pf.FilePath));
+					BuiltObjects.Add (MakeRelativeToPrjBase(Project,pf.FilePath));
 			}
 
 			// Build argument string
@@ -133,42 +169,21 @@ namespace MonoDevelop.D.Building
 				return br;
 			}
 
-			var rawArgumentString = new StringBuilder();
-			if(!string.IsNullOrEmpty(AdditionalCompilerAttributes) )
-				rawArgumentString.Append(AdditionalCompilerAttributes.Trim()).Append(' ');
-			rawArgumentString.Append(BuildArguments.OneStepBuildArguments.Trim());
-			if(!string.IsNullOrEmpty(BuildConfig.ExtraCompilerArguments))
-				rawArgumentString.Append(' ').Append(BuildConfig.ExtraCompilerArguments.Trim());
-			if (!string.IsNullOrEmpty(BuildConfig.ExtraLinkerArguments))
-				rawArgumentString.Append(' ').Append(PrefixedExtraLinkerFlags);
-
-			var argumentString = FillInMacros(rawArgumentString.ToString(),
-			new OneStepBuildArgumentMacroProvider
-			{
-				ObjectsStringPattern = Compiler.ArgumentPatterns.ObjectFileLinkPattern,
-				IncludesStringPattern = Compiler.ArgumentPatterns.IncludePathPattern,
-
-				SourceFiles = BuiltObjects,
-				Includes = FillCommonMacros(Project.IncludePaths),
-				Libraries = GetLibraries(BuildConfig, Compiler),
-
-				RelativeTargetDirectory = BuildConfig.OutputDirectory.ToRelative(Project.BaseDirectory),
-				ObjectsDirectory = ObjectDirectory,
-				TargetFile = target,
-			}, commonMacros);
+			var argumentString = BuildOneStepBuildString (Project, BuiltObjects, BuildConfig.Selector);
 
 
 			// Execute the compiler
 			var stdOut = "";
 			var stdError = "";
+			var linkCfg = LinkTargetCfg (BuildConfig);
 
 			var linkerExecutable = Compiler.SourceCompilerCommand;
 			if (!Path.IsPathRooted(linkerExecutable) && !string.IsNullOrEmpty(Compiler.BinPath))
 			{
-				linkerExecutable = Path.Combine(Compiler.BinPath, LinkTargetCfg.Linker);
+				linkerExecutable = Path.Combine(Compiler.BinPath, linkCfg.Linker);
 
 				if (!File.Exists(linkerExecutable))
-					linkerExecutable = LinkTargetCfg.Linker;
+					linkerExecutable = linkCfg.Linker;
 			}
 
 			monitor.Log.WriteLine("Current dictionary: " + Project.BaseDirectory);
@@ -264,19 +279,19 @@ namespace MonoDevelop.D.Building
 			if (File.Exists (f.LastGenOutput))
 				File.Delete (f.LastGenOutput);
 
-			var obj = GetRelativeObjectFileName (ObjectDirectory,f, DCompilerService.ObjectExtension);
+			var obj = GetRelativeObjectFileName (ObjectDirectory(BuildConfig),f, DCompilerService.ObjectExtension);
+			var buildArgs = BuildArguments (BuildConfig);
 
 			// Create argument string for source file compilation.
-			var dmdArgs = FillInMacros((string.IsNullOrEmpty(AdditionalCompilerAttributes) ? string.Empty : (AdditionalCompilerAttributes.Trim() + " ")) +
-			                           BuildArguments.CompilerArguments.Trim() + 
-			                           (string.IsNullOrEmpty(BuildConfig.ExtraCompilerArguments) ? string.Empty : (" " + BuildConfig.ExtraCompilerArguments.Trim())),
+			var dmdArgs = FillInMacros((AdditionalCompilerAttributes ?? string.Empty) + " " +
+				buildArgs.CompilerArguments.Trim() + " " + (BuildConfig.ExtraCompilerArguments ?? ""),
 			new DCompilerMacroProvider
             {
                 IncludePathConcatPattern = Compiler.ArgumentPatterns.IncludePathPattern,
                 SourceFile = f.FilePath.ToRelative(Project.BaseDirectory),
                 ObjectFile = obj,
 				Includes = FillCommonMacros(Project.IncludePaths).Union(FileLinkDirectories),
-            },commonMacros);
+				},commonMacros).Trim();
 
 			// b.Execute compiler
 			string stdError;
@@ -318,7 +333,7 @@ namespace MonoDevelop.D.Building
 
 		bool CompileResourceScript (BuildResult targetBuildResult, ProjectFile f)
 		{
-			var res = GetRelativeObjectFileName (ObjectDirectory, f, ".res");
+			var res = GetRelativeObjectFileName (ObjectDirectory(BuildConfig), f, ".res");
 
 			// Build argument string
 			var resCmpArgs = FillInMacros (Win32ResourceCompiler.Instance.Arguments,
@@ -356,7 +371,7 @@ namespace MonoDevelop.D.Building
 				targetBuildResult.BuildCount++;
 				Project.LastModificationTimes [f] = File.GetLastWriteTime (f.FilePath);
 
-				BuiltObjects.Add (MakeRelativeToPrjBase (res));
+				BuiltObjects.Add (MakeRelativeToPrjBase (Project,res));
 				return true;
 			}
 		}
@@ -375,7 +390,7 @@ namespace MonoDevelop.D.Building
 
 			// b.Build linker argument string
 			// Build argument preparation
-			var linkArgs = FillInMacros (BuildArguments.LinkerArguments.Trim() + 
+			var linkArgs = FillInMacros (BuildArguments(BuildConfig).LinkerArguments.Trim() + 
 			                             (string.IsNullOrEmpty(BuildConfig.ExtraLinkerArguments) ? string.Empty : (" " + BuildConfig.ExtraLinkerArguments.Trim())),
                 new DLinkerMacroProvider
                 {
@@ -388,13 +403,14 @@ namespace MonoDevelop.D.Building
 
 			var linkerOutput = "";
 			var linkerErrorOutput = "";
+			var linkCfg = LinkTargetCfg (BuildConfig);
 
-			var linkerExecutable = LinkTargetCfg.Linker;
+			var linkerExecutable = linkCfg.Linker;
 			if (!Path.IsPathRooted (linkerExecutable) && !string.IsNullOrEmpty(Compiler.BinPath)) {
-				linkerExecutable = Path.Combine (Compiler.BinPath, LinkTargetCfg.Linker);
+				linkerExecutable = Path.Combine (Compiler.BinPath, linkCfg.Linker);
 
 				if (!File.Exists (linkerExecutable))
-					linkerExecutable = LinkTargetCfg.Linker;
+					linkerExecutable = linkCfg.Linker;
 			}
 
 			string cmdLineFile;
@@ -420,10 +436,10 @@ namespace MonoDevelop.D.Building
 				return file.Replace ('\\', '/');
 		}
 
-		string MakeRelativeToPrjBase(string obj)
+		public static string MakeRelativeToPrjBase(Project prj,string obj)
 		{
-			var baseDirectory = Project.BaseDirectory;
-			return obj.StartsWith(baseDirectory) ? obj.Substring(baseDirectory.ToString().Length + 1) : obj;
+			var baseDirectory = prj.BaseDirectory.ToString();
+			return obj.StartsWith(baseDirectory) ? obj.Substring(baseDirectory.Length + 1) : obj;
 		}
 
 		public static string GetRelativeObjectFileName (string objDirectory,ProjectFile f, string extension)
@@ -437,11 +453,9 @@ namespace MonoDevelop.D.Building
 
         #region Build argument creation
 
-		public string PrefixedExtraLinkerFlags
+		static string PrefixedExtraLinkerFlags(DProjectConfiguration BuildConfig)
 		{
-			get
-			{
-				var linkerRedirectPrefix = Compiler.ArgumentPatterns.LinkerRedirectPrefix;
+				var linkerRedirectPrefix = BuildConfig.Project.Compiler.ArgumentPatterns.LinkerRedirectPrefix;
 				if (string.IsNullOrWhiteSpace(BuildConfig.ExtraLinkerArguments))
 					return string.Empty;
 
@@ -472,7 +486,6 @@ namespace MonoDevelop.D.Building
 					}
 				}
 				return sb.ToString();
-			}
 		}
 
 		/// <summary>
