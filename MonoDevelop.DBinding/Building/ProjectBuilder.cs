@@ -573,25 +573,29 @@ namespace MonoDevelop.D.Building
 			var sb = new StringBuilder ();
 			var p = compiler.ArgumentPatterns;
 
+			string s;
+			if (cfg.Platform != null && compiler.ArgumentPatterns.PlatformDependentOptions.TryGetValue(cfg.Platform, out s))
+				sb.Append(s).Append(' ');
+
 			if (cfg.UnittestMode)
-				sb.Append (p.UnittestFlag + " ");
+				sb.Append (p.UnittestFlag).Append(' ');
 				
 			if(ProfilerModeHandler.IsProfilerMode && compiler.HasProfilerSupport)
-				sb.Append (p.ProfileFlag + " -v ");
+				sb.Append (p.ProfileFlag).Append(" -v ");
 
 			if (cfg.CustomDebugIdentifiers != null && cfg.CustomVersionIdentifiers.Length != 0)
 				foreach (var id in cfg.CustomDebugIdentifiers)
 					sb.Append (p.DebugDefinition + "=" + id + " ");
 
 			if (cfg.DebugLevel > 0)
-				sb.Append (p.DebugDefinition + "=" + cfg.DebugLevel + " ");
+				sb.Append (p.DebugDefinition).Append('=').Append(cfg.DebugLevel).Append(' ');
 
 			if (cfg.DebugMode)
-				sb.Append (p.DebugDefinition + " ");
+				sb.Append (p.DebugDefinition).Append(' ');
 
 			if (cfg.CustomVersionIdentifiers != null && cfg.CustomVersionIdentifiers.Length != 0)
 				foreach (var id in cfg.CustomVersionIdentifiers)
-					sb.Append (p.VersionDefinition + "=" + id + " ");
+					sb.Append (p.VersionDefinition).Append('=').Append(id).Append(' ');
 
 			// DDoc handling
 			var ddocFiles = new List<string> ();

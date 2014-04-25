@@ -198,10 +198,7 @@ namespace MonoDevelop.D.Projects
 			var cmp = prjOverride.Compiler;
 
 			// Compiler args + cfg args + extra args
-			var buildCfg = cmp.GetOrCreateTargetConfiguration(this.CompileTarget);
-			var buildArgs = buildCfg.GetArguments(this.DebugMode);
-			var cmpArgs = (buildArgs.OneStepBuildArguments ?? buildArgs.CompilerArguments) + " " +
-				ExtraCompilerArguments + " " + ExtraLinkerArguments;
+			var cmpArgs = ProjectBuilder.BuildOneStepBuildString(prjOverride, new string[0], Selector);
 
 			//TODO: Distinguish between D1/D2 and probably later versions?
 			var a = D_Parser.Misc.VersionIdEvaluation.GetVersionIds(cmp.PredefinedVersionConstant,cmpArgs, UnittestMode);

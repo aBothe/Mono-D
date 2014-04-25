@@ -17,6 +17,8 @@ namespace MonoDevelop.D.Projects
 	public class DProject : AbstractDProject, ICustomDataItem
 	{
 		#region Properties
+		public override string[] SupportedPlatforms { get { return new[] { "x86", "x64", "AnyCPU" }; } }
+
 		/// <summary>
 		/// Used for incremental compiling and linking
 		/// </summary>
@@ -105,7 +107,7 @@ namespace MonoDevelop.D.Projects
 		public DProject (ProjectCreateInformation info, XmlElement projectOptions)
 		{
 			referenceCollection = new DefaultDReferencesCollection (this);
-
+			
 			if (info != null) {
 				Name = info.ProjectName;
 
@@ -190,7 +192,7 @@ namespace MonoDevelop.D.Projects
 			unittestConfig.DebugMode = true;
 			unittestConfig.UnittestMode = true;
 			unittestConfig.CompileTarget = DCompileTarget.Executable;
-
+			
 			Configurations.Add (unittestConfig);
 		}
 		#endregion
@@ -214,6 +216,11 @@ namespace MonoDevelop.D.Projects
 		{
 			var defConfig = DefaultConfiguration as DProjectConfiguration;
 			var c = new DProjectConfiguration() { Name=name };
+			if (name.Contains("|"))
+			{
+				c.Platform = name.Substring(name.LastIndexOf('|') + 1);
+				name = name.Substring(0, name.IndexOf('|'));
+			}
 
 			if (defConfig != null) {
 				// Try to replace trailing /Debug by /Release, as this is the most common way to name binary directories

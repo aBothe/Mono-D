@@ -368,6 +368,8 @@ namespace MonoDevelop.D.Building
 		public string CommandFile;
 		public bool CommandFileCanBeUsedForLinking = false;
 
+		public readonly Dictionary<string, string> PlatformDependentOptions = new Dictionary<string, string>();
+
 		public void CopyFrom(CmdLineArgumentPatterns c)
 		{
 			ObjectFileLinkPattern = c.ObjectFileLinkPattern;
@@ -383,6 +385,9 @@ namespace MonoDevelop.D.Building
 
 			CommandFile = c.CommandFile;
 			CommandFileCanBeUsedForLinking = c.CommandFileCanBeUsedForLinking;
+
+			foreach (var kv in c.PlatformDependentOptions)
+				PlatformDependentOptions[kv.Key] = kv.Value;
 		}
 
 		public void SaveTo(XmlWriter x)
@@ -431,6 +436,14 @@ namespace MonoDevelop.D.Building
 			x.WriteAttributeString ("alsoForLinking", CommandFileCanBeUsedForLinking ? "true" : "false");
 			x.WriteCData(CommandFile);
 			x.WriteEndElement();
+
+			foreach (var kv in PlatformDependentOptions)
+			{
+				x.WriteStartElement("platform");
+				x.WriteAttributeString("id", kv.Key);
+				x.WriteCData(kv.Value);
+				x.WriteEndElement();
+			}
 		}
 
 		public void ReadFrom(XmlReader x)
@@ -473,6 +486,11 @@ namespace MonoDevelop.D.Building
 						var attr = x.GetAttribute ("alsoForLinking");
 						CommandFileCanBeUsedForLinking = attr != "false";
 						CommandFile = x.ReadString ();
+						break;
+					case "platform":
+						var id = x.GetAttribute("id");
+						if(!string.IsNullOrWhiteSpace(id))
+							PlatformDependentOptions[id] = x.ReadString();
 						break;
 				}
 			}
