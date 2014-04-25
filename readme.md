@@ -19,6 +19,7 @@ You can download pre-built binaries built with mono3 below. Unpack to `/opt/mono
 * Clone Mono-D
 	- Open a terminal in your projects folder
 	- `git clone https://github.com/aBothe/Mono-D.git`
+	- `cd Mono-D`
 	- `git submodule init`
 	- `git submodule update`
 * Build Mono-D
@@ -36,8 +37,9 @@ You can download pre-built binaries built with mono3 below. Unpack to `/opt/mono
 # How to initialize Mono-D development under Windows
 
 * Clone Mono-D
-	- Open a terminal in your projects folder
+	- Open a git bash in your projects folder
 	- `git clone https://github.com/aBothe/Mono-D.git`
+	- `cd Mono-D`
 	- `git submodule init`
 	- `git submodule update`
 * Build Mono-D
