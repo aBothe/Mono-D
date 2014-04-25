@@ -322,7 +322,7 @@
     <Compile Include="GuiBuilder\ProjectResourceProvider.cs" />
     <Compile Include="Refactoring\DustMiteIntegration\DustMite.cs" />
     <Compile Include="Refactoring\DustMiteIntegration\DustMiteArgDlg.cs" />
-    <Compile Include="gtk-gui\MonoDevelop.D.DustMiteArgDlg.cs" />
+    <Compile Include="gtk-gui\MonoDevelop.D.Refactoring.DustMiteArgDlg.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
