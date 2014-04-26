@@ -573,8 +573,10 @@ namespace MonoDevelop.D.Building
 			var sb = new StringBuilder ();
 			var p = compiler.ArgumentPatterns;
 
-			string s;
-			if (cfg.Platform != null && compiler.ArgumentPatterns.PlatformDependentOptions.TryGetValue(cfg.Platform, out s))
+			string s = cfg.Platform;
+			if (s != null && s.Contains('|'))
+				s = s.Substring(0, s.IndexOf('|'));
+			if (cfg.Platform != null && compiler.ArgumentPatterns.PlatformDependentOptions.TryGetValue(s, out s))
 				sb.Append(s).Append(' ');
 
 			if (cfg.UnittestMode)
