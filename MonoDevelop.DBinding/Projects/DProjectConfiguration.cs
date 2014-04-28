@@ -201,13 +201,13 @@ namespace MonoDevelop.D.Projects
 			var cmpArgs = ProjectBuilder.BuildOneStepBuildString(prjOverride, new string[0], Selector);
 
 			//TODO: Distinguish between D1/D2 and probably later versions?
-			var a = D_Parser.Misc.VersionIdEvaluation.GetVersionIds(cmp.PredefinedVersionConstant,cmpArgs, UnittestMode);
-			var res = new string[(a== null ? 0 : a.Length) + (CustomVersionIdentifiers == null ? 0: CustomVersionIdentifiers.Length)];
+			gVersionIds /*var a*/ = D_Parser.Misc.VersionIdEvaluation.GetVersionIds(cmp.PredefinedVersionConstant,cmpArgs, UnittestMode);
+			/*var res = new string[(a== null ? 0 : a.Length) + (CustomVersionIdentifiers == null ? 0: CustomVersionIdentifiers.Length)];
 			if(a!=null)
 				Array.Copy(a,res,a.Length);
 			if(CustomVersionIdentifiers!=null)
 				Array.Copy(CustomVersionIdentifiers,0,res,res.Length - CustomVersionIdentifiers.Length,CustomVersionIdentifiers.Length);
-			gVersionIds = res;
+			gVersionIds = res;*/
 		}
 
 		public override FilePath IntermediateOutputDirectory {
