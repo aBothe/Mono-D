@@ -351,7 +351,7 @@ namespace MonoDevelop.D.Highlighting
 						return "User Types(Enums)";
 					case DTokens.Interface:
 						return "User Types(Interfaces)";
-					case DTokens.Not: // template parameters
+					case (byte)TypeReferenceKind.TemplateTypeParameter:
 						return "User Types(Type parameters)";
 					case DTokens.Struct:
 						return "User Types(Value types)";
@@ -369,6 +369,8 @@ namespace MonoDevelop.D.Highlighting
 						}
 						else
 							return "User Types";
+					case (byte)TypeReferenceKind.Variable:
+						return "Plain Text";
 					default:
 						return "User Types";
 				}
