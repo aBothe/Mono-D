@@ -147,11 +147,15 @@ namespace MonoDevelop.D.Refactoring
 				return;
 			}
 
+			// Clean object files
+			Project.Clean (new Ide.ProgressMonitoring.BaseProgressMonitor (), IdeApp.Workspace.ActiveConfiguration);
+
 			var psi = new ProcessStartInfo(cmd.Substring (0, i++), cmd.Substring(i));
 			psi.UseShellExecute = false;
 			psi.RedirectStandardError = true;
+			psi.RedirectStandardInput = true;
 			psi.RedirectStandardOutput = true;
-			psi.CreateNoWindow = true;
+			//psi.CreateNoWindow = true;
 			psi.WorkingDirectory = Project.BaseDirectory.ParentDirectory;
 
 			dustmiteProcess = new Process { StartInfo = psi };
@@ -172,8 +176,6 @@ namespace MonoDevelop.D.Refactoring
 				MessageService.ShowException (ex, "Couldn't launch process");
 				return;
 			}
-
-
 		}
 
 		void AddToLog(string s)
