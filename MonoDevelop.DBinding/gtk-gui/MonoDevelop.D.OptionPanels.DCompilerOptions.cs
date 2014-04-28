@@ -38,6 +38,9 @@ namespace MonoDevelop.D.OptionPanels
 		private global::Gtk.Table table3;
 		private global::Gtk.Button button_AddInclude;
 		private global::Gtk.Label label1;
+		private global::Gtk.ScrolledWindow GtkScrolledWindow2;
+		private global::Gtk.TextView tb_ArgPatterns;
+		private global::Gtk.Label label4;
 
 		protected virtual void Build ()
 		{
@@ -282,7 +285,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.notebook2 = new global::Gtk.Notebook ();
 			this.notebook2.CanFocus = true;
 			this.notebook2.Name = "notebook2";
-			this.notebook2.CurrentPage = 1;
+			this.notebook2.CurrentPage = 2;
 			this.notebook2.ShowBorder = false;
 			// Container child notebook2.Gtk.Notebook+NotebookChild
 			this.vbox2 = new global::Gtk.VBox ();
@@ -304,7 +307,13 @@ namespace MonoDevelop.D.OptionPanels
 			w24.Position = 0;
 			// Container child vbox2.Gtk.Box+BoxChild
 			this.check_enableLibPrefixing = new global::Gtk.CheckButton ();
-			w6.SetTip (this.check_enableLibPrefixing, "If checked, all referenced libraries that can not be found locally will be stripped by their file extensions and get a \"-L-l\" prefix as they are passed to the compiler during project building.\n'../myCustomLib/bin/myCustomLib.a' remains untouched.\n'libphobos2.a' becomes '-L-llibphobos2' on compilation.\nThis is mainly activated when using the gdc compiler.", "If checked, all referenced libraries that can not be found locally will be stripped by their file extensions and get a \"-L-l\" prefix as they are passed to the compiler during project building.\n'../myCustomLib/bin/myCustomLib.a' remains untouched.\n'libphobos2.a' becomes '-L-llibphobos2' on compilation.\nThis is mainly activated when using the gdc compiler.");
+			w6.SetTip (this.check_enableLibPrefixing, @"If checked, all referenced libraries that can not be found locally will be stripped by their file extensions and get a ""-L-l"" prefix as they are passed to the compiler during project building.
+'../myCustomLib/bin/myCustomLib.a' remains untouched.
+'libphobos2.a' becomes '-L-llibphobos2' on compilation.
+This is mainly activated when using the gdc compiler.", @"If checked, all referenced libraries that can not be found locally will be stripped by their file extensions and get a ""-L-l"" prefix as they are passed to the compiler during project building.
+'../myCustomLib/bin/myCustomLib.a' remains untouched.
+'libphobos2.a' becomes '-L-llibphobos2' on compilation.
+This is mainly activated when using the gdc compiler.");
 			this.check_enableLibPrefixing.CanFocus = true;
 			this.check_enableLibPrefixing.Name = "check_enableLibPrefixing";
 			this.check_enableLibPrefixing.Label = global::MonoDevelop.Core.GettextCatalog.GetString ("Enable gdc-specific import lib prefix stripping (e.g. libopengl32.a -> opengl32)");
@@ -330,7 +339,9 @@ namespace MonoDevelop.D.OptionPanels
 			this.table2.ColumnSpacing = ((uint)(6));
 			// Container child table2.Gtk.Table+TableChild
 			this.GtkScrolledWindow1 = new global::Gtk.ScrolledWindow ();
-			w6.SetTip (this.GtkScrolledWindow1, "Line-separated list of paths where the compiler (and the code completion engine!) shall look in to resolve imports.", "Line-separated list of paths where the compiler (and the code completion engine!) shall look in to resolve imports.");
+			w6.SetTip (this.GtkScrolledWindow1, "Line-separated list of paths where the compiler (and the code completion engine!)" +
+			" shall look in to resolve imports.", "Line-separated list of paths where the compiler (and the code completion engine!)" +
+			" shall look in to resolve imports.");
 			this.GtkScrolledWindow1.Name = "GtkScrolledWindow1";
 			this.GtkScrolledWindow1.ShadowType = ((global::Gtk.ShadowType)(1));
 			// Container child GtkScrolledWindow1.Gtk.Container+ContainerChild
@@ -368,21 +379,34 @@ namespace MonoDevelop.D.OptionPanels
 			this.label1.LabelProp = global::MonoDevelop.Core.GettextCatalog.GetString ("Includes");
 			this.notebook2.SetTabLabel (this.table2, this.label1);
 			this.label1.ShowAll ();
+			// Container child notebook2.Gtk.Notebook+NotebookChild
+			this.GtkScrolledWindow2 = new global::Gtk.ScrolledWindow ();
+			this.GtkScrolledWindow2.Name = "GtkScrolledWindow2";
+			this.GtkScrolledWindow2.ShadowType = ((global::Gtk.ShadowType)(1));
+			// Container child GtkScrolledWindow2.Gtk.Container+ContainerChild
+			this.tb_ArgPatterns = new global::Gtk.TextView ();
+			this.tb_ArgPatterns.CanFocus = true;
+			this.tb_ArgPatterns.Name = "tb_ArgPatterns";
+			this.GtkScrolledWindow2.Add (this.tb_ArgPatterns);
+			this.notebook2.Add (this.GtkScrolledWindow2);
+			global::Gtk.Notebook.NotebookChild w33 = ((global::Gtk.Notebook.NotebookChild)(this.notebook2 [this.GtkScrolledWindow2]));
+			w33.Position = 2;
+			// Notebook tab
+			this.label4 = new global::Gtk.Label ();
+			this.label4.Name = "label4";
+			this.label4.LabelProp = global::MonoDevelop.Core.GettextCatalog.GetString ("[Arg Patterns]");
+			this.notebook2.SetTabLabel (this.GtkScrolledWindow2, this.label4);
+			this.label4.ShowAll ();
 			this.vbox8.Add (this.notebook2);
-			global::Gtk.Box.BoxChild w32 = ((global::Gtk.Box.BoxChild)(this.vbox8 [this.notebook2]));
-			w32.Position = 1;
+			global::Gtk.Box.BoxChild w34 = ((global::Gtk.Box.BoxChild)(this.vbox8 [this.notebook2]));
+			w34.Position = 1;
 			this.Add (this.vbox8);
 			if ((this.Child != null)) {
 				this.Child.ShowAll ();
 			}
 			this.Show ();
-			this.btnDebugArguments.Clicked += new global::System.EventHandler (this.btnDebugArguments_Clicked);
-			this.btnReleaseArguments.Clicked += new global::System.EventHandler (this.btnReleaseArguments_Clicked);
 			this.cmbCompilers.Changed += new global::System.EventHandler (this.OnCmbCompilersChanged);
 			this.btnMakeDefault.Released += new global::System.EventHandler (this.OnTogglebuttonMakeDefaultPressed);
-			this.button_BinPathBrowser.Clicked += new global::System.EventHandler (this.OnButtonBinPathBrowserClicked);
-			this.btnDefaults.Clicked += new global::System.EventHandler (this.OnBtnDefaultsClicked);
-			this.button_AddInclude.Clicked += new global::System.EventHandler (this.OnButtonAddIncludeClicked);
 		}
 	}
 }

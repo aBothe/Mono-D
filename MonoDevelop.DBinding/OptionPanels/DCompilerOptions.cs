@@ -143,16 +143,27 @@ namespace MonoDevelop.D.OptionPanels
 			btnMakeDefault.Active = 
 				configuration.Vendor == defaultCompilerVendor;
 			btnMakeDefault.Sensitive = true;
+
+			using (var buf = new StringWriter ())
+			using (var xml = new System.Xml.XmlTextWriter (buf)) {
+				xml.Formatting = System.Xml.Formatting.Indented;
+				xml.WriteStartDocument();
+				xml.WriteStartElement("patterns");
+				compiler.ArgumentPatterns.SaveTo (xml);
+				xml.WriteEndDocument();
+				tb_ArgPatterns.Buffer.Text = buf.ToString ();
+			}
 		}
 
 		public bool Validate ()
 		{
-			return true; //TODO: Establish validation
+			return true;
 		}
 
 		public bool Store ()
 		{
-			ApplyToVirtConfiguration ();
+			if (!ApplyToVirtConfiguration())
+				return false;
 
 			DCompilerService.Instance.Compilers.Clear ();
 
@@ -196,6 +207,17 @@ namespace MonoDevelop.D.OptionPanels
 				var p_ = p.Trim();
 				if (!String.IsNullOrWhiteSpace(p_))
 					configuration.DefaultLibraries.Add(p_);
+			}
+
+			try
+			{
+				using (var sr = new StringReader(tb_ArgPatterns.Buffer.Text))
+				using (var xml = new System.Xml.XmlTextReader(sr))
+					configuration.ArgumentPatterns.ReadFrom(xml);
+			}
+			catch (Exception ex) { 
+				LoggingService.LogError("Error during parsing argument patterns", ex); 
+				return false; 
 			}
 			
 			#region Store new include paths
@@ -322,14 +344,17 @@ namespace MonoDevelop.D.OptionPanels
 			panel.ReloadCompilerList ();
 		}
 
+		bool hasStoredAlready = false;
 		public override bool ValidateChanges ()
 		{
-			return panel.Validate ();
+			return panel.Validate() && panel.Store() && (hasStoredAlready = true);
 		}
 			
 		public override void ApplyChanges ()
 		{
-			panel.Store ();
+			if (!hasStoredAlready)
+				panel.Store();
+			hasStoredAlready = false; // Acceptable here
 		}
 	}	
 }

@@ -393,55 +393,55 @@ namespace MonoDevelop.D.Building
 		public void SaveTo(XmlWriter x)
 		{
 			x.WriteStartElement("obj");
-			x.WriteCData(ObjectFileLinkPattern);
+			x.WriteString(ObjectFileLinkPattern);
 			x.WriteEndElement();
 
 			x.WriteStartElement("include");
-			x.WriteCData(IncludePathPattern);
+			x.WriteString(IncludePathPattern);
 			x.WriteEndElement();
 
 			x.WriteStartElement("version");
-			x.WriteCData(VersionDefinition);
+			x.WriteString(VersionDefinition);
 			x.WriteEndElement();
 
 			x.WriteStartElement("debug");
-			x.WriteCData(DebugDefinition);
+			x.WriteString(DebugDefinition);
 			x.WriteEndElement();
 
 			x.WriteStartElement("unittest");
-			x.WriteCData(UnittestFlag);
+			x.WriteString(UnittestFlag);
 			x.WriteEndElement();
 			
 			x.WriteStartElement("profile");
-			x.WriteCData(ProfileFlag);
+			x.WriteString(ProfileFlag);
 			x.WriteEndElement();
 
 			x.WriteStartElement("ddFlag");
-			x.WriteCData(EnableDDocFlag);
+			x.WriteString(EnableDDocFlag);
 			x.WriteEndElement();
 
 			x.WriteStartElement("ddMacroDefinition");
-			x.WriteCData(DDocDefinitionFile);
+			x.WriteString(DDocDefinitionFile);
 			x.WriteEndElement();
 
 			x.WriteStartElement("ddDir");
-			x.WriteCData(DDocExportDirectory);
+			x.WriteString(DDocExportDirectory);
 			x.WriteEndElement();
 
 			x.WriteStartElement("linkerRedirectFlag");
-			x.WriteCData(LinkerRedirectPrefix);
+			x.WriteString(LinkerRedirectPrefix);
 			x.WriteEndElement();
 
 			x.WriteStartElement("commandFile");
 			x.WriteAttributeString ("alsoForLinking", CommandFileCanBeUsedForLinking ? "true" : "false");
-			x.WriteCData(CommandFile);
+			x.WriteString(CommandFile);
 			x.WriteEndElement();
 
 			foreach (var kv in PlatformDependentOptions)
 			{
 				x.WriteStartElement("platform");
 				x.WriteAttributeString("id", kv.Key);
-				x.WriteCData(kv.Value);
+				x.WriteString(kv.Value);
 				x.WriteEndElement();
 			}
 		}
