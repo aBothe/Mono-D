@@ -24,6 +24,7 @@ namespace MonoDevelop.D.OptionPanels
 			check_EnableMixinAnalysis.Active = !CompletionOptions.Instance.DisableMixinAnalysis;
 			check_EnableSuggestionMode.Active = CompletionOptions.Instance.EnableSuggestionMode;
 			check_HideDeprecatedItems.Active = CompletionOptions.Instance.HideDeprecatedNodes;
+			check_HideDisabledItems.Active = CompletionOptions.Instance.HideDisabledNodes;
 			check_EnableDiffbasedColoring.Active = Highlighting.DiffbasedHighlighting.Enabled;
 			check_ShowStructMembersInStructInitOnly.Active = CompletionOptions.Instance.ShowStructMembersInStructInitOnly;
 			text_CompletionTimeout.Text = CompletionOptions.Instance.CompletionTimeout.ToString ();
@@ -62,6 +63,7 @@ namespace MonoDevelop.D.OptionPanels
 			CompletionOptions.Instance.DisableMixinAnalysis = !check_EnableMixinAnalysis.Active;
 			CompletionOptions.Instance.EnableSuggestionMode = check_EnableSuggestionMode.Active;
 			CompletionOptions.Instance.HideDeprecatedNodes = check_HideDeprecatedItems.Active;
+			CompletionOptions.Instance.HideDisabledNodes = check_HideDisabledItems.Active;
 			Highlighting.DiffbasedHighlighting.Enabled = check_EnableDiffbasedColoring.Active;
 			CompletionOptions.Instance.ShowStructMembersInStructInitOnly = check_ShowStructMembersInStructInitOnly.Active;
 			int.TryParse (text_CompletionTimeout.Text,out CompletionOptions.Instance.CompletionTimeout); 
