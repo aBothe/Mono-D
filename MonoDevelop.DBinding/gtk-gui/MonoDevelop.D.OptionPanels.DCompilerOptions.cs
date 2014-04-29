@@ -285,7 +285,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.notebook2 = new global::Gtk.Notebook ();
 			this.notebook2.CanFocus = true;
 			this.notebook2.Name = "notebook2";
-			this.notebook2.CurrentPage = 2;
+			this.notebook2.CurrentPage = 1;
 			this.notebook2.ShowBorder = false;
 			// Container child notebook2.Gtk.Notebook+NotebookChild
 			this.vbox2 = new global::Gtk.VBox ();
@@ -405,8 +405,13 @@ This is mainly activated when using the gdc compiler.");
 				this.Child.ShowAll ();
 			}
 			this.Show ();
+			this.btnDebugArguments.Clicked += new global::System.EventHandler (this.btnDebugArguments_Clicked);
+			this.btnReleaseArguments.Clicked += new global::System.EventHandler (this.btnReleaseArguments_Clicked);
 			this.cmbCompilers.Changed += new global::System.EventHandler (this.OnCmbCompilersChanged);
 			this.btnMakeDefault.Released += new global::System.EventHandler (this.OnTogglebuttonMakeDefaultPressed);
+			this.button_BinPathBrowser.Clicked += new global::System.EventHandler (this.OnButtonBinPathBrowserClicked);
+			this.btnDefaults.Clicked += new global::System.EventHandler (this.OnBtnDefaultsClicked);
+			this.button_AddInclude.Clicked += new global::System.EventHandler (this.OnButtonAddIncludeClicked);
 		}
 	}
 }
