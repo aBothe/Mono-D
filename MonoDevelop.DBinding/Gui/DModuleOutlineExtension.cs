@@ -167,12 +167,16 @@ namespace MonoDevelop.D.Gui
 			if (o is DNode)
 			{
 				var icon = DIcons.GetNodeIcon(o as DNode);
-				if(icon!=(IconId)null)
-					pixRenderer.Pixbuf = ImageService.GetPixbuf(icon.Name, IconSize.Menu);
+				if(!icon.IsNull)
+					using(var img = ImageService.GetImage(icon.Name, IconSize.Menu))
+						if(img.Pixbuf != null) //FIXME
+							pixRenderer.Pixbuf = img.Pixbuf.Copy();
 			}
 			else if (o is StatementContainingStatement)
 			{
-				pixRenderer.Pixbuf = ImageService.GetPixbuf("gtk-add", IconSize.Menu);
+				using (var img = ImageService.GetImage("gtk-add", IconSize.Menu))
+					if (img.Pixbuf != null) //FIXME
+						pixRenderer.Pixbuf = img.Pixbuf.Copy();
 			}
 		}
 

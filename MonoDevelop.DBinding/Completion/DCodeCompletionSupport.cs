@@ -261,15 +261,6 @@ namespace MonoDevelop.D.Completion
 			set{ }
 		}
 
-		public override string DisplayDescription
-		{
-			get
-			{
-				return "<i>(Package)</i>";
-			}
-			set{ }
-		}
-
 		public override string DisplayText
 		{
 			get
@@ -364,16 +355,6 @@ namespace MonoDevelop.D.Completion
 		public override string CompletionText
 		{
 			get { return modName; }
-		}
-
-		public override string DisplayDescription
-		{
-			get
-			{
-				return Module.FileName;
-			}
-			set
-			{ }
 		}
 	}
 

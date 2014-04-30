@@ -50,11 +50,12 @@ namespace MonoDevelop.D.Projects.ProjectPad
 			return "References";
 		}
 
-		public override void BuildNode (ITreeBuilder treeBuilder, object dataObject, ref string label, ref Gdk.Pixbuf icon, ref Gdk.Pixbuf closedIcon)
+		public override void BuildNode(ITreeBuilder treeBuilder, object dataObject, NodeInfo n)
 		{
-			label = GLib.Markup.EscapeText (GettextCatalog.GetString ("References"));
-			icon = Context.GetIcon (Stock.OpenReferenceFolder);
-			closedIcon = Context.GetIcon (Stock.ClosedReferenceFolder);
+			n.Label = GettextCatalog.GetString("References");
+			n.Icon = Context.GetIcon(Stock.OpenReferenceFolder.Name);
+			n.ClosedIcon = Context.GetIcon(Stock.ClosedReferenceFolder.Name);
+			//base.BuildNode(treeBuilder, dataObject, nodeInfo);
 		}
 
 		public override void BuildChildNodes (ITreeBuilder ctx, object dataObject)

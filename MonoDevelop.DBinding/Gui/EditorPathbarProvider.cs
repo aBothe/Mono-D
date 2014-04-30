@@ -58,10 +58,10 @@ namespace MonoDevelop.D.Gui
 			return memberList[n].Name +  DParameterDataProvider.GetNodeParamString(memberList[n]);
 		}
 
-		public Gdk.Pixbuf GetIcon (int n)
-		{			
-			var icon=DIcons.GetNodeIcon(memberList[n] as DNode);
-			return ImageService.GetPixbuf(icon.Name, IconSize.Menu);
+		Xwt.Drawing.Image DropDownBoxListWindow.IListDataProvider.GetIcon(int n)
+		{
+			var icon = DIcons.GetNodeIcon(memberList[n] as DNode);
+			return ImageService.GetIcon(icon.Name, IconSize.Menu);
 		}
 
 		public object GetTag (int n)
@@ -76,8 +76,6 @@ namespace MonoDevelop.D.Gui
 			if (extEditor != null)
 				extEditor.SetCaretTo (Math.Max (1, member.NameLocation.Line), member.NameLocation.Column);
 		}
-
-
 		#endregion
 	}
 }

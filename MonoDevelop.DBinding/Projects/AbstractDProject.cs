@@ -15,7 +15,7 @@ namespace MonoDevelop.D.Projects
 	public abstract class AbstractDProject : Project
 	{
 		#region Properties
-		public override string ProjectType { get { return "Native"; } }
+		public override IEnumerable<string> GetProjectTypes(){ return new[] { "Native" }; }
 		public override string[] SupportedLanguages { get { return new[] { "D", "" }; } }
 
 		public virtual IEnumerable<string> GlobalIncludes { get { return DCompilerService.Instance.GetDefaultCompiler().IncludePaths; } }

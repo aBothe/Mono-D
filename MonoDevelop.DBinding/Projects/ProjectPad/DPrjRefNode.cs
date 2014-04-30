@@ -58,17 +58,17 @@ namespace MonoDevelop.D.Projects.ProjectPad
 			return ((DProjectReference)dataObject).Name;
 		}
 
-		public override void BuildNode (ITreeBuilder treeBuilder, object dataObject, ref string label, ref Gdk.Pixbuf icon, ref Gdk.Pixbuf closedIcon)
+		public override void BuildNode(ITreeBuilder treeBuilder, object dataObject, NodeInfo n)
 		{
-			var pref = (DProjectReference) dataObject;
-			label = pref.Name;
-			switch (pref.ReferenceType) {
+			var pref = (DProjectReference)dataObject;
+			switch (pref.ReferenceType)
+			{
 				case ReferenceType.Project:
-				icon = Context.GetIcon ("md-reference-project");
-				break;
+					n.Icon = Context.GetIcon("md-reference-project");
+					break;
 				case ReferenceType.Package:
-				icon = Context.GetIcon ("md-reference-folder");
-				break;
+					n.Icon = Context.GetIcon("md-reference-folder");
+					break;
 				/*
 			case ReferenceType.Assembly:
 				label = Path.GetFileName(pref.Reference);
@@ -80,11 +80,12 @@ namespace MonoDevelop.D.Projects.ProjectPad
 				break;*/
 			}
 
-			label = GLib.Markup.EscapeText (label);
+			n.Label = GLib.Markup.EscapeText(pref.Name);
 
-			if (!pref.IsValid) {
-				label = "<span color='red'>" + label + "</span>";
-				icon = Context.GetIcon ("md-reference-warning");
+			if (!pref.IsValid)
+			{
+				n.Label = "<span color='red'>" + n.Label + "</span>";
+				n.Icon = Context.GetIcon("md-reference-warning");
 			}
 		}
 
