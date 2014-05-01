@@ -4,10 +4,13 @@ using MonoDevelop.D.Parser;
 using MonoDevelop.Ide.CodeCompletion;
 using MonoDevelop.Ide.Gui;
 using MonoDevelop.Ide.Gui.Content;
+using Mono.TextEditor;
+using MonoDevelop.D.Resolver;
+using D_Parser.Resolver.TypeResolution;
 
 namespace MonoDevelop.D
 {
-	class DEditorCompletionExtension:CompletionTextEditorExtension
+	class DEditorCompletionExtension:CompletionTextEditorExtension, MonoDevelop.Debugger.IDebuggerExpressionResolver
 	{
 		#region Properties / Init
 		int lastTriggerOffset;
@@ -243,5 +246,30 @@ namespace MonoDevelop.D
 		{
 			return doc.IsFile && DLanguageBinding.IsDFile(doc.FileName);
 		}
+
+		#region Debug tooltip helpers
+
+		public string ResolveExpression (TextEditorData ed, Document doc, int offset, out int startOffset)
+		{
+			startOffset = offset;
+			var editorData = DResolverWrapper.CreateEditorData(doc);
+			if (editorData == null)
+				return null;
+			editorData.CaretOffset = offset;
+			var edLoc = ed.OffsetToLocation(offset);
+			editorData.CaretLocation = new CodeLocation(edLoc.Column,edLoc.Line);
+
+			var o = DResolver.GetScopedCodeObject(editorData);
+			if (o != null) {
+				startOffset = ed.LocationToOffset (o.Location.Line, o.Location.Column);
+				if (o is INode)
+					return (o as INode).Name;
+				return o.ToString ();
+			}
+
+			return null;
+		}
+
+		#endregion
 	}
 }

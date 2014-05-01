@@ -6,7 +6,7 @@
 	copyright=""
 	description="D Language Binding"
 	category="Language bindings"
-	version="2.0.0">
+	version="2.0.1">
 
 	<!-- Resources -->
 
@@ -294,7 +294,6 @@
 	</Extension>
 
 	<Extension path = "/MonoDevelop/SourceEditor2/TooltipProviders">
-		<Class mimeTypes="text/x-d" id="DDebugTooltips" class="MonoDevelop.D.Gui.DDebugValueTooltipProvider" />
 		<Class mimeTypes="text/x-d" id="DToolTipProvider" class="MonoDevelop.D.Gui.DToolTipProvider" />
 	</Extension>
 

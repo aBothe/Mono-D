@@ -276,7 +276,6 @@
     <Compile Include="Profiler\Gui\DProfilerPad.cs" />
     <Compile Include="Gui\ExpressionEvaluationWidget.cs" />
     <Compile Include="Gui\MixinInsightExtension.cs" />
-    <Compile Include="Gui\DDebugValueTooltipProvider.cs" />
     <Compile Include="OptionPanels\ProjectDependencyPanelBinding.cs" />
     <Compile Include="OptionPanels\ProjectDependenciesWidget.cs" />
     <Compile Include="gtk-gui\MonoDevelop.D.ProjectDependenciesWidget.cs" />
