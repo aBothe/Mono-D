@@ -40,7 +40,27 @@ namespace MonoDevelop.D.Projects.Dub
 				return p [p.Length - 1];
 			} 
 			set { displayName = value; } } // override because the name is normally derived from the file name -- package.json is not the project's file name!
-		public override FilePath FileName { get; set; }
+		FilePath filePath;
+		public override FilePath FileName { 
+			get{ return filePath; }
+			set{
+				filePath = value;
+				if (File.Exists (value))
+					lastDubJsonModTime = File.GetLastWriteTimeUtc (value);
+			}
+		}
+
+		DateTime lastDubJsonModTime;
+		public override bool NeedsReload {
+			get {
+				return lastDubJsonModTime != File.GetLastWriteTimeUtc(FileName);
+			}
+			set {
+				//base.NeedsReload = value;
+			}
+		}
+
+
 		public string Homepage;
 		public string Copyright;
 		public List<string> Authors { get { return authors; } }
