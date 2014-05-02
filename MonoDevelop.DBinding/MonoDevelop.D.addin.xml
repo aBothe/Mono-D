@@ -31,45 +31,45 @@
 		<StockIcon stockid = "d-project32" resource = "MonoDevelop.D.icons.dproj32.png" />
 
 		<!-- Class-like -->
-		<StockIcon stockid = "md-template" icon = "res:code-template-16.png" size="Menu"/>
-		<StockIcon stockid = "md-private-template" icon = "res:code-template-16.png|res:visibility-private-16.png" size="Menu"/>
-		<StockIcon stockid = "md-protected-template" icon = "res:code-template-16.png|res:visibility-protected-16.png" size="Menu"/>
-		<StockIcon stockid = "md-internal-template" icon = "res:code-template-16.png|res:visibility-internal-16.png" size="Menu"/>
+		<StockIcon stockid = "md-template" icon = "res:element-template-light-16.png" size="Menu"/>
+		<StockIcon stockid = "md-private-template" icon = "res:element-template-light-16|res:visibility-private-overlay-light-16.png" size="Menu"/>
+		<StockIcon stockid = "md-protected-template" icon = "res:element-template-light-16|res:visibility-protected-overlay-light-16.png" size="Menu"/>
+		<StockIcon stockid = "md-internal-template" icon = "res:element-template-light-16|res:visibility-internal-overlay-light-16.png" size="Menu"/>
 
 		<StockIcon stockid = "md-union" icon = "res:MonoDevelop.D.icons.element-union-16.png" size="Menu"/>
-		<StockIcon stockid = "md-private-union" icon = "res:MonoDevelop.D.icons.element-union-16.png|res:visibility-private-16.png" size="Menu"/>
-		<StockIcon stockid = "md-protected-union" icon = "res:MonoDevelop.D.icons.element-union-16.png|res:visibility-protected-16.png" size="Menu"/>
-		<StockIcon stockid = "md-internal-union" icon = "res:MonoDevelop.D.icons.element-union-16.png|res:visibility-internal-16.png" size="Menu"/>
+		<StockIcon stockid = "md-private-union" icon = "res:MonoDevelop.D.icons.element-union-16.png|res:visibility-private-overlay-light-16.png" size="Menu"/>
+		<StockIcon stockid = "md-protected-union" icon = "res:MonoDevelop.D.icons.element-union-16.png|res:visibility-protected-overlay-light-16.png" size="Menu"/>
+		<StockIcon stockid = "md-internal-union" icon = "res:MonoDevelop.D.icons.element-union-16.png|res:visibility-internal-overlay-light-16.png" size="Menu"/>
 
-		<StockIcon stockid = "md-class-static" icon = "res:element-class-16.png|res:static-16.png" size="Menu"/>
-		<StockIcon stockid = "md-private-class-static" icon = "res:element-class-16.png|res:visibility-private-16.png|res:static-16.png" size="Menu"/>
-		<StockIcon stockid = "md-protected-class-static" icon = "res:element-class-16.png|res:visibility-protected-16.png|res:static-16.png" size="Menu"/>
-		<StockIcon stockid = "md-internal-class-static" icon = "res:element-class-16.png|res:visibility-internal-16.png|res:static-16.png" size="Menu"/>
+		<StockIcon stockid = "md-class-static" icon = "res:element-class-light-16.png|res:static-overlay-light-16.png" size="Menu"/>
+		<StockIcon stockid = "md-private-class-static" icon = "res:element-class-light-16.png|res:visibility-private-overlay-light-16.png|res:static-overlay-light-16.png" size="Menu"/>
+		<StockIcon stockid = "md-protected-class-static" icon = "res:element-class-light-16.png|res:visibility-protected-overlay-light-16.png|res:static-overlay-light-16.png" size="Menu"/>
+		<StockIcon stockid = "md-internal-class-static" icon = "res:element-class-light-16.png|res:visibility-internal-overlay-light-16.png|res:static-overlay-light-16.png" size="Menu"/>
 
 		<StockIcon stockid = "md-class-abstract" icon = "res:element-abstract-class-16.png" size="Menu"/>
-		<StockIcon stockid = "md-private-class-abstract" icon = "res:element-abstract-class-16.png|res:visibility-private-16.png" size="Menu"/>
-		<StockIcon stockid = "md-protected-class-abstract" icon = "res:element-abstract-class-16.png|res:visibility-protected-16.png" size="Menu"/>
-		<StockIcon stockid = "md-internal-class-abstract" icon = "res:element-abstract-class-16.png|res:visibility-internal-16.png" size="Menu"/>
+		<StockIcon stockid = "md-private-class-abstract" icon = "res:element-abstract-class-16.png|res:visibility-private-overlay-light-16.png" size="Menu"/>
+		<StockIcon stockid = "md-protected-class-abstract" icon = "res:element-abstract-class-16.png|res:visibility-protected-overlay-light-16.png" size="Menu"/>
+		<StockIcon stockid = "md-internal-class-abstract" icon = "res:element-abstract-class-16.png|res:visibility-internal-overlay-light-16.png" size="Menu"/>
 
-		<StockIcon stockid = "md-class-static-abstract" icon = "res:element-abstract-class-16.png|res:static-16.png" size="Menu"/>
-		<StockIcon stockid = "md-private-class-static-abstract" icon = "res:element-abstract-class-16.png|res:visibility-private-16.png|res:static-16.png" size="Menu"/>
-		<StockIcon stockid = "md-protected-class-static-abstract" icon = "res:element-abstract-class-16.png|res:visibility-protected-16.png|res:static-16.png" size="Menu"/>
-		<StockIcon stockid = "md-internal-class-static-abstract" icon = "res:element-abstract-class-16.png|res:visibility-internal-16.png|res:static-16.png" size="Menu"/>
+		<StockIcon stockid = "md-class-static-abstract" icon = "res:element-abstract-class-16.png|res:static-overlay-light-16.png" size="Menu"/>
+		<StockIcon stockid = "md-private-class-static-abstract" icon = "res:element-abstract-class-16.png|res:visibility-private-overlay-light-16.png|res:static-overlay-light-16.png" size="Menu"/>
+		<StockIcon stockid = "md-protected-class-static-abstract" icon = "res:element-abstract-class-16.png|res:visibility-protected-overlay-light-16.png|res:static-overlay-light-16.png" size="Menu"/>
+		<StockIcon stockid = "md-internal-class-static-abstract" icon = "res:element-abstract-class-16.png|res:visibility-internal-overlay-light-16.png|res:static-overlay-light-16.png" size="Menu"/>
 
 
 		<!-- Methods -->
-		<StockIcon stockid = "md-method-static" icon = "res:element-method-16.png|res:static-16.png" size="Menu"/>
-		<StockIcon stockid = "md-private-method-static" icon = "res:element-method-16.png|res:visibility-private-16.png|res:static-16.png" size="Menu"/>
-		<StockIcon stockid = "md-protected-method-static" icon = "res:element-method-16.png|res:visibility-protected-16.png|res:static-16.png" size="Menu"/>
-		<StockIcon stockid = "md-internal-method-static" icon = "res:element-method-16.png|res:visibility-internal-16.png|res:static-16.png" size="Menu"/>
+		<StockIcon stockid = "md-method-static" icon = "res:element-method-light-16.png|res:static-overlay-light-16.png" size="Menu"/>
+		<StockIcon stockid = "md-private-method-static" icon = "res:element-method-light-16.png|res:visibility-private-overlay-light-16.png|res:static-overlay-light-16.png" size="Menu"/>
+		<StockIcon stockid = "md-protected-method-static" icon = "res:element-method-light-16.png|res:visibility-protected-overlay-light-16.png|res:static-overlay-light-16.png" size="Menu"/>
+		<StockIcon stockid = "md-internal-method-static" icon = "res:element-method-light-16.png|res:visibility-internal-overlay-light-16.png|res:static-overlay-light-16.png" size="Menu"/>
 
 		<StockIcon stockid = "md-method-abstract" icon = "res:element-abstract-method-16.png" size="Menu"/>
-		<StockIcon stockid = "md-protected-method-abstract" icon = "res:element-abstract-method-16.png|res:visibility-protected-16.png" size="Menu"/>
-		<StockIcon stockid = "md-internal-method-abstract" icon = "res:element-abstract-method-16.png|res:visibility-internal-16.png" size="Menu"/>
+		<StockIcon stockid = "md-protected-method-abstract" icon = "res:element-abstract-method-16.png|res:visibility-protected-overlay-light-16.png" size="Menu"/>
+		<StockIcon stockid = "md-internal-method-abstract" icon = "res:element-abstract-method-16.png|res:visibility-internal-overlay-light-16.png" size="Menu"/>
 
-		<StockIcon stockid = "md-method-override" icon = "res:element-extensionmethod-16.png" size="Menu"/>
-		<StockIcon stockid = "md-protected-method-override" icon = "res:element-extensionmethod-16.png|res:visibility-protected-16.png" size="Menu"/>
-		<StockIcon stockid = "md-internal-method-override" icon = "res:element-extensionmethod-16.png|res:visibility-internal-16.png" size="Menu"/>
+		<StockIcon stockid = "md-method-override" icon = "res:element-extensionmethod-light-16.png" size="Menu"/>
+		<StockIcon stockid = "md-protected-method-override" icon = "res:element-extensionmethod-light-16.png|res:visibility-protected-overlay-light-16.png" size="Menu"/>
+		<StockIcon stockid = "md-internal-method-override" icon = "res:element-extensionmethod-light-16.png|res:visibility-internal-overlay-light-16.png" size="Menu"/>
 
 
 		<!-- Variables -->
@@ -79,23 +79,23 @@
 		<StockIcon stockid = "d-lazy-parameter" icon = "res:element-parameter-16.png|res:lazy-16.png" size="Menu"/>
 
 		<StockIcon stockid = "d-alias" resource="MonoDevelop.D.icons.element-alias-16.png" size="Menu"/>
-		<StockIcon stockid = "d-private-alias" icon = "res:MonoDevelop.D.icons.element-alias-16.png|res:visibility-private-16.png" size="Menu"/>
-		<StockIcon stockid = "d-protected-alias" icon = "res:MonoDevelop.D.icons.element-alias-16.png|res:visibility-protected-16.png" size="Menu"/>
-		<StockIcon stockid = "d-internal-alias" icon = "res:MonoDevelop.D.icons.element-alias-16.png|res:visibility-internal-16.png" size="Menu"/>
+		<StockIcon stockid = "d-private-alias" icon = "res:MonoDevelop.D.icons.element-alias-16.png|res:visibility-private-overlay-light-16.png" size="Menu"/>
+		<StockIcon stockid = "d-protected-alias" icon = "res:MonoDevelop.D.icons.element-alias-16.png|res:visibility-protected-overlay-light-16.png" size="Menu"/>
+		<StockIcon stockid = "d-internal-alias" icon = "res:MonoDevelop.D.icons.element-alias-16.png|res:visibility-internal-overlay-light-16.png" size="Menu"/>
 
-		<StockIcon stockid = "md-private-literal" icon = "res:element-literal-16.png|res:visibility-private-16.png" size="Menu"/>
-		<StockIcon stockid = "md-protected-literal" icon = "res:element-literal-16.png|res:visibility-protected-16.png" size="Menu"/>
-		<StockIcon stockid = "md-internal-literal" icon = "res:element-literal-16.png|res:visibility-internal-16.png" size="Menu"/>
+		<StockIcon stockid = "md-private-literal" icon = "res:element-constant-light-16.png|res:visibility-private-overlay-light-16.png" size="Menu"/>
+		<StockIcon stockid = "md-protected-literal" icon = "res:element-constant-light-16.png|res:visibility-protected-overlay-light-16.png" size="Menu"/>
+		<StockIcon stockid = "md-internal-literal" icon = "res:element-constant-light-16.png|res:visibility-internal-overlay-light-16.png" size="Menu"/>
 
-		<StockIcon stockid = "md-literal-static" icon = "res:element-literal-16.png|res:static-16.png" size="Menu"/>
-		<StockIcon stockid = "md-private-literal-static" icon = "res:element-literal-16.png|res:visibility-private-16.png|res:static-16.png" size="Menu"/>
-		<StockIcon stockid = "md-protected-literal-static" icon = "res:element-literal-16.png|res:visibility-protected-16.png|res:static-16.png" size="Menu"/>
-		<StockIcon stockid = "md-internal-literal-static" icon = "res:element-literal-16.png|res:visibility-internal-16.png|res:static-16.png" size="Menu"/>
+		<StockIcon stockid = "md-literal-static" icon = "res:element-constant-light-16.png|res:static-overlay-light-16.png" size="Menu"/>
+		<StockIcon stockid = "md-private-literal-static" icon = "res:element-constant-light-16.png|res:visibility-private-overlay-light-16.png|res:static-overlay-light-16.png" size="Menu"/>
+		<StockIcon stockid = "md-protected-literal-static" icon = "res:element-constant-light-16.png|res:visibility-protected-overlay-light-16.png|res:static-overlay-light-16.png" size="Menu"/>
+		<StockIcon stockid = "md-internal-literal-static" icon = "res:element-constant-light-16.png|res:visibility-internal-overlay-light-16.png|res:static-overlay-light-16.png" size="Menu"/>
 
-		<StockIcon stockid = "md-field-static" icon = "res:element-field-16.png|res:static-16.png" size="Menu"/>
-		<StockIcon stockid = "md-private-field-static" icon = "res:element-field-16.png|res:visibility-private-16.png|res:static-16.png" size="Menu"/>
-		<StockIcon stockid = "md-protected-field-static" icon = "res:element-field-16.png|res:visibility-protected-16.png|res:static-16.png" size="Menu"/>
-		<StockIcon stockid = "md-internal-field-static" icon = "res:element-field-16.png|res:visibility-internal-16.png|res:static-16.png" size="Menu"/>
+		<StockIcon stockid = "md-field-static" icon = "res:element-field-light-16.png|res:static-overlay-light-16.png" size="Menu"/>
+		<StockIcon stockid = "md-private-field-static" icon = "res:element-field-light-16.png|res:visibility-private-overlay-light-16.png|res:static-overlay-light-16.png" size="Menu"/>
+		<StockIcon stockid = "md-protected-field-static" icon = "res:element-field-light-16.png|res:visibility-protected-overlay-light-16.png|res:static-overlay-light-16.png" size="Menu"/>
+		<StockIcon stockid = "md-internal-field-static" icon = "res:element-field-light-16.png|res:visibility-internal-overlay-light-16.png|res:static-overlay-light-16.png" size="Menu"/>
 
 		<!-- Inline ASM -->
 		<StockIcon stockid="d-asm-x86" resource="d-asm-x86-16.png" />
