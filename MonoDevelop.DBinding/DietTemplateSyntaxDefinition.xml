@@ -6,7 +6,9 @@
 	<EolSpan color="Comment(Line)" rule="Comment" tagColor="Comment(Line)">//-</EolSpan>
 	<EolSpan color="Comment(Doc)" rule="Comment" tagColor="Comment(DocTag)">//</EolSpan>
 	<EolSpan rule="InlineD" stopateol = "true">  -</EolSpan> <!-- Kinda hacky, but it works for the most cases -->
+	<EolSpan rule="InlineD" stopateol = "true">	-</EolSpan> <!-- Kinda hacky, but it works for the most cases -->
 	<EolSpan rule="InlineD" stopateol = "true">  #</EolSpan>
+	<EolSpan rule="InlineD" stopateol = "true">	#</EolSpan>
 
 	<Keywords color="Keyword(Declaration)">
 		<Word>block</Word>
