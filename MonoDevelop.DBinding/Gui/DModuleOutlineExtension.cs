@@ -164,19 +164,21 @@ namespace MonoDevelop.D.Gui
 		{
 			var pixRenderer = (CellRendererPixbuf)cell;
 			object o = model.GetValue(iter, 0);
+			string id = null;
+
 			if (o is DNode)
 			{
 				var icon = DIcons.GetNodeIcon(o as DNode);
-				if(!icon.IsNull)
-					using(var img = ImageService.GetImage(icon.Name, IconSize.Menu))
-						if(img.Pixbuf != null) //FIXME
-							pixRenderer.Pixbuf = img.Pixbuf.Copy();
+				if (!icon.IsNull)
+					id = icon.Name;
 			}
 			else if (o is StatementContainingStatement)
+				id = "gtk-add";
+
+			if (id != null)
 			{
-				using (var img = ImageService.GetImage("gtk-add", IconSize.Menu))
-					if (img.Pixbuf != null) //FIXME
-						pixRenderer.Pixbuf = img.Pixbuf.Copy();
+				using (var img = ImageService.GetIcon(id))
+					pixRenderer.Pixbuf = img.ToPixbuf(IconSize.Menu);
 			}
 		}
 
