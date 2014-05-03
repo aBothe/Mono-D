@@ -53,6 +53,7 @@ namespace MonoDevelop.D.Highlighting
 			matches.AddRange(baseMode.Matches);
 			this.prevMarker = baseMode.PrevMarker;
 			this.SemanticRules = new List<SemanticRule>(baseMode.SemanticRules);
+			SemanticRules.Add(InlineDHighlighting.Instance);
 			this.keywordTable = baseMode.keywordTable;
 			this.keywordTableIgnoreCase = baseMode.keywordTableIgnoreCase;
 			this.properties = baseMode.Properties;
@@ -65,66 +66,28 @@ namespace MonoDevelop.D.Highlighting
 			this.matches = matches.ToArray();
 		}
 
-		class InlineDSemRule : SemanticRule
+		class InlineDHighlighting : SemanticRule
 		{
-			private bool inUpdate = false;
+			public readonly static InlineDHighlighting Instance = new InlineDHighlighting();
+			public readonly DSyntaxMode DSyntax = new DSyntaxMode();
 
-			public override void Analyze (TextDocument doc, DocumentLine line, Chunk startChunk, int startOffset, int endOffset)
+			public override void Analyze(TextDocument doc, DocumentLine line, Chunk startChunk, int startOffset, int endOffset)
 			{
-				/*if (endOffset > startOffset && startOffset < doc.TextLength && !this.inUpdate)
-				{
-					this.inUpdate = true;
-					try
-					{
-						string textAt = doc.GetTextAt (startOffset, Math.Min (endOffset, doc.TextLength) - startOffset);
-						int num = startOffset - line.Offset;
-						List<UrlMarker> list = new List<UrlMarker> ((from m in line.Markers
-							where m is UrlMarker
-							select m).Cast<UrlMarker> ());
-						list.ForEach (delegate (UrlMarker m)
-							{
-								doc.RemoveMarker (m, false);
-							});
-						IEnumerator enumerator = HighlightUrlSemanticRule.UrlRegex.Matches (textAt).GetEnumerator ();
-						try
-						{
-							while (enumerator.MoveNext ())
-							{
-								Match match = (Match)enumerator.get_Current ();
-								doc.AddMarker (line, new UrlMarker (doc, line, match.Value, UrlType.Url, this.syntax, num + match.Index, num + match.Index + match.Length), false);
-							}
-						}
-						finally
-						{
-							IDisposable disposable;
-							if ((disposable = (enumerator as IDisposable)) != null)
-							{
-								disposable.Dispose ();
-							}
-						}
-						IEnumerator enumerator2 = HighlightUrlSemanticRule.MailRegex.Matches (textAt).GetEnumerator ();
-						try
-						{
-							while (enumerator2.MoveNext ())
-							{
-								Match match2 = (Match)enumerator2.get_Current ();
-								doc.AddMarker (line, new UrlMarker (doc, line, match2.Value, UrlType.Email, this.syntax, num + match2.Index, num + match2.Index + match2.Length), false);
-							}
-						}
-						finally
-						{
-							IDisposable disposable2;
-							if ((disposable2 = (enumerator2 as IDisposable)) != null)
-							{
-								disposable2.Dispose ();
-							}
-						}
-					}
-					finally
-					{
-						this.inUpdate = false;
-					}
-				}*/
+				// Check line start
+				int o = line.Offset;
+				char c = '\0';
+				for (; o < line.EndOffset && char.IsWhiteSpace(c = doc.GetCharAt(o)); o++) ;
+
+				if (c != '-' && c != '#')
+					return;
+
+				DSyntax.Document = doc;
+				var spanParser = new SpanParser(DSyntax, new CloneableStack<Span>());
+				var chunkP = new ChunkParser(DSyntax, spanParser, Ide.IdeApp.Workbench.ActiveDocument.Editor.ColorStyle, line);
+
+				var n = chunkP.GetChunks(startOffset, endOffset - startOffset);
+				startChunk.Next = n;
+				startChunk.Length = n.Offset - startChunk.Offset;
 			}
 		}
 	}
