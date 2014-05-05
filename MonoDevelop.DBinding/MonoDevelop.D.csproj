@@ -364,6 +364,9 @@
     <EmbeddedResource Include="icons\ref-16.png">
       <LogicalName>ref-16.png</LogicalName>
     </EmbeddedResource>
+    <EmbeddedResource Include="icons\static-16.png">
+      <LogicalName>static-16.png</LogicalName>
+    </EmbeddedResource>
     <EmbeddedResource Include="icons\element-abstract-class-16.png">
       <LogicalName>element-abstract-class-16.png</LogicalName>
     </EmbeddedResource>
