@@ -5,8 +5,14 @@ Mono-D is a language binding for MonoDevelop for the [D Programming language](ht
 
 Few (none?) GNU/Linux distros package a new enough MonoDevelop required by Mono-D.
 You can download pre-built binaries built with mono3 below. Unpack to `/opt/mono`.
-* [MonoDevelop 4 GNU/Linux **x86**](http://simendsjo.me/files/abothe/MonoDevelop.x86.Master.tar.xz)
-* [MonoDevelop 4 GNU/Linux **x64**](http://simendsjo.me/files/abothe/MonoDevelop.x64.Master.tar.xz)
+* [MonoDevelop 5 GNU/Linux **x86**](http://simendsjo.me/files/abothe/MonoDevelop.x86.Master.tar.xz)
+* [MonoDevelop 5 GNU/Linux **x64**](http://simendsjo.me/files/abothe/MonoDevelop.x64.Master.tar.xz)
+
+Mono-D is a plugin for *Xamarin Studio 5* on *Windows*. 
+* Download [Xamarin Studio for Windows](http://xamarin.com/)
+* Subscribe to the Alpha Channel in "Help > Check for Updates..."
+* Upgrade to Xamarin Studio 5+
+* You can now install Mono-D through the [Add-in manager](http://mono-d.alexanderbothe.com/download/#mono-d)
 
 # How to initialize Mono-D development under Linux
 
@@ -36,6 +42,10 @@ You can download pre-built binaries built with mono3 below. Unpack to `/opt/mono
 
 # How to initialize Mono-D development under Windows
 
+* Remove Mono-D from Xamarin (if you already have it installed)
+	- In the top menu, navigate to: Tools > Add-in Manager > Language Bindings
+	- Select "D Language Binding" and press Uninstall...
+	- The make symlink.bat will reinstall it from the development Debug folder
 * Clone Mono-D
 	- Open a git bash in your projects folder
 	- `git clone https://github.com/aBothe/Mono-D.git`
