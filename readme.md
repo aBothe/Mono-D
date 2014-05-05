@@ -8,7 +8,7 @@ You can download pre-built binaries built with mono3 below. Unpack to `/opt/mono
 * [MonoDevelop 5 GNU/Linux **x86**](http://simendsjo.me/files/abothe/MonoDevelop.x86.Master.tar.xz)
 * [MonoDevelop 5 GNU/Linux **x64**](http://simendsjo.me/files/abothe/MonoDevelop.x64.Master.tar.xz)
 
-Mono-D is a plugin for *Xamarin Studio 5* on *Windows*. 
+Mono-D is a plugin for *Xamarin Studio 5* when the platform is *Windows or Mac OS X*. 
 * Download [Xamarin Studio for Windows](http://xamarin.com/)
 * Subscribe to the Alpha Channel in "Help > Check for Updates..."
 * Upgrade to Xamarin Studio 5+
