@@ -1,4 +1,5 @@
-﻿using D_Parser.Resolver;
+﻿using D_Parser.Dom;
+using D_Parser.Resolver;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,11 +25,16 @@ namespace MonoDevelop.D.Debugging
 	public interface IDBacktraceHelpers
 	{
 		void SelectStackFrame(int frameIndex);
+		void GetStackFrameInfo(int frameIndex, out string file, out ulong offset, out CodeLocation sourceLocation);
 
 		IEnumerable<IDBacktraceSymbol> Parameters { get; }
 		IEnumerable<IDBacktraceSymbol> Locals { get; }
 
-		int PointerByteSize { get; }
+		/// <summary>
+		/// Amount of bytes per pointer.
+		/// Used for determining whether the program is a 64 or 32 bit program.
+		/// </summary>
+		int PointerSize { get; }
 
 		byte[] ReadBytes(ulong offset, ulong size);
 		byte ReadByte(ulong offset);
@@ -38,5 +44,26 @@ namespace MonoDevelop.D.Debugging
 
 		ResolutionContext LocalsResolutionHelperContext { get; }
 		void UpdateHelperContextToCurrentStackFrame();
+
+		/// <summary>
+		/// Strictly optional: Allows dynamic execution/injection of code while debuggee status is claimed to be "paused".
+		/// Mainly used for toString()-Examination for D objects.
+		/// </summary>
+		IActiveExamination ActiveExamination { get; }
+	}
+
+	public interface IActiveExamination
+	{
+		/// <summary>
+		/// Throws InvalidOperationException if data couldn't be allocated
+		/// </summary>
+		ulong Allocate(int size);
+		void Free(ulong offset, int size);
+
+		void Write(ulong offset, byte[] data);
+		/// <summary>
+		/// Pushes the stack base pointer, puts the E/RIP to <para name="offset"/>, executes it until a return command occurs.
+		/// </summary>
+		void Execute(ulong offset);
 	}
 }
