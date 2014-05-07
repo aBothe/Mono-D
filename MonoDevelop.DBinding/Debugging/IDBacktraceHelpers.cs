@@ -43,7 +43,6 @@ namespace MonoDevelop.D.Debugging
 		long ReadInt64(ulong offset);
 
 		ResolutionContext LocalsResolutionHelperContext { get; }
-		void UpdateHelperContextToCurrentStackFrame();
 
 		/// <summary>
 		/// Strictly optional: Allows dynamic execution/injection of code while debuggee status is claimed to be "paused".

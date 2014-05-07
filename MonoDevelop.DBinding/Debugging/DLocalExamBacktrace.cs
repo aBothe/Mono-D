@@ -18,9 +18,34 @@ namespace MonoDevelop.D.Debugging
 
 
 
-		public ObjectValue CreateObjectValue(IDBacktraceSymbol s)
+		public virtual ObjectValue CreateObjectValue(IDBacktraceSymbol s, EvaluationOptions evalOptions = null)
 		{
+			if (evalOptions == null)
+				evalOptions = EvaluationOptions.DefaultOptions;
+			
 			return ObjectValue.CreateError(this, new ObjectPath(), s.TypeName, s.Value, ObjectValueFlags.Error);
+		}
+
+		public ObjectValue[] GetParameters(int frameIndex, EvaluationOptions evalOptions)
+		{
+			BacktraceHelper.SelectStackFrame(frameIndex);
+			var l = new List<ObjectValue>();
+			foreach (var p in BacktraceHelper.Parameters)
+			{
+				l.Add(CreateObjectValue(p, evalOptions));
+			}
+			return l.ToArray();
+		}
+
+		public ObjectValue[] GetLocals(int frameIndex, EvaluationOptions evalOptions)
+		{
+			BacktraceHelper.SelectStackFrame(frameIndex);
+			var l = new List<ObjectValue>();
+			foreach (var p in BacktraceHelper.Locals)
+			{
+				l.Add(CreateObjectValue(p, evalOptions));
+			}
+			return l.ToArray();
 		}
 
 		public ObjectValue[] GetChildren(ObjectPath path, int index, int count, EvaluationOptions options)
