@@ -23,7 +23,9 @@ namespace MonoDevelop.D.Debugging
 			if (evalOptions == null)
 				evalOptions = EvaluationOptions.DefaultOptions;
 			
-			return ObjectValue.CreateError(this, new ObjectPath(), s.TypeName, s.Value, ObjectValueFlags.Error);
+			
+
+			return ObjectValue.CreatePrimitive(this, new ObjectPath(s.Name), s.TypeName, new EvaluationResult(s.Value), ObjectValueFlags.Field);
 		}
 
 		public ObjectValue[] GetParameters(int frameIndex, EvaluationOptions evalOptions)
@@ -50,27 +52,27 @@ namespace MonoDevelop.D.Debugging
 
 		public ObjectValue[] GetChildren(ObjectPath path, int index, int count, EvaluationOptions options)
 		{
-			throw new NotImplementedException();
+			return null;
 		}
 
 		public object GetRawValue(ObjectPath path, EvaluationOptions options)
 		{
-			throw new NotImplementedException();
+			return null;
 		}
 
 		public ObjectValue GetValue(ObjectPath path, EvaluationOptions options)
 		{
-			throw new NotImplementedException();
+			return null;
 		}
 
 		public void SetRawValue(ObjectPath path, object value, EvaluationOptions options)
 		{
-			throw new NotImplementedException();
+			
 		}
 
 		public EvaluationResult SetValue(ObjectPath path, string value, EvaluationOptions options)
 		{
-			throw new NotImplementedException();
+			return null;
 		}
 	}
 }
