@@ -4,6 +4,6 @@ rem Creates a symlink between the Mono-D output directory and the addins diction
 rem to save copying the lib files over and over again
 
 rem TODO: Fit to target path
-mklink /D /J "%APPDATA%\..\Local\XamarinStudio-4.0\LocalInstall\Addins\mono-d" MonoDevelop.DBinding\bin\Debug
+mklink /D /J "%APPDATA%\..\Local\XamarinStudio-5.0\LocalInstall\Addins\mono-d" MonoDevelop.DBinding\bin\Debug
 
 pause
