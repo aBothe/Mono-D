@@ -24,8 +24,7 @@ namespace MonoDevelop.D.Debugging
 
 	public interface IDBacktraceHelpers
 	{
-		void SelectStackFrame(int frameIndex);
-		void GetStackFrameInfo(int frameIndex, out string file, out ulong offset, out CodeLocation sourceLocation);
+		void GetCurrentStackFrameInfo(out string file, out ulong offset, out CodeLocation sourceLocation);
 
 		IEnumerable<IDBacktraceSymbol> Parameters { get; }
 		IEnumerable<IDBacktraceSymbol> Locals { get; }
