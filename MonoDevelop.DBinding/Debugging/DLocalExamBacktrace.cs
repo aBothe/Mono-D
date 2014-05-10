@@ -57,11 +57,15 @@ namespace MonoDevelop.D.Debugging
 				needsStackFrameInfoUpdate = !string.IsNullOrWhiteSpace(currentStackFrameSource) && !currentSourceLocation.IsEmpty;
 
 				var mod = GlobalParseCache.GetModule(currentStackFrameSource);
-				if(ctxt == null)
-					ctxt = BacktraceHelper.LocalsResolutionHelperContext;
-
 				if (ctxt == null)
-					return;
+				{
+					var doc = Ide.IdeApp.Workbench.GetDocument(file);
+
+					if (doc == null)
+						return;
+
+					ctxt = ResolutionContext.Create(MonoDevelop.D.Resolver.DResolverWrapper.CreateEditorData(doc), false);
+				}
 
 				if (mod == null) {
 					if (ctxt.CurrentContext != null)

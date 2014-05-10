@@ -41,8 +41,6 @@ namespace MonoDevelop.D.Debugging
 		int ReadInt32(ulong offset);
 		long ReadInt64(ulong offset);
 
-		ResolutionContext LocalsResolutionHelperContext { get; }
-
 		/// <summary>
 		/// Strictly optional: Allows dynamic execution/injection of code while debuggee status is claimed to be "paused".
 		/// Mainly used for toString()-Examination for D objects.
