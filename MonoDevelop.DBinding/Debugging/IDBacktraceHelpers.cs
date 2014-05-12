@@ -12,6 +12,7 @@ namespace MonoDevelop.D.Debugging
 		ulong Offset { get; }
 		string Name { get; }
 		string TypeName { get; }
+		AbstractType DType { get; }
 		string Value { get; }
 		string FileName { get; }
 

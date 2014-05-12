@@ -200,6 +200,8 @@
     <Compile Include="Building\ProjectBuilder.cs" />
     <Compile Include="Completion\AstUpdater.cs" />
     <Compile Include="Completion\DIcons.cs" />
+    <Compile Include="Debugging\DebugSymbolTypeEvalVisitor.cs" />
+    <Compile Include="Debugging\DebugSymbolValueProvider.cs" />
     <Compile Include="Debugging\DLocalExamBacktrace.cs" />
     <Compile Include="Debugging\IDBacktraceHelpers.cs" />
     <Compile Include="Formatting\DFormattingPolicy.cs" />
@@ -435,6 +437,7 @@
     <StartProgram>C:\Program Files (x86)\Xamarin Studio\bin\XamarinStudio.exe</StartProgram>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Debugging\DLocalExamBacktrace.Evaluation.cs" />
     <None Include="Formatting\Indentation\doc.txt" />
   </ItemGroup>
   <ItemGroup>
