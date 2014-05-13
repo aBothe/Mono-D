@@ -202,8 +202,10 @@
     <Compile Include="Completion\DIcons.cs" />
     <Compile Include="Debugging\DebugSymbolTypeEvalVisitor.cs" />
     <Compile Include="Debugging\DebugSymbolValueProvider.cs" />
+    <Compile Include="Debugging\ExamHelpers.cs" />
     <Compile Include="Debugging\DLocalExamBacktrace.cs" />
     <Compile Include="Debugging\IDBacktraceHelpers.cs" />
+    <Compile Include="Debugging\LazyEvaluationValue.cs" />
     <Compile Include="Formatting\DFormattingPolicy.cs" />
     <Compile Include="Formatting\FormattingPanel.cs" />
     <Compile Include="Formatting\Indentation\DIndentEngine.cs" />

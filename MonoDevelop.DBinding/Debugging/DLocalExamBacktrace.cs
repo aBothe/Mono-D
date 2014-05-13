@@ -1,6 +1,7 @@
 ﻿using D_Parser.Dom;
 using D_Parser.Misc;
 using D_Parser.Resolver;
+using D_Parser.Resolver.ExpressionSemantics;
 using Mono.Debugging.Backend;
 using Mono.Debugging.Client;
 using System.Collections.Generic;
@@ -11,8 +12,7 @@ namespace MonoDevelop.D.Debugging
 	{
 		#region Properties
 		public readonly IDBacktraceHelpers BacktraceHelper;
-		public const long MaximumDisplayCount = 1000;
-		public const long MaximumArrayLengthThreshold = 100000;
+		public const ulong MaximumArrayChildrenDisplayCount = 1000;
 
 		bool needsStackFrameInfoUpdate = true;
 		public string currentStackFrameSource {get;private set;}
@@ -20,6 +20,8 @@ namespace MonoDevelop.D.Debugging
 		public CodeLocation currentSourceLocation{ get; private set;}
 		ResolutionContext ctxt;
 		DebugSymbolValueProvider SymbolProvider;
+
+		public readonly Dictionary<IDBacktraceSymbol, ISymbolValue> SymbolCache = new Dictionary<IDBacktraceSymbol, ISymbolValue>();
 		#endregion
 
 
@@ -35,6 +37,7 @@ namespace MonoDevelop.D.Debugging
 		public void Reset ()
 		{
 			needsStackFrameInfoUpdate = true;
+			SymbolCache.Clear();
 		}
 
 		void TryUpdateStackFrameInfo()
