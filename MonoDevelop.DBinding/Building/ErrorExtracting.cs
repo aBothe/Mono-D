@@ -51,8 +51,10 @@ namespace MonoDevelop.D.Building
 				if (monitor != null)
 					monitor.Log.WriteLine("Exit code " + returnCode.ToString());
 
-				br.AddError(string.Empty, 0, 0, string.Empty,
-					GettextCatalog.GetString("Build failed - check build output for details"));
+				if(br.ErrorCount == 0)
+					br.AddError(string.Empty, 0, 0, string.Empty,
+						GettextCatalog.GetString("Build failed - check build output for details"));
+
 				return false;
 			}
 			return true;
