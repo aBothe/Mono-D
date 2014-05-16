@@ -2,6 +2,7 @@ using System;
 using MonoDevelop.D.Building;
 using MonoDevelop.Ide.Gui.Dialogs;
 using MonoDevelop.D.Projects;
+using System.Collections.Generic;
 
 namespace MonoDevelop.D.OptionPanels
 {
@@ -13,6 +14,7 @@ namespace MonoDevelop.D.OptionPanels
 		private DProject project;
 		private DProjectConfiguration configuration;
 		private Gtk.ListStore model_Compilers = new Gtk.ListStore (typeof(string));
+		private Gtk.ListStore model_Platforms = new Gtk.ListStore(typeof(string));
 		Gtk.ListStore model_compileTarget = new Gtk.ListStore (typeof(string), typeof(DCompileTarget));
 
 		public ProjectOptions ()
@@ -31,6 +33,7 @@ namespace MonoDevelop.D.OptionPanels
 				model_Compilers.AppendValues (cmp.Vendor);
 			
 			combo_ProjectType.Model = model_compileTarget;
+			combo_Platform.Model = model_Platforms;
 			
 			// Init compile target checkbox
 			model_compileTarget.AppendValues ("Executable", DCompileTarget.Executable);
@@ -89,6 +92,25 @@ namespace MonoDevelop.D.OptionPanels
 				} while (model_compileTarget.IterNext (ref iter));
 			
 			text_Libraries.Buffer.Text = string.Join ("\n", config.ExtraLibraries);
+
+			model_Platforms.Clear();
+			var blackListed = new List<string>();
+			foreach (var cfg in proj.Configurations)
+				if (cfg.Name == config.Name && cfg.Platform != config.Platform)
+					blackListed.Add(cfg.Platform.ToLower());
+
+			var platform_lower = config.Platform.ToLower();
+			foreach (var platform in proj.SupportedPlatforms)
+			{
+				// Skip already taken platforms
+				if(blackListed.Contains(platform.ToLower()))
+					continue;
+
+				var it = model_Platforms.Append();
+				if (platform_lower == platform.ToLower())
+					combo_Platform.SetActiveIter(it);
+				model_Platforms.SetValue(it, 0, platform);
+			}
 		}
 		
 		public bool Store ()
@@ -132,6 +154,24 @@ namespace MonoDevelop.D.OptionPanels
 				var p_ = p.Trim();
 				if (!String.IsNullOrWhiteSpace(p_))
 					configuration.ExtraLibraries.Add(p_);
+			}
+
+			combo_Platform.GetActiveIter(out iter);
+			var oldPlatform = configuration.Platform;
+			configuration.Platform = model_Platforms.GetValue(iter, 0) as string;
+			// Update solution configuration <-> Project configuration mapping
+			if (oldPlatform != configuration.Platform)
+			{
+				var slnConfig = project.ParentSolution.GetConfiguration(Ide.IdeApp.Workspace.ActiveConfiguration);
+				var en = slnConfig.GetEntryForItem(project);
+				if (en != null)
+				{
+					slnConfig.RemoveItem(project);
+					var newEn = slnConfig.AddItem(project);
+					newEn.ItemConfiguration = configuration.Id;
+					newEn.Build = en.Build;
+					newEn.Deploy = en.Deploy;
+				}
 			}
 
 			if (oldHash != configuration.GetHashCode () && 

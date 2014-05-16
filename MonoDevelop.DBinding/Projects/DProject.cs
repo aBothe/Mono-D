@@ -17,8 +17,6 @@ namespace MonoDevelop.D.Projects
 	public class DProject : AbstractDProject, ICustomDataItem
 	{
 		#region Properties
-		public override string[] SupportedPlatforms { get { return new[] { "x86", "x64", "AnyCPU" }; } }
-
 		/// <summary>
 		/// Used for incremental compiling and linking
 		/// </summary>

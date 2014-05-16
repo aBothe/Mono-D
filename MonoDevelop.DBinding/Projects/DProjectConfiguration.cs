@@ -216,11 +216,13 @@ namespace MonoDevelop.D.Projects
 			}
 		}
 
+		static System.Reflection.FieldInfo[] fields = typeof(DProjectConfiguration).GetFields();
+
 		public override int GetHashCode ()
 		{
 			int hash=0;
 			unchecked {
-				foreach (var prop in GetType().GetFields()) {
+				foreach (var prop in fields) {
 					object v;
 					if (prop.GetCustomAttributes (typeof(ItemPropertyAttribute), true).Length > 0 &&
 					   (v = prop.GetValue (this)) != null) {

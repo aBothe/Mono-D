@@ -17,6 +17,7 @@ namespace MonoDevelop.D.Projects
 		#region Properties
 		public override IEnumerable<string> GetProjectTypes(){ return new[] { "Native" }; }
 		public override string[] SupportedLanguages { get { return new[] { "D", "" }; } }
+		public override string[] SupportedPlatforms { get { return new[] { "x86", "x64", "ARM", "AnyCPU" }; } }
 
 		public virtual IEnumerable<string> GlobalIncludes { get { return DCompilerService.Instance.GetDefaultCompiler().IncludePaths; } }
 		public IEnumerable<string> LocalIncludes {get{return References.Includes;}}
