@@ -40,7 +40,7 @@ namespace MonoDevelop.D.Debugging
 			SymbolCache.Clear();
 		}
 
-		void TryUpdateStackFrameInfo()
+		internal void TryUpdateStackFrameInfo()
 		{
 			if (needsStackFrameInfoUpdate) {
 				string file;

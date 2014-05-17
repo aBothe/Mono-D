@@ -29,6 +29,7 @@ namespace MonoDevelop.D.Debugging
 
 		IEnumerable<IDBacktraceSymbol> Parameters { get; }
 		IEnumerable<IDBacktraceSymbol> Locals { get; }
+		IDBacktraceSymbol FindSymbol(string name);
 
 		/// <summary>
 		/// Amount of bytes per pointer.

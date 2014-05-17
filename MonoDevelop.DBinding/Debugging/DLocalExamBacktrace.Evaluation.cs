@@ -166,7 +166,7 @@ namespace MonoDevelop.D.Debugging
 		}
 		#endregion
 
-		public static AbstractType TryGetDType(IDBacktraceSymbol s)
+		public AbstractType TryGetDType(IDBacktraceSymbol s)
 		{
 			return null;
 		}
