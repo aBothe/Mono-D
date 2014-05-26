@@ -458,7 +458,8 @@ namespace MonoDevelop.D.Completion
 		{
 			if (customCompletionText == null)
 			{
-				base.InsertCompletionText(window, ref ka, closeChar, keyChar, modifier);
+				if(Node != null && !string.IsNullOrEmpty(Node.Name))
+					base.InsertCompletionText(window, ref ka, closeChar, keyChar, modifier);
 				return;
 			}
 
