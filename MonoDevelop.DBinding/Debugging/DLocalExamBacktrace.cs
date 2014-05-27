@@ -18,7 +18,7 @@ namespace MonoDevelop.D.Debugging
 		public string currentStackFrameSource {get;private set;}
 		public ulong currentInstruction {get;private set;}
 		public CodeLocation currentSourceLocation{ get; private set;}
-		ResolutionContext ctxt;
+		public ResolutionContext ctxt { get; private set; }
 		DebugSymbolValueProvider SymbolProvider;
 
 		public readonly Dictionary<IDBacktraceSymbol, ISymbolValue> SymbolCache = new Dictionary<IDBacktraceSymbol, ISymbolValue>();
@@ -40,9 +40,9 @@ namespace MonoDevelop.D.Debugging
 			SymbolCache.Clear();
 		}
 
-		internal void TryUpdateStackFrameInfo()
+		public void TryUpdateStackFrameInfo()
 		{
-			if (needsStackFrameInfoUpdate) {
+			if (needsStackFrameInfoUpdate || ctxt == null) {
 				string file;
 				ulong eip;
 				CodeLocation loc;
@@ -52,7 +52,10 @@ namespace MonoDevelop.D.Debugging
 				currentInstruction = eip;
 				currentSourceLocation = loc;
 
-				needsStackFrameInfoUpdate = !string.IsNullOrWhiteSpace(file) && !loc.IsEmpty;
+				if (needsStackFrameInfoUpdate = string.IsNullOrWhiteSpace(file))
+					return;
+
+				needsStackFrameInfoUpdate |= loc.IsEmpty;
 
 				var mod = GlobalParseCache.GetModule(file);
 				if (ctxt == null)

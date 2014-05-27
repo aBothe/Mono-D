@@ -57,25 +57,7 @@ namespace MonoDevelop.D.Debugging
 			else if (x is TemplateInstanceExpression)
 				(x as TemplateInstanceExpression).Location = currentSourceLocation;
 
-			IDBacktraceSymbol symb = null;
-			if (nameToLookup != null)
-			{
-				// First, search in real path
-				foreach (var s in BacktraceHelper.Parameters)
-					if (s.Name == nameToLookup)
-					{
-						symb = s;
-						break;
-					}
-
-				if (symb == null)
-					foreach (var s in BacktraceHelper.Locals)
-						if (s.Name == nameToLookup)
-						{
-							symb = s;
-							break;
-						}
-			}
+			var symb = nameToLookup != null ? BacktraceHelper.FindSymbol(nameToLookup) : null;
 
 			// step deeper by searching in child items
 			bool foundChildItem = true;
@@ -111,22 +93,22 @@ namespace MonoDevelop.D.Debugging
 			// 1) (0,0) Neither base item nor matching child found
 			// 2) (1,0) There was a base item found but no matching child item
 			// 3) (0,1) No base item and a child item -- that's not possible.
-			// 3) (1,1) There was a base item found and a matching child item 
+			// 4) (1,1) There was a base item found and a matching child item 
 			if (symb == null) // 1)
-			{
 				ev = Evaluation.EvaluateValue(variableExpression, SymbolProvider);
-			}
-			else if (symb != null && !foundChildItem) // 2)
+			else
 			{
 				ev = EvaluateSymbol(symb);
 
-				// ´a.b.c.d´
-				// ´a.b´ could get resolved,
-				//     ´.c.d´ remains unevaluated
-				// x is now ´c´; ´.d´ is left in lookupQueue
-
-				if (ev != null)
+				if (foundChildItem) // 4) -- Also applies when there's no further child item is getting accessed
+					p = GetPath(symb);
+				else if (ev != null) // 2)
 				{
+					// ´a.b.c.d´
+					// ´a.b´ could get resolved,
+					//     ´.c.d´ remains unevaluated
+					// x is now ´c´; ´.d´ is left in lookupQueue
+
 					do
 					{
 						// x now contains the next expression that must be evaluated.
@@ -135,10 +117,8 @@ namespace MonoDevelop.D.Debugging
 					while (ev != null && lookupQueue.Count != 0 && (x = lookupQueue.Dequeue()) != null);
 				}
 			}
-			else // 3) -- Also applies when there's no further child item is getting accessed
-				p = GetPath(symb);
 
-			return CreateObjectValue(ev, variableExpression, p, evalOptions);
+			return CreateObjectValue(ev, variableExpression, p, evalOptions, symb);
 		}
 
 		public virtual ObjectValue CreateObjectValue(IDBacktraceSymbol s, EvaluationOptions evalOptions = null)
@@ -151,7 +131,7 @@ namespace MonoDevelop.D.Debugging
 
 			TryUpdateStackFrameInfo();
 
-			return CreateObjectValue(EvaluateSymbol(s), null, GetPath(s), evalOptions);
+			return CreateObjectValue(EvaluateSymbol(s), null, GetPath(s), evalOptions, s);
 		}
 
 		public static ObjectPath GetPath(IDBacktraceSymbol s)
@@ -180,14 +160,24 @@ namespace MonoDevelop.D.Debugging
 
 			if (t == null)
 				return null;
-
-			return t.Accept(new DebugSymbolTypeEvalVisitor(this,s));
+			try
+			{
+				return t.Accept(new DebugSymbolTypeEvalVisitor(this, s));
+			}
+			catch (NotImplementedException)
+			{
+				return null;
+			}
 		}
 
-		ObjectValue CreateObjectValue(ISymbolValue v, IExpression originalExpression, ObjectPath pathOpt, EvaluationOptions evalOptions)
+		ObjectValue CreateObjectValue(ISymbolValue v, IExpression originalExpression, ObjectPath pathOpt, EvaluationOptions evalOptions, IDBacktraceSymbol symbolOpt = null)
 		{
-			if (v == null)
+			if (v == null){
+				if(symbolOpt != null)
+					return ObjectValue.CreatePrimitive(this, pathOpt, symbolOpt.TypeName, new Mono.Debugging.Backend.EvaluationResult(symbolOpt.Value), ObjectValueFlags.Variable);
+
 				return ObjectValue.CreateError(this, pathOpt, "", "Couldn't evaluate expression "+ (originalExpression != null ? originalExpression.ToString() : ""), ObjectValueFlags.Error);
+			}
 
 			return v.Accept(new ObjectValueSynthVisitor { evalOptions = evalOptions, OriginalExpression = originalExpression, Path = pathOpt });
 		}
