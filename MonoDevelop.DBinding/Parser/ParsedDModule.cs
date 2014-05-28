@@ -81,7 +81,7 @@ namespace MonoDevelop.D.Parser
 									var text = c.Text.Trim().Substring(6).Trim();
 									if(text == string.Empty)
 										text = "//region";
-									l.Add(new FoldingRegion(text,new DomRegion(c.Region.BeginLine, c.Region.BeginColumn, lastComment.Region.EndLine, lastComment.Region.EndColumn), FoldType.UserRegion));
+									l.Add(new FoldingRegion(text,new DomRegion(c.Region.BeginLine, c.Region.BeginColumn, lastComment.Region.BeginLine, lastComment.Region.EndColumn), FoldType.UserRegion));
 									cont = true;
 									break;
 								}
