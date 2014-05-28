@@ -118,7 +118,7 @@ namespace MonoDevelop.D.Debugging
 				}
 			}
 
-			return CreateObjectValue(ev, variableExpression, p, evalOptions, symb);
+			return CreateObjectValue(ev, variableExpression, p, evalOptions, foundChildItem ? symb : null);
 		}
 
 		public virtual ObjectValue CreateObjectValue(IDBacktraceSymbol s, EvaluationOptions evalOptions = null)
@@ -172,14 +172,19 @@ namespace MonoDevelop.D.Debugging
 
 		ObjectValue CreateObjectValue(ISymbolValue v, IExpression originalExpression, ObjectPath pathOpt, EvaluationOptions evalOptions, IDBacktraceSymbol symbolOpt = null)
 		{
-			if (v == null){
-				if(symbolOpt != null)
-					return ObjectValue.CreatePrimitive(this, pathOpt, symbolOpt.TypeName, new Mono.Debugging.Backend.EvaluationResult(symbolOpt.Value), ObjectValueFlags.Variable);
-
-				return ObjectValue.CreateError(this, pathOpt, "", "Couldn't evaluate expression "+ (originalExpression != null ? originalExpression.ToString() : ""), ObjectValueFlags.Error);
+			if (v != null)
+			{
+				try
+				{
+					return v.Accept(new ObjectValueSynthVisitor(this) { evalOptions = evalOptions, OriginalExpression = originalExpression, Path = pathOpt });
+				}
+				catch (NotImplementedException) { }
 			}
 
-			return v.Accept(new ObjectValueSynthVisitor { evalOptions = evalOptions, OriginalExpression = originalExpression, Path = pathOpt });
+			if (symbolOpt != null)
+				return ObjectValue.CreatePrimitive(this, pathOpt, symbolOpt.TypeName, new Mono.Debugging.Backend.EvaluationResult(symbolOpt.Value), ObjectValueFlags.Variable);
+
+			return ObjectValue.CreateError(this, pathOpt, "", "Couldn't evaluate expression " + (originalExpression != null ? originalExpression.ToString() : ""), ObjectValueFlags.Error);
 		}
 
 		class ObjectValueSynthVisitor : ISymbolValueVisitor<ObjectValue>
@@ -187,6 +192,12 @@ namespace MonoDevelop.D.Debugging
 			public IExpression OriginalExpression;
 			public ObjectPath Path;
 			public EvaluationOptions evalOptions;
+			public DLocalExamBacktrace Backtrace;
+
+			public ObjectValueSynthVisitor(DLocalExamBacktrace backtrace)
+			{
+				this.Backtrace = backtrace;
+			}
 
 			public ObjectValue VisitErrorValue(ErrorValue v)
 			{
@@ -205,7 +216,11 @@ namespace MonoDevelop.D.Debugging
 
 			public ObjectValue VisitArrayValue(ArrayValue v)
 			{
-				throw new NotImplementedException();
+				if (v.IsString)
+				{
+
+				}
+				return null;
 			}
 
 			public ObjectValue VisitAssociativeArrayValue(AssociativeArrayValue v)
