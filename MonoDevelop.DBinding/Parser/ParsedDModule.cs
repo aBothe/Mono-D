@@ -106,7 +106,7 @@ namespace MonoDevelop.D.Parser
 			{
 				l.Add(new FoldingRegion(
 								new DomRegion(s.Location.Line, s.Location.Column, s.EndLocation.Line, s.EndLocation.Column),
-								FoldType.Undefined));
+								s.Parent == null ? FoldType.Member : FoldType.Undefined));
 
 				base.Visit(s);
 			}
@@ -137,7 +137,7 @@ namespace MonoDevelop.D.Parser
 			{
 				l.Add(new FoldingRegion(
 								new DomRegion(mdb.BlockStartLocation.Line, mdb.BlockStartLocation.Column, mdb.EndLocation.Line, mdb.EndLocation.Column),
-								FoldType.Undefined));
+								FoldType.ConditionalDefine));
 			}
 		}
 
