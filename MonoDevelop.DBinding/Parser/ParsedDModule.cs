@@ -65,7 +65,34 @@ namespace MonoDevelop.D.Parser
 					if (c.CommentType == CommentType.SingleLine)
 					{
 						int nextIndex = i + 1;
-						Comment lastComment = null;
+						Comment lastComment;
+
+						// Customly foldable code regions
+						if (c.Text.Trim().StartsWith("region"))
+						{
+							bool cont = false;
+							for (int j = i + 1; j < Comments.Count; j++)
+							{
+								lastComment = Comments[j];
+								if (lastComment.CommentType == CommentType.SingleLine &&
+									lastComment.Text.Trim() == "endregion")
+								{
+									//TODO: Inhibit fold-processing the endregion comment in other cases.
+									var text = c.Text.Trim().Substring(6).Trim();
+									if(text == string.Empty)
+										text = "//region";
+									l.Add(new FoldingRegion(text,new DomRegion(c.Region.BeginLine, c.Region.BeginColumn, lastComment.Region.EndLine, lastComment.Region.EndColumn), FoldType.UserRegion));
+									cont = true;
+									break;
+								}
+							}
+							if (cont)
+								continue;
+						}
+
+						lastComment = null;
+
+						
 						for (int j=i+1; j < Comments.Count; j++)
 						{
 							lastComment = Comments[j];
