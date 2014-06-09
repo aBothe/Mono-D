@@ -125,6 +125,11 @@ namespace MonoDevelop.D.Formatting
 				get;
 				set;
 			}
+
+			public bool RemoveTrailingWhitespaces
+			{
+				get { return textStyle.RemoveTrailingWhitespace; }
+			}
 		}
 		
 		class DocAdapt : IDocumentAdapter
