@@ -93,7 +93,18 @@ namespace MonoDevelop.D.Gui
 
 			Cairo.Point p1, p2;
 
-			if (titem != null) {
+			var dn = titem as INode;
+			if (dn != null)
+			{
+				if (dn.NameLocation.IsEmpty)
+					p1 = p2 = editor.LocationToPoint(dn.Location.Line, dn.Location.Column);
+				else
+				{
+					p1 = editor.LocationToPoint(dn.NameLocation.Line, dn.NameLocation.Column);
+					p2 = editor.LocationToPoint(dn.NameLocation.Line, dn.NameLocation.Column + (dn.Name ?? "").Length);
+				}
+			}
+			else if (titem != null) {
 				p1 = editor.LocationToPoint (titem.Location.Line, titem.Location.Column);
 				p2 = editor.LocationToPoint (titem.EndLocation.Line, titem.EndLocation.Column);
 			} else {
