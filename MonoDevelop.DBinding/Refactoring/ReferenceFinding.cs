@@ -106,6 +106,10 @@ namespace MonoDevelop.D.Refactoring
 							loc = ((AbstractTypeDeclaration)reference).NonInnerTypeDependendLocation;
 						else if (reference is IExpression)
 							loc = reference.Location;
+						else if (reference is TemplateParameter)
+							loc = (reference as TemplateParameter).NameLocation;
+						else if (reference is INode)
+							loc = (reference as INode).NameLocation;
 						else
 							continue;
 

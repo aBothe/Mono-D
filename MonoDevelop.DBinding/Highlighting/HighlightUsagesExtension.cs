@@ -86,10 +86,30 @@ namespace MonoDevelop.D.Highlighting
 			}
 			
 			if(refs != null)
-				foreach (var sym in refs)
-					yield return new Ide.FindInFiles.MemberReference(sym,
-						new ICSharpCode.NRefactory.TypeSystem.DomRegion(Document.FileName, sym.Location.Line, sym.Location.Column, sym.EndLocation.Line, sym.EndLocation.Column),
-						Document.Editor.LocationToOffset(sym.Location.Line, sym.Location.Column), sym.EndLocation.Column - sym.Location.Column);
+				foreach (var sr in refs)
+				{
+					CodeLocation loc;
+					int len;
+					if (sr is INode)
+					{
+						loc = (sr as INode).NameLocation;
+						len = (sr as INode).Name.Length;
+					}
+					else if (sr is TemplateParameter)
+					{
+						loc = (sr as TemplateParameter).NameLocation;
+						len = (sr as TemplateParameter).Name.Length;
+					}
+					else
+					{
+						loc = sr.Location;
+						len = sr.EndLocation.Column - loc.Column;
+					}
+
+					yield return new Ide.FindInFiles.MemberReference(sr,
+						new ICSharpCode.NRefactory.TypeSystem.DomRegion(Document.FileName, loc.Line, loc.Column, loc.Line, loc.Column + len),
+						Document.Editor.LocationToOffset(loc.Line, loc.Column), len);
+				}
 		}
 	}
 }
