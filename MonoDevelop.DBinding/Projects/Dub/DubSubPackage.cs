@@ -53,10 +53,19 @@ namespace MonoDevelop.D.Projects.Dub
 
 		public static DubSubPackage ReadAndAdd(DubProject superProject,JsonReader r, IProgressMonitor monitor)
 		{
-			if (r.TokenType != JsonToken.StartObject)
-				throw new JsonReaderException ("Illegal token on subpackage definition beginning");
+			DubSubPackage sub;
+			switch (r.TokenType) {
+				case JsonToken.StartObject:
+					break;
+				case JsonToken.String:
 
-			var sub = new DubSubPackage ();
+					sub = PackageJsonParser.ReadPackageInformation (PackageJsonParser.GetDubJsonFilePath (superProject, r.Value as string), monitor, null, superProject) as DubSubPackage;
+					return sub;
+				default:
+					throw new JsonReaderException ("Illegal token on subpackage definition beginning");
+			}
+
+			sub = new DubSubPackage ();
 			sub.FileName = superProject.FileName;
 
 			sub.OriginalBasePath = superProject is DubSubPackage ? (superProject as DubSubPackage).OriginalBasePath : 
@@ -68,7 +77,7 @@ namespace MonoDevelop.D.Projects.Dub
 			sub.AddProjectAndSolutionConfiguration(new DubProjectConfiguration { Name = GettextCatalog.GetString("Default"), Id = DubProjectConfiguration.DefaultConfigId });
 
 			superProject.packagesToAdd.Add(sub);
-			
+
 			while (r.Read ()) {
 				if (r.TokenType == JsonToken.PropertyName)
 					sub.TryPopulateProperty (r.Value as string, r, monitor);

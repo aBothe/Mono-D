@@ -46,7 +46,7 @@ namespace MonoDevelop.D.Projects.Dub
 		}
 
 		[ThreadStatic]
-		internal static List<string> AlreadyLoadedPackages;
+		internal static Dictionary<string, DubProject> AlreadyLoadedPackages;
 
 		public object ReadFile(FilePath file, Type expectedType, IProgressMonitor monitor)
 		{
@@ -55,19 +55,17 @@ namespace MonoDevelop.D.Projects.Dub
 
 		public static object ReadFile_(string file, Type expectedType, IProgressMonitor monitor)
 		{
+			DubProject defaultPackage;
 			bool clearLoadedPrjList = AlreadyLoadedPackages == null;
 			if (clearLoadedPrjList)
-				AlreadyLoadedPackages = new List<string> ();
+				AlreadyLoadedPackages = new Dictionary<string, DubProject> ();
 
-			if (AlreadyLoadedPackages.Contains (file))
-				return null;
-			AlreadyLoadedPackages.Add (file);
+			if (AlreadyLoadedPackages.TryGetValue (file, out defaultPackage))
+				return defaultPackage;
 
-			DubProject defaultPackage;
+
 			try{
-				using (var s = File.OpenText (file))
-				using (var r = new JsonTextReader (s))
-					defaultPackage = ReadPackageInformation(file, r, monitor);
+				defaultPackage = ReadPackageInformation(file, monitor);
 			}catch(Exception ex){
 				if (clearLoadedPrjList)
 					AlreadyLoadedPackages = null;
@@ -113,24 +111,33 @@ namespace MonoDevelop.D.Projects.Dub
 			return sln;
 		}
 
+		public static string GetDubJsonFilePath(AbstractDProject @base,string subPath)
+		{
+			var sub = @base as DubSubPackage;
+			if (sub != null)
+				sub.useOriginalBasePath = true;
+			var packageDir = @base.GetAbsPath(Building.ProjectBuilder.EnsureCorrectPathSeparators(subPath));
+
+			if(sub != null)
+				sub.useOriginalBasePath = false;
+
+			string packageJsonToLoad;
+			if (File.Exists (packageJsonToLoad = Path.Combine (packageDir, PackageJsonFile)) ||
+			    File.Exists (packageJsonToLoad = Path.Combine (packageDir, DubJsonFile)))
+				return packageJsonToLoad;
+
+			return null;
+		}
+
 		internal static void LoadDubProjectReferences(DubProject defaultPackage, IProgressMonitor monitor, Solution sln = null)
 		{
-			var sub = defaultPackage as DubSubPackage;
 			foreach (var dep in defaultPackage.DubReferences)
 			{
 				if (string.IsNullOrWhiteSpace(dep.Path))
 					continue;
-
-				if (sub != null)
-					sub.useOriginalBasePath = true;
-				var packageDir = defaultPackage.GetAbsPath(Building.ProjectBuilder.EnsureCorrectPathSeparators(dep.Path));
-
-				if(sub != null)
-					sub.useOriginalBasePath = false;
-
-				string packageJsonToLoad;
-				if (File.Exists(packageJsonToLoad = Path.Combine(packageDir, PackageJsonFile)) || 
-					File.Exists(packageJsonToLoad = Path.Combine(packageDir, DubJsonFile)))
+					
+				string packageJsonToLoad = GetDubJsonFilePath(defaultPackage, dep.Path);
+				if (packageJsonToLoad != null && packageJsonToLoad != defaultPackage.FileName)
 				{
 					var prj = ReadFile_(packageJsonToLoad, typeof(Project), monitor) as DubProject;
 					if (prj != null) {
@@ -143,28 +150,68 @@ namespace MonoDevelop.D.Projects.Dub
 			}
 		}
 
-		public static DubProject ReadPackageInformation(FilePath packageJsonPath,JsonReader r, IProgressMonitor monitor)
+		public static DubProject ReadPackageInformation(FilePath packageJsonPath,IProgressMonitor monitor,JsonReader r = null, DubProject superPackage = null)
 		{
-			var defaultPackage = new DubProject();
-			defaultPackage.FileName = packageJsonPath;
-			defaultPackage.BaseDirectory = packageJsonPath.ParentDirectory;
+			DubProject defaultPackage;
+			bool free;
+			StreamReader s = null;
+			bool cleanupAlreadyLoadedPacks = AlreadyLoadedPackages == null;
+			if (cleanupAlreadyLoadedPacks)
+				AlreadyLoadedPackages = new Dictionary<string, DubProject> ();
 
-			defaultPackage.BeginLoad ();
-
-			defaultPackage.AddProjectAndSolutionConfiguration(new DubProjectConfiguration { Name = GettextCatalog.GetString("Default"), Id = DubProjectConfiguration.DefaultConfigId });
-
-			while (r.Read ()) {
-				if (r.TokenType == JsonToken.PropertyName) {
-					var propName = r.Value as string;
-					defaultPackage.TryPopulateProperty (propName, r, monitor);
+			if (free = (r == null)) {
+				if (AlreadyLoadedPackages.TryGetValue (packageJsonPath, out defaultPackage)) {
+					if (cleanupAlreadyLoadedPacks)
+						AlreadyLoadedPackages = null;
+					return defaultPackage;
 				}
-				else if (r.TokenType == JsonToken.EndObject)
-					break;
+
+				s = File.OpenText (packageJsonPath);
+				r = new JsonTextReader (s);
 			}
 
-			defaultPackage.Items.Add(new ProjectFile(packageJsonPath, BuildAction.None));
+			defaultPackage = superPackage != null ? new DubSubPackage() : new DubProject();
+			try
+			{
+				defaultPackage.FileName = packageJsonPath;
+				AlreadyLoadedPackages[packageJsonPath] = defaultPackage;
+				defaultPackage.BaseDirectory = packageJsonPath.ParentDirectory;
 
-			defaultPackage.EndLoad ();
+				defaultPackage.BeginLoad ();
+
+				defaultPackage.AddProjectAndSolutionConfiguration(new DubProjectConfiguration { Name = GettextCatalog.GetString("Default"), Id = DubProjectConfiguration.DefaultConfigId });
+
+				if(superPackage != null)
+					superPackage.packagesToAdd.Add(defaultPackage);
+
+				while (r.Read ()) {
+					if (r.TokenType == JsonToken.PropertyName) {
+						var propName = r.Value as string;
+						defaultPackage.TryPopulateProperty (propName, r, monitor);
+					}
+					else if (r.TokenType == JsonToken.EndObject)
+						break;
+				}
+
+				if(superPackage != null)
+					defaultPackage.packageName = superPackage.packageName + ":" + (defaultPackage.packageName ?? string.Empty);
+
+				defaultPackage.Items.Add(new ProjectFile(packageJsonPath, BuildAction.None));
+
+				defaultPackage.EndLoad ();
+			}
+			catch(Exception ex) {
+				monitor.ReportError ("Exception while reading dub package "+packageJsonPath,ex);
+			}
+			finally{
+				if (free) {
+					r.Close ();
+					s.Dispose ();
+				}
+
+				if (cleanupAlreadyLoadedPacks)
+					AlreadyLoadedPackages = null;
+			}
 			return defaultPackage;
 		}
 
