@@ -36,6 +36,8 @@ namespace MonoDevelop.D.Building
             @"^\s*(?<file>.*):(?<line>\d*):((?<column>\d*):)?\s*(?<level>.*)\s*:\s(?<message>.*)",
             RegexOptions.Compiled | RegexOptions.ExplicitCapture);
 
+		static readonly Regex mixinInlineRegex = new Regex("-mixin-(?<line>\\d+)", RegexOptions.Compiled | RegexOptions.ExplicitCapture);
+
 		/// <summary>
 		/// Checks a compilation return code, 
 		/// and adds an error result if the compiler results
@@ -73,6 +75,15 @@ namespace MonoDevelop.D.Building
 				var error = ErrorExtracting.FindError(next, reader);
 				if (error != null)
 				{
+					// dmd's error filenames may contain mixin location info
+					var m = mixinInlineRegex.Match (error.FileName);
+					if (m.Success) {
+						error.FileName = error.FileName.Substring (0, m.Index);
+						int line;
+						int.TryParse (m.Groups ["line"].Value, out line);
+						error.Line = line;
+					}
+
 					if (!Path.IsPathRooted(error.FileName))
 						error.FileName = Project.GetAbsoluteChildPath(error.FileName);
 					br.Append(error);
