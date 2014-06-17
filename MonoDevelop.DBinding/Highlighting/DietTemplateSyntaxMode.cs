@@ -86,6 +86,8 @@ namespace MonoDevelop.D.Highlighting
 				var chunkP = new ChunkParser(DSyntax, spanParser, Ide.IdeApp.Workbench.ActiveDocument.Editor.ColorStyle, line);
 
 				var n = chunkP.GetChunks(startOffset, endOffset - startOffset);
+				if (n == null)
+					return;
 				startChunk.Next = n;
 				startChunk.Length = n.Offset - startChunk.Offset;
 			}
