@@ -11,6 +11,6 @@
 	</TemplateConfiguration>
 
 	<TemplateFiles>
-		<File DefaultExtension=".rc" DefaultName="EmptyRCSourceFile" AddStandardHeader="True"/>
+		<AnsiFile DefaultExtension=".rc" DefaultName="EmptyRCSourceFile" AddStandardHeader="True"/>
 	</TemplateFiles>
 </Template>

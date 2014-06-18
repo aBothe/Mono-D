@@ -6,7 +6,7 @@
 	copyright=""
 	description="D Language Binding"
 	category="Language bindings"
-	version="2.1.6">
+	version="2.1.7">
 
 	<!-- Resources -->
 
@@ -186,6 +186,7 @@
 
 	<Extension path="/MonoDevelop/Ide/FileTemplateTypes">
 		<FileTemplateType name = "DFile" class = "MonoDevelop.D.templates.DFileDescriptionTemplate"/>
+		<FileTemplateType name = "AnsiFile" class = "MonoDevelop.D.templates.AnsiFile"/>
 	</Extension>
 
 	<Extension path = "/MonoDevelop/Ide/ProjectTemplates">
