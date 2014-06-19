@@ -51,5 +51,25 @@ namespace MonoDevelop.D.Unittest.Commands
 			DispatchService.GuiDispatch(guiRun);
 		}
 	}
+
+	class UnittestCmdHdlrFromEditor : CommandHandler
+	{
+		protected override void Update (CommandInfo info)
+		{
+			info.Visible = info.Enabled = 
+				IdeApp.Workbench.ActiveDocument.HasProject && IdeApp.Workbench.ActiveDocument.Project is AbstractDProject;
+		}
+
+		protected override void Run (object dataItem)
+		{
+			var prj = IdeApp.Workbench.ActiveDocument.Project as AbstractDProject;
+			if (prj == null)
+				return;
+
+			// If having a dub project, run dub test <package>
+
+			// otherwise, let it compile with unittest args etc. and run it
+		}
+	}
 }
 

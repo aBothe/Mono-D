@@ -380,13 +380,21 @@
 
 	<!-- Unittest -->
 
+	<Extension path = "/MonoDevelop/Ide/MainMenu/Run">
+		<CommandItem id = "MonoDevelop.D.Unittest.Commands.UnittestCommands.RunAll" />
+	</Extension>
+
 	<Extension path = "/MonoDevelop/Ide/Commands">
+		<Command id = "MonoDevelop.D.Unittest.Commands.UnittestCommands.RunAll"
+			defaultHandler = "MonoDevelop.D.Unittest.Commands.UnittestCmdHdlrFromEditor"
+			_label = "Run Unit Tests" shortcut="Control|T" />
+
 		<Command id = "MonoDevelop.D.Unittest.Commands.UnittestCommands.Run"
 			defaultHandler = "MonoDevelop.D.Unittest.Commands.UnittestCommandHandler"
-			_label = "Run Unittest" />
+			_label = "Run Unit Tests" />
 		<Command id = "MonoDevelop.D.Unittest.Commands.UnittestCommands.RunExternal"
 			defaultHandler = "MonoDevelop.D.Unittest.Commands.UnittestCommandHandler"
-			_label = "Run Unittest Externally" />
+			_label = "Run Unit Tests Externally" />
         <Command id = "MonoDevelop.D.Unittest.Commands.UnittestCommands.RunSingle"
 			defaultHandler = "MonoDevelop.D.Unittest.Commands.UnittestCommandHandler"
 			_label = "Run Module Unittest" />
