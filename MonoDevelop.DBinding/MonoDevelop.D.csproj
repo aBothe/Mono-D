@@ -262,6 +262,7 @@
     <Compile Include="Building\CompilerPresets\PresetLoader.cs" />
     <Compile Include="OptionPanels\EditCompilerName.cs" />
     <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.EditCompilerName.cs" />
+    <Compile Include="templates\AnsiFile.cs" />
     <Compile Include="templates\DFileDescriptionTemplate.cs" />
     <Compile Include="Formatting\FormattingPanelWidget.cs" />
     <Compile Include="gtk-gui\MonoDevelop.D.Formatting.FormattingPanelWidget.cs" />

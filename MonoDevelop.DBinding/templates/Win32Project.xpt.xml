@@ -47,9 +47,9 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int i
 
     try
     {
-        Runtime.initialize(&exceptionHandler);
+        Runtime.initialize();
         result = myWinMain(hInstance, hPrevInstance, lpCmdLine, iCmdShow);
-        Runtime.terminate(&exceptionHandler);
+        Runtime.terminate();
     }
     catch (Throwable e)
     {
@@ -191,13 +191,13 @@ LRESULT WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) nothro
 ]]>
 				</DFile>
 
-				<File name="Resources/Win32Manifest.rc">
+				<AnsiFile name="Resources/Win32Manifest.rc">
 					<![CDATA[
 // Links the manifest file to the application resources
 1 24 "Win32Manifest.manifest"
 ]]>
-				</File>
-				
+				</AnsiFile>
+
 				<File name="Resources/Win32Manifest.manifest">
 <![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
