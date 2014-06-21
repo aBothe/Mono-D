@@ -14,11 +14,6 @@ namespace MonoDevelop.D.Unittest.Commands
 	public enum UnittestCommands
 	{
 		RunAll,
-		Run,
-		RunExternal,
-
-		RunSingle,
-		RunSingleExternally,
 	}
 }
 

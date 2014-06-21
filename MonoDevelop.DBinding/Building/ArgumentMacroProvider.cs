@@ -134,7 +134,7 @@ namespace MonoDevelop.D.Building
             }
         }
 
-        public void ManipulateMacros(Dictionary<string, string> macros)
+        public virtual void ManipulateMacros(Dictionary<string, string> macros)
         {
             macros["sources"] = sources;
             macros["libs"] = libs;

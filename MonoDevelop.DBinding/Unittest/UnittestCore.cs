@@ -16,12 +16,13 @@ using MonoDevelop.Ide.Gui;
 using System.Collections.Generic;
 using System.IO;
 using MonoDevelop.Core.Execution;
+using System.Linq;
+using D_Parser.Dom;
+
 namespace MonoDevelop.D.Unittest
 {
 	public static class UnittestCore
 	{
-		private static ProgressMonitorManager manager;
-		private static IProgressMonitor monitor;
 		private static IConsole console;
 		
 		public static void RunExternal(string filePath, DProject project, DProjectConfiguration conf)
@@ -29,43 +30,25 @@ namespace MonoDevelop.D.Unittest
 			if(console == null)
 				console = ExternalConsoleFactory.Instance.CreateConsole(false);
 				
-			string[] cmdParts = GetCmdParts(project);
-			string args = GetCommandArgs(cmdParts.Length >= 2 ?cmdParts[1] : "",filePath,project,conf);
-			string execDir = GetExecDir(project, conf);
+			string args = GetCommandArgs(UnittestSettings.UnittestCommand, filePath, project, conf);
+			//string execDir = GetExecDir(project, conf);
 				
-			Runtime.ProcessService.StartConsoleProcess(cmdParts[0],args,execDir,console,null);
+			//Runtime.ProcessService.StartConsoleProcess(cmdParts[0],args,execDir,console,null);
+		}
+
+		class UnittestMacros : OneStepBuildArgumentMacroProvider
+		{
+			public bool HasMain = false;
+
+			public override void ManipulateMacros(Dictionary<string, string> macros)
+			{
+				macros["main"] = HasMain ? string.Empty : UnittestSettings.MainMethodFlag;
+
+				base.ManipulateMacros(macros);
+			}
 		}
 		
-		public static void Run(string filePath, DProject project, DProjectConfiguration conf)
-		{
-			if(manager == null)
-			{
-				manager = new ProgressMonitorManager();
-				monitor = manager.GetOutputProgressMonitor("Run Unittest",Stock.RunProgramIcon,true,true); 
-			}
-			
-			Pad pad = manager.GetPadForMonitor(monitor);
-			if(pad != null)
-				pad.BringToFront();
-				
-			monitor.BeginTask("start unittest...",1);
-			
-			new System.Threading.Thread(delegate (){
-			
-				string[] cmdParts = GetCmdParts(project);
-				string args = GetCommandArgs(cmdParts.Length >= 2 ?cmdParts[1] : "",filePath,project,conf);
-				string errorOutput;
-				string stdOutput;
-				string execDir = GetExecDir(project,conf);
-				
-				ProjectBuilder.ExecuteCommand(cmdParts[0], args, execDir,monitor,out stdOutput, out errorOutput);
-							
-				monitor.Log.WriteLine("unittest done.");
-				monitor.EndTask();
-			}).Start();
-		} 
-		
-		static string GetCommandArgs(string baseCommandArgs, string filePath, DProject project, DProjectConfiguration conf)
+		public static string GetCommandArgs(string baseCommandArgs, string filePath, DProject project, DProjectConfiguration conf)
 		{
 			var compiler =project.Compiler;
 			ProjectBuilder.PrjPathMacroProvider prjPath = new ProjectBuilder.PrjPathMacroProvider {
@@ -74,9 +57,9 @@ namespace MonoDevelop.D.Unittest
 			
 			List<string> includes = new List<string>(project.IncludePaths);
 			includes.Add(project.BaseDirectory.FullPath);
-			
+
 			string[] src = {filePath};
-			OneStepBuildArgumentMacroProvider compilerMacro = new OneStepBuildArgumentMacroProvider
+			var compilerMacro = new UnittestMacros
 			{
 				ObjectsStringPattern = compiler.ArgumentPatterns.ObjectFileLinkPattern,
 				IncludesStringPattern = compiler.ArgumentPatterns.IncludePathPattern,
@@ -85,22 +68,40 @@ namespace MonoDevelop.D.Unittest
 				Includes = ProjectBuilder.FillInMacros(includes, prjPath),
 				Libraries = ProjectBuilder.GetLibraries(conf, compiler),
 
+				HasMain = HasMainMethod(D_Parser.Misc.GlobalParseCache.GetModule(filePath))
 			};
 			
 			return ProjectBuilder.FillInMacros(baseCommandArgs,compilerMacro, prjPath);
 		}
-		
-		static string[] GetCmdParts(DProject project)
+
+		public static bool HasMainMethod(DModule ast)
 		{
-			return UnittestSettings.UnittestCommand.Split(new string[]{" "}, 2 , StringSplitOptions.RemoveEmptyEntries);
+			if (ast == null)
+				return false;
+
+			//TODO: pragma(main)
+
+			var en = ast["main"];
+			if (en != null && en.Any((m) => m is DMethod))
+				return true;
+
+			en = ast["WinMain"];
+			return en != null && en.Any((m) => m is DMethod);
 		}
-		
-		static string GetExecDir(DProject project, DProjectConfiguration conf)
+
+		public static string ExtractCommand(string args)
 		{
-			string execDir = conf.OutputDirectory.FullPath;
-			if (!Directory.Exists (execDir))
-				execDir = project.BaseDirectory.FullPath;
-			return execDir;
+			args = args.TrimStart();
+			int i;
+			if (args.Length > 0 && args[0] == '"')
+				i = args.IndexOf('"');
+			else
+				i = args.IndexOf(' ');
+
+			if (i > 0)
+				return args.Substring(0, i);
+
+			return string.Empty;
 		}
 	}
 }

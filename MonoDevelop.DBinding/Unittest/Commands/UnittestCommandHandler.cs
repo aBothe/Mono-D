@@ -12,46 +12,12 @@ using MonoDevelop.Components.Commands;
 using MonoDevelop.Ide;
 using MonoDevelop.Projects;
 using MonoDevelop.D.Projects;
+using MonoDevelop.D.Projects.Dub;
+using System;
+using MonoDevelop.D.Building;
 
 namespace MonoDevelop.D.Unittest.Commands
-{//TODO: Implement RunSingle/RunSingleExternally
-	public class UnittestCommandHandler : CommandHandler
-	{
-		CommandInfo commandInfo;
-		protected override void Update (CommandInfo info)
-		{
-			commandInfo = info;
-			base.Update (info);
-		}
-		protected override void Run (object dataItem)
-		{
-			MessageHandler guiRun = delegate
-			{
-				var project = IdeApp.ProjectOperations.CurrentSelectedProject as DProject;
-				if(project == null)
-					return;
-				
-				DProjectConfiguration conf = project.Configurations["Unittest"] as DProjectConfiguration;
-				if(conf == null)
-					return;
-				
-				ProjectFile file = IdeApp.ProjectOperations.CurrentSelectedItem as ProjectFile;
-				if(file == null)
-					return;
-					
-				string filePath = file.FilePath.FullPath;
-				
-				IdeApp.Workbench.SaveAll();
-				
-				if((string)commandInfo.Command.Id ==  "MonoDevelop.D.Unittest.Commands.UnittestCommands.RunExternal")
-					UnittestCore.RunExternal(filePath,project,conf);
-				else
-					UnittestCore.Run(filePath,project,conf);
-			};
-			DispatchService.GuiDispatch(guiRun);
-		}
-	}
-
+{
 	class UnittestCmdHdlrFromEditor : CommandHandler
 	{
 		protected override void Update (CommandInfo info)
@@ -62,13 +28,54 @@ namespace MonoDevelop.D.Unittest.Commands
 
 		protected override void Run (object dataItem)
 		{
-			var prj = IdeApp.Workbench.ActiveDocument.Project as AbstractDProject;
+			var doc = IdeApp.Workbench.ActiveDocument;
+			var prj = doc.Project as AbstractDProject;
 			if (prj == null)
 				return;
 
-			// If having a dub project, run dub test <package>
+			var monitor = Ide.IdeApp.Workbench.ProgressMonitors.GetOutputProgressMonitor("Run Unittest", MonoDevelop.Ide.Gui.Stock.RunProgramIcon, true, true);
 
-			// otherwise, let it compile with unittest args etc. and run it
+			var pad = Ide.IdeApp.Workbench.ProgressMonitors.GetPadForMonitor(monitor);
+			if (pad != null)
+				pad.BringToFront();
+
+			monitor.BeginTask("Starting Unit Tests", 1);
+
+			DispatchService.BackgroundDispatch(()=>{
+				try{
+				if (prj is DubProject)
+				{
+					DubBuilder.ExecuteProject(prj as DubProject, monitor,
+						new ExecutionContext(MonoDevelop.Core.Runtime.ProcessService.DefaultExecutionHandler, Ide.IdeApp.Workbench.ProgressMonitors, IdeApp.Workspace.ActiveExecutionTarget), 
+						IdeApp.Workspace.ActiveConfiguration, "test");
+				}
+				else if(prj is DProject)
+				{
+					var dprj = prj as DProject;
+					var cfg = dprj.GetConfiguration(IdeApp.Workspace.ActiveConfiguration) as DProjectConfiguration;
+
+					var cmd = UnittestCore.ExtractCommand(UnittestSettings.UnittestCommand);
+					string args = UnittestCore.GetCommandArgs(UnittestSettings.UnittestCommand.Substring(cmd.Length + 1), doc.FileName, dprj, cfg);
+					string errorOutput;
+					string stdOutput;
+					string execDir = cfg.OutputDirectory.ToAbsolute(prj.BaseDirectory);
+
+					ProjectBuilder.ExecuteCommand(cmd, args, execDir, monitor, out stdOutput, out errorOutput);
+
+					monitor.Log.WriteLine(stdOutput);
+					monitor.Log.WriteLine(errorOutput);
+				}
+				}
+				catch(Exception ex)
+				{
+					monitor.ReportError("Error during unit testing", ex);
+				}
+				finally
+				{
+				monitor.Log.WriteLine("unittest done.");
+				monitor.EndTask();
+				}
+			});
 		}
 	}
 }

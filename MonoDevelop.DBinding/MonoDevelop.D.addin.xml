@@ -6,7 +6,7 @@
 	copyright=""
 	description="D Language Binding"
 	category="Language bindings"
-	version="2.1.7">
+	version="2.1.8">
 
 	<!-- Resources -->
 
@@ -323,20 +323,8 @@
 	</Extension>
 
 	<Extension path = "/MonoDevelop/Ide/ContextMenu/ProjectPad">
-		<Condition id="ItemType" value="MonoDevelop.D.Projects.DProject">
-			<ItemSet id = "unittests" _label = "Unittests">
-				<CommandItem id = "MonoDevelop.D.Unittest.Commands.UnittestCommands.Run" />
-				<CommandItem id = "MonoDevelop.D.Unittest.Commands.UnittestCommands.RunExternal" />
-			</ItemSet>
-		</Condition>
-
 		<Condition id="ItemType" value="MonoDevelop.D.Projects.AbstractDProject">
 			<CommandItem id = "MonoDevelop.D.Refactoring.DustMite.InvokeCommandId" />
-		</Condition>
-
-		<Condition id="FileType" fileExtensions=".d,.di">
-			<CommandItem id = "MonoDevelop.D.Unittest.Commands.UnittestCommands.RunSingle" />
-			<CommandItem id = "MonoDevelop.D.Unittest.Commands.UnittestCommands.RunSingleExternally" />
 		</Condition>
 	</Extension>
 
@@ -389,19 +377,6 @@
 		<Command id = "MonoDevelop.D.Unittest.Commands.UnittestCommands.RunAll"
 			defaultHandler = "MonoDevelop.D.Unittest.Commands.UnittestCmdHdlrFromEditor"
 			_label = "Run Unit Tests" shortcut="Control|T" />
-
-		<Command id = "MonoDevelop.D.Unittest.Commands.UnittestCommands.Run"
-			defaultHandler = "MonoDevelop.D.Unittest.Commands.UnittestCommandHandler"
-			_label = "Run Unit Tests" />
-		<Command id = "MonoDevelop.D.Unittest.Commands.UnittestCommands.RunExternal"
-			defaultHandler = "MonoDevelop.D.Unittest.Commands.UnittestCommandHandler"
-			_label = "Run Unit Tests Externally" />
-        <Command id = "MonoDevelop.D.Unittest.Commands.UnittestCommands.RunSingle"
-			defaultHandler = "MonoDevelop.D.Unittest.Commands.UnittestCommandHandler"
-			_label = "Run Module Unittest" />
-		<Command id = "MonoDevelop.D.Unittest.Commands.UnittestCommands.RunSingleExternally"
-			defaultHandler = "MonoDevelop.D.Unittest.Commands.UnittestCommandHandler"
-			_label = "Run Module Unittest Externally" />
 	</Extension>
 	
 	

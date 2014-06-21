@@ -64,7 +64,7 @@ namespace MonoDevelop.D.Projects.Dub
 			return br;
 		}
 
-		internal static void ExecuteProject(DubProject prj,IProgressMonitor monitor, ExecutionContext context, ConfigurationSelector configuration)
+		public static void ExecuteProject(DubProject prj,IProgressMonitor monitor, ExecutionContext context, ConfigurationSelector configuration, string dubVerb = "run")
 		{
 			bool isDebug = context.ExecutionHandler.GetType ().Name.StartsWith ("Debug");
 
@@ -79,7 +79,7 @@ namespace MonoDevelop.D.Projects.Dub
 
 			var sr = new StringBuilder();
 			if (!isDebug) {
-				sr.Append ("run");
+				sr.Append (dubVerb);
 				BuildCommonArgAppendix (sr, prj, configuration);
 			}
 
