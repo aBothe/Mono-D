@@ -46,7 +46,7 @@ namespace MonoDevelop.D.Profiler
 			return file;
 		}
 		
-		static Regex traceFuncRegex = new Regex ("^\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\S\\P{C}[\\P{C}.]*)$",RegexOptions.Compiled);
+		static Regex traceFuncRegex = new Regex ("^\\s*(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\S\\P{C}[\\P{C}.]*)$",RegexOptions.Compiled);
 		
 		public void Parse(DProject project)
 		{
