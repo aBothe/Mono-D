@@ -18,39 +18,28 @@ namespace MonoDevelop.D.Profiler
 	public class TraceLogParser
 	{
 		private ProfilerPadWidget profilerPadWidget;
-		private DProject lastProfiledProject;
+		private AbstractDProject lastProfiledProject;
 		
 		public TraceLogParser (ProfilerPadWidget widget)
 		{
 			profilerPadWidget = widget;
 		}
 		
-		public static string TraceLogFile(DProject project)
+
+		public static string TraceLogFile(AbstractDProject project)
 		{
 			if(project == null)
 				return null;
-		
-			var config = project.GetConfiguration(Ide.IdeApp.Workspace.ActiveConfiguration) as DProjectConfiguration;
-			
-			if (config == null || 
-			    config.CompileTarget != DCompileTarget.Executable || 
-			    !project.Compiler.HasProfilerSupport)
-			{
-				return null;
-			}
-			
-			
-			string file = Path.Combine(config.OutputDirectory, "trace.log");
-			if (!File.Exists (file))
-				return null;
-			return file;
+
+			string file = project.GetOutputFileName(Ide.IdeApp.Workspace.ActiveConfiguration).ParentDirectory.Combine("trace.log");
+			return File.Exists (file) ? file : null;
 		}
 		
 		static Regex traceFuncRegex = new Regex ("^\\s*(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\S\\P{C}[\\P{C}.]*)$",RegexOptions.Compiled);
 		
-		public void Parse(DProject project)
+		public void Parse(AbstractDProject project)
 		{
-			string file = TraceLogFile(project);
+			var file = TraceLogFile(project);
 			if(file == null)
 			{
 				profilerPadWidget.AddTracedFunction(0,0,0,0,new DVariable{Name = "trace.log not found.."});
@@ -60,7 +49,7 @@ namespace MonoDevelop.D.Profiler
 			lastProfiledProject = project;
 			profilerPadWidget.ClearTracedFunctions();
 			
-			var ctxt = ResolutionContext.Create(Resolver.DResolverWrapper.CreateCacheList(lastProfiledProject), null, null);
+			var ctxt = ResolutionContext.Create(project.ParseCache, null, null);
 			
 			StreamReader reader = File.OpenText(file);
 			string line;
@@ -172,9 +161,7 @@ namespace MonoDevelop.D.Profiler
 				}
 			}
 			
-			if(ds !=null)
-				return ds.Definition;
-			return null;
+			return ds != null ? ds.Definition : null;
 		}
 		
 		/*private INode SearchFunctionNode(DMethod method, ITypeDeclaration typeDeclaration, IBlockNode module)

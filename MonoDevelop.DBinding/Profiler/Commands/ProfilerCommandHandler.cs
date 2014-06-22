@@ -8,11 +8,17 @@ namespace MonoDevelop.D.Profiler.Commands
 {
 	public class ProfilerCommandHandler : CommandHandler
 	{
+		protected override void Update(CommandInfo info)
+		{
+			base.Update(info);
+			info.Enabled = IdeApp.ProjectOperations.CurrentSelectedProject is AbstractDProject;
+		}
+
 		protected override void Run ()
 		{
 			MessageHandler guiRun = delegate
 			{
-				var project = IdeApp.ProjectOperations.CurrentSelectedProject as DProject;
+				var project = IdeApp.ProjectOperations.CurrentSelectedProject as AbstractDProject;
 				if(project == null)
 					return;
 				

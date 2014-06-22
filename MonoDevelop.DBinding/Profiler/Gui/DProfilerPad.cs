@@ -43,8 +43,8 @@ namespace MonoDevelop.D.Profiler.Gui
 		{
 			get { return widget; }
 		}
-		
-		public void AnalyseTraceFile(DProject project)
+
+		public void AnalyseTraceFile(AbstractDProject project)
 		{
 			TraceParser.Clear();
 			if(ProfilerModeHandler.IsProfilerMode)
