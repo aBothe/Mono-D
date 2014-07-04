@@ -80,7 +80,7 @@ namespace MonoDevelop.D.Projects
 
 		public override IEnumerable<string> GlobalIncludes {
 			get {
-				return Compiler.IncludePaths;
+				return Compiler != null ? Compiler.IncludePaths as IEnumerable<string> : new[] { string.Empty };
 			}
 		}
 
