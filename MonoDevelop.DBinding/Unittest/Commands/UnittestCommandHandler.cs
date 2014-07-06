@@ -22,8 +22,8 @@ namespace MonoDevelop.D.Unittest.Commands
 	{
 		protected override void Update (CommandInfo info)
 		{
-			info.Visible = info.Enabled = 
-				IdeApp.Workbench.ActiveDocument.HasProject && IdeApp.Workbench.ActiveDocument.Project is AbstractDProject;
+			var doc = IdeApp.Workbench.ActiveDocument;
+			info.Visible = info.Enabled = doc != null && doc.HasProject && doc.Project is AbstractDProject;
 		}
 
 		protected override void Run (object dataItem)
