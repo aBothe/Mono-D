@@ -202,11 +202,7 @@ namespace MonoDevelop.D.Parser
 
 			var dprj = pf.Project as AbstractDProject;
 
-
-			var sel = ProjectBuilder.BuildingConfigurationSelector;
-			if (sel == null)
-				sel = Ide.IdeApp.Workspace.ActiveConfiguration;
-			var sourcePaths = dprj.GetSourcePaths(sel);
+			var sourcePaths = dprj.GetSourcePaths(ProjectBuilder._currentConfig ?? Ide.IdeApp.Workspace.ActiveConfiguration);
 			foreach(var path in sourcePaths)
 				if(pf.FilePath.IsChildPathOf(path))
 					return pf.FilePath.ToRelative(path).ChangeExtension(null).ToString().Replace(Path.DirectorySeparatorChar, '.');

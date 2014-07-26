@@ -24,7 +24,11 @@ namespace MonoDevelop.D.Building
 
 		static BuildConfiguration BuildArguments(DProjectConfiguration cfg) { return LinkTargetCfg(cfg).GetArguments (cfg.DebugMode); }
 
-		public static ConfigurationSelector BuildingConfigurationSelector { get; private set; }
+		/// <summary>
+		/// Used exclusively to bypass a non-existent IdeApp.Workspace that is there to globally/statically identify the currently active build configuration used for building.
+		/// This is mainly the case when using mdtool for building a solution from command line.
+		/// </summary>
+		internal static ConfigurationSelector _currentConfig { get; private set; }
 
 
 		DProject Project;
@@ -103,7 +107,8 @@ namespace MonoDevelop.D.Building
 
 		public static string BuildOneStepBuildString(DProject prj, IEnumerable<string> builtObjects, ConfigurationSelector sel)
 		{
-			BuildingConfigurationSelector = sel;
+			if(Ide.IdeApp.Workbench == null)
+				_currentConfig = sel;
 			var cfg = prj.GetConfiguration (sel) as DProjectConfiguration;
 			var target = prj.GetOutputFileName (sel);
 
@@ -121,7 +126,7 @@ namespace MonoDevelop.D.Building
 				slnPath = prj.ParentSolution != null ? EnsureCorrectPathSeparators(prj.ParentSolution.BaseDirectory) : ""
 			};
 
-			return FillInMacros(rawArgumentString.ToString(),
+			var res = FillInMacros(rawArgumentString.ToString(),
 				new OneStepBuildArgumentMacroProvider
 				{
 					ObjectsStringPattern = prj.Compiler.ArgumentPatterns.ObjectFileLinkPattern,
@@ -136,7 +141,9 @@ namespace MonoDevelop.D.Building
 					TargetFile = target,
 				}, commonMacros);
 
-			BuildingConfigurationSelector = null;
+			_currentConfig = null;
+
+			return res;
 		}
 
 		BuildResult DoOneStepBuild ()

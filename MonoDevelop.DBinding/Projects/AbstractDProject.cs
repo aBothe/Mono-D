@@ -41,10 +41,7 @@ namespace MonoDevelop.D.Projects
 
 		public IEnumerable<string> GetSourcePaths()
 		{
-			var sel = ProjectBuilder.BuildingConfigurationSelector;
-			if (sel == null)
-				sel = Ide.IdeApp.Workspace.ActiveConfiguration;
-			return GetSourcePaths (sel);
+			return GetSourcePaths (ProjectBuilder._currentConfig ?? Ide.IdeApp.Workspace.ActiveConfiguration);
 		}
 
 		public virtual IEnumerable<string> GetSourcePaths(ConfigurationSelector sel)
@@ -76,9 +73,8 @@ namespace MonoDevelop.D.Projects
 					yield return p;
 				foreach (var p in LocalIncludes)
 					yield return p;
-				var sel = ProjectBuilder.BuildingConfigurationSelector;
-				if(sel == null)
-					sel = Ide.IdeApp.Workspace.ActiveConfiguration;
+
+				var sel = ProjectBuilder._currentConfig ?? Ide.IdeApp.Workspace.ActiveConfiguration;
 				foreach (var dep in GetReferencedDProjects(sel))
 					foreach (var s in dep.GetSourcePaths(sel))
 						yield return s;
