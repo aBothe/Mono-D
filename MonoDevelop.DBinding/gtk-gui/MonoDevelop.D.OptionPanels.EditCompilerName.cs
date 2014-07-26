@@ -5,9 +5,13 @@ namespace MonoDevelop.D.OptionPanels
 	public partial class EditCompilerName
 	{
 		private global::Gtk.VBox vbox3;
+		
 		private global::Gtk.Label label1;
+		
 		private global::Gtk.Entry txtPresetName;
+		
 		private global::Gtk.Button buttonCancel;
+		
 		private global::Gtk.Button buttonOk;
 
 		protected virtual void Build ()

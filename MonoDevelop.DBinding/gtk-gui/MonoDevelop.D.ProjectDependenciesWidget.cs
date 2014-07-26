@@ -5,8 +5,11 @@ namespace MonoDevelop.D
 	public partial class ProjectDependenciesWidget
 	{
 		private global::Gtk.VBox vbox2;
+		
 		private global::Gtk.Label label16;
+		
 		private global::Gtk.ScrolledWindow scrolledwindow2;
+		
 		private global::Gtk.VBox vbox_ProjectDeps;
 
 		protected virtual void Build ()

@@ -5,9 +5,13 @@ namespace MonoDevelop.D
 	public partial class ResourcesCompilerOptionsPanel
 	{
 		private global::Gtk.Table table1;
+		
 		private global::Gtk.Label label3;
+		
 		private global::Gtk.Label label4;
+		
 		private global::Gtk.Entry text_BuildArgs;
+		
 		private global::Gtk.Entry text_CompilerExecutable;
 
 		protected virtual void Build ()
