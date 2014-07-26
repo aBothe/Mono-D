@@ -8,6 +8,9 @@ using MonoDevelop.Projects;
 using System.Collections.Generic;
 using D_Parser.Misc;
 using MonoDevelop.D.Projects;
+using MonoDevelop.D.Building;
+
+
 namespace MonoDevelop.D.Parser
 {
 	/// <summary>
@@ -199,7 +202,11 @@ namespace MonoDevelop.D.Parser
 
 			var dprj = pf.Project as AbstractDProject;
 
-			var sourcePaths = dprj.GetSourcePaths(Ide.IdeApp.Workspace.ActiveConfiguration);
+
+			var sel = ProjectBuilder.BuildingConfigurationSelector;
+			if (sel == null)
+				sel = Ide.IdeApp.Workspace.ActiveConfiguration;
+			var sourcePaths = dprj.GetSourcePaths(sel);
 			foreach(var path in sourcePaths)
 				if(pf.FilePath.IsChildPathOf(path))
 					return pf.FilePath.ToRelative(path).ChangeExtension(null).ToString().Replace(Path.DirectorySeparatorChar, '.');

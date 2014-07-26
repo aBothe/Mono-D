@@ -19,10 +19,12 @@ namespace MonoDevelop.D.Projects
 			get {
 				if(_prj != null)
 					return _prj;
-				
-				foreach(var prj in Ide.IdeApp.Workspace.GetAllProjects())
-					if(prj.GetConfiguration(this.Selector) == this)
-						return _prj = prj as DProject;
+
+				if (Ide.IdeApp.Workspace != null) {
+					foreach (var prj in Ide.IdeApp.Workspace.GetAllProjects())
+						if (prj.GetConfiguration (this.Selector) == this)
+							return _prj = prj as DProject;
+				}
 				
 				return _prj = ParentItem as DProject;
 			}
