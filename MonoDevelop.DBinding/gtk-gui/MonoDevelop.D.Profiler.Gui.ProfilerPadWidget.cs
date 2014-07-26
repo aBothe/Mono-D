@@ -5,14 +5,23 @@ namespace MonoDevelop.D.Profiler.Gui
 	public partial class ProfilerPadWidget
 	{
 		private global::Gtk.UIManager UIManager;
+		
 		private global::Gtk.Action refreshAction;
+		
 		private global::Gtk.Action switchProfilingModeAction;
+		
 		private global::Gtk.Action openTraceLogAction;
+		
 		private global::Gtk.Action copyRowAction;
+		
 		private global::Gtk.Action goToFunctionAction;
+		
 		private global::Gtk.VBox vbox2;
+		
 		private global::Gtk.Toolbar toolbar2;
+		
 		private global::Gtk.ScrolledWindow GtkScrolledWindow;
+		
 		private global::Gtk.NodeView nodeView;
 
 		protected virtual void Build ()

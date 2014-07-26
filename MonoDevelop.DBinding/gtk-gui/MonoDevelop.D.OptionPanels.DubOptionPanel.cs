@@ -5,9 +5,13 @@ namespace MonoDevelop.D.OptionPanels
 	public partial class DubOptionPanel
 	{
 		private global::Gtk.Table table1;
+		
 		private global::Gtk.Label label1;
+		
 		private global::Gtk.Label label2;
+		
 		private global::Gtk.Entry text_commonArgs;
+		
 		private global::Gtk.Entry text_dub;
 
 		protected virtual void Build ()
