@@ -5,13 +5,9 @@ namespace MonoDevelop.D.Formatting
 	public partial class FormattingPanelWidget
 	{
 		private global::Gtk.Table table1;
-		
 		private global::Gtk.CheckButton check_IndentPastedCodeLines;
-		
 		private global::Gtk.CheckButton check_KeepAlignmentSpaces;
-		
 		private global::Gtk.CheckButton chk_CommentOutStdHeaders;
-		
 		private global::Gtk.CheckButton chk_InsertStarAtCommentNewLine;
 
 		protected virtual void Build ()

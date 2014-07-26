@@ -5,77 +5,41 @@ namespace MonoDevelop.D.OptionPanels
 	public partial class DCompilerOptions
 	{
 		private global::Gtk.VBox vbox8;
-		
 		private global::Gtk.Table table6;
-		
 		private global::Gtk.Button btnDefaults;
-		
 		private global::Gtk.HBox hbox2;
-		
 		private global::Gtk.Entry txtBinPath;
-		
 		private global::Gtk.Button button_BinPathBrowser;
-		
 		private global::Gtk.HBox hbox4;
-		
 		private global::Gtk.ComboBox cmbCompilers;
-		
 		private global::Gtk.ToggleButton btnMakeDefault;
-		
 		private global::Gtk.HBox hbox8;
-		
 		private global::Gtk.Button btnDebugArguments;
-		
 		private global::Gtk.Button btnReleaseArguments;
-		
 		private global::Gtk.Label label2;
-		
 		private global::Gtk.Label label28;
-		
 		private global::Gtk.Label label29;
-		
 		private global::Gtk.Label label3;
-		
 		private global::Gtk.Label label30;
-		
 		private global::Gtk.Label label31;
-		
 		private global::Gtk.Entry txtCompiler;
-		
 		private global::Gtk.Entry txtConsoleAppLinker;
-		
 		private global::Gtk.Entry txtSharedLibLinker;
-		
 		private global::Gtk.Entry txtStaticLibLinker;
-		
 		private global::Gtk.Notebook notebook2;
-		
 		private global::Gtk.VBox vbox2;
-		
 		private global::Gtk.ScrolledWindow GtkScrolledWindow;
-		
 		private global::Gtk.TextView text_DefaultLibraries;
-		
 		private global::Gtk.CheckButton check_enableLibPrefixing;
-		
 		private global::Gtk.Label label12;
-		
 		private global::Gtk.Table table2;
-		
 		private global::Gtk.ScrolledWindow GtkScrolledWindow1;
-		
 		private global::Gtk.TextView text_Includes;
-		
 		private global::Gtk.Table table3;
-		
 		private global::Gtk.Button button_AddInclude;
-		
 		private global::Gtk.Label label1;
-		
 		private global::Gtk.ScrolledWindow GtkScrolledWindow2;
-		
 		private global::Gtk.TextView tb_ArgPatterns;
-		
 		private global::Gtk.Label label4;
 
 		protected virtual void Build ()
@@ -343,7 +307,13 @@ namespace MonoDevelop.D.OptionPanels
 			w24.Position = 0;
 			// Container child vbox2.Gtk.Box+BoxChild
 			this.check_enableLibPrefixing = new global::Gtk.CheckButton ();
-			w6.SetTip (this.check_enableLibPrefixing, "If checked, all referenced libraries that can not be found locally will be stripped by their file extensions and get a \"-L-l\" prefix as they are passed to the compiler during project building.\n'../myCustomLib/bin/myCustomLib.a' remains untouched.\n'libphobos2.a' becomes '-L-llibphobos2' on compilation.\nThis is mainly activated when using the gdc compiler.", "If checked, all referenced libraries that can not be found locally will be stripped by their file extensions and get a \"-L-l\" prefix as they are passed to the compiler during project building.\n'../myCustomLib/bin/myCustomLib.a' remains untouched.\n'libphobos2.a' becomes '-L-llibphobos2' on compilation.\nThis is mainly activated when using the gdc compiler.");
+			w6.SetTip (this.check_enableLibPrefixing, @"If checked, all referenced libraries that can not be found locally will be stripped by their file extensions and get a ""-L-l"" prefix as they are passed to the compiler during project building.
+'../myCustomLib/bin/myCustomLib.a' remains untouched.
+'libphobos2.a' becomes '-L-llibphobos2' on compilation.
+This is mainly activated when using the gdc compiler.", @"If checked, all referenced libraries that can not be found locally will be stripped by their file extensions and get a ""-L-l"" prefix as they are passed to the compiler during project building.
+'../myCustomLib/bin/myCustomLib.a' remains untouched.
+'libphobos2.a' becomes '-L-llibphobos2' on compilation.
+This is mainly activated when using the gdc compiler.");
 			this.check_enableLibPrefixing.CanFocus = true;
 			this.check_enableLibPrefixing.Name = "check_enableLibPrefixing";
 			this.check_enableLibPrefixing.Label = global::MonoDevelop.Core.GettextCatalog.GetString ("Enable gdc-specific import lib prefix stripping (e.g. libopengl32.a -> opengl32)");
@@ -369,7 +339,9 @@ namespace MonoDevelop.D.OptionPanels
 			this.table2.ColumnSpacing = ((uint)(6));
 			// Container child table2.Gtk.Table+TableChild
 			this.GtkScrolledWindow1 = new global::Gtk.ScrolledWindow ();
-			w6.SetTip (this.GtkScrolledWindow1, "Line-separated list of paths where the compiler (and the code completion engine!) shall look in to resolve imports.", "Line-separated list of paths where the compiler (and the code completion engine!) shall look in to resolve imports.");
+			w6.SetTip (this.GtkScrolledWindow1, "Line-separated list of paths where the compiler (and the code completion engine!)" +
+			" shall look in to resolve imports.", "Line-separated list of paths where the compiler (and the code completion engine!)" +
+			" shall look in to resolve imports.");
 			this.GtkScrolledWindow1.Name = "GtkScrolledWindow1";
 			this.GtkScrolledWindow1.ShadowType = ((global::Gtk.ShadowType)(1));
 			// Container child GtkScrolledWindow1.Gtk.Container+ContainerChild

@@ -5,11 +5,8 @@ namespace MonoDevelop.D
 	public partial class ImportSymbolSelectionDlg
 	{
 		private global::Gtk.ScrolledWindow GtkScrolledWindow;
-		
 		private global::Gtk.TreeView list;
-		
 		private global::Gtk.Button buttonCancel;
-		
 		private global::Gtk.Button buttonOk;
 
 		protected virtual void Build ()

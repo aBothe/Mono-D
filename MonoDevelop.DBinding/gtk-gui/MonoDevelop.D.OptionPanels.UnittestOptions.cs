@@ -5,17 +5,11 @@ namespace MonoDevelop.D.OptionPanels
 	public partial class UnittestOptions
 	{
 		private global::Gtk.Table table2;
-		
 		private global::Gtk.Button button83;
-		
 		private global::Gtk.Button button84;
-		
 		private global::Gtk.Label label3;
-		
 		private global::Gtk.Label label4;
-		
 		private global::Gtk.Entry text_MainCreationFlag;
-		
 		private global::Gtk.Entry text_UnittestCommand;
 
 		protected virtual void Build ()

@@ -110,9 +110,8 @@ namespace MonoDevelop.D.Building
 				CompilerPresets.PresetLoader.LoadPresets (_instance);
 				LoadDefaultDmd2Paths (_instance.GetCompiler ("DMD2"));
 			}
-				
-			if (Ide.IdeApp.Workspace != null) 
-				Ide.IdeApp.Workbench.RootWindow.Destroyed += (o, ea) => _instance.Save ();
+
+			Ide.IdeApp.Workbench.RootWindow.Destroyed += (o, ea) => _instance.Save ();
 
 			// Init global parse cache
 			_instance.UpdateParseCachesAsync();

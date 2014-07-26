@@ -5,25 +5,15 @@ namespace MonoDevelop.D.OptionPanels
 	public partial class BuildArgumentOptions
 	{
 		private global::Gtk.Table table1;
-		
 		private global::Gtk.ComboBox combo_SelectedBuildTarget;
-		
 		private global::Gtk.Label label1;
-		
 		private global::Gtk.Label label2;
-		
 		private global::Gtk.Label label3;
-		
 		private global::Gtk.Label label4;
-		
 		private global::Gtk.Entry text_CompilerArguments;
-		
 		private global::Gtk.Entry text_LinkerArguments;
-		
 		private global::Gtk.Entry text_OneStepBuildArguments;
-		
 		private global::Gtk.Button buttonCancel;
-		
 		private global::Gtk.Button buttonOk;
 
 		protected virtual void Build ()

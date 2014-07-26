@@ -5,53 +5,29 @@ namespace MonoDevelop.D.OptionPanels
 	public partial class DGlobalOptions
 	{
 		private global::Gtk.Notebook notebook1;
-		
 		private global::Gtk.Table table1;
-		
 		private global::Gtk.CheckButton check_EnableDiffbasedColoring;
-		
 		private global::Gtk.CheckButton check_EnableMixinAnalysis;
-		
 		private global::Gtk.CheckButton check_EnableSuggestionMode;
-		
 		private global::Gtk.CheckButton check_EnableUFCSCompletion;
-		
 		private global::Gtk.CheckButton check_HideDeprecatedItems;
-		
 		private global::Gtk.CheckButton check_HideDisabledItems;
-		
 		private global::Gtk.CheckButton check_ShowStructMembersInStructInitOnly;
-		
 		private global::Gtk.HBox hbox1;
-		
 		private global::Gtk.Label label2;
-		
 		private global::Gtk.Entry text_CompletionTimeout;
-		
 		private global::Gtk.Label label1;
-		
 		private global::Gtk.VBox vbox1;
-		
 		private global::Gtk.CheckButton check_ShowFunctionParams;
-		
 		private global::Gtk.CheckButton check_ShowFunctionVariables;
-		
 		private global::Gtk.CheckButton check_ShowTypes;
-		
 		private global::Gtk.CheckButton check_GrayOutNonPublic;
-		
 		private global::Gtk.HBox hbox2;
-		
 		private global::Gtk.Label label5;
-		
 		private global::Gtk.ComboBox combo_ExpansionBehaviour;
-		
 		private global::Gtk.Label label6;
-		
 		private global::Gtk.VBox vbox2;
-		
 		private global::Gtk.CheckButton check_IndentInsteadFormatCode;
-		
 		private global::Gtk.Label label7;
 
 		protected virtual void Build ()
@@ -99,7 +75,9 @@ namespace MonoDevelop.D.OptionPanels
 			w3.YOptions = ((global::Gtk.AttachOptions)(4));
 			// Container child table1.Gtk.Table+TableChild
 			this.check_EnableSuggestionMode = new global::Gtk.CheckButton ();
-			w1.SetTip (this.check_EnableSuggestionMode, "If true, the selected text in the completion box will not be inserted into the code unless the <Return> key has been pressed.", "If true, the selected text in the completion box will not be inserted into the code unless the <Return> key has been pressed.");
+			w1.SetTip (this.check_EnableSuggestionMode, "If true, the selected text in the completion box will not be inserted into the co" +
+			"de unless the <Return> key has been pressed.", "If true, the selected text in the completion box will not be inserted into the co" +
+			"de unless the <Return> key has been pressed.");
 			this.check_EnableSuggestionMode.CanFocus = true;
 			this.check_EnableSuggestionMode.Name = "check_EnableSuggestionMode";
 			this.check_EnableSuggestionMode.Label = global::MonoDevelop.Core.GettextCatalog.GetString ("Enable suggestive completion mode");
@@ -152,7 +130,7 @@ namespace MonoDevelop.D.OptionPanels
 			this.check_ShowStructMembersInStructInitOnly = new global::Gtk.CheckButton ();
 			this.check_ShowStructMembersInStructInitOnly.CanFocus = true;
 			this.check_ShowStructMembersInStructInitOnly.Name = "check_ShowStructMembersInStructInitOnly";
-			this.check_ShowStructMembersInStructInitOnly.Label = global::MonoDevelop.Core.GettextCatalog.GetString ("Only show struct's items in struct initializer competion");
+			this.check_ShowStructMembersInStructInitOnly.Label = global::MonoDevelop.Core.GettextCatalog.GetString ("Only show struct\'s items in struct initializer competion");
 			this.check_ShowStructMembersInStructInitOnly.DrawIndicator = true;
 			this.check_ShowStructMembersInStructInitOnly.UseUnderline = true;
 			this.table1.Add (this.check_ShowStructMembersInStructInitOnly);
@@ -265,8 +243,8 @@ namespace MonoDevelop.D.OptionPanels
 			w17.Fill = false;
 			// Container child hbox2.Gtk.Box+BoxChild
 			this.combo_ExpansionBehaviour = global::Gtk.ComboBox.NewText ();
-			this.combo_ExpansionBehaviour.AppendText (global::MonoDevelop.Core.GettextCatalog.GetString ("Collapse All"));
-			this.combo_ExpansionBehaviour.AppendText (global::MonoDevelop.Core.GettextCatalog.GetString ("Leave expanded nodes expanded"));
+			this.combo_ExpansionBehaviour.AppendText (global::MonoDevelop.Core.GettextCatalog.GetString ("Collapse All\r"));
+			this.combo_ExpansionBehaviour.AppendText (global::MonoDevelop.Core.GettextCatalog.GetString ("Leave expanded nodes expanded\r"));
 			this.combo_ExpansionBehaviour.AppendText (global::MonoDevelop.Core.GettextCatalog.GetString ("Expand All"));
 			this.combo_ExpansionBehaviour.Name = "combo_ExpansionBehaviour";
 			this.combo_ExpansionBehaviour.Active = 0;
@@ -295,7 +273,8 @@ namespace MonoDevelop.D.OptionPanels
 			this.check_IndentInsteadFormatCode = new global::Gtk.CheckButton ();
 			this.check_IndentInsteadFormatCode.CanFocus = true;
 			this.check_IndentInsteadFormatCode.Name = "check_IndentInsteadFormatCode";
-			this.check_IndentInsteadFormatCode.Label = global::MonoDevelop.Core.GettextCatalog.GetString ("Only indent code lines instead of rearrange code parts\n(because the actual formatter isn't finished currently)");
+			this.check_IndentInsteadFormatCode.Label = global::MonoDevelop.Core.GettextCatalog.GetString ("Only indent code lines instead of rearrange code parts\r\n(because the actual forma" +
+			"tter isn\'t finished currently)");
 			this.check_IndentInsteadFormatCode.Active = true;
 			this.check_IndentInsteadFormatCode.DrawIndicator = true;
 			this.check_IndentInsteadFormatCode.UseUnderline = true;

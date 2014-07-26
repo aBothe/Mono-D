@@ -5,17 +5,11 @@ namespace MonoDevelop.D
 	public partial class DRenameNameDialog
 	{
 		private global::Gtk.HBox hbox3;
-		
 		private global::Gtk.Label label1;
-		
 		private global::Gtk.Entry text_NewId;
-		
 		private global::Gtk.Image img_wrongIdentifierNotification;
-		
 		private global::Gtk.Button buttonCancel;
-		
 		private global::Gtk.Button buttonPreview;
-		
 		private global::Gtk.Button buttonOk;
 
 		protected virtual void Build ()

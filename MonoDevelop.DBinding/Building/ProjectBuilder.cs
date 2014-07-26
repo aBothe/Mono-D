@@ -24,9 +24,6 @@ namespace MonoDevelop.D.Building
 
 		static BuildConfiguration BuildArguments(DProjectConfiguration cfg) { return LinkTargetCfg(cfg).GetArguments (cfg.DebugMode); }
 
-		public static ConfigurationSelector BuildingConfigurationSelector { get; private set; }
-
-
 		DProject Project;
 		DProjectConfiguration BuildConfig;
 
@@ -103,7 +100,6 @@ namespace MonoDevelop.D.Building
 
 		public static string BuildOneStepBuildString(DProject prj, IEnumerable<string> builtObjects, ConfigurationSelector sel)
 		{
-			BuildingConfigurationSelector = sel;
 			var cfg = prj.GetConfiguration (sel) as DProjectConfiguration;
 			var target = prj.GetOutputFileName (sel);
 
@@ -135,8 +131,6 @@ namespace MonoDevelop.D.Building
 					ObjectsDirectory = ObjectDirectory(cfg),
 					TargetFile = target,
 				}, commonMacros);
-
-			BuildingConfigurationSelector = null;
 		}
 
 		BuildResult DoOneStepBuild ()

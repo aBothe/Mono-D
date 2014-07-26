@@ -41,10 +41,7 @@ namespace MonoDevelop.D.Projects
 
 		public IEnumerable<string> GetSourcePaths()
 		{
-			var sel = ProjectBuilder.BuildingConfigurationSelector;
-			if (sel == null)
-				sel = Ide.IdeApp.Workspace.ActiveConfiguration;
-			return GetSourcePaths (sel);
+			return GetSourcePaths (Ide.IdeApp.Workspace.ActiveConfiguration);
 		}
 
 		public virtual IEnumerable<string> GetSourcePaths(ConfigurationSelector sel)
@@ -76,9 +73,7 @@ namespace MonoDevelop.D.Projects
 					yield return p;
 				foreach (var p in LocalIncludes)
 					yield return p;
-				var sel = ProjectBuilder.BuildingConfigurationSelector;
-				if(sel == null)
-					sel = Ide.IdeApp.Workspace.ActiveConfiguration;
+				var sel = Ide.IdeApp.Workspace.ActiveConfiguration;
 				foreach (var dep in GetReferencedDProjects(sel))
 					foreach (var s in dep.GetSourcePaths(sel))
 						yield return s;
@@ -212,10 +207,8 @@ namespace MonoDevelop.D.Projects
 
 			//Compiler.ParseCache.FinishedParsing += new D_Parser.Misc.ParseCache.ParseFinishedHandler(GlobalParseCache_FinishedParsing);
 
-			UpdateLocalIncludeCache ();
-			if (Ide.IdeApp.Workspace != null) {
-				UpdateParseCache ();
-			}
+			UpdateLocalIncludeCache();
+			UpdateParseCache();
 			NeedsFullRebuild = true;
 		}
 		#endregion
@@ -224,13 +217,11 @@ namespace MonoDevelop.D.Projects
 		{
 			// Remove roots that aren't required anymore!?
 			var g = LocalIncludes.ToList();
-			if (Ide.IdeApp.Workspace != null) {
-				foreach (var prj in Ide.IdeApp.Workspace.GetAllProjects()) {
-					var p = prj as AbstractDProject;
-					if (p!=null && p != this) {
-						foreach (var g_ in p.LocalIncludes)
-							g.Remove (g_);
-					}
+			foreach (var prj in Ide.IdeApp.Workspace.GetAllProjects()) {
+				var p = prj as AbstractDProject;
+				if (p!=null && p != this) {
+					foreach (var g_ in p.LocalIncludes)
+						g.Remove (g_);
 				}
 			}
 

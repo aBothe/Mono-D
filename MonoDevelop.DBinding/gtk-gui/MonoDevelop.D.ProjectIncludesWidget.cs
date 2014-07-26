@@ -5,17 +5,11 @@ namespace MonoDevelop.D
 	public partial class ProjectIncludesWidget
 	{
 		private global::Gtk.VBox vbox7;
-		
 		private global::Gtk.Table table2;
-		
 		private global::Gtk.ScrolledWindow GtkScrolledWindow1;
-		
 		private global::Gtk.TextView text_Includes;
-		
 		private global::Gtk.Label label14;
-		
 		private global::Gtk.Table table3;
-		
 		private global::Gtk.Button button_AddInclude;
 
 		protected virtual void Build ()

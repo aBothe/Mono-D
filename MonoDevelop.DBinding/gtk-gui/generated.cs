@@ -8,8 +8,8 @@ namespace Stetic
 
 		internal static void Initialize (Gtk.Widget iconRenderer)
 		{
-			if ((Stetic.Gui.initialized == false)) {
-				Stetic.Gui.initialized = true;
+			if ((Gui.initialized == false)) {
+				Gui.initialized = true;
 			}
 		}
 	}
@@ -17,7 +17,6 @@ namespace Stetic
 	internal class BinContainer
 	{
 		private Gtk.Widget child;
-		
 		private Gtk.UIManager uimanager;
 
 		public static BinContainer Attach (Gtk.Bin bin)
@@ -82,7 +81,7 @@ namespace Stetic
 					return Gtk.IconTheme.Default.LoadIcon (name, sz, 0);
 				} catch (System.Exception) {
 					if ((name != "gtk-missing-image")) {
-						return Stetic.IconLoader.LoadIcon (widget, "gtk-missing-image", size);
+						return IconLoader.LoadIcon (widget, "gtk-missing-image", size);
 					} else {
 						Gdk.Pixmap pmap = new Gdk.Pixmap (Gdk.Screen.Default.RootWindow, sz, sz);
 						Gdk.GC gc = new Gdk.GC (pmap);
@@ -105,7 +104,7 @@ namespace Stetic
 	{
 		public static Gtk.ActionGroup GetActionGroup (System.Type type)
 		{
-			return Stetic.ActionGroups.GetActionGroup (type.FullName);
+			return ActionGroups.GetActionGroup (type.FullName);
 		}
 
 		public static Gtk.ActionGroup GetActionGroup (string name)
