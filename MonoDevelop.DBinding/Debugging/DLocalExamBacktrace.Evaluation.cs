@@ -87,7 +87,7 @@ namespace MonoDevelop.D.Debugging
 			}
 
 			ISymbolValue ev = null;
-			ObjectPath p;
+			var p = new ObjectPath();
 
 			// If no result found, search via assisting source code resolver
 			// 1) (0,0) Neither base item nor matching child found
