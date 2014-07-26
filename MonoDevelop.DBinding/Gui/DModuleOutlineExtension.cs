@@ -177,7 +177,8 @@ namespace MonoDevelop.D.Gui
 
 			if (id != null)
 			{
-				using (var img = ImageService.GetIcon(id))
+				var img = ImageService.GetIcon(id);
+				if (img != null)
 					pixRenderer.Pixbuf = img.ToPixbuf(IconSize.Menu);
 			}
 		}
