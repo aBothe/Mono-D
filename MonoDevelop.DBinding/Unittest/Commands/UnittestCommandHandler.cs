@@ -33,7 +33,7 @@ namespace MonoDevelop.D.Unittest.Commands
 			if (prj == null)
 				return;
 
-			var monitor = Ide.IdeApp.Workbench.ProgressMonitors.GetOutputProgressMonitor("Run Unittest", MonoDevelop.Ide.Gui.Stock.RunProgramIcon, true, true);
+			var monitor = Ide.IdeApp.Workbench.ProgressMonitors.GetOutputProgressMonitor("dunittests","Run Unittest", MonoDevelop.Ide.Gui.Stock.RunProgramIcon, true, true);
 
 			var pad = Ide.IdeApp.Workbench.ProgressMonitors.GetPadForMonitor(monitor);
 			if (pad != null)
@@ -72,8 +72,9 @@ namespace MonoDevelop.D.Unittest.Commands
 				}
 				finally
 				{
-				monitor.Log.WriteLine("unittest done.");
-				monitor.EndTask();
+					monitor.Log.WriteLine("unittest done.");
+					monitor.EndTask();
+					monitor.Dispose();
 				}
 			});
 		}
