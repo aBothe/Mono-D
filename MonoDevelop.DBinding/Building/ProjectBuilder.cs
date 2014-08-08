@@ -716,6 +716,8 @@ namespace MonoDevelop.D.Building
 			if (!command.Contains(Path.DirectorySeparatorChar))
 				command = TryExpandPathEnvVariable(command, baseDirectory);
 
+			TryHandleSheBang (ref command, ref args);
+
 			var operationMonitor = useMonitor ? new AggregatedOperationMonitor (monitor) : null;
 			var p = Runtime.ProcessService.StartProcess (command, args, baseDirectory, chainedOutput, chainedError, null);
 			if(useMonitor)
@@ -745,6 +747,30 @@ namespace MonoDevelop.D.Building
 			swError.Close ();
 
 			return exitCode;
+		}
+
+		public static void TryHandleSheBang(ref string cmd, ref string args)
+		{
+			try{
+				if(cmd.EndsWith(".sh"))
+				{
+					args = (cmd + " " + args ?? "").Trim ();
+					cmd = "sh";
+					return;
+				}
+
+				using (var fr = File.OpenRead (cmd))
+				using (var sr = new StreamReader (fr)) {
+					if (
+					   '#' != (char)sr.Read () ||
+					   '!' != (char)sr.Read ())
+						return;
+
+					var newCommand = sr.ReadLine ();
+					args = (cmd + " " + args ?? "").Trim ();
+					cmd = newCommand;
+				}
+			}catch{}
 		}
 
 		public static string TryExpandPathEnvVariable(string command, string baseDirectory = null)
