@@ -73,6 +73,8 @@
 
 
 		<!-- Variables -->
+		<StockIcon stockid = "d-local" icon = "res:element-local-16.png" size="Menu"/>
+		
 		<StockIcon stockid = "d-parameter" icon = "res:element-parameter-16.png" size="Menu"/>
 		<StockIcon stockid = "d-ref-parameter" icon = "res:element-parameter-16.png|res:ref-16.png" size="Menu"/>
 		<StockIcon stockid = "d-out-parameter" icon = "res:element-parameter-16.png|res:out-16.png" size="Menu"/>
