@@ -180,7 +180,7 @@ namespace MonoDevelop.D.Completion
 		public static readonly IconId Out_Parameter = new IconId("d-out-parameter");
 		public static readonly IconId Lazy_Parameter = new IconId("d-lazy-parameter");
 
-		public static readonly IconId Local = new IconId("md-field"); // TODO: what's the difference between local & field?
+		public static readonly IconId Local = new IconId("d-local");
 
 		public static readonly IconId Field = new IconId("md-field");
 		public static readonly IconId Field_Internal = new IconId("md-internal-field");

@@ -453,6 +453,10 @@
       <Name>DParser2</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="icons\element-local-16.png">
+      <LogicalName>element-local-16.png</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
   <ItemGroup />
 </Project>
