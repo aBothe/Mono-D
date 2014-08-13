@@ -18,7 +18,7 @@ namespace MonoDevelop.D.Parser
 		}
 
 		public ParsedDModule(string fileName) : base(fileName) { 
-			//Flags = ParsedDocumentFlags.NonSerializable;
+			Flags = ParsedDocumentFlags.NonSerializable;
 			ParsedFile = new DPseudoUnresolvedFile(this);
 			CreateRefactoringContext += (arg1, arg2) => new DRefactoringContext (arg1, this);
 		}

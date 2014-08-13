@@ -289,13 +289,15 @@ namespace MonoDevelop.D.Gui
 		#region Tree building
 		void UpdateOutlineSelection(object sender, Mono.TextEditor.DocumentLocationEventArgs e)
 		{
-			if (clickedOnOutlineItem || SyntaxTree == null || TreeStore == null)
+			var ast = SyntaxTree;
+
+			if (clickedOnOutlineItem || ast == null || TreeStore == null)
 				return;
 
 			var caretLocation = Document.Editor.Caret.Location;
 			var caretLocationD = new CodeLocation(caretLocation.Column, caretLocation.Line);
 
-			var currentblock = DResolver.SearchBlockAt(SyntaxTree, caretLocationD);
+			var currentblock = DResolver.SearchBlockAt(ast, caretLocationD);
 
 			INode selectedASTNode = null;
 
@@ -346,9 +348,6 @@ namespace MonoDevelop.D.Gui
 		uint refillOutlineStoreId;
 		void UpdateDocumentOutline(object sender, EventArgs args)
 		{
-			if (Document.GetDAst() != null)
-				return;
-
 			RefillOutlineStore();
 		}
 
@@ -402,11 +401,8 @@ namespace MonoDevelop.D.Gui
 			try
 			{
 				// Build up new tree
-				if (SyntaxTree != null)
-				{
-					var caretLocation = Document.Editor.Caret.Location;
-					BuildTreeChildren(TreeIter.Zero, SyntaxTree, new CodeLocation(caretLocation.Column, caretLocation.Line));
-				}
+				var caretLocation = Document.Editor.Caret.Location;
+				BuildTreeChildren(TreeIter.Zero, SyntaxTree, new CodeLocation(caretLocation.Column, caretLocation.Line));
 			}
 			catch (Exception ex)
 			{
