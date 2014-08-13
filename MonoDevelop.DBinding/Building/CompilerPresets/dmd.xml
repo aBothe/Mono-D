@@ -22,42 +22,42 @@
 	<TargetConfiguration Target="Executable">
 		<LinkerCommand>dmd</LinkerCommand>
 		<DebugArgs>
-			<CompilerArg>-c "$src" "-of$obj" $includes -gc</CompilerArg>
+			<CompilerArg>-c "$src" "-of$obj" $includes -gc -w</CompilerArg>
 			<LinkerArgs>-gc "-of$target" $objs $libs</LinkerArgs>
-      		<OneStepBuildArgs>-gc $sources $libs $includes "-od$objectsDirectory" "-of$exe"</OneStepBuildArgs>
+      		<OneStepBuildArgs>-gc $sources $libs $includes "-od$objectsDirectory" "-of$exe" -w</OneStepBuildArgs>
 		</DebugArgs>
 		<ReleaseArgs>
-			<CompilerArg>-c "$src" "-of$obj" $includes -O -release</CompilerArg>
+			<CompilerArg>-c "$src" "-of$obj" $includes -O -release -w</CompilerArg>
 			<LinkerArgs>-O -release "-of$target" $objs $libs</LinkerArgs>
-      		<OneStepBuildArgs>-O -release $sources $libs $includes "-od$objectsDirectory" "-of$exe"</OneStepBuildArgs>
+      		<OneStepBuildArgs>-O -release $sources $libs $includes "-od$objectsDirectory" "-of$exe" -w</OneStepBuildArgs>
 		</ReleaseArgs>
 	</TargetConfiguration>
 	
 	<TargetConfiguration Target="SharedLibrary">
 		<LinkerCommand>dmd</LinkerCommand>
 		<DebugArgs>
-			<CompilerArg>-c "$src" "-of$obj" $includes -gc</CompilerArg>
+			<CompilerArg>-c "$src" "-of$obj" $includes -gc -w</CompilerArg>
 			<LinkerArgs>-gc "-of$target" $objs $libs "-L/IMPLIB:$lib"</LinkerArgs>
-      		<OneStepBuildArgs>-gc $sources $libs $includes "-L/IMPLIB:$lib" "-od$objectsDirectory" "-of$dll"</OneStepBuildArgs>
+      		<OneStepBuildArgs>-gc $sources $libs $includes "-L/IMPLIB:$lib" "-od$objectsDirectory" "-of$dll" -w</OneStepBuildArgs>
 		</DebugArgs>
 		<ReleaseArgs>
-			<CompilerArg>-c "$src" "-of$obj" $includes -O -release</CompilerArg>
+			<CompilerArg>-c "$src" "-of$obj" $includes -O -release -w</CompilerArg>
 			<LinkerArgs>-O -release "-of$target" $objs $libs "-L/IMPLIB:$lib"</LinkerArgs>
-      		<OneStepBuildArgs>-O -release $sources $libs $includes "-L/IMPLIB:$lib" "-od$objectsDirectory" "-of$dll"</OneStepBuildArgs>
+      		<OneStepBuildArgs>-O -release $sources $libs $includes "-L/IMPLIB:$lib" "-od$objectsDirectory" "-of$dll" -w</OneStepBuildArgs>
 		</ReleaseArgs>
 	</TargetConfiguration>
 	
 	<TargetConfiguration Target="StaticLibrary">
 		<LinkerCommand>dmd</LinkerCommand>
 		<DebugArgs>
-			<CompilerArg>-c "$src" "-of$obj" $includes -gc</CompilerArg>
+			<CompilerArg>-c "$src" "-of$obj" $includes -gc -w</CompilerArg>
 			<LinkerArgs>-lib "-of$target" $objs</LinkerArgs>
-      		<OneStepBuildArgs>-gc $sources $includes -lib "-od$objectsDirectory" "-of$lib"</OneStepBuildArgs>
+      		<OneStepBuildArgs>-gc $sources $includes -lib "-od$objectsDirectory" "-of$lib" -w</OneStepBuildArgs>
 		</DebugArgs>
 		<ReleaseArgs>
-			<CompilerArg>-c "$src" "-of$obj" $includes -O -release</CompilerArg>
+			<CompilerArg>-c "$src" "-of$obj" $includes -O -release -w</CompilerArg>
 			<LinkerArgs>-lib "-of$target" $objs</LinkerArgs>
-      		<OneStepBuildArgs>-O $sources $includes -lib "-od$objectsDirectory" "-of$lib" -release</OneStepBuildArgs>
+      		<OneStepBuildArgs>-O $sources $includes -lib "-od$objectsDirectory" "-of$lib" -release -w</OneStepBuildArgs>
 		</ReleaseArgs>
 	</TargetConfiguration>
 </Compiler>
