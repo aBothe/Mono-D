@@ -5,13 +5,21 @@ using MonoDevelop.Ide.TypeSystem;
 using System.Collections.Generic;
 using D_Parser.Misc;
 using MonoDevelop.D.Refactoring;
+using MonoDevelop.Ide.Gui;
+
+
 namespace MonoDevelop.D.Parser
 {
 	public class ParsedDModule : ParsedDocument
 	{
-		public ParsedDModule(string fileName) : base(fileName) { 
-			Flags = ParsedDocumentFlags.NonSerializable;
+		public override IUnresolvedFile ParsedFile {
+			get;
+			set;
+		}
 
+		public ParsedDModule(string fileName) : base(fileName) { 
+			//Flags = ParsedDocumentFlags.NonSerializable;
+			ParsedFile = new DPseudoUnresolvedFile(this);
 			CreateRefactoringContext += (arg1, arg2) => new DRefactoringContext (arg1, this);
 		}
 

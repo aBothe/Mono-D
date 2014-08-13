@@ -327,6 +327,7 @@
     <Compile Include="Refactoring\DustMiteIntegration\DustMiteArgDlg.cs" />
     <Compile Include="gtk-gui\MonoDevelop.D.Refactoring.DustMiteArgDlg.cs" />
     <Compile Include="Debugging\ObjectCacheNode.cs" />
+    <Compile Include="Parser\DPseudoUnresolvedFile.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
