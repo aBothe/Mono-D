@@ -85,6 +85,13 @@ namespace MonoDevelop.D.Parser
 			{
 				ast = parser.Document;
 			}
+			catch(System.Exception ex) {
+				doc.ErrorList.Add(new Error(ErrorType.Error, ex.Message));
+				return doc;
+			}
+
+			if(ast == null)
+				return doc;
 
 			// Update project owner information / Build appropriate module name
 			if(string.IsNullOrEmpty(ast.ModuleName))
@@ -382,12 +389,12 @@ namespace MonoDevelop.D.Parser
 		}*/
 
 		#endregion
-		
+
 		public ParsedDocument Parse(string fileName, Project prj)
 		{
 			return Parse(true, fileName, prj);
 		}
-		
+
 		public override ParsedDocument Parse(bool storeAst, string fileName, Project project = null)
 		{
 			using (var sr = new StreamReader(fileName))
