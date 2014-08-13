@@ -56,8 +56,8 @@ namespace MonoDevelop.D
 
 			// Require a parsed D source
 			
-			var dom = base.Document.ParsedDocument as ParsedDModule;
-			if (dom == null || dom.DDom == null)
+			var ast = Document.GetDAst();
+			if (ast == null)
 				return null;
 
 			updater.FinishUpdate();
@@ -74,10 +74,10 @@ namespace MonoDevelop.D
 			else
 				l.AddKeyHandler(new DoubleUnderScoreWorkaroundHandler(this));
 
-			lock(dom.DDom)
+			lock(ast)
 				DCodeCompletionSupport.BuildCompletionData(
 					Document,
-					dom.DDom,
+					ast,
 					completionContext,
 					l,
 					triggerChar);
@@ -232,13 +232,13 @@ namespace MonoDevelop.D
 			}
 						
 			// Require a parsed D source
-			var dom = base.Document.ParsedDocument as ParsedDModule;
+			var ast = Document.GetDAst();
 
-			if (dom == null)
+			if (ast == null)
 				return null;
 
 			lastTriggerOffset=completionContext.TriggerOffset;
-			return dParamProv = DParameterDataProvider.Create(Document, dom.DDom, completionContext);
+			return dParamProv = DParameterDataProvider.Create(Document, ast, completionContext);
 		}
 		#endregion
 

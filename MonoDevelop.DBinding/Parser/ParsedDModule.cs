@@ -181,4 +181,19 @@ namespace MonoDevelop.D.Parser
 		#endregion
 	}
 
+	public static class ParsedDModuleExtension
+	{
+		public static ParsedDModule GetDDocument(this Document doc)
+		{
+			return doc == null ? null : (doc.ParsedDocument ?? doc.UpdateParseDocument ()) as ParsedDModule;
+		}
+
+		public static DModule GetDAst(this Document doc)
+		{
+			if (doc == null)
+				return null;
+			var ddom = doc.GetDDocument();
+			return ddom != null ? ddom.DDom : null; 
+		}
+	}
 }

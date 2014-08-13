@@ -57,12 +57,12 @@ namespace MonoDevelop.D.Formatting
 				return;
 			}
 			
-			var dpd = _doc.ParsedDocument as ParsedDModule;
+			var ast = _doc.GetDAst();
 			
-			if(dpd == null)
+			if(ast == null)
 				return;
 			
-			var formattingVisitor = new DFormattingVisitor(policy.Options, new DocAdapt(doc), dpd.DDom, new TextStyleAdapter(textStyle));
+			var formattingVisitor = new DFormattingVisitor(policy.Options, new DocAdapt(doc), ast, new TextStyleAdapter(textStyle));
 			
 			formattingVisitor.CheckFormattingBoundaries = true;
 			var dl = doc.OffsetToLocation(startOffset);

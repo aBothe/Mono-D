@@ -15,6 +15,7 @@ using D_Parser.Dom.Expressions;
 using D_Parser.Parser;
 using MonoDevelop.Components.Commands;
 using System.Threading.Tasks;
+using MonoDevelop.D.Parser;
 
 namespace MonoDevelop.D.Highlighting
 {
@@ -230,7 +231,7 @@ namespace MonoDevelop.D.Highlighting
 		{
 			if (guiDoc == null)
 				return;
-			var parsedDoc = guiDoc.ParsedDocument as Parser.ParsedDModule;
+			var parsedDoc = guiDoc.GetDDocument();
 			if (parsedDoc == null || parsedDoc.IsInvalid)
 				return;
 

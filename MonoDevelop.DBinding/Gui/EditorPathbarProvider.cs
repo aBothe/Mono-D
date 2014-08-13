@@ -15,7 +15,6 @@ namespace MonoDevelop.D.Gui
 	class EditorPathbarProvider : DropDownBoxListWindow.IListDataProvider
 	{
 		object tag;
-		DModule syntaxTree;
 		List<INode> memberList = new List<INode> ();
 		
 		Document document { get; set; }
@@ -24,10 +23,6 @@ namespace MonoDevelop.D.Gui
 		{
 			this.document = doc;
 			this.tag = ((INode)tag).Parent;
-			
-			var ast = document.ParsedDocument as ParsedDModule;
-			if (ast != null)			
-			syntaxTree = ast.DDom;				
 			
 			Reset ();
 		}

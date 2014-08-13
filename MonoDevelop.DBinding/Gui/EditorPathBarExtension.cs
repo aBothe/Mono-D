@@ -95,11 +95,7 @@ namespace MonoDevelop.D.Gui
 
 		private void UpdatePath(object sender, Mono.TextEditor.DocumentLocationEventArgs e)
 		{
-			var ast = Document.ParsedDocument as ParsedDModule;
-			if (ast == null)
-				return;
-
-			var SyntaxTree = ast.DDom;
+			var SyntaxTree = Document.GetDAst();
 
 			if (SyntaxTree == null)
 				return;
@@ -145,7 +141,7 @@ namespace MonoDevelop.D.Gui
 				result.Add(noSelection);
 			}
 
-			entry = GetRegionEntry(Document.ParsedDocument, Document.Editor.Caret.Location);
+			entry = GetRegionEntry(Document.GetDDocument(), Document.Editor.Caret.Location);
 			if (entry != null)
 				result.Add(entry);
 

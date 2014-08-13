@@ -28,7 +28,7 @@ namespace MonoDevelop.D.Gui
 		#region Properties
 		public DModule SyntaxTree
 		{
-			get { return Document.ParsedDocument is ParsedDModule ? ((ParsedDModule)Document.ParsedDocument).DDom : null; }
+			get { return Document.GetDAst(); }
 		}
 		MonoDevelop.Ide.Gui.Components.PadTreeView TreeView;
 		TreeStore TreeStore;
@@ -346,7 +346,7 @@ namespace MonoDevelop.D.Gui
 		uint refillOutlineStoreId;
 		void UpdateDocumentOutline(object sender, EventArgs args)
 		{
-			if (!(Document.ParsedDocument is ParsedDModule))
+			if (Document.GetDAst() != null)
 				return;
 
 			RefillOutlineStore();

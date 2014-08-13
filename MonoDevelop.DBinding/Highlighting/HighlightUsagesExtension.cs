@@ -23,7 +23,9 @@ namespace MonoDevelop.D.Highlighting
 	{
 		public DModule SyntaxTree
 		{
-			get { return Document.ParsedDocument != null ? (Document.ParsedDocument as ParsedDModule).DDom : null; }
+			get { 
+				return Document.GetDAst ();
+			}
 		}
 
 		public override void Initialize()

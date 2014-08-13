@@ -139,12 +139,12 @@ namespace MonoDevelop.D.Gui
 			// Note: Normally, the document already should be open
 			var doc=IdeApp.Workbench.GetDocument(editor.Document.FileName);
 
-			if (doc == null || !(doc.ParsedDocument is ParsedDModule))
+			if (doc == null)
 				return null;
+
+			var ast = doc.GetDAst();
 			
 			// Due the first note, the AST already should exist
-			var ast = (doc.ParsedDocument as ParsedDModule).DDom;
-
 			if (ast == null)
 				return null;
 

@@ -12,6 +12,7 @@ using MonoDevelop.Ide.FindInFiles;
 using D_Parser.Resolver;
 using D_Parser.Refactoring;
 using MonoDevelop.D.Projects;
+using MonoDevelop.D.Parser;
 
 namespace MonoDevelop.D.Refactoring
 {
@@ -70,7 +71,7 @@ namespace MonoDevelop.D.Refactoring
 				foreach (var p in project.GetSourcePaths(IdeApp.Workspace.ActiveConfiguration))
 					modules.AddRange (GlobalParseCache.EnumModulesRecursively (p, null));
 			else
-				modules.Add ((IdeApp.Workbench.ActiveDocument.ParsedDocument as MonoDevelop.D.Parser.ParsedDModule).DDom);
+				modules.Add (IdeApp.Workbench.ActiveDocument.GetDAst());
 
 			if (monitor != null)
 				monitor.BeginStepTask ("Scan for references", modules.Count, 1);

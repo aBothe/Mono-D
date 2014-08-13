@@ -42,19 +42,19 @@ namespace MonoDevelop.D.Refactoring
 			var doc = options.Document;
 			if (doc == null)	return null;
 
-			var ddoc = doc.ParsedDocument as ParsedDModule;
-			if (ddoc == null)	return null;
+			var ast = doc.GetDAst();
+			if (ast == null)	return null;
 
 			var n = options.SelectedItem as INode;
 			if (n == null) return null;
 			
-			var project = doc.HasProject ? doc.Project as DProject : null;
+			var project = doc.HasProject ? doc.Project as AbstractDProject : null;
 
 			var parseCache = DResolverWrapper.CreateCacheList(project);
 
 			var modules = new List<DModule>();
 			if(project == null)
-				modules.Add((IdeApp.Workbench.ActiveDocument.ParsedDocument as ParsedDModule).DDom);
+				modules.Add(ast);
 			else
 				foreach(var p in project.GetSourcePaths())
 					modules.AddRange(GlobalParseCache.EnumModulesRecursively(p));

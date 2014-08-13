@@ -26,16 +26,17 @@ namespace MonoDevelop.D.Resolver
 			if (EditorDocument == null)
 				return new EditorData();
 
-			var dpd = EditorDocument.ParsedDocument as ParsedDModule;
-			if (dpd == null)
+			var ast = EditorDocument.GetDAst();
+			if (ast == null)
 				return null;
+
 			var ctx = new CodeCompletionContext();
 
 			ctx.TriggerLine = EditorDocument.Editor.Caret.Line;
 			ctx.TriggerLineOffset = EditorDocument.Editor.Caret.Column;
 			ctx.TriggerOffset = EditorDocument.Editor.Caret.Offset;
 
-			return CreateEditorData (EditorDocument, dpd.DDom, ctx);
+			return CreateEditorData (EditorDocument, ast, ctx);
 		}
 
 		public static EditorData CreateEditorData(Document EditorDocument, DModule Ast, CodeCompletionContext ctx, char triggerChar = '\0')

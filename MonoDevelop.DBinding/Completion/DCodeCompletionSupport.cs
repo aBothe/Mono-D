@@ -34,19 +34,12 @@ namespace MonoDevelop.D.Completion
 		{
 			if (doc != null)
 			{
-				var ddoc = doc.ParsedDocument as ParsedDModule;
-				if (ddoc != null)
-				{
-					var ast = ddoc.DDom;
-					if (ast != null)
-					{
-						var ed = DResolverWrapper.CreateEditorData(doc);
-						if(pushFirstScope)
-							return new ResolutionContext(ed.ParseCache, new ConditionalCompilationFlags(ed), ast, ed.CaretLocation);
-						return new ResolutionContext(ed.ParseCache, new ConditionalCompilationFlags(ed));
-					}
-				}
+				var ed = DResolverWrapper.CreateEditorData(doc);
+				if(pushFirstScope)
+					return new ResolutionContext(ed.ParseCache, new ConditionalCompilationFlags(ed), ed.SyntaxTree, ed.CaretLocation);
+				return new ResolutionContext(ed.ParseCache, new ConditionalCompilationFlags(ed));
 			}
+
 			return new ResolutionContext(DResolverWrapper.CreateCacheList(),
 				new ConditionalCompilationFlags(VersionIdEvaluation.GetOSAndCPUVersions(), 1, true));
 		}
