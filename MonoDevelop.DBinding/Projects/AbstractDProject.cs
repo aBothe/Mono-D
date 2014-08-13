@@ -9,6 +9,7 @@ using System.Linq;
 using MonoDevelop.Core;
 using System.Reflection;
 using MonoDevelop.Core.Execution;
+using MonoDevelop.Ide.TypeSystem;
 
 namespace MonoDevelop.D.Projects
 {
@@ -205,6 +206,9 @@ namespace MonoDevelop.D.Projects
 		protected override void OnEndLoad()
 		{
 			base.OnEndLoad();
+
+			// Force IsLoaded to be true - because otherwise the reparse cycle was broken, because the given updating routine checks for some Project context to be Loaded or so..strange stuff!
+			TypeSystemService.ForceUpdate(TypeSystemService.GetProjectContentWrapper (this));
 
 			//Compiler.ParseCache.FinishedParsing += new D_Parser.Misc.ParseCache.ParseFinishedHandler(GlobalParseCache_FinishedParsing);
 
