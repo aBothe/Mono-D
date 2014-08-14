@@ -207,9 +207,6 @@ namespace MonoDevelop.D.Projects
 		{
 			base.OnEndLoad();
 
-			// Force IsLoaded to be true - because otherwise the reparse cycle was broken, because the given updating routine checks for some Project context to be Loaded or so..strange stuff!
-			TypeSystemService.ForceUpdate(TypeSystemService.GetProjectContentWrapper (this));
-
 			//Compiler.ParseCache.FinishedParsing += new D_Parser.Misc.ParseCache.ParseFinishedHandler(GlobalParseCache_FinishedParsing);
 
 			UpdateLocalIncludeCache ();

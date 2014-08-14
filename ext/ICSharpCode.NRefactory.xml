@@ -1143,11 +1143,6 @@
             </code>
             </summary>
         </member>
-        <member name="M:ICSharpCode.NRefactory.AbstractAnnotatable.ClearAnnotations">
-            <summary>
-            Removes all annotations.
-            </summary>
-        </member>
         <member name="P:ICSharpCode.NRefactory.AbstractAnnotatable.Annotations">
             <summary>
             Gets all annotations stored on this AstNode.
@@ -1234,6 +1229,8 @@
             Creates a new XmlDocumentationProvider.
             </summary>
             <param name="fileName">Name of the .xml file.</param>
+            <exception cref="T:System.IO.IOException">Error reading from XML file (or from redirected file)</exception>
+            <exception cref="T:System.Xml.XmlException">Invalid XML file</exception>
         </member>
         <member name="M:ICSharpCode.NRefactory.Documentation.XmlDocumentationProvider.LookupLocalizedXmlDoc(System.String)">
             <summary>
@@ -1387,7 +1384,7 @@
         </member>
         <member name="T:ICSharpCode.NRefactory.Semantics.SizeOfResolveResult">
             <summary>
-            Represents the 'typeof'.
+            Represents the 'sizeof'.
             </summary>
         </member>
         <member name="P:ICSharpCode.NRefactory.Semantics.SizeOfResolveResult.ReferencedType">
@@ -2282,6 +2279,11 @@
             Interface for type system symbols.
             </summary>
         </member>
+        <member name="M:ICSharpCode.NRefactory.TypeSystem.ISymbol.ToReference">
+            <summary>
+            Creates a symbol reference that can be used to rediscover this symbol in another compilation.
+            </summary>
+        </member>
         <member name="P:ICSharpCode.NRefactory.TypeSystem.ISymbol.SymbolKind">
             <summary>
             This property returns an enum specifying which kind of symbol this is
@@ -2384,6 +2386,15 @@
             </summary>
         </member>
         <member name="M:ICSharpCode.NRefactory.TypeSystem.IMember.ToMemberReference">
+            <summary>
+            Creates a member reference that can be used to rediscover this member in another compilation.
+            </summary>
+            <remarks>
+            If this member is specialized using open generic types, the resulting member reference will need to be looked up in an appropriate generic context.
+            Otherwise, the main resolve context of a compilation is sufficient.
+            </remarks>
+        </member>
+        <member name="M:ICSharpCode.NRefactory.TypeSystem.IMember.ToReference">
             <summary>
             Creates a member reference that can be used to rediscover this member in another compilation.
             </summary>
@@ -2708,6 +2719,33 @@
             </summary>
             <seealso cref="T:ICSharpCode.NRefactory.TypeSystem.IMethod"/>
         </member>
+        <member name="P:ICSharpCode.NRefactory.TypeSystem.ITypeResolveContext.CurrentAssembly">
+            <summary>
+            Gets the current assembly.
+            This property may return null if this context does not specify any assembly.
+            </summary>
+        </member>
+        <member name="P:ICSharpCode.NRefactory.TypeSystem.ITypeResolveContext.CurrentTypeDefinition">
+            <summary>
+            Gets the current type definition.
+            </summary>
+        </member>
+        <member name="P:ICSharpCode.NRefactory.TypeSystem.ITypeResolveContext.CurrentMember">
+            <summary>
+            Gets the current member.
+            </summary>
+        </member>
+        <member name="P:ICSharpCode.NRefactory.TypeSystem.ICodeContext.LocalVariables">
+            <summary>
+            Gets all currently visible local variables and lambda parameters.
+            Does not include method parameters.
+            </summary>
+        </member>
+        <member name="P:ICSharpCode.NRefactory.TypeSystem.ICodeContext.IsWithinLambdaExpression">
+            <summary>
+            Gets whether the context is within a lambda expression or anonymous method.
+            </summary>
+        </member>
         <member name="T:ICSharpCode.NRefactory.TypeSystem.Implementation.DefaultVariable">
             <summary>
             Default implementation of <see cref="T:ICSharpCode.NRefactory.TypeSystem.IVariable"/>.
@@ -2854,6 +2892,28 @@
         </member>
         <member name="F:ICSharpCode.NRefactory.TypeSystem.SymbolKind.TypeParameter">
             <seealso cref="T:ICSharpCode.NRefactory.TypeSystem.ITypeParameter"/>
+        </member>
+        <member name="T:ICSharpCode.NRefactory.TypeSystem.TaskType">
+            <summary>
+            Helper class for dealing with System.Threading.Tasks.Task.
+            </summary>
+        </member>
+        <member name="M:ICSharpCode.NRefactory.TypeSystem.TaskType.UnpackTask(ICSharpCode.NRefactory.TypeSystem.ICompilation,ICSharpCode.NRefactory.TypeSystem.IType)">
+            <summary>
+            Gets the T in Task&lt;T&gt;.
+            Returns void for non-generic Task.
+            Any other type is returned unmodified.
+            </summary>
+        </member>
+        <member name="M:ICSharpCode.NRefactory.TypeSystem.TaskType.IsTask(ICSharpCode.NRefactory.TypeSystem.IType)">
+            <summary>
+            Gets whether the specified type is Task or Task&lt;T&gt;.
+            </summary>
+        </member>
+        <member name="M:ICSharpCode.NRefactory.TypeSystem.TaskType.Create(ICSharpCode.NRefactory.TypeSystem.ICompilation,ICSharpCode.NRefactory.TypeSystem.IType)">
+            <summary>
+            Creates a task type.
+            </summary>
         </member>
         <member name="T:ICSharpCode.NRefactory.TypeSystem.TypeParameterSubstitution">
             <summary>
@@ -3062,6 +3122,12 @@
         <member name="M:ICSharpCode.NRefactory.TypeSystem.TypeSystemExtensions.GetAllTypeDefinitions(ICSharpCode.NRefactory.TypeSystem.ICompilation)">
             <summary>
             Gets all type definitions in the compilation.
+            This may include types from referenced assemblies that are not accessible in the main assembly.
+            </summary>
+        </member>
+        <member name="M:ICSharpCode.NRefactory.TypeSystem.TypeSystemExtensions.GetTopLevelTypeDefinitons(ICSharpCode.NRefactory.TypeSystem.ICompilation)">
+            <summary>
+            Gets all top level type definitions in the compilation.
             This may include types from referenced assemblies that are not accessible in the main assembly.
             </summary>
         </member>
@@ -3334,6 +3400,16 @@
             <summary>
             For fields, events and methods: adds a semicolon at the end.
             For properties: shows "{ get; }" or similar.
+            </summary>
+        </member>
+        <member name="F:ICSharpCode.NRefactory.TypeSystem.ConversionFlags.UseFullyQualifiedEntityNames">
+            <summary>
+            Use fully qualified names for members.
+            </summary>
+        </member>
+        <member name="T:ICSharpCode.NRefactory.TypeSystem.IAmbience">
+            <summary>
+            Ambiences are used to convert type system symbols to text (usually for displaying the symbol to the user; e.g. in editor tooltips).
             </summary>
         </member>
         <member name="T:ICSharpCode.NRefactory.TypeSystem.IUnresolvedAssembly">
@@ -3828,6 +3904,12 @@
             Otherwise, returns null.
             </summary>
         </member>
+        <member name="M:ICSharpCode.NRefactory.TypeSystem.Implementation.FreezableHelper.GetFrozenClone``1(``0)">
+            <summary>
+            If the item is not frozen, this method creates and returns a frozen clone.
+            If the item is already frozen, it is returned without creating a clone.
+            </summary>
+        </member>
         <member name="M:ICSharpCode.NRefactory.TypeSystem.Implementation.AbstractFreezable.Freeze">
             <summary>
             Freezes this instance.
@@ -4073,6 +4155,11 @@
             Gets whether this type contains extension methods.
             </summary>
             <remarks>This property is used to speed up the search for extension methods.</remarks>
+        </member>
+        <member name="P:ICSharpCode.NRefactory.TypeSystem.ITypeDefinition.IsPartial">
+            <summary>
+            Gets whether this type definition is made up of one or more partial classes.
+            </summary>
         </member>
         <member name="T:ICSharpCode.NRefactory.TypeSystem.Implementation.DefaultUnresolvedAssembly">
             <summary>
@@ -4321,6 +4408,11 @@
             Gets whether the type definition contains extension methods.
             Returns null when the type definition needs to be resolved in order to determine whether
             methods are extension methods.
+            </summary>
+        </member>
+        <member name="P:ICSharpCode.NRefactory.TypeSystem.IUnresolvedTypeDefinition.IsPartial">
+            <summary>
+            Gets whether the partial modifier is set on this part of the type definition.
             </summary>
         </member>
         <member name="P:ICSharpCode.NRefactory.TypeSystem.IUnresolvedTypeDefinition.AddDefaultConstructorIfRequired">
@@ -4838,22 +4930,6 @@
         <member name="F:ICSharpCode.NRefactory.TypeSystem.VarianceModifier.Contravariant">
             <summary>
             The type parameter is contravariant (used in input position).
-            </summary>
-        </member>
-        <member name="P:ICSharpCode.NRefactory.TypeSystem.ITypeResolveContext.CurrentAssembly">
-            <summary>
-            Gets the current assembly.
-            This property may return null if this context does not specify any assembly.
-            </summary>
-        </member>
-        <member name="P:ICSharpCode.NRefactory.TypeSystem.ITypeResolveContext.CurrentTypeDefinition">
-            <summary>
-            Gets the current type definition.
-            </summary>
-        </member>
-        <member name="P:ICSharpCode.NRefactory.TypeSystem.ITypeResolveContext.CurrentMember">
-            <summary>
-            Gets the current member.
             </summary>
         </member>
         <member name="T:ICSharpCode.NRefactory.TypeSystem.KnownTypeCode">
@@ -6326,6 +6402,7 @@
             </summary>
             <returns>The assemblies the type may be defined (if any).</returns>
             <param name="resolveResult">The resolve result.</param>
+            <param name="fullMemberName"></param>
             <param name="typeParameterCount">Type parameter count.</param>
             <param name="isInsideAttributeType">If set to <c>true</c> this resolve result may be inside an attribute.</param>
         </member>
