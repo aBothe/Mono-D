@@ -7,6 +7,7 @@ using MonoDevelop.Ide.Gui.Content;
 using Mono.TextEditor;
 using MonoDevelop.D.Resolver;
 using D_Parser.Resolver.TypeResolution;
+using System.Reflection;
 
 namespace MonoDevelop.D
 {
@@ -16,12 +17,19 @@ namespace MonoDevelop.D
 		int lastTriggerOffset;
 		AstUpdater updater;
 
+		bool currentWrapperNullfied = false;
+		static FieldInfo workaround_currentWrapper = typeof(Document).GetField("currentWrapper", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
 		public override void Initialize()
 		{
 			base.Initialize();
 			updater = new AstUpdater(document, document.Editor);
 		}
 		#endregion
+
+		public override void TextChanged(int startIndex, int endIndex)
+		{
+			base.TextChanged(startIndex, endIndex);
+		}
 
 		#region Code completion
 		public override ICompletionDataList CodeCompletionCommand(CodeCompletionContext completionContext)
@@ -32,6 +40,12 @@ namespace MonoDevelop.D
 
 		public override ICompletionDataList HandleCodeCompletion(CodeCompletionContext completionContext, char triggerChar, ref int triggerWordLength)
 		{
+			if (!currentWrapperNullfied && workaround_currentWrapper != null)
+			{
+				workaround_currentWrapper.SetValue(document, null);
+				currentWrapperNullfied = true;
+			}
+
 			var isLetter = char.IsLetter (triggerChar) || triggerChar == '_';
 
 			if (char.IsDigit(triggerChar) || !EnableAutoCodeCompletion && isLetter)
