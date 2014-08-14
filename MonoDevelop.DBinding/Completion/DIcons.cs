@@ -276,7 +276,8 @@ namespace MonoDevelop.D.Completion
 			if (realParent != null && realParent.TryGetTemplateParameter(dv.NameHash, out tpar))
 				return GetNodeImage("parameter");
 
-			return GetNodeImage("local");
+			// Probably only static properties are left now
+			return iconIdWithProtectionAttr(dv, "field", true);
 		}
 
 		public IconId Visit(DMethod n)
