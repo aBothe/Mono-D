@@ -246,6 +246,7 @@
     <Compile Include="OptionPanels\DCompilerOptions.cs" />
     <Compile Include="OptionPanels\ResourcesCompilerOptions.cs" />
     <Compile Include="gtk-gui\MonoDevelop.D.ResourcesCompilerOptionsPanel.cs" />
+    <Compile Include="Projects\Dub\DubProjectItemTypeHandler.cs" />
     <Compile Include="Projects\Dub\DubSolution.cs" />
     <Compile Include="Projects\Dub\DubBuilder.cs" />
     <Compile Include="Projects\Dub\DubBuildSettings.cs" />
