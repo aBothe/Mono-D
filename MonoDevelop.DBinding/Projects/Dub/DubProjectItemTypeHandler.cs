@@ -30,7 +30,7 @@ namespace MonoDevelop.D.Projects.Dub
 
 		public override SolutionEntityItem LoadSolutionItem(IProgressMonitor monitor, string fileName, MSBuildFileFormat expectedFormat, string itemGuid)
 		{
-			return DubProject.LoadProject(fileName, monitor);
+			return PackageJsonParser.ReadPackageInformation(new FilePath(fileName), monitor);
 		}
 	}
 }
