@@ -165,26 +165,27 @@ namespace MonoDevelop.D.Highlighting
 
 		void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			if (e.Key == DiffbasedHighlighting.DiffBasedHighlightingProp)
+			switch (e.Key)
 			{
-				if (DiffbasedHighlighting.Enabled)
-				{
-					TryInjectDiffbasedMarker();
-					SemanticHighlightingEnabled = false;
-					RemoveOldTypeMarkers(true);
-				}
-				else
-				{
-					TryRemoveDiffbasedMarker();
-					if(SemanticHighlightingEnabled = PropertyService.Get("EnableSemanticHighlighting", true))
-						HandleDocumentParsed(sender, e);
-				}
-			}
-			else if (e.Key == "EnableSemanticHighlighting")
-			{
-				SemanticHighlightingEnabled = PropertyService.Get("EnableSemanticHighlighting", true);
-				if (!SemanticHighlightingEnabled)
-					RemoveOldTypeMarkers();
+				case DiffbasedHighlighting.DiffBasedHighlightingProp:
+					if (DiffbasedHighlighting.Enabled)
+					{
+						TryInjectDiffbasedMarker();
+						SemanticHighlightingEnabled = false;
+						RemoveOldTypeMarkers(true);
+					}
+					else
+					{
+						TryRemoveDiffbasedMarker();
+						if (SemanticHighlightingEnabled = PropertyService.Get("EnableSemanticHighlighting", true))
+							HandleDocumentParsed(sender, e);
+					}
+					break;
+				case "EnableSemanticHighlighting":
+					SemanticHighlightingEnabled = PropertyService.Get("EnableSemanticHighlighting", true);
+					if (!SemanticHighlightingEnabled)
+						RemoveOldTypeMarkers();
+					break;
 			}
 		}
 

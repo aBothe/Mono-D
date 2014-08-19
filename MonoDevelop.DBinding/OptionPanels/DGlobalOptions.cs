@@ -3,6 +3,7 @@ using MonoDevelop.D.Building;
 using MonoDevelop.D.Formatting;
 using D_Parser.Misc;
 using MonoDevelop.Core;
+using MonoDevelop.D.Highlighting;
 
 namespace MonoDevelop.D.OptionPanels
 {
@@ -28,6 +29,7 @@ namespace MonoDevelop.D.OptionPanels
 			check_EnableDiffbasedColoring.Active = Highlighting.DiffbasedHighlighting.Enabled;
 			check_ShowStructMembersInStructInitOnly.Active = CompletionOptions.Instance.ShowStructMembersInStructInitOnly;
 			text_CompletionTimeout.Text = CompletionOptions.Instance.CompletionTimeout.ToString ();
+			check_EnableConditionalHighlighting.Active = DSyntaxMode.EnableConditionalHighlighting;
 
 			check_ShowFunctionParams.Active = outline.ShowFuncParams;
 			check_ShowFunctionVariables.Active = outline.ShowFuncVariables;
@@ -66,7 +68,8 @@ namespace MonoDevelop.D.OptionPanels
 			CompletionOptions.Instance.HideDisabledNodes = check_HideDisabledItems.Active;
 			Highlighting.DiffbasedHighlighting.Enabled = check_EnableDiffbasedColoring.Active;
 			CompletionOptions.Instance.ShowStructMembersInStructInitOnly = check_ShowStructMembersInStructInitOnly.Active;
-			int.TryParse (text_CompletionTimeout.Text,out CompletionOptions.Instance.CompletionTimeout); 
+			int.TryParse (text_CompletionTimeout.Text,out CompletionOptions.Instance.CompletionTimeout);
+			DSyntaxMode.EnableConditionalHighlighting = check_EnableConditionalHighlighting.Active;
 
 			var outline = DCompilerService.Instance.Outline;
 			outline.ShowFuncParams = check_ShowFunctionParams.Active;

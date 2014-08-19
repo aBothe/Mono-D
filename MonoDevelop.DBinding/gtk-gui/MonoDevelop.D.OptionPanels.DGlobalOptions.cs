@@ -5,29 +5,55 @@ namespace MonoDevelop.D.OptionPanels
 	public partial class DGlobalOptions
 	{
 		private global::Gtk.Notebook notebook1;
+		
 		private global::Gtk.Table table1;
+		
+		private global::Gtk.CheckButton check_EnableConditionalHighlighting;
+		
 		private global::Gtk.CheckButton check_EnableDiffbasedColoring;
+		
 		private global::Gtk.CheckButton check_EnableMixinAnalysis;
+		
 		private global::Gtk.CheckButton check_EnableSuggestionMode;
+		
 		private global::Gtk.CheckButton check_EnableUFCSCompletion;
+		
 		private global::Gtk.CheckButton check_HideDeprecatedItems;
+		
 		private global::Gtk.CheckButton check_HideDisabledItems;
+		
 		private global::Gtk.CheckButton check_ShowStructMembersInStructInitOnly;
+		
 		private global::Gtk.HBox hbox1;
+		
 		private global::Gtk.Label label2;
+		
 		private global::Gtk.Entry text_CompletionTimeout;
+		
 		private global::Gtk.Label label1;
+		
 		private global::Gtk.VBox vbox1;
+		
 		private global::Gtk.CheckButton check_ShowFunctionParams;
+		
 		private global::Gtk.CheckButton check_ShowFunctionVariables;
+		
 		private global::Gtk.CheckButton check_ShowTypes;
+		
 		private global::Gtk.CheckButton check_GrayOutNonPublic;
+		
 		private global::Gtk.HBox hbox2;
+		
 		private global::Gtk.Label label5;
+		
 		private global::Gtk.ComboBox combo_ExpansionBehaviour;
+		
 		private global::Gtk.Label label6;
+		
 		private global::Gtk.VBox vbox2;
+		
 		private global::Gtk.CheckButton check_IndentInsteadFormatCode;
+		
 		private global::Gtk.Label label7;
 
 		protected virtual void Build ()
@@ -42,40 +68,53 @@ namespace MonoDevelop.D.OptionPanels
 			this.notebook1.Name = "notebook1";
 			this.notebook1.CurrentPage = 0;
 			// Container child notebook1.Gtk.Notebook+NotebookChild
-			this.table1 = new global::Gtk.Table (((uint)(9)), ((uint)(1)), false);
+			this.table1 = new global::Gtk.Table (((uint)(10)), ((uint)(1)), false);
 			this.table1.Name = "table1";
 			this.table1.RowSpacing = ((uint)(6));
 			this.table1.ColumnSpacing = ((uint)(6));
 			// Container child table1.Gtk.Table+TableChild
+			this.check_EnableConditionalHighlighting = new global::Gtk.CheckButton ();
+			this.check_EnableConditionalHighlighting.CanFocus = true;
+			this.check_EnableConditionalHighlighting.Name = "check_EnableConditionalHighlighting";
+			this.check_EnableConditionalHighlighting.Label = global::MonoDevelop.Core.GettextCatalog.GetString ("Enable Conditional Highlighting");
+			this.check_EnableConditionalHighlighting.Active = true;
+			this.check_EnableConditionalHighlighting.DrawIndicator = true;
+			this.check_EnableConditionalHighlighting.UseUnderline = true;
+			this.table1.Add (this.check_EnableConditionalHighlighting);
+			global::Gtk.Table.TableChild w1 = ((global::Gtk.Table.TableChild)(this.table1 [this.check_EnableConditionalHighlighting]));
+			w1.TopAttach = ((uint)(7));
+			w1.BottomAttach = ((uint)(8));
+			w1.YOptions = ((global::Gtk.AttachOptions)(4));
+			// Container child table1.Gtk.Table+TableChild
 			this.check_EnableDiffbasedColoring = new global::Gtk.CheckButton ();
-			global::Gtk.Tooltips w1 = new Gtk.Tooltips ();
-			w1.SetTip (this.check_EnableDiffbasedColoring, "If enabled, deadlocks might occur if mixins are used too often", "If enabled, deadlocks might occur if mixins are used too often");
+			global::Gtk.Tooltips w2 = new Gtk.Tooltips ();
+			w2.SetTip (this.check_EnableDiffbasedColoring, "If enabled, deadlocks might occur if mixins are used too often", "If enabled, deadlocks might occur if mixins are used too often");
 			this.check_EnableDiffbasedColoring.CanFocus = true;
 			this.check_EnableDiffbasedColoring.Name = "check_EnableDiffbasedColoring";
 			this.check_EnableDiffbasedColoring.Label = global::MonoDevelop.Core.GettextCatalog.GetString ("Enable diff-based syntax highlighting (shortcut: Ctrl+Alt+K)");
 			this.check_EnableDiffbasedColoring.DrawIndicator = true;
 			this.check_EnableDiffbasedColoring.UseUnderline = true;
 			this.table1.Add (this.check_EnableDiffbasedColoring);
-			global::Gtk.Table.TableChild w2 = ((global::Gtk.Table.TableChild)(this.table1 [this.check_EnableDiffbasedColoring]));
-			w2.TopAttach = ((uint)(5));
-			w2.BottomAttach = ((uint)(6));
-			w2.YOptions = ((global::Gtk.AttachOptions)(4));
+			global::Gtk.Table.TableChild w3 = ((global::Gtk.Table.TableChild)(this.table1 [this.check_EnableDiffbasedColoring]));
+			w3.TopAttach = ((uint)(5));
+			w3.BottomAttach = ((uint)(6));
+			w3.YOptions = ((global::Gtk.AttachOptions)(4));
 			// Container child table1.Gtk.Table+TableChild
 			this.check_EnableMixinAnalysis = new global::Gtk.CheckButton ();
-			w1.SetTip (this.check_EnableMixinAnalysis, "If enabled, deadlocks might occur if mixins are used too often", "If enabled, deadlocks might occur if mixins are used too often");
+			w2.SetTip (this.check_EnableMixinAnalysis, "If enabled, deadlocks might occur if mixins are used too often", "If enabled, deadlocks might occur if mixins are used too often");
 			this.check_EnableMixinAnalysis.CanFocus = true;
 			this.check_EnableMixinAnalysis.Name = "check_EnableMixinAnalysis";
 			this.check_EnableMixinAnalysis.Label = global::MonoDevelop.Core.GettextCatalog.GetString ("Enable Mixin & Template Mixin Analysis");
 			this.check_EnableMixinAnalysis.DrawIndicator = true;
 			this.check_EnableMixinAnalysis.UseUnderline = true;
 			this.table1.Add (this.check_EnableMixinAnalysis);
-			global::Gtk.Table.TableChild w3 = ((global::Gtk.Table.TableChild)(this.table1 [this.check_EnableMixinAnalysis]));
-			w3.TopAttach = ((uint)(2));
-			w3.BottomAttach = ((uint)(3));
-			w3.YOptions = ((global::Gtk.AttachOptions)(4));
+			global::Gtk.Table.TableChild w4 = ((global::Gtk.Table.TableChild)(this.table1 [this.check_EnableMixinAnalysis]));
+			w4.TopAttach = ((uint)(2));
+			w4.BottomAttach = ((uint)(3));
+			w4.YOptions = ((global::Gtk.AttachOptions)(4));
 			// Container child table1.Gtk.Table+TableChild
 			this.check_EnableSuggestionMode = new global::Gtk.CheckButton ();
-			w1.SetTip (this.check_EnableSuggestionMode, "If true, the selected text in the completion box will not be inserted into the co" +
+			w2.SetTip (this.check_EnableSuggestionMode, "If true, the selected text in the completion box will not be inserted into the co" +
 			"de unless the <Return> key has been pressed.", "If true, the selected text in the completion box will not be inserted into the co" +
 			"de unless the <Return> key has been pressed.");
 			this.check_EnableSuggestionMode.CanFocus = true;
@@ -84,8 +123,8 @@ namespace MonoDevelop.D.OptionPanels
 			this.check_EnableSuggestionMode.DrawIndicator = true;
 			this.check_EnableSuggestionMode.UseUnderline = true;
 			this.table1.Add (this.check_EnableSuggestionMode);
-			global::Gtk.Table.TableChild w4 = ((global::Gtk.Table.TableChild)(this.table1 [this.check_EnableSuggestionMode]));
-			w4.YOptions = ((global::Gtk.AttachOptions)(4));
+			global::Gtk.Table.TableChild w5 = ((global::Gtk.Table.TableChild)(this.table1 [this.check_EnableSuggestionMode]));
+			w5.YOptions = ((global::Gtk.AttachOptions)(4));
 			// Container child table1.Gtk.Table+TableChild
 			this.check_EnableUFCSCompletion = new global::Gtk.CheckButton ();
 			this.check_EnableUFCSCompletion.CanFocus = true;
@@ -94,13 +133,13 @@ namespace MonoDevelop.D.OptionPanels
 			this.check_EnableUFCSCompletion.DrawIndicator = true;
 			this.check_EnableUFCSCompletion.UseUnderline = true;
 			this.table1.Add (this.check_EnableUFCSCompletion);
-			global::Gtk.Table.TableChild w5 = ((global::Gtk.Table.TableChild)(this.table1 [this.check_EnableUFCSCompletion]));
-			w5.TopAttach = ((uint)(1));
-			w5.BottomAttach = ((uint)(2));
-			w5.YOptions = ((global::Gtk.AttachOptions)(4));
+			global::Gtk.Table.TableChild w6 = ((global::Gtk.Table.TableChild)(this.table1 [this.check_EnableUFCSCompletion]));
+			w6.TopAttach = ((uint)(1));
+			w6.BottomAttach = ((uint)(2));
+			w6.YOptions = ((global::Gtk.AttachOptions)(4));
 			// Container child table1.Gtk.Table+TableChild
 			this.check_HideDeprecatedItems = new global::Gtk.CheckButton ();
-			w1.SetTip (this.check_HideDeprecatedItems, "If enabled, deadlocks might occur if mixins are used too often", "If enabled, deadlocks might occur if mixins are used too often");
+			w2.SetTip (this.check_HideDeprecatedItems, "If enabled, deadlocks might occur if mixins are used too often", "If enabled, deadlocks might occur if mixins are used too often");
 			this.check_HideDeprecatedItems.CanFocus = true;
 			this.check_HideDeprecatedItems.Name = "check_HideDeprecatedItems";
 			this.check_HideDeprecatedItems.Label = global::MonoDevelop.Core.GettextCatalog.GetString ("Hide deprecated items in the completion list");
@@ -108,13 +147,13 @@ namespace MonoDevelop.D.OptionPanels
 			this.check_HideDeprecatedItems.DrawIndicator = true;
 			this.check_HideDeprecatedItems.UseUnderline = true;
 			this.table1.Add (this.check_HideDeprecatedItems);
-			global::Gtk.Table.TableChild w6 = ((global::Gtk.Table.TableChild)(this.table1 [this.check_HideDeprecatedItems]));
-			w6.TopAttach = ((uint)(3));
-			w6.BottomAttach = ((uint)(4));
-			w6.YOptions = ((global::Gtk.AttachOptions)(4));
+			global::Gtk.Table.TableChild w7 = ((global::Gtk.Table.TableChild)(this.table1 [this.check_HideDeprecatedItems]));
+			w7.TopAttach = ((uint)(3));
+			w7.BottomAttach = ((uint)(4));
+			w7.YOptions = ((global::Gtk.AttachOptions)(4));
 			// Container child table1.Gtk.Table+TableChild
 			this.check_HideDisabledItems = new global::Gtk.CheckButton ();
-			w1.SetTip (this.check_HideDisabledItems, "If enabled, deadlocks might occur if mixins are used too often", "If enabled, deadlocks might occur if mixins are used too often");
+			w2.SetTip (this.check_HideDisabledItems, "If enabled, deadlocks might occur if mixins are used too often", "If enabled, deadlocks might occur if mixins are used too often");
 			this.check_HideDisabledItems.CanFocus = true;
 			this.check_HideDisabledItems.Name = "check_HideDisabledItems";
 			this.check_HideDisabledItems.Label = global::MonoDevelop.Core.GettextCatalog.GetString ("Hide disabled items in the completion list");
@@ -122,10 +161,10 @@ namespace MonoDevelop.D.OptionPanels
 			this.check_HideDisabledItems.DrawIndicator = true;
 			this.check_HideDisabledItems.UseUnderline = true;
 			this.table1.Add (this.check_HideDisabledItems);
-			global::Gtk.Table.TableChild w7 = ((global::Gtk.Table.TableChild)(this.table1 [this.check_HideDisabledItems]));
-			w7.TopAttach = ((uint)(4));
-			w7.BottomAttach = ((uint)(5));
-			w7.YOptions = ((global::Gtk.AttachOptions)(4));
+			global::Gtk.Table.TableChild w8 = ((global::Gtk.Table.TableChild)(this.table1 [this.check_HideDisabledItems]));
+			w8.TopAttach = ((uint)(4));
+			w8.BottomAttach = ((uint)(5));
+			w8.YOptions = ((global::Gtk.AttachOptions)(4));
 			// Container child table1.Gtk.Table+TableChild
 			this.check_ShowStructMembersInStructInitOnly = new global::Gtk.CheckButton ();
 			this.check_ShowStructMembersInStructInitOnly.CanFocus = true;
@@ -134,10 +173,10 @@ namespace MonoDevelop.D.OptionPanels
 			this.check_ShowStructMembersInStructInitOnly.DrawIndicator = true;
 			this.check_ShowStructMembersInStructInitOnly.UseUnderline = true;
 			this.table1.Add (this.check_ShowStructMembersInStructInitOnly);
-			global::Gtk.Table.TableChild w8 = ((global::Gtk.Table.TableChild)(this.table1 [this.check_ShowStructMembersInStructInitOnly]));
-			w8.TopAttach = ((uint)(6));
-			w8.BottomAttach = ((uint)(7));
-			w8.YOptions = ((global::Gtk.AttachOptions)(4));
+			global::Gtk.Table.TableChild w9 = ((global::Gtk.Table.TableChild)(this.table1 [this.check_ShowStructMembersInStructInitOnly]));
+			w9.TopAttach = ((uint)(6));
+			w9.BottomAttach = ((uint)(7));
+			w9.YOptions = ((global::Gtk.AttachOptions)(4));
 			// Container child table1.Gtk.Table+TableChild
 			this.hbox1 = new global::Gtk.HBox ();
 			this.hbox1.Name = "hbox1";
@@ -147,10 +186,10 @@ namespace MonoDevelop.D.OptionPanels
 			this.label2.Name = "label2";
 			this.label2.LabelProp = global::MonoDevelop.Core.GettextCatalog.GetString ("Completion timeout (Milliseconds; -1 = Infinite)");
 			this.hbox1.Add (this.label2);
-			global::Gtk.Box.BoxChild w9 = ((global::Gtk.Box.BoxChild)(this.hbox1 [this.label2]));
-			w9.Position = 0;
-			w9.Expand = false;
-			w9.Fill = false;
+			global::Gtk.Box.BoxChild w10 = ((global::Gtk.Box.BoxChild)(this.hbox1 [this.label2]));
+			w10.Position = 0;
+			w10.Expand = false;
+			w10.Fill = false;
 			// Container child hbox1.Gtk.Box+BoxChild
 			this.text_CompletionTimeout = new global::Gtk.Entry ();
 			this.text_CompletionTimeout.CanFocus = true;
@@ -158,14 +197,14 @@ namespace MonoDevelop.D.OptionPanels
 			this.text_CompletionTimeout.IsEditable = true;
 			this.text_CompletionTimeout.InvisibleChar = '●';
 			this.hbox1.Add (this.text_CompletionTimeout);
-			global::Gtk.Box.BoxChild w10 = ((global::Gtk.Box.BoxChild)(this.hbox1 [this.text_CompletionTimeout]));
-			w10.Position = 1;
-			w10.Expand = false;
+			global::Gtk.Box.BoxChild w11 = ((global::Gtk.Box.BoxChild)(this.hbox1 [this.text_CompletionTimeout]));
+			w11.Position = 1;
+			w11.Expand = false;
 			this.table1.Add (this.hbox1);
-			global::Gtk.Table.TableChild w11 = ((global::Gtk.Table.TableChild)(this.table1 [this.hbox1]));
-			w11.TopAttach = ((uint)(7));
-			w11.BottomAttach = ((uint)(8));
-			w11.YOptions = ((global::Gtk.AttachOptions)(4));
+			global::Gtk.Table.TableChild w12 = ((global::Gtk.Table.TableChild)(this.table1 [this.hbox1]));
+			w12.TopAttach = ((uint)(8));
+			w12.BottomAttach = ((uint)(9));
+			w12.YOptions = ((global::Gtk.AttachOptions)(4));
 			this.notebook1.Add (this.table1);
 			// Notebook tab
 			this.label1 = new global::Gtk.Label ();
@@ -186,10 +225,10 @@ namespace MonoDevelop.D.OptionPanels
 			this.check_ShowFunctionParams.DrawIndicator = true;
 			this.check_ShowFunctionParams.UseUnderline = true;
 			this.vbox1.Add (this.check_ShowFunctionParams);
-			global::Gtk.Box.BoxChild w13 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.check_ShowFunctionParams]));
-			w13.Position = 0;
-			w13.Expand = false;
-			w13.Fill = false;
+			global::Gtk.Box.BoxChild w14 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.check_ShowFunctionParams]));
+			w14.Position = 0;
+			w14.Expand = false;
+			w14.Fill = false;
 			// Container child vbox1.Gtk.Box+BoxChild
 			this.check_ShowFunctionVariables = new global::Gtk.CheckButton ();
 			this.check_ShowFunctionVariables.CanFocus = true;
@@ -198,10 +237,10 @@ namespace MonoDevelop.D.OptionPanels
 			this.check_ShowFunctionVariables.DrawIndicator = true;
 			this.check_ShowFunctionVariables.UseUnderline = true;
 			this.vbox1.Add (this.check_ShowFunctionVariables);
-			global::Gtk.Box.BoxChild w14 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.check_ShowFunctionVariables]));
-			w14.Position = 1;
-			w14.Expand = false;
-			w14.Fill = false;
+			global::Gtk.Box.BoxChild w15 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.check_ShowFunctionVariables]));
+			w15.Position = 1;
+			w15.Expand = false;
+			w15.Fill = false;
 			// Container child vbox1.Gtk.Box+BoxChild
 			this.check_ShowTypes = new global::Gtk.CheckButton ();
 			this.check_ShowTypes.CanFocus = true;
@@ -211,10 +250,10 @@ namespace MonoDevelop.D.OptionPanels
 			this.check_ShowTypes.DrawIndicator = true;
 			this.check_ShowTypes.UseUnderline = true;
 			this.vbox1.Add (this.check_ShowTypes);
-			global::Gtk.Box.BoxChild w15 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.check_ShowTypes]));
-			w15.Position = 2;
-			w15.Expand = false;
-			w15.Fill = false;
+			global::Gtk.Box.BoxChild w16 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.check_ShowTypes]));
+			w16.Position = 2;
+			w16.Expand = false;
+			w16.Fill = false;
 			// Container child vbox1.Gtk.Box+BoxChild
 			this.check_GrayOutNonPublic = new global::Gtk.CheckButton ();
 			this.check_GrayOutNonPublic.CanFocus = true;
@@ -224,10 +263,10 @@ namespace MonoDevelop.D.OptionPanels
 			this.check_GrayOutNonPublic.DrawIndicator = true;
 			this.check_GrayOutNonPublic.UseUnderline = true;
 			this.vbox1.Add (this.check_GrayOutNonPublic);
-			global::Gtk.Box.BoxChild w16 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.check_GrayOutNonPublic]));
-			w16.Position = 3;
-			w16.Expand = false;
-			w16.Fill = false;
+			global::Gtk.Box.BoxChild w17 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.check_GrayOutNonPublic]));
+			w17.Position = 3;
+			w17.Expand = false;
+			w17.Fill = false;
 			// Container child vbox1.Gtk.Box+BoxChild
 			this.hbox2 = new global::Gtk.HBox ();
 			this.hbox2.Name = "hbox2";
@@ -237,28 +276,28 @@ namespace MonoDevelop.D.OptionPanels
 			this.label5.Name = "label5";
 			this.label5.LabelProp = global::MonoDevelop.Core.GettextCatalog.GetString ("Expansion behaviour on tree rebuild");
 			this.hbox2.Add (this.label5);
-			global::Gtk.Box.BoxChild w17 = ((global::Gtk.Box.BoxChild)(this.hbox2 [this.label5]));
-			w17.Position = 0;
-			w17.Expand = false;
-			w17.Fill = false;
+			global::Gtk.Box.BoxChild w18 = ((global::Gtk.Box.BoxChild)(this.hbox2 [this.label5]));
+			w18.Position = 0;
+			w18.Expand = false;
+			w18.Fill = false;
 			// Container child hbox2.Gtk.Box+BoxChild
 			this.combo_ExpansionBehaviour = global::Gtk.ComboBox.NewText ();
-			this.combo_ExpansionBehaviour.AppendText (global::MonoDevelop.Core.GettextCatalog.GetString ("Collapse All\r"));
-			this.combo_ExpansionBehaviour.AppendText (global::MonoDevelop.Core.GettextCatalog.GetString ("Leave expanded nodes expanded\r"));
+			this.combo_ExpansionBehaviour.AppendText (global::MonoDevelop.Core.GettextCatalog.GetString ("Collapse All"));
+			this.combo_ExpansionBehaviour.AppendText (global::MonoDevelop.Core.GettextCatalog.GetString ("Leave expanded nodes expanded"));
 			this.combo_ExpansionBehaviour.AppendText (global::MonoDevelop.Core.GettextCatalog.GetString ("Expand All"));
 			this.combo_ExpansionBehaviour.Name = "combo_ExpansionBehaviour";
 			this.combo_ExpansionBehaviour.Active = 0;
 			this.hbox2.Add (this.combo_ExpansionBehaviour);
-			global::Gtk.Box.BoxChild w18 = ((global::Gtk.Box.BoxChild)(this.hbox2 [this.combo_ExpansionBehaviour]));
-			w18.Position = 1;
+			global::Gtk.Box.BoxChild w19 = ((global::Gtk.Box.BoxChild)(this.hbox2 [this.combo_ExpansionBehaviour]));
+			w19.Position = 1;
 			this.vbox1.Add (this.hbox2);
-			global::Gtk.Box.BoxChild w19 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.hbox2]));
-			w19.Position = 4;
-			w19.Expand = false;
-			w19.Fill = false;
+			global::Gtk.Box.BoxChild w20 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.hbox2]));
+			w20.Position = 4;
+			w20.Expand = false;
+			w20.Fill = false;
 			this.notebook1.Add (this.vbox1);
-			global::Gtk.Notebook.NotebookChild w20 = ((global::Gtk.Notebook.NotebookChild)(this.notebook1 [this.vbox1]));
-			w20.Position = 1;
+			global::Gtk.Notebook.NotebookChild w21 = ((global::Gtk.Notebook.NotebookChild)(this.notebook1 [this.vbox1]));
+			w21.Position = 1;
 			// Notebook tab
 			this.label6 = new global::Gtk.Label ();
 			this.label6.Name = "label6";
@@ -273,19 +312,19 @@ namespace MonoDevelop.D.OptionPanels
 			this.check_IndentInsteadFormatCode = new global::Gtk.CheckButton ();
 			this.check_IndentInsteadFormatCode.CanFocus = true;
 			this.check_IndentInsteadFormatCode.Name = "check_IndentInsteadFormatCode";
-			this.check_IndentInsteadFormatCode.Label = global::MonoDevelop.Core.GettextCatalog.GetString ("Only indent code lines instead of rearrange code parts\r\n(because the actual forma" +
-			"tter isn\'t finished currently)");
+			this.check_IndentInsteadFormatCode.Label = global::MonoDevelop.Core.GettextCatalog.GetString ("Only indent code lines instead of rearrange code parts\n(because the actual format" +
+			"ter isn\'t finished currently)");
 			this.check_IndentInsteadFormatCode.Active = true;
 			this.check_IndentInsteadFormatCode.DrawIndicator = true;
 			this.check_IndentInsteadFormatCode.UseUnderline = true;
 			this.vbox2.Add (this.check_IndentInsteadFormatCode);
-			global::Gtk.Box.BoxChild w21 = ((global::Gtk.Box.BoxChild)(this.vbox2 [this.check_IndentInsteadFormatCode]));
-			w21.Position = 0;
-			w21.Expand = false;
-			w21.Fill = false;
+			global::Gtk.Box.BoxChild w22 = ((global::Gtk.Box.BoxChild)(this.vbox2 [this.check_IndentInsteadFormatCode]));
+			w22.Position = 0;
+			w22.Expand = false;
+			w22.Fill = false;
 			this.notebook1.Add (this.vbox2);
-			global::Gtk.Notebook.NotebookChild w22 = ((global::Gtk.Notebook.NotebookChild)(this.notebook1 [this.vbox2]));
-			w22.Position = 2;
+			global::Gtk.Notebook.NotebookChild w23 = ((global::Gtk.Notebook.NotebookChild)(this.notebook1 [this.vbox2]));
+			w23.Position = 2;
 			// Notebook tab
 			this.label7 = new global::Gtk.Label ();
 			this.label7.Name = "label7";
