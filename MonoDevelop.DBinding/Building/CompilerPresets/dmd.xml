@@ -22,42 +22,42 @@
 	<TargetConfiguration Target="Executable">
 		<LinkerCommand>dmd</LinkerCommand>
 		<DebugArgs>
-			<CompilerArg>-c "$src" "-of$obj" $includes -gc -w</CompilerArg>
+			<CompilerArg>-c "$src" "-of$obj" $includes -gc -w -vcolumns</CompilerArg>
 			<LinkerArgs>-gc "-of$target" $objs $libs</LinkerArgs>
-      		<OneStepBuildArgs>-gc $sources $libs $includes "-od$objectsDirectory" "-of$exe" -w</OneStepBuildArgs>
+      		<OneStepBuildArgs>-gc $sources $libs $includes "-od$objectsDirectory" "-of$exe" -w -vcolumns</OneStepBuildArgs>
 		</DebugArgs>
 		<ReleaseArgs>
-			<CompilerArg>-c "$src" "-of$obj" $includes -O -release -w</CompilerArg>
+			<CompilerArg>-c "$src" "-of$obj" $includes -O -release -w -vcolumns</CompilerArg>
 			<LinkerArgs>-O -release "-of$target" $objs $libs</LinkerArgs>
-      		<OneStepBuildArgs>-O -release $sources $libs $includes "-od$objectsDirectory" "-of$exe" -w</OneStepBuildArgs>
+      		<OneStepBuildArgs>-O -release $sources $libs $includes "-od$objectsDirectory" "-of$exe" -w -vcolumns</OneStepBuildArgs>
 		</ReleaseArgs>
 	</TargetConfiguration>
 	
 	<TargetConfiguration Target="SharedLibrary">
 		<LinkerCommand>dmd</LinkerCommand>
 		<DebugArgs>
-			<CompilerArg>-c "$src" "-of$obj" $includes -gc -w</CompilerArg>
+			<CompilerArg>-c "$src" "-of$obj" $includes -gc -w -vcolumns</CompilerArg>
 			<LinkerArgs>-gc "-of$target" $objs $libs "-L/IMPLIB:$lib"</LinkerArgs>
-      		<OneStepBuildArgs>-gc $sources $libs $includes "-L/IMPLIB:$lib" "-od$objectsDirectory" "-of$dll" -w</OneStepBuildArgs>
+      		<OneStepBuildArgs>-gc $sources $libs $includes "-L/IMPLIB:$lib" "-od$objectsDirectory" "-of$dll" -w -vcolumns</OneStepBuildArgs>
 		</DebugArgs>
 		<ReleaseArgs>
-			<CompilerArg>-c "$src" "-of$obj" $includes -O -release -w</CompilerArg>
+			<CompilerArg>-c "$src" "-of$obj" $includes -O -release -w -vcolumns</CompilerArg>
 			<LinkerArgs>-O -release "-of$target" $objs $libs "-L/IMPLIB:$lib"</LinkerArgs>
-      		<OneStepBuildArgs>-O -release $sources $libs $includes "-L/IMPLIB:$lib" "-od$objectsDirectory" "-of$dll" -w</OneStepBuildArgs>
+      		<OneStepBuildArgs>-O -release $sources $libs $includes "-L/IMPLIB:$lib" "-od$objectsDirectory" "-of$dll" -w -vcolumns</OneStepBuildArgs>
 		</ReleaseArgs>
 	</TargetConfiguration>
 	
 	<TargetConfiguration Target="StaticLibrary">
 		<LinkerCommand>dmd</LinkerCommand>
 		<DebugArgs>
-			<CompilerArg>-c "$src" "-of$obj" $includes -gc -w</CompilerArg>
+			<CompilerArg>-c "$src" "-of$obj" $includes -gc -w -vcolumns</CompilerArg>
 			<LinkerArgs>-lib "-of$target" $objs</LinkerArgs>
-      		<OneStepBuildArgs>-gc $sources $includes -lib "-od$objectsDirectory" "-of$lib" -w</OneStepBuildArgs>
+      		<OneStepBuildArgs>-gc $sources $includes -lib "-od$objectsDirectory" "-of$lib" -w -vcolumns</OneStepBuildArgs>
 		</DebugArgs>
 		<ReleaseArgs>
-			<CompilerArg>-c "$src" "-of$obj" $includes -O -release -w</CompilerArg>
+			<CompilerArg>-c "$src" "-of$obj" $includes -O -release -w -vcolumns</CompilerArg>
 			<LinkerArgs>-lib "-of$target" $objs</LinkerArgs>
-      		<OneStepBuildArgs>-O $sources $includes -lib "-od$objectsDirectory" "-of$lib" -release -w</OneStepBuildArgs>
+      		<OneStepBuildArgs>-O $sources $includes -lib "-od$objectsDirectory" "-of$lib" -release -w -vcolumns</OneStepBuildArgs>
 		</ReleaseArgs>
 	</TargetConfiguration>
 </Compiler>
