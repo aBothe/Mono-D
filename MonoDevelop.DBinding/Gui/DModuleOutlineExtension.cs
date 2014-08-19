@@ -108,18 +108,16 @@ namespace MonoDevelop.D.Gui
 			treeCol.SetCellDataFunc(TreeView.TextRenderer, new TreeCellDataFunc(OutlineTreeTextFunc));
 			TreeView.AppendColumn(treeCol);
 
-			TreeView.TextRenderer.Editable = true;
-			TreeView.TextRenderer.Edited += new EditedHandler(nameCell_Edited);
+			TreeView.TextRenderer.Editable = false;
 			
 			TreeView.HeadersVisible = false;
 
-			TreeView.Selection.Changed += delegate
-			{
+			TreeView.Selection.Changed += delegate {
 				if (dontJumpToDeclaration || !outlineReady)
 					return;
 
 				clickedOnOutlineItem = true;
-				JumpToDeclaration(true);
+				JumpToDeclaration (true);
 				clickedOnOutlineItem = false;
 			};
 
@@ -130,29 +128,6 @@ namespace MonoDevelop.D.Gui
 			sw.Add(TreeView);
 			sw.ShowAll();
 			return sw;
-		}
-
-		void nameCell_Edited(object o, EditedArgs args)
-		{
-			TreeIter iter;
-			TreeStore.GetIter(out iter, new TreePath(args.Path));
-
-			var n=TreeStore.GetValue(iter, 0) as INode;
-
-			if (n != null && args.NewText!=n.Name && 
-				DRenameRefactoring.CanRenameNode(n) && 
-				DRenameRefactoring.IsValidIdentifier(args.NewText))
-			{
-			/*
-				RefactoringService.AcceptChanges(
-					IdeApp.Workbench.ProgressMonitors.GetBackgroundProgressMonitor("Rename item", null),
-					new DRenameRefactoring().PerformChanges(
-						new RefactoringOptions(IdeApp.Workbench.ActiveDocument)	{ SelectedItem = n}, 
-						new MonoDevelop.Refactoring.Rename.RenameRefactoring.RenameProperties { NewName = args.NewText }));
-*/
-				TreeView.Selection.SelectIter(iter);
-				TreeView.GrabFocus();
-			}
 		}
 
 		public IEnumerable<Widget> GetToolbarWidgets()
