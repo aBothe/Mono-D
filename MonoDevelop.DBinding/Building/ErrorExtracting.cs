@@ -14,7 +14,7 @@ namespace MonoDevelop.D.Building
     /// </summary>
     static class ErrorExtracting
     {
-		static Regex dmdCompileRegex = new Regex(@"\s*(?<file>.*)\((?<line>\d*)(,(?<col>\d??))?\):\s*(?<type>Error|Warning|Note):(\s*)(?<message>.*)",
+		static Regex dmdCompileRegex = new Regex(@"\s*(?<file>.*)\((?<line>\d*)(,(?<col>\d+?))?\):\s*(?<type>Error|Warning|Note):(\s*)(?<message>.*)",
             RegexOptions.Compiled | RegexOptions.ExplicitCapture);
 
         private static Regex withColRegex = new Regex(
