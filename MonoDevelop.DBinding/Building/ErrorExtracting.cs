@@ -18,10 +18,7 @@ namespace MonoDevelop.D.Building
             RegexOptions.Compiled | RegexOptions.ExplicitCapture);
 
         private static Regex withColRegex = new Regex(
-            @"^\s*(?<file>.*):(?<line>\d*):(?<column>\d*):\s*(?<level>.*)\s*:\s(?<message>.*)",
-            RegexOptions.Compiled | RegexOptions.ExplicitCapture);
-        private static Regex noColRegex = new Regex(
-            @"^\s*(?<file>.*):(?<line>\d*):\s*(?<level>.*)\s*:\s(?<message>.*)",
+			@"^\s*(?<file>.*):(?<line>\d*)(:(?<column>\d+?))?:\s*(?<level>.*)\s*:\s(?<message>.*)",
             RegexOptions.Compiled | RegexOptions.ExplicitCapture);
         private static Regex linkerRegex = new Regex(
             @"^\s*(?<file>[^:]*):(?<line>\d*):\s*(?<message>.*)",
@@ -126,33 +123,22 @@ namespace MonoDevelop.D.Building
             {
                 error.FileName = match.Groups["file"].Value;
                 error.Line = int.Parse(match.Groups["line"].Value);
-                error.Column = int.Parse(match.Groups["column"].Value);
+				if(int.TryParse(match.Groups["column"].Value, out line))
+					error.Column = line;
 				error.IsWarning = IsWarning(match.Groups ["level"].Value);
                 error.ErrorText = match.Groups["message"].Value;
 
-                return error;
-            }
-
-            match = noColRegex.Match(errorString);
-
-            if (match.Success)
-            {
-                error.FileName = match.Groups["file"].Value;
-                error.Line = int.Parse(match.Groups["line"].Value);
-				error.IsWarning = IsWarning(match.Groups ["level"].Value);
-                error.ErrorText = match.Groups["message"].Value;
-
-                // Skip messages that begin with ( and end with ), since they're generic.
-                //Attempt to capture multi-line versions too.
-                if (error.ErrorText.StartsWith("("))
-                {
-                    string error_continued = error.ErrorText;
-                    do
-                    {
-                        if (error_continued.EndsWith(")"))
-                            return null;
-                    } while ((error_continued = reader.ReadLine()) != null);
-                }
+				// Skip messages that begin with ( and end with ), since they're generic.
+				//Attempt to capture multi-line versions too.
+				if (error.ErrorText.StartsWith("("))
+				{
+					string error_continued = error.ErrorText;
+					do
+					{
+						if (error_continued.EndsWith(")"))
+							return null;
+					} while ((error_continued = reader.ReadLine()) != null);
+				}
 
                 return error;
             }
