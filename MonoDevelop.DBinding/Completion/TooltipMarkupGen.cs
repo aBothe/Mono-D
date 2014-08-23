@@ -73,13 +73,13 @@ namespace MonoDevelop.D.Completion
 
 					// Avoid unnecessary non-highlighting
 					if (s == plainText) {
-						sb.Append (textDoc.GetTextAt (chunk.Offset, chunk.Length));
+						sb.Append(HtmlEncode(textDoc.GetTextAt(chunk.Offset, chunk.Length)));
 						continue;
 					}
 
 					var col = st.GetForeground (s);
 					// TODO: Have other format flags applied?
-					AppendFormat (textDoc.GetTextAt (chunk.Offset, chunk.Length), sb, FormatFlags.Color, col.R, col.G, col.B);
+					AppendFormat(HtmlEncode(textDoc.GetTextAt(chunk.Offset, chunk.Length)), sb, FormatFlags.Color, col.R, col.G, col.B);
 				}
 
 				if (i < lineCount)
@@ -87,6 +87,11 @@ namespace MonoDevelop.D.Completion
 			}
 
 			return sb.ToString ();
+		}
+
+		public static string HtmlEncode(string code)
+		{
+			return code.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;"); //TODO
 		}
 
 		#endregion
