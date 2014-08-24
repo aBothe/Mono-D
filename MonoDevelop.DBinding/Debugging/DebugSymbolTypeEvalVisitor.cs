@@ -147,7 +147,7 @@ namespace MonoDevelop.D.Debugging
 
 		public ISymbolValue VisitMemberSymbol(MemberSymbol t)
 		{
-			throw new NotImplementedException();
+			return t.Base.Accept (this);
 		}
 
 		public ISymbolValue VisitTemplateParameterSymbol(TemplateParameterSymbol t)

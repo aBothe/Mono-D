@@ -147,7 +147,8 @@ namespace MonoDevelop.D.Debugging
 		#endregion
 
 		public AbstractType TryGetDType(IDBacktraceSymbol s)
-		{
+		{System.Diagnostics.Debugger.Break ();
+
 			return null;
 		}
 
