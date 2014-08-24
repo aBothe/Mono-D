@@ -23,6 +23,12 @@ namespace MonoDevelop.D.Debugging
 		IEnumerable<IDBacktraceSymbol> Children { get; }
 	}
 
+	public interface IDBacktraceArraySymbol : IDBacktraceSymbol
+	{
+		ulong FirstElementOffset {get;}
+		int ArrayLength { get;}
+	}
+
 	public interface IDBacktraceHelpers
 	{
 		void GetCurrentStackFrameInfo(out string file, out ulong offset, out CodeLocation sourceLocation);

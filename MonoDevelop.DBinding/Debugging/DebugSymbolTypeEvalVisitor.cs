@@ -40,12 +40,22 @@ namespace MonoDevelop.D.Debugging
 			var valueType = DResolver.StripMemberSymbols(t.ValueType);
 			var primitiveValueType = valueType as PrimitiveType;
 
-			if (Symbol.Offset == 0)
-				return new NullValue(t);
+			ulong arraySize;
+			ulong firstElement;
 
-			byte[] arrayInfo = Backtrace.BacktraceHelper.ReadBytes(Symbol.Offset, PointerSize * 2);
-			ulong arraySize = PointerSize == 8 ? BitConverter.ToUInt64(arrayInfo,0) : (ulong)BitConverter.ToUInt32(arrayInfo,0); 
-			ulong firstElement = PointerSize == 8 ? BitConverter.ToUInt64(arrayInfo, 8) : BitConverter.ToUInt32(arrayInfo, 4);
+			var arrSymb = Symbol as IDBacktraceArraySymbol;
+			if (arrSymb != null) {
+				arraySize = (ulong)arrSymb.ArrayLength;
+				firstElement = arrSymb.FirstElementOffset;
+			}
+			else{
+				if (Symbol.Offset == 0)
+					return new NullValue(t);
+
+				byte[] arrayInfo = Backtrace.BacktraceHelper.ReadBytes(Symbol.Offset, PointerSize * 2);
+				arraySize = PointerSize == 8 ? BitConverter.ToUInt64(arrayInfo,0) : (ulong)BitConverter.ToUInt32(arrayInfo,0); 
+				firstElement = PointerSize == 8 ? BitConverter.ToUInt64(arrayInfo, 8) : BitConverter.ToUInt32(arrayInfo, 4);
+			}
 
 			arraySize = Math.Min(arraySize, DLocalExamBacktrace.MaximumArrayChildrenDisplayCount);
 
