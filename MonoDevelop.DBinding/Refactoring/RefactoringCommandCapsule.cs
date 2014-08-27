@@ -34,6 +34,10 @@ using MonoDevelop.Core;
 using MonoDevelop.Ide.FindInFiles;
 using System.Threading;
 using MonoDevelop.D.Resolver;
+using System.Collections.Generic;
+using System.Text;
+
+
 namespace MonoDevelop.D.Refactoring
 {
 	class RefactoringCommandCapsule
@@ -42,10 +46,11 @@ namespace MonoDevelop.D.Refactoring
 		public D_Parser.Completion.IEditorData ed;
 		public AbstractType[] lastResults;
 		public DResolver.NodeResolutionAttempt resultResolutionAttempt;
+		public Document lastDoc;
 
 		public bool Update(Document doc = null)
 		{
-			lastResults = DResolverWrapper.ResolveHoveredCodeLoosely(out ctxt, out ed, out resultResolutionAttempt, doc);
+			lastResults = DResolverWrapper.ResolveHoveredCodeLoosely(out ctxt, out ed, out resultResolutionAttempt, lastDoc = (doc ?? IdeApp.Workbench.ActiveDocument));
 
 			return lastResults != null && lastResults.Length > 0;
 		}
@@ -138,6 +143,122 @@ namespace MonoDevelop.D.Refactoring
 					var doc = IdeApp.Workbench.ActiveDocument.Editor;
 					doc.Insert (doc.LocationToOffset (loc.Line, loc.Column), s);
 				});
+		}
+
+		public bool HasDBlockNodeSelected
+		{
+			get{
+				return DResolver.SearchBlockAt (ctxt.CurrentContext.ScopedBlock.NodeRoot as IBlockNode, ed.CaretLocation) is DBlockNode; 
+			}
+		}
+
+		class ImportComparer : IComparer<ImportStatement>
+		{
+			public static ITypeDeclaration ExtractPrimaryId(ImportStatement i)
+			{
+				if (i.Imports.Count != 0)
+					return i.Imports [0].ModuleIdentifier;
+
+				if(i.ImportBindList != null)
+					return i.ImportBindList.Module.ModuleIdentifier;
+
+				return null;
+			}
+
+			public int Compare (ImportStatement x, ImportStatement y)
+			{
+				if (x == y)
+					return 0;
+				var sx = ExtractPrimaryId (x);
+				if (sx == null)
+					return 0;
+				var sy = ExtractPrimaryId (y);
+				if (sy == null)
+					return 0;
+				return sx.ToString(true).CompareTo (sy.ToString(true));
+			}
+		}
+
+		const string SortImportsSeparatePackagesFromEachOtherPropId = "MonoDevelop.D.SortImportsSeparatePackagesFromEachOther";
+		public bool SortImportsSeparatePackagesFromEachOther
+		{
+			get{ return PropertyService.Get (SortImportsSeparatePackagesFromEachOtherPropId, false); }
+			set{ PropertyService.Set (SortImportsSeparatePackagesFromEachOtherPropId, value); }
+		}
+
+		public void SortImports()
+		{
+			var scope = DResolver.SearchBlockAt (ctxt.CurrentContext.ScopedBlock.NodeRoot as IBlockNode, ed.CaretLocation) as DBlockNode;
+
+			if (scope == null)
+				return;
+
+			// Get the first scope that contains import statements
+			var importsToSort = new List<ImportStatement> ();
+			while (scope != null && importsToSort.Count == 0) {
+				foreach (var ss in scope.StaticStatements) {
+					var iss = ss as ImportStatement;
+					if (iss != null)
+						importsToSort.Add (iss);
+				}
+			}
+
+			if (importsToSort.Count == 0)
+				return;
+
+			CodeLocation firstLoc = CodeLocation.Empty, endLoc = CodeLocation.Empty;
+			var editor = lastDoc.Editor.Document;
+			using (editor.OpenUndoGroup (Mono.TextEditor.OperationType.Undefined)) {
+				// Remove all of them from the document; Memorize where the first import was
+				for (int i = importsToSort.Count - 1; i >= 0; i--) {
+					var ss = importsToSort [i];
+					firstLoc = ss.Location;
+					endLoc = ss.EndLocation;
+
+					if (ss.Attributes != null && ss.Attributes.Length > 0) {
+						//ISSUE: Meta declaration attributes that are either section or block meta attributes will corrupt this calculation
+						if(ss.Attributes[0].Location < firstLoc)
+							firstLoc = ss.Attributes [0].Location;
+						if(ss.Attributes [ss.Attributes.Length - 1].EndLocation > endLoc)
+							endLoc = ss.Attributes [ss.Attributes.Length - 1].EndLocation;
+					}
+
+					var l1 = editor.LocationToOffset (firstLoc.Line, firstLoc.Column);
+					var l2 = editor.LocationToOffset (endLoc.Line, endLoc.Column);
+					var n = editor.TextLength - 1;
+
+					// Remove indents and trailing semicolon.
+					for (char c; l1 > 0 && ((c = editor.GetCharAt (l1-1)) == ' ' || c == '\t'); l1--);
+					for (char c; l2 < n && ((c = editor.GetCharAt (l2+1)) == ' ' || c == '\t' || c == ';'); l2++);
+					for (char c; l2 < n && ((c = editor.GetCharAt (l2+1)) == '\n' || c == '\r'); l2++);
+
+					editor.Remove (l1, l2 - l1);
+				}
+
+				// Sort
+				importsToSort.Sort (new ImportComparer ());
+
+				// Write all imports beneath each other.
+				var indent = editor.GetLineIndent (firstLoc.Line);
+				var sb = new StringBuilder ();
+				bool separatePackageRoots = SortImportsSeparatePackagesFromEachOther;
+				ITypeDeclaration prevId = null;
+
+				foreach (var i in importsToSort) {
+					sb.Append (indent).Append (i.ToCode()).AppendLine(";");
+
+					if (separatePackageRoots) {
+						var iid = ImportComparer.ExtractPrimaryId (i);
+						if (prevId != null && iid != null &&
+						   (iid.InnerDeclaration ?? iid).ToString (true) != (prevId.InnerDeclaration ?? prevId).ToString (true))
+							sb.AppendLine ();
+
+						prevId = iid;
+					}
+				}
+
+				editor.Insert (editor.LocationToOffset (firstLoc.Line, firstLoc.Column), sb.ToString ());
+			}
 		}
 	}
 }

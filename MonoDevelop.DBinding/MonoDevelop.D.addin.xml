@@ -6,7 +6,7 @@
 	copyright=""
 	description="D Language Binding"
 	category="Language bindings"
-	version="2.3.1">
+	version="2.4">
 
 	<!-- Resources -->
 
@@ -365,6 +365,10 @@
 		<Command id = "MonoDevelop.D.Refactoring.DustMite.InvokeCommandId"
                  defaultHandler = "MonoDevelop.D.Refactoring.DustMite"
                  _label = "Invoke DustMite" />
+
+        <Command id = "MonoDevelop.Refactoring.RefactoryCommands.SortImports"
+				defaultHandler = "MonoDevelop.D.Refactoring.ContextMenuRefactoringCommandHandler"
+                 _label = "Sort Imports" />
 	</Extension>
 
 	<Extension path = "/MonoDevelop/Ide/Pads">
