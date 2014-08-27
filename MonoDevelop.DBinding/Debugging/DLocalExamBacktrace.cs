@@ -91,10 +91,12 @@ namespace MonoDevelop.D.Debugging
 
 		public ObjectValue[] GetParameters(EvaluationOptions evalOptions)
 		{
-			var l = new List<ObjectValue>();
+			var l = new List<ObjectValue>();System.Diagnostics.Debugger.Break ();
 			foreach (var p in BacktraceHelper.Parameters)
 			{
-				l.Add(CreateObjectValue(p, evalOptions));
+				var o = CreateObjectValue (p, evalOptions);
+				if(o != null)
+					l.Add(o);
 			}
 			return l.ToArray();
 		}
@@ -104,7 +106,9 @@ namespace MonoDevelop.D.Debugging
 			var l = new List<ObjectValue>();
 			foreach (var p in BacktraceHelper.Locals)
 			{
-				l.Add(CreateObjectValue(p, evalOptions));
+				var o = CreateObjectValue (p, evalOptions);
+				if(o != null)
+					l.Add(o);
 			}
 			return l.ToArray();
 		}

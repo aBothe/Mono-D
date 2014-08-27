@@ -123,8 +123,8 @@ namespace MonoDevelop.D.Debugging
 
 		public virtual ObjectValue CreateObjectValue(IDBacktraceSymbol s, EvaluationOptions evalOptions = null)
 		{
-			if(s == null)
-				return null;
+			if (s == null)
+				throw new ArgumentNullException ("s");
 
 			if (evalOptions == null)
 				evalOptions = EvaluationOptions.DefaultOptions;
@@ -147,7 +147,15 @@ namespace MonoDevelop.D.Debugging
 		#endregion
 
 		public AbstractType TryGetDType(IDBacktraceSymbol s)
-		{System.Diagnostics.Debugger.Break ();
+		{
+			if (!s.HasParent) {
+				TryUpdateStackFrameInfo();
+
+				if (ctxt == null)
+					return null;
+
+				return AmbiguousType.Get(D_Parser.Resolver.TypeResolution.TypeDeclarationResolver.ResolveIdentifier (s.Name, ctxt, null));
+			}
 
 			return null;
 		}
