@@ -40,7 +40,7 @@ namespace MonoDevelop.D.Completion
 		{
 			string attr = "";
 
-			if (allow_static && n.ContainsAttribute(DTokens.Static))
+			if (allow_static && n.IsStatic)
 			{
 				attr += "static_";
 			}
@@ -83,7 +83,7 @@ namespace MonoDevelop.D.Completion
 			// Only class (not struct) methods, and neither static nor private methods may
 			// be abstract/override
 			if (n.IsClassMember &&
-				!n.ContainsAttribute(DTokens.Static) && !n.ContainsAttribute(DTokens.Private))
+				!n.IsStatic && !n.ContainsAttribute(DTokens.Private))
 			{
 				if (n.ContainsAttribute(DTokens.Abstract))
 				{
