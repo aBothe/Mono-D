@@ -95,7 +95,7 @@ namespace MonoDevelop.D.Refactoring
 			}
 
 			if(caps.HasDBlockNodeSelected)
-				info.Add (IdeApp.CommandService.GetCommandInfo (RefactoryCommands.SortImports), new Action (caps.SortImports));
+				info.Add (IdeApp.CommandService.GetCommandInfo (RefactoryCommands.SortImports), new Action (RefactoringCommandCapsule.SortImports));
 		}
 	}
 }
