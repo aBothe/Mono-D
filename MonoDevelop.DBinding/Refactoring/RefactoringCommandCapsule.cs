@@ -181,6 +181,33 @@ namespace MonoDevelop.D.Refactoring
 			}
 		}
 
+		class ImportDictComparer : IComparer<KeyValuePair<List<DAttribute>, List<ImportStatement>>>
+		{
+
+			public int Compare(KeyValuePair<List<DAttribute>, List<ImportStatement>> x, KeyValuePair<List<DAttribute>, List<ImportStatement>> y)
+			{
+				if (x.Key == y.Key)
+					return 0;
+
+				var l1 = CodeLocation.Empty;
+				var l2 = CodeLocation.Empty;
+
+				foreach (var attr in x.Key)
+					if (attr.Location > l1)
+						l1 = attr.Location;
+
+				foreach (var attr in x.Key)
+					if (attr.Location > l1)
+						l1 = attr.Location;
+
+				if (l1 > l2)
+					return 1;
+				if (l1 == l2)
+					return 0;
+				return -1;
+			}
+		}
+
 		const string SortImportsSeparatePackagesFromEachOtherPropId = "MonoDevelop.D.SortImportsSeparatePackagesFromEachOther";
 		public static bool SortImportsSeparatePackagesFromEachOther
 		{
@@ -206,80 +233,93 @@ namespace MonoDevelop.D.Refactoring
 
 			// Get the first scope that contains import statements
 			var importsToSort = new List<ImportStatement> ();
+
+			var allAttrs = new List<DAttribute>();
+			var allSharedAttrs = new List<DAttribute>();
+
 			while (scope != null && importsToSort.Count == 0) {
 				foreach (var ss in scope.StaticStatements) {
 					var iss = ss as ImportStatement;
 					if (iss != null)
-						importsToSort.Add (iss);
+					{
+						importsToSort.Add(iss);
+						if(iss.Attributes != null)
+							foreach (var attr in iss.Attributes)
+							{
+								if (allAttrs.Contains(attr))
+								{
+									if (!allSharedAttrs.Contains(attr))
+										allSharedAttrs.Add(attr);
+								}
+								else
+									allAttrs.Add(attr);
+							}
+					}
 				}
 			}
 
-			if (importsToSort.Count == 0)
+			if (importsToSort.Count < 2)
 				return;
 
 			// Split imports into groups divided by shared attributes
 			var impDict = new Dictionary<List<DAttribute>, List<ImportStatement>> ();
 			var noAttrImports = new List<ImportStatement> ();
 
-			for (int i = importsToSort.Count - 1; i >= 0; i--) {
-				var ii = importsToSort [i];
-
+			foreach(var ii in importsToSort) {
 				if (ii.Attributes == null || ii.Attributes.Length == 0) {
 					noAttrImports.Add (ii);
 					continue;
 				}
 
-				for (int k = importsToSort.Count - 1; k >= 0; k--) {
-					var ki = importsToSort [k];
+				var sharedAttrs = new List<DAttribute>(ii.Attributes.Intersect(allSharedAttrs));
+				if (sharedAttrs.Count == 0)
+					continue;
 
-					if (k == i || ki.Attributes == null)
+				bool hasAdded = false;
+
+				foreach (var kv in impDict) {
+					if (kv.Key.Count > sharedAttrs.Count ||
+						kv.Key.Any((e) => !sharedAttrs.Contains(e)))
 						continue;
 
-					var sharedAttrs = new List<DAttribute>(ii.Attributes.Intersect(ki.Attributes));
-					var sharedAttrsCount = sharedAttrs.Count;
-					if (sharedAttrsCount == 0)
-						continue;
-
-					bool hasAdded = false;
-
-					foreach (var kv in impDict) {
-						if (kv.Key.Count > sharedAttrsCount ||
-							kv.Key.Any ((e) => !sharedAttrs.Contains (e)))
-							continue;
-
-						if (kv.Key.Count == sharedAttrsCount) {
-							if (!kv.Value.Contains (ii))
-								kv.Value.Add (ii);
-							if (!kv.Value.Contains (ki))
-								kv.Value.Add (ki);
-							hasAdded = true;
-							break;
-						}
-							
-						kv.Value.Remove (ii);
-						kv.Value.Remove (ki);
+					if (kv.Key.Count == sharedAttrs.Count)
+					{
+						if (!kv.Value.Contains (ii))
+							kv.Value.Add (ii);
+						hasAdded = true;
 						break;
 					}
 
-					if (!hasAdded)
-						impDict.Add (sharedAttrs, new List<ImportStatement>{ ii, ki });
+					kv.Value.Remove (ii);
 				}
+
+				if (!hasAdded)
+					impDict.Add (sharedAttrs, new List<ImportStatement>{ ii });
 			}
 
-			var editor = doc.Editor.Document;
-			using (editor.OpenUndoGroup (Mono.TextEditor.OperationType.Undefined)) {
-				ResortImports (noAttrImports, editor, new List<DAttribute>());
-				foreach (var kv in impDict)
+			impDict.Add(new List<DAttribute>(), noAttrImports);
+			
+			var editor = doc.Editor;
+			using (editor.Document.OpenUndoGroup (Mono.TextEditor.OperationType.Undefined)) {
+				// Sort impDict entries by their at last occurring shared attribute
+				var impDictList = impDict.ToList();
+				impDictList.Sort(new ImportDictComparer());
+
+				foreach (var kv in impDictList)
 					ResortImports (kv.Value, editor, kv.Key);
 			}
+
+			editor.Parent.TextViewMargin.PurgeLayoutCache();
+			editor.Parent.QueueDraw();
 		}
 
-		static void ResortImports(List<ImportStatement> importsToSort, Mono.TextEditor.TextDocument editor, List<DAttribute> attributesNotToWrite)
+		static void ResortImports(List<ImportStatement> importsToSort, Mono.TextEditor.TextEditorData editor, List<DAttribute> attributesNotToWrite)
 		{
 			if (importsToSort.Count < 2)
 				return;
 				
 			int firstOffset = int.MaxValue;
+			string indent = "";
 
 			// Remove all of them from the document; Memorize where the first import was
 			for (int i = importsToSort.Count - 1; i >= 0; i--) {
@@ -300,23 +340,26 @@ namespace MonoDevelop.D.Refactoring
 
 				var l1 = editor.LocationToOffset (ssLocation.Line, ssLocation.Column);
 				var l2 = editor.LocationToOffset (ssEndLocation.Line, ssEndLocation.Column);
-				var n = editor.TextLength - 1;
+				var n = editor.Document.TextLength - 1;
 
 				// Remove indents and trailing semicolon.
 				for (char c; l1 > 0 && ((c = editor.GetCharAt (l1-1)) == ' ' || c == '\t'); l1--);
 				for (char c; l2 < n && ((c = editor.GetCharAt (l2+1)) == ' ' || c == '\t' || c == ';'); l2++);
 				for (char c; l2 < n && ((c = editor.GetCharAt (l2+1)) == '\n' || c == '\r'); l2++);
 
-				editor.Remove (l1, l2 - l1);
+				l1 = Math.Max(0, l1);
+				l2 = Math.Max(0, l2);
+
 				firstOffset = Math.Min(l1, firstOffset);
+				indent = editor.GetLineIndent(editor.OffsetToLineNumber(firstOffset));
+				editor.Remove (l1, l2 - l1);
 			}
-			var firstOffsetLocation = editor.OffsetToLocation (firstOffset);
 
 			// Sort
 			importsToSort.Sort (new ImportComparer ());
 
 			// Write all imports beneath each other.
-			var indent = editor.GetLineIndent (firstOffsetLocation.Line);
+			var eol = editor.EolMarker;
 			var sb = new StringBuilder ();
 			bool separatePackageRoots = SortImportsSeparatePackagesFromEachOther;
 			ITypeDeclaration prevId = null;
@@ -333,13 +376,13 @@ namespace MonoDevelop.D.Refactoring
 					}
 				}
 					
-				sb.Append (i.ToCode(false)).AppendLine(";");
+				sb.Append (i.ToCode(false)).Append(";").Append(eol);
 
 				if (separatePackageRoots) {
 					var iid = ImportComparer.ExtractPrimaryId (i);
 					if (prevId != null && iid != null &&
 						(iid.InnerDeclaration ?? iid).ToString (true) != (prevId.InnerDeclaration ?? prevId).ToString (true))
-						sb.AppendLine ();
+						sb.Append (eol);
 
 					prevId = iid;
 				}
