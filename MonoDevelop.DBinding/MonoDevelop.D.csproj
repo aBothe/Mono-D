@@ -258,6 +258,7 @@
     <Compile Include="Gui\EditorPathbarProvider.cs" />
     <Compile Include="Refactoring\RefactoringCommandsExtension.cs" />
     <Compile Include="Refactoring\ReferenceFinding.cs" />
+    <Compile Include="Refactoring\TextDocumentAdapter.cs" />
     <Compile Include="Resolver\DResolverWrapper.cs" />
     <Compile Include="Building\DCompilerService.cs" />
     <Compile Include="Building\CompilerPresets\PresetLoader.cs" />

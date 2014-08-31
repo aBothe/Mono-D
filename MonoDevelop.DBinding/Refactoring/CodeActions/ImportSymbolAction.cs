@@ -59,8 +59,7 @@ namespace MonoDevelop.D.Refactoring.CodeActions
 
 			public override void Run (IRefactoringContext _c, object _s)
 			{
-				var editor = refCtxt.Doc.Editor;
-				ImportStmtCreation.GenerateImportStatementForNode (dn, refCtxt.ed, (loc, s) => editor.Insert (editor.LocationToOffset (loc.Line, loc.Column), s));
+				ImportStmtCreation.GenerateImportStatementForNode (dn, refCtxt.ed, new TextDocumentAdapter(refCtxt.Doc.Editor));
 			}
         }
 	}
