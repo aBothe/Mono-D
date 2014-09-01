@@ -108,7 +108,7 @@ namespace MonoDevelop.D.Completion
 
 		public void AddModule(DModule module, string nameOverride)
 		{
-			CompletionDataList.Add(new NamespaceCompletionData(module));
+			CompletionDataList.Add(new NamespaceCompletionData(module, nameOverride));
 		}
 
 		public void AddPackage(string packageName)
@@ -314,11 +314,11 @@ namespace MonoDevelop.D.Completion
 			}
 		}
 
-		public NamespaceCompletionData(DModule mod)
+		public NamespaceCompletionData(DModule mod, string modName = null)
 		{
 			this.Module = mod;
 			DisplayFlags = ICSharpCode.NRefactory.Completion.DisplayFlags.DescriptionHasMarkup | DisplayFlags.IsImportCompletion;
-			modName = ModuleNameHelper.ExtractModuleName(mod.ModuleName);
+			this.modName = modName ?? ModuleNameHelper.ExtractModuleName(mod.ModuleName);
 		}
 
 		public override TooltipInformation CreateTooltipInformation(bool smartWrap)
