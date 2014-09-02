@@ -143,49 +143,6 @@ namespace MonoDevelop.D.Refactoring
 			if (t is DSymbol)
 				ImportStmtCreation.GenerateImportStatementForNode((t as DSymbol).Definition, ed, new TextDocumentAdapter(IdeApp.Workbench.ActiveDocument.Editor));
 		}
-
-		public bool HasDBlockNodeSelected
-		{
-			get{
-				return DResolver.SearchBlockAt (ctxt.CurrentContext.ScopedBlock.NodeRoot as IBlockNode, ed.CaretLocation) is DBlockNode; 
-			}
-		}
-
-		
-
-		const string SortImportsSeparatePackagesFromEachOtherPropId = "MonoDevelop.D.SortImportsSeparatePackagesFromEachOther";
-		public static bool SortImportsSeparatePackagesFromEachOther
-		{
-			get{ return PropertyService.Get (SortImportsSeparatePackagesFromEachOtherPropId, false); }
-			set{ PropertyService.Set (SortImportsSeparatePackagesFromEachOtherPropId, value); }
-		}
-
-		public static void SortImports()
-		{
-			var doc = IdeApp.Workbench.ActiveDocument;
-
-			if (doc == null)
-				return;
-
-			var ddoc = doc.ParsedDocument as ParsedDModule;
-			if (ddoc == null || ddoc.DDom == null)
-				return;
-
-			var scope = DResolver.SearchBlockAt (ddoc.DDom, new CodeLocation(doc.Editor.Caret.Column, doc.Editor.Caret.Line)) as DBlockNode;
-
-			if (scope == null)
-				return;
-			
-			var editor = doc.Editor;
-			using (editor.Document.OpenUndoGroup (Mono.TextEditor.OperationType.Undefined)) {
-				SortImportsRefactoring.SortImports(scope, new TextDocumentAdapter(editor), SortImportsSeparatePackagesFromEachOther);
-			}
-
-			editor.Parent.TextViewMargin.PurgeLayoutCache();
-			editor.Parent.QueueDraw();
-		}
-
-		
 	}
 }
 

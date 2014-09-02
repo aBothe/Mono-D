@@ -367,7 +367,7 @@
                  _label = "Invoke DustMite" />
 
         <Command id = "MonoDevelop.Refactoring.RefactoryCommands.SortImports"
-				defaultHandler = "MonoDevelop.D.Refactoring.ContextMenuRefactoringCommandHandler"
+				defaultHandler = "MonoDevelop.D.Refactoring.SortImportsCommandHandler"
                  _label = "Sort Imports" />
 	</Extension>
 
