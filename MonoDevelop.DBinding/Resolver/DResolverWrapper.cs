@@ -70,10 +70,10 @@ namespace MonoDevelop.D.Resolver
 					ed.DebugLevel = dcfg.DebugLevel;
 					ed.GlobalVersionIds = dcfg.GlobalVersionIdentifiers;
 					double d;
-					int v;
+					ulong v;
 					if (Double.TryParse(EditorDocument.Project.Version, out d))
-						ed.VersionNumber = (int)d;
-					else if (Int32.TryParse(EditorDocument.Project.Version, out v))
+						ed.VersionNumber = (ulong)d;
+					else if (UInt64.TryParse(EditorDocument.Project.Version, out v))
 						ed.VersionNumber = v;
 				}
 				else if (cfg is DubProjectConfiguration)

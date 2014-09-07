@@ -142,7 +142,7 @@ namespace MonoDevelop.D.OptionPanels
 			if (combo_ProjectType.GetActiveIter (out iter))
 				configuration.CompileTarget = (DCompileTarget)model_compileTarget.GetValue (iter, 1);
 
-			configuration.DebugLevel = spin_debugLevel.ValueAsInt;
+			configuration.DebugLevel = (ulong)spin_debugLevel.ValueAsInt;
 			configuration.CustomDebugIdentifiers = text_debugConstants.Text.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
 			configuration.CustomVersionIdentifiers = text_versionConstants.Text.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
 			configuration.UpdateGlobalVersionIdentifiers(project);

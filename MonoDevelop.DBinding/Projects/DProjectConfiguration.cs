@@ -103,7 +103,7 @@ namespace MonoDevelop.D.Projects
 		[ItemProperty("DebugIds")]
 		public string[] CustomDebugIdentifiers;
 		[ItemProperty("DebugLevel")]
-		public int DebugLevel = 0;
+		public ulong DebugLevel = 0;
 
 		string[] gVersionIds;
 		/// <summary>
