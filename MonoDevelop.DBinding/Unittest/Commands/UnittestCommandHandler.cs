@@ -15,6 +15,7 @@ using MonoDevelop.D.Projects;
 using MonoDevelop.D.Projects.Dub;
 using System;
 using MonoDevelop.D.Building;
+using System.Collections.Generic;
 
 namespace MonoDevelop.D.Unittest.Commands
 {
@@ -38,6 +39,18 @@ namespace MonoDevelop.D.Unittest.Commands
 			var pad = Ide.IdeApp.Workbench.ProgressMonitors.GetPadForMonitor(monitor);
 			if (pad != null)
 				pad.BringToFront();
+				
+			if (IdeApp.Preferences.BeforeBuildSaveAction != BeforeCompileAction.Nothing) { //TODO: Handle prompt for save.
+				foreach (var doc_ in new List<MonoDevelop.Ide.Gui.Document> (IdeApp.Workbench.Documents)) {
+					if (doc_.IsDirty && doc_.Project != null) {
+						doc_.Save ();
+						if (doc_.IsDirty) {
+							monitor.ReportError ("Couldn't save document \"" + doc_.Name + "\"", new Exception());
+							return;
+						}
+					}
+				}
+			}
 
 			monitor.BeginTask("Starting Unit Tests", 1);
 
