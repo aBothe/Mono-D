@@ -247,7 +247,19 @@ namespace MonoDevelop.D.Highlighting
 			{
 				Dictionary<int, Dictionary<ISyntaxRegion, byte>> textLocationsToHighlight;
 
-				textLocationsToHighlight = TypeReferenceFinder.Scan(ed, invalidCodeRegions, System.Diagnostics.Debugger.IsAttached ? -1 : 500);
+				bool dontCancel = false;
+
+				if(CompletionOptions.Instance.CompletionTimeout > 0)
+					Task.Factory.StartNew(() =>
+					{
+						Thread.Sleep(CompletionOptions.Instance.CompletionTimeout);
+						if(!dontCancel)
+							cancelTokenSource.Cancel();
+					});
+
+				textLocationsToHighlight = TypeReferenceFinder.Scan(ed, token, invalidCodeRegions);
+
+				dontCancel = true;
 
 				foreach (var sr in invalidCodeRegions)
 				{
