@@ -171,14 +171,17 @@ namespace MonoDevelop.D.Projects.Dub
 			Items.Clear ();
 		}
 
-
-		void _addFile(string baseDir, string dir, string f)
+		void _loadFilesFrom(string dir)
 		{
-			if(CanContainFile(f)) {
-				if (f.StartsWith (baseDir))
-					Items.Add (new ProjectFile (f));
-				else
-					Items.Add (new ProjectFile (f) { Link = f.Substring (dir.Length + 1) });
+			var baseDir = BaseDirectory;
+
+			foreach (var f in Directory.GetFiles(dir, "*", SearchOption.AllDirectories)) {
+				if(CanContainFile(f)) {
+					if (f.StartsWith (baseDir))
+						Items.Add (new ProjectFile (f));
+					else
+						Items.Add (new ProjectFile (f) { Link = f.Substring (dir.Length + 1) });
+				}
 			}
 		}
 
@@ -187,12 +190,27 @@ namespace MonoDevelop.D.Projects.Dub
 			// Load project's files
 			var baseDir = BaseDirectory;
 			var baseDirs = new List<string> ();
+			string s;
 
 			foreach (var dir in GetSourcePaths((ConfigurationSelector)null)) {
 				baseDirs.Add (dir);
-				foreach (var f in Directory.GetFiles(dir, "*", SearchOption.AllDirectories))
-					_addFile (baseDir, dir, f);
+				_loadFilesFrom (dir);
 			}
+
+			//Include hard-coded vibe.d directories. This is ugly and unflexible but still pretty convenient.
+			// TODO: Read out special properties for vibe-d or other dub projects -- are there 'resources' paths?
+			s = baseDir.Combine ("views");
+			if (Directory.Exists (s)) {
+				baseDirs.Add (s);
+				_loadFilesFrom (s);
+			}
+
+			s = baseDir.Combine ("public");
+			if (Directory.Exists (s)) {
+				baseDirs.Add (s);
+				_loadFilesFrom (s);
+			}
+
 
 			#region Add files specified via sourceFiles
 			var additionalFiles = new List<string> ();
