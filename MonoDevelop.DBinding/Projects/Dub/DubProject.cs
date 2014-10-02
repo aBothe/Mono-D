@@ -192,25 +192,22 @@ namespace MonoDevelop.D.Projects.Dub
 			var baseDirs = new List<string> ();
 			string s;
 
+			foreach (var dir in Directory.EnumerateDirectories(baseDir, "*", SearchOption.TopDirectoryOnly))
+			{
+				if (Path.GetFileName(dir).StartsWith("."))
+					continue;
+
+				baseDirs.Add(dir);
+				_loadFilesFrom(dir);
+			}
+
 			foreach (var dir in GetSourcePaths((ConfigurationSelector)null)) {
+				if (baseDirs.Contains(dir))
+					continue;
+
 				baseDirs.Add (dir);
 				_loadFilesFrom (dir);
 			}
-
-			//Include hard-coded vibe.d directories. This is ugly and unflexible but still pretty convenient.
-			// TODO: Read out special properties for vibe-d or other dub projects -- are there 'resources' paths?
-			s = baseDir.Combine ("views");
-			if (Directory.Exists (s)) {
-				baseDirs.Add (s);
-				_loadFilesFrom (s);
-			}
-
-			s = baseDir.Combine ("public");
-			if (Directory.Exists (s)) {
-				baseDirs.Add (s);
-				_loadFilesFrom (s);
-			}
-
 
 			#region Add files specified via sourceFiles
 			var additionalFiles = new List<string> ();
