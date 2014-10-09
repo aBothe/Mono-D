@@ -91,7 +91,7 @@ namespace MonoDevelop.D.Refactoring
 			}
 
 			if(SortImportsCommandHandler.CanSortImports(caps.lastDoc))
-				info.Add (IdeApp.CommandService.GetCommandInfo (RefactoryCommands.SortImports), caps.lastDoc);
+				info.Add (IdeApp.CommandService.GetCommandInfo (RefactoryCommands.SortImports), new Action(()=>SortImportsCommandHandler.SortImports(caps.lastDoc)));
 		}
 	}
 }
