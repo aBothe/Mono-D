@@ -162,7 +162,7 @@ namespace MonoDevelop.D.Gui
 		{
 			var n = model.GetValue (iter, 0) as INode;
 
-			string label = n.Name ?? "";
+			string label;
 
 			var dm = n as DMethod;
 			if (dm != null) {
@@ -180,11 +180,11 @@ namespace MonoDevelop.D.Gui
 						label = "(Class Deallocator)";
 						break;
 					default:
-						if (DCompilerService.Instance.Outline.ShowFuncParams)
-							label = String.Format ("{0}({1})", label, FunctionParamsToString (dm.Parameters));
+						label = DCompilerService.Instance.Outline.ShowFuncParams ? dm.ToString (false, false) : n.Name;
 						break;
 				}
-			}
+			} else
+				label = n.Name ?? string.Empty;
 
 			if (DCompilerService.Instance.Outline.ShowBaseTypes)
 				label = String.Format ("{0} {1}", (n as DNode).Type, label);
@@ -203,27 +203,6 @@ namespace MonoDevelop.D.Gui
 
 			(cell as CellRendererText).Text = label;
 		}
-
-        private string FunctionParamsToString(List<INode> parameters)
-        {
-			var sb = new StringBuilder();
-
-			foreach( INode node in parameters)
-			{
-				if(node == null) continue;
-
-				sb.Append(node.Type);
-				sb.Append(" ");
-				sb.Append(node.Name);
-
-				sb.Append(",");
-			}
-
-			if (sb.Length > 0)
-				sb.Remove(sb.Length - 1, 1);
-
-			return sb.ToString();
-        }
 
 		void JumpToDeclaration(bool focusEditor)
 		{
