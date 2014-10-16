@@ -150,6 +150,36 @@ namespace MonoDevelop.D.Projects.Dub
 			return dirs;
 		}
 
+		readonly List<string> buildTypes = new List<string>(new[] { "plain", "debug", "unittest", "docs", "ddox", "profile", "cov", "unittest-cov" });
+
+		public class DubExecTarget : ExecutionTarget
+		{
+			readonly string id;
+			public DubExecTarget(string id)
+			{
+				this.id = id;
+			}
+
+			public override string Id
+			{
+				get { return id; }
+			}
+
+			public override string Name
+			{
+				get { return id; }
+			}
+		}
+
+		/// <summary>
+		/// http://code.dlang.org/package-format#build-types
+		/// </summary>
+		protected override IEnumerable<ExecutionTarget> OnGetExecutionTargets(ConfigurationSelector configuration)
+		{
+			foreach (var buildType in buildTypes)
+				yield return new DubExecTarget(buildType);
+		}
+
 		public override string ToString ()
 		{
 			return string.Format ("[DubProject: Name={0}]", Name);
@@ -190,7 +220,6 @@ namespace MonoDevelop.D.Projects.Dub
 			// Load project's files
 			var baseDir = BaseDirectory;
 			var baseDirs = new List<string> ();
-			string s;
 
 			baseDirs.Add (baseDir.ToString ());
 
@@ -305,6 +334,21 @@ namespace MonoDevelop.D.Projects.Dub
 
 					while (j.Read () && j.TokenType != JsonToken.EndArray)
 						DubSubPackage.ReadAndAdd (this, j, monitor);
+					break;
+				case "buildtypes":
+					if (!j.Read() || j.TokenType != JsonToken.StartObject)
+						throw new JsonReaderException("Expected [ when parsing build types");
+
+					while (j.Read() && j.TokenType != JsonToken.EndObject)
+					{
+						var n = j.Value as string;
+						if (!buildTypes.Contains(n))
+							buildTypes.Add(n);
+
+						j.Skip();
+					}
+
+					buildTypes.Sort();
 					break;
 				default:
 					return CommonBuildSettings.TryDeserializeBuildSetting(j);

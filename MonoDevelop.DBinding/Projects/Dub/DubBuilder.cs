@@ -19,6 +19,10 @@ namespace MonoDevelop.D.Projects.Dub
 			if(!string.IsNullOrWhiteSpace(DubSettings.Instance.CommonArgs))
 				sr.Append(' ').Append (DubSettings.Instance.CommonArgs);
 
+			var buildType = Ide.IdeApp.Workspace.ActiveExecutionTarget.Id;
+			if (!string.IsNullOrWhiteSpace(buildType))
+				sr.Append(" \"--build=").Append(buildType).Append("\"");
+
 			if (prj.Configurations.Count > 1 && sel.GetConfiguration(prj).Name.ToLower() != "default")
 				sr.Append(" \"--config=").Append(sel.GetConfiguration(prj).Name).Append("\"");
 		}
