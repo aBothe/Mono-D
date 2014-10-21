@@ -150,7 +150,7 @@ namespace MonoDevelop.D.Projects.Dub
 			return dirs;
 		}
 
-		readonly List<string> buildTypes = new List<string>(new[] { "plain", "debug", "unittest", "docs", "ddox", "profile", "cov", "unittest-cov" });
+		readonly List<string> buildTypes = new List<string>(new[] { "plain", "debug", "release", "unittest", "docs", "ddox", "profile", "cov", "unittest-cov" });
 
 		public class DubExecTarget : ExecutionTarget
 		{
