@@ -39,10 +39,14 @@ namespace MonoDevelop.D.Unittest
 		class UnittestMacros : OneStepBuildArgumentMacroProvider
 		{
 			public bool HasMain = false;
+			public string compilerFlags;
+			public string linkerFlags;
 
 			public override void ManipulateMacros(Dictionary<string, string> macros)
 			{
 				macros["main"] = HasMain ? string.Empty : UnittestSettings.MainMethodFlag;
+				macros["compilerflags"] = compilerFlags;
+				macros["linkerflags"] = linkerFlags;
 
 				base.ManipulateMacros(macros);
 			}
@@ -68,7 +72,9 @@ namespace MonoDevelop.D.Unittest
 				Includes = ProjectBuilder.FillInMacros(includes, prjPath),
 				Libraries = ProjectBuilder.GetLibraries(conf, compiler),
 
-				HasMain = HasMainMethod(D_Parser.Misc.GlobalParseCache.GetModule(filePath))
+				HasMain = HasMainMethod(D_Parser.Misc.GlobalParseCache.GetModule(filePath)),
+				compilerFlags = conf.ExtraCompilerArguments,
+				linkerFlags = conf.ExtraLinkerArguments
 			};
 			
 			return ProjectBuilder.FillInMacros(baseCommandArgs,compilerMacro, prjPath);
