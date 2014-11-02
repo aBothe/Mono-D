@@ -29,7 +29,7 @@ namespace MonoDevelop.D.Projects.Dub
 			return s;
 		}
 
-		//public Dictionary<string, string> subConfigurations;
+		public readonly Dictionary<string, string> subConfigurations = new Dictionary<string,string>();
 
 		public static HashSet<string> OsVersions = new HashSet<string> { 
 			"windows","win32","win64","linux","osx",
@@ -87,9 +87,17 @@ namespace MonoDevelop.D.Projects.Dub
 				return false;
 
 			settingIdentifier[0] = settingIdentifier [0].ToLowerInvariant ();
-			// For now, only extract information that affect code completion
 			if (!WantedProps.Contains(settingIdentifier[0]))
 			{
+				if (settingIdentifier[0] == "subconfigurations")
+				{
+					j.Read();
+					var subCfgs = (new JsonSerializer()).Deserialize<Dictionary<string,string>>(j);
+					foreach (var kv in subCfgs)
+						subConfigurations[kv.Key] = kv.Value;
+					return true;
+				}
+
 				j.Skip();
 				return false;
 			}
