@@ -99,6 +99,28 @@ namespace MonoDevelop.D.Projects.Dub
 
 			LoadDubProjectReferences (defaultPackage, monitor, sln);
 
+			// Apply subConfigurations
+			var subConfigurations = new Dictionary<string, string>(defaultPackage.CommonBuildSettings.subConfigurations);
+
+			foreach (var item in sln.Items)
+			{
+				var prj = item as SolutionEntityItem;
+				if (prj == null)
+					continue;
+
+				foreach (var cfg in sln.Configurations)
+				{
+					var prjItem = cfg.GetEntryForItem(prj);
+					string cfgId;
+					if (subConfigurations.TryGetValue(prj.ItemId, out cfgId))
+						prjItem.ItemConfiguration = cfgId;
+
+					var prjCfg = defaultPackage.GetConfiguration(cfg.Selector) as DubProjectConfiguration;
+					if (prjCfg != null && prjCfg.BuildSettings.subConfigurations.TryGetValue(prj.ItemId, out cfgId))
+						prjItem.ItemConfiguration = cfgId;
+				}
+			}
+
 			sln.LoadUserProperties();
 
 			if (clearLoadedPrjList) {
