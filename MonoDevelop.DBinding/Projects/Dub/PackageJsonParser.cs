@@ -12,6 +12,7 @@ namespace MonoDevelop.D.Projects.Dub
 	{
 		public const string PackageJsonFile = "package.json";
 		public const string DubJsonFile = "dub.json";
+		public const string DubSelectionsJsonFile = "dub.selections.json";
 
 		public bool CanReadFile(FilePath file, Type expectedObjectType)
 		{
@@ -219,6 +220,11 @@ namespace MonoDevelop.D.Projects.Dub
 					defaultPackage.packageName = superPackage.packageName + ":" + (defaultPackage.packageName ?? string.Empty);
 
 				defaultPackage.Items.Add(new ProjectFile(packageJsonPath, BuildAction.None));
+
+				// https://github.com/aBothe/Mono-D/issues/555
+				var dubSelectionJsonPath = packageJsonPath.ParentDirectory.Combine(DubSelectionsJsonFile);
+				if(File.Exists(dubSelectionJsonPath))
+					defaultPackage.Items.Add(new ProjectFile(dubSelectionJsonPath, BuildAction.None));
 
 				defaultPackage.EndLoad ();
 			}
