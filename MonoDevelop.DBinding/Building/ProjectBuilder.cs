@@ -346,7 +346,7 @@ namespace MonoDevelop.D.Building
 
 		bool CompileResourceScript (BuildResult targetBuildResult, ProjectFile f)
 		{
-			var res = GetRelativeObjectFileName (ObjectDirectory(BuildConfig), f, ".res");
+			var res = GetRelativeObjectFileName (AbsoluteObjectDirectory(BuildConfig), f, ".res");
 
 			// Build argument string
 			var resCmpArgs = FillInMacros (Win32ResourceCompiler.Instance.Arguments,
