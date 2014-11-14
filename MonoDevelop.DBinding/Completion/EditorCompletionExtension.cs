@@ -8,6 +8,7 @@ using Mono.TextEditor;
 using MonoDevelop.D.Resolver;
 using D_Parser.Resolver.TypeResolution;
 using System.Reflection;
+using MonoDevelop.Core;
 
 namespace MonoDevelop.D
 {
@@ -88,6 +89,7 @@ namespace MonoDevelop.D
 			else
 				l.AddKeyHandler(new DoubleUnderScoreWorkaroundHandler(this));
 
+			try{
 			lock(ast)
 				DCodeCompletionSupport.BuildCompletionData(
 					Document,
@@ -95,6 +97,9 @@ namespace MonoDevelop.D
 					completionContext,
 					l,
 					triggerChar);
+			}catch(System.Exception ex) {
+				LoggingService.LogWarning ("Error during completion", ex);
+			}
 
 			return l.Count != 0 ? l : null;
 		}
