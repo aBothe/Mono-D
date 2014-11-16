@@ -79,6 +79,10 @@ namespace MonoDevelop.D.Building
 		{
 			this.Project = Project;
 			BuildConfig = Project.GetConfiguration (BuildConfigurationSelector) as DProjectConfiguration;
+
+			if(Ide.IdeApp.Workbench == null)
+				_currentConfig = BuildConfig.Selector;
+
 			if (BuildConfig.Project != Project)
 				throw new InvalidOperationException ("Wrong project configuration");
 			commonMacros = new PrjPathMacroProvider {
@@ -92,6 +96,7 @@ namespace MonoDevelop.D.Building
 				targetBuildResult.AddError ("Project compiler \"" + Project.UsedCompilerVendor + "\" not found");
 				targetBuildResult.FailedBuildCount++;
 
+				_currentConfig = null;
 				return targetBuildResult;
 			}
 
@@ -99,16 +104,18 @@ namespace MonoDevelop.D.Building
 			if (!Directory.Exists (absDir))
 				Directory.CreateDirectory (absDir);
 
+			BuildResult result;
 			if (CanDoOneStepBuild)
-				return DoOneStepBuild ();
+				result = DoOneStepBuild ();
 			else
-				return DoStepByStepBuild ();
+				result = DoStepByStepBuild ();
+
+			_currentConfig = null;
+			return result;
 		}
 
 		public static string BuildOneStepBuildString(DProject prj, IEnumerable<string> builtObjects, ConfigurationSelector sel)
 		{
-			if(Ide.IdeApp.Workbench == null)
-				_currentConfig = sel;
 			var cfg = prj.GetConfiguration (sel) as DProjectConfiguration;
 			var target = prj.GetOutputFileName (sel);
 
@@ -140,8 +147,6 @@ namespace MonoDevelop.D.Building
 					ObjectsDirectory = ObjectDirectory(cfg),
 					TargetFile = target,
 				}, commonMacros);
-
-			_currentConfig = null;
 
 			return res;
 		}
