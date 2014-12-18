@@ -382,7 +382,8 @@ namespace MonoDevelop.D.Projects.Dub
 			base.OnBoundToSolution();
 
 			foreach (var sub in packagesToAdd)
-				ParentSolution.RootFolder.AddItem(sub, false);
+				if(!ParentSolution.RootFolder.Items.Contains(sub))
+					ParentSolution.RootFolder.AddItem(sub, false);
 			packagesToAdd.Clear();
 		}
 		#endregion

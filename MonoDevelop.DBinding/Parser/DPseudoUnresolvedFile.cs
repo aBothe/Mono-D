@@ -85,7 +85,7 @@ namespace MonoDevelop.D.Parser
 
 		public IList<Error> Errors {
 			get {
-				return null;
+				return EmptyList<Error>.Instance;
 			}
 		}
 
