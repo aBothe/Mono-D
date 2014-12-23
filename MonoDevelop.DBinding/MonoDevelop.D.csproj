@@ -331,6 +331,7 @@
     <Compile Include="Debugging\ObjectCacheNode.cs" />
     <Compile Include="Parser\DPseudoUnresolvedFile.cs" />
     <Compile Include="Refactoring\SortImportsCommandHandler.cs" />
+    <Compile Include="Debugging\DExecutionCommand.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>

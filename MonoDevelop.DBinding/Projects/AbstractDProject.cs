@@ -244,7 +244,7 @@ namespace MonoDevelop.D.Projects
 
 		public virtual NativeExecutionCommand CreateExecutionCommand(ConfigurationSelector conf)
 		{
-			return new NativeExecutionCommand(GetOutputFileName(conf));
+			return new MonoDevelop.D.Debugging.DExecutionCommand(GetOutputFileName(conf));
 		}
 
 		public string GetAbsPath(string path)
