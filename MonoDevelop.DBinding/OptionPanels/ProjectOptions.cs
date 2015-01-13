@@ -133,8 +133,8 @@ namespace MonoDevelop.D.OptionPanels
 			configuration.ExtraLinkerArguments = extraLinkerTextView.Buffer.Text;
 
 			configuration.LinkinThirdPartyLibraries = check_LinkThirdPartyLibs.Active;
-			
-			configuration.OutputDirectory = project.GetAbsoluteChildPath(text_BinDirectory.Text);
+
+			configuration.OutputDirectory = project.GetAbsPath(text_BinDirectory.Text);
 			configuration.Output = text_TargetFile.Text;
 			configuration.ObjectDirectory = text_ObjectsDirectory.Text;
 			configuration.DDocDirectory = text_DDocDir.Text;
