@@ -19,6 +19,7 @@ namespace MonoDevelop.D.Profiler
 	{
 		private ProfilerPadWidget profilerPadWidget;
 		private AbstractDProject lastProfiledProject;
+		public const string trace_log = "trace.log";
 		
 		public TraceLogParser (ProfilerPadWidget widget)
 		{
@@ -31,8 +32,15 @@ namespace MonoDevelop.D.Profiler
 			if(project == null)
 				return null;
 
-			string file = project.GetOutputFileName(Ide.IdeApp.Workspace.ActiveConfiguration).ParentDirectory.Combine("trace.log");
-			return File.Exists (file) ? file : null;
+			var file = project.GetAbsPath(trace_log);
+			if (File.Exists (file))
+				return file;
+
+			file = project.GetOutputFileName (Ide.IdeApp.Workspace.ActiveConfiguration).ParentDirectory.Combine(trace_log);
+			if (File.Exists (file))
+				return file;
+
+			return null;
 		}
 		
 		static Regex traceFuncRegex = new Regex ("^\\s*(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\S\\P{C}[\\P{C}.]*)$",RegexOptions.Compiled);
@@ -42,7 +50,7 @@ namespace MonoDevelop.D.Profiler
 			var file = TraceLogFile(project);
 			if(file == null)
 			{
-				profilerPadWidget.AddTracedFunction(0,0,0,0,new DVariable{Name = "trace.log not found.."});
+				profilerPadWidget.AddTracedFunction(0,0,0,0,new DVariable{Name = trace_log+" not found.."});
 				return;
 			}
 		
