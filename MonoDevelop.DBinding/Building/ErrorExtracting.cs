@@ -59,6 +59,7 @@ namespace MonoDevelop.D.Building
 			return true;
 		}
 
+		const int MaxErrorMsgLength = 500;
 		/// <summary>
 		/// Scans errorString line-wise for filename-line-message patterns (e.g. "myModule(1): Something's wrong here") and add these error locations to the CompilerResults cr.
 		/// </summary>
@@ -72,6 +73,9 @@ namespace MonoDevelop.D.Building
 				var error = ErrorExtracting.FindError(next, reader);
 				if (error != null)
 				{
+					if (error.ErrorText != null && error.ErrorText.Length > MaxErrorMsgLength)
+						error.ErrorText = error.ErrorText.Substring (0, MaxErrorMsgLength) + "...";
+
 					// dmd's error filenames may contain mixin location info
 					var m = mixinInlineRegex.Match (error.FileName);
 					if (m.Success) {
