@@ -165,7 +165,12 @@ namespace MonoDevelop.D.Projects.Dub
 					var prj = ReadFile_(packageJsonToLoad, typeof(Project), monitor) as DubProject;
 					if (prj != null) {
 						if (sln != null)
-							sln.RootFolder.AddItem (prj, false);
+						{
+							if (sln is DubSolution)
+								(sln as DubSolution).AddProject (prj);
+							else 
+								sln.RootFolder.AddItem (prj, false);
+						}
 						else
 							defaultPackage.packagesToAdd.Add (prj);
 					}

@@ -381,9 +381,12 @@ namespace MonoDevelop.D.Projects.Dub
 		{
 			base.OnBoundToSolution();
 
-			foreach (var sub in packagesToAdd)
-				if(!ParentSolution.RootFolder.Items.Contains(sub))
-					ParentSolution.RootFolder.AddItem(sub, false);
+			foreach (var sub in packagesToAdd) {
+				if (ParentSolution is DubSolution)
+					(ParentSolution as DubSolution).AddProject (sub);
+				else
+					ParentSolution.RootFolder.AddItem (sub, false);
+			}
 			packagesToAdd.Clear();
 		}
 		#endregion

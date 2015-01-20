@@ -7,6 +7,21 @@ namespace MonoDevelop.D.Projects.Dub
 	/// </summary>
 	public class DubSolution : Solution
 	{
+		public readonly SolutionFolder ExternalDepFolder = new SolutionFolder { Name = "External Dependencies" };
+
+		public DubSolution()
+		{
+			RootFolder.AddItem (ExternalDepFolder);
+		}
+
+		internal void AddProject(AbstractDProject sub)
+		{
+			var folder = !sub.BaseDirectory.IsChildPathOf (BaseDirectory) ? ExternalDepFolder : RootFolder;
+
+			if (!folder.Items.Contains (sub))
+				folder.AddItem (sub, false);
+		}
+
 		public override string Name
 		{
 			get
