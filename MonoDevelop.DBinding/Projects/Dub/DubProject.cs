@@ -221,17 +221,6 @@ namespace MonoDevelop.D.Projects.Dub
 			var baseDir = BaseDirectory;
 			var baseDirs = new List<string> ();
 
-			baseDirs.Add (baseDir.ToString ());
-
-			foreach (var dir in Directory.EnumerateDirectories(baseDir, "*", SearchOption.TopDirectoryOnly))
-			{
-				if (Path.GetFileName(dir).StartsWith("."))
-					continue;
-
-				baseDirs.Add(dir);
-				_loadFilesFrom(dir);
-			}
-
 			foreach (var dir in GetSourcePaths((ConfigurationSelector)null)) {
 				bool skip = false;
 				foreach (var bdir in baseDirs)
