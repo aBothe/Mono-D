@@ -308,7 +308,7 @@ namespace MonoDevelop.D.Building
 		public static Win32ResourceCompiler Instance = new Win32ResourceCompiler ();
 		public string Executable = "rc.exe";
 		public string Arguments = ResourceCompilerDefaultArguments;
-		public const string ResourceCompilerDefaultArguments = "/fo \"$res\" \"$rc\"";
+		public const string ResourceCompilerDefaultArguments = "/nologo /fo \"$res\" \"$rc\"";
 		
 		public void Load (XmlReader x)
 		{
