@@ -62,8 +62,6 @@ namespace MonoDevelop.D.Parser
 			else
 				LastParsedMod = null;
 
-			var dprj = prj as AbstractDProject;
-
 			// Remove obsolete ast from cache
 			if(file != null)
 				GlobalParseCache.RemoveModule (file);

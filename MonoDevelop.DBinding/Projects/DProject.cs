@@ -291,8 +291,6 @@ namespace MonoDevelop.D.Projects
 			if (NeedsFullRebuild)
 				return true;
 
-			var cfg = GetConfiguration (configuration) as DProjectConfiguration;
-			
 			if (!EnableIncrementalLinking || 
 				!File.Exists (GetOutputFileName(configuration)))
 				return true;
@@ -420,7 +418,6 @@ namespace MonoDevelop.D.Projects
 				operationMonitor.Dispose ();
 				console.Dispose ();
 			}
-			
 		}
 		#endregion
 
