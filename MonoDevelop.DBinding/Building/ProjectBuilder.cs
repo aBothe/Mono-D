@@ -597,7 +597,7 @@ namespace MonoDevelop.D.Building
 				sb.Append (p.UnittestFlag).Append(' ');
 				
 			if(ProfilerModeHandler.IsProfilerMode && compiler.HasProfilerSupport)
-				sb.Append (p.ProfileFlag).Append(" -v ");
+				sb.Append (p.ProfileFlag).Append(' ');
 
 			if (cfg.CustomDebugIdentifiers != null && cfg.CustomVersionIdentifiers.Length != 0)
 				foreach (var id in cfg.CustomDebugIdentifiers)

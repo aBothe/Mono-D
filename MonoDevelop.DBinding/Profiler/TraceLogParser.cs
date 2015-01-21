@@ -43,7 +43,7 @@ namespace MonoDevelop.D.Profiler
 			return null;
 		}
 		
-		static Regex traceFuncRegex = new Regex ("^\\s*(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\S\\P{C}[\\P{C}.]*)$",RegexOptions.Compiled);
+		static readonly Regex traceFuncRegex = new Regex (@"^\s*(?<numcalls>\d+)\s+(?<treetime>\d+)\s+(?<functime>\d+)\s+(?<percall>\d+)\s+(?<name>(\S\P{C}[\P{C}.]*))$",RegexOptions.Compiled | RegexOptions.ExplicitCapture);
 		
 		public void Parse(AbstractDProject project)
 		{
@@ -66,17 +66,22 @@ namespace MonoDevelop.D.Profiler
 				
 				if (m.Success)
 				{
-					var symName = m.Groups[5].Value;
+					var symName = m.Groups["name"].Value;
 					
 					if(symName.StartsWith("="))
 						continue;
 					
 					bool mightBeLegalUnresolvableSymbol;
 					var dn = ExamTraceSymbol(symName, ctxt, out mightBeLegalUnresolvableSymbol);
-					
+
+					long v;
 					if(dn != null || mightBeLegalUnresolvableSymbol)
-						profilerPadWidget.AddTracedFunction(long.Parse(m.Groups[1].Value), long.Parse(m.Groups[2].Value), 
-						                                    long.Parse(m.Groups[3].Value), long.Parse(m.Groups[4].Value), dn ?? new DVariable{Name = symName});
+						profilerPadWidget.AddTracedFunction(
+							long.TryParse(m.Groups["numcalls"].Value, out v) ? v : 0, 
+							long.TryParse(m.Groups["treetime"].Value, out v) ? v : 0, 
+							long.TryParse(m.Groups["functime"].Value, out v) ? v : 0, 
+							long.TryParse(m.Groups["percall"].Value, out v) ? v : 0, 
+							dn ?? new DVariable{Name = symName});
 				}
 			}
 		}
@@ -122,19 +127,14 @@ namespace MonoDevelop.D.Profiler
 				ITypeDeclaration q;
 				var method = DParser.ParseMethodDeclarationHeader(symName, out q);
 				q = Demangler.RemoveNestedTemplateRefsFromQualifier(q);
-				method.Type = Demangler.RemoveNestedTemplateRefsFromQualifier(method.Type);
-				var methodType = TypeDeclarationResolver.GetMethodReturnType(method, ctxt);
-				var methodParameters = new List<AbstractType>();
-				
-				if(method.Parameters != null && method.Parameters.Count != 0)
-				{
-					foreach(var parm in method.Parameters)
-						methodParameters.Add(TypeDeclarationResolver.ResolveSingle(Demangler.RemoveNestedTemplateRefsFromQualifier(parm.Type),ctxt));
-				}
-				
-				ctxt.ContextIndependentOptions |= ResolutionOptions.IgnoreAllProtectionAttributes;
-				var overloads = TypeDeclarationResolver.Resolve(q, ctxt);
-				
+
+				AbstractType[] overloads = null;
+				D_Parser.Completion.CodeCompletion.DoTimeoutableCompletionTask (null, ctxt, () => {
+					try {
+						overloads = TypeDeclarationResolver.HandleNodeMatches(DResolver.LookupIdRawly(ctxt.ParseCache, q), ctxt, null, q);
+					}
+					catch(Exception ex){ MonoDevelop.Core.LoggingService.LogWarning("Error during trace.log symbol resolution of "+q.ToString(), ex); }
+				});
 				
 				if(overloads == null || overloads.Length == 0)
 					return null;
@@ -142,6 +142,18 @@ namespace MonoDevelop.D.Profiler
 					ds = overloads[0] as DSymbol;
 				else
 				{
+					method.Type = Demangler.RemoveNestedTemplateRefsFromQualifier(method.Type);
+					var methodType = TypeDeclarationResolver.GetMethodReturnType(method, ctxt);
+
+					var methodParameters = new List<AbstractType>();
+					D_Parser.Completion.CodeCompletion.DoTimeoutableCompletionTask (null, ctxt, () => {
+						if(method.Parameters != null && method.Parameters.Count != 0)
+						{
+							foreach(var parm in method.Parameters)
+								methodParameters.Add(TypeDeclarationResolver.ResolveSingle(Demangler.RemoveNestedTemplateRefsFromQualifier(parm.Type),ctxt));
+						}
+					});
+
 					foreach(var o in overloads)
 					{
 						ds = o as DSymbol;
