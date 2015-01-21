@@ -9,7 +9,6 @@ using MonoDevelop.Core.Serialization;
 using MonoDevelop.D.Building;
 using MonoDevelop.Ide;
 using MonoDevelop.Projects;
-using MonoDevelop.D.Profiler.Commands;
 using Newtonsoft.Json;
 namespace MonoDevelop.D.Projects
 {
@@ -422,8 +421,6 @@ namespace MonoDevelop.D.Projects
 				console.Dispose ();
 			}
 			
-			if(ProfilerModeHandler.IsProfilerMode && Compiler.HasProfilerSupport)
-				IdeApp.CommandService.DispatchCommand( "MonoDevelop.D.Profiler.Commands.ProfilerCommands.AnalyseTaceLog");
 		}
 		#endregion
 

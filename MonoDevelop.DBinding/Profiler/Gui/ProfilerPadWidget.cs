@@ -5,6 +5,7 @@ using D_Parser.Dom;
 using MonoDevelop.D.Profiler.Commands;
 using MonoDevelop.Core;
 using MonoDevelop.D.Projects;
+using MonoDevelop.Ide.Gui;
 
 namespace MonoDevelop.D.Profiler.Gui
 {
@@ -37,7 +38,21 @@ namespace MonoDevelop.D.Profiler.Gui
 
 		protected void OnRefreshActionActivated (object sender, EventArgs e)
 		{
-			IdeApp.CommandService.DispatchCommand( "MonoDevelop.D.Profiler.Commands.ProfilerCommands.AnalyseTaceLog");
+			RefreshTraceLog ();
+		}
+
+		public static void RefreshTraceLog()
+		{
+			Pad pad =IdeApp.Workbench.GetPad<DProfilerPad>();
+			if(pad == null || !(pad.Content is DProfilerPad))
+				return;
+
+			DProfilerPad profilerPad = (DProfilerPad)pad.Content;
+
+			if(ProfilerModeHandler.IsProfilerMode)
+				pad.Visible = true;
+			
+			profilerPad.AnalyseTraceFile();
 		}
 		
 		public void ClearTracedFunctions()
@@ -65,10 +80,7 @@ namespace MonoDevelop.D.Profiler.Gui
 		
 		public void RefreshSwitchProfilingIcon()
 		{
-			if(ProfilerModeHandler.IsProfilerMode)
-				switchProfilingModeAction.StockId = "gtk-yes";
-			else
-				switchProfilingModeAction.StockId = "gtk-no";
+			switchProfilingModeAction.StockId = ProfilerModeHandler.IsProfilerMode ? "gtk-yes" : "gtk-no";
 		}
 		
 		protected void OnSwitchProfilingModeActionActivated (object sender, EventArgs e)
@@ -78,9 +90,9 @@ namespace MonoDevelop.D.Profiler.Gui
 
 		protected void OnOpenTraceLogActionActivated (object sender, EventArgs e)
 		{
-			string file = TraceLogParser.TraceLogFile(IdeApp.ProjectOperations.CurrentSelectedProject as AbstractDProject);
+			string file = TraceLogParser.FindTrageLogFileName(IdeApp.ProjectOperations.CurrentSelectedProject as AbstractDProject);
 			if(file != null)
-				IdeApp.Workbench.OpenDocument(new FilePath(file), true);
+				IdeApp.Workbench.OpenDocument(new FilePath(file), null, true);
 		}
 
 		protected void OnCopyRowActionActivated (object sender, EventArgs e)

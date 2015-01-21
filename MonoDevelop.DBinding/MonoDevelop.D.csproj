@@ -281,7 +281,6 @@
     <Compile Include="gtk-gui\MonoDevelop.D.Profiler.Gui.ProfilerPadWidget.cs" />
     <Compile Include="Profiler\TraceLogParser.cs" />
     <Compile Include="Profiler\Commands\ProfilerCommands.cs" />
-    <Compile Include="Profiler\Commands\ProfilerCommandHandler.cs" />
     <Compile Include="Profiler\Commands\ProfilerModeHandler.cs" />
     <Compile Include="Profiler\Gui\DProfilerPad.cs" />
     <Compile Include="Gui\ExpressionEvaluationWidget.cs" />

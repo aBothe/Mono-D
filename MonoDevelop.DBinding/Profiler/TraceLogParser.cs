@@ -18,16 +18,14 @@ namespace MonoDevelop.D.Profiler
 	public class TraceLogParser
 	{
 		private ProfilerPadWidget profilerPadWidget;
-		private AbstractDProject lastProfiledProject;
 		public const string trace_log = "trace.log";
 		
 		public TraceLogParser (ProfilerPadWidget widget)
 		{
 			profilerPadWidget = widget;
 		}
-		
 
-		public static string TraceLogFile(AbstractDProject project)
+		public static string FindTrageLogFileName(AbstractDProject project)
 		{
 			if(project == null)
 				return null;
@@ -45,17 +43,17 @@ namespace MonoDevelop.D.Profiler
 		
 		static readonly Regex traceFuncRegex = new Regex (@"^\s*(?<numcalls>\d+)\s+(?<treetime>\d+)\s+(?<functime>\d+)\s+(?<percall>\d+)\s+(?<name>(\S\P{C}[\P{C}.]*))$",RegexOptions.Compiled | RegexOptions.ExplicitCapture);
 		
-		public void Parse(AbstractDProject project)
+		public void Parse()
 		{
-			var file = TraceLogFile(project);
+			Clear();
+			
+			var project = MonoDevelop.Ide.IdeApp.ProjectOperations.CurrentSelectedProject as AbstractDProject;
+			var file = FindTrageLogFileName(project);
 			if(file == null)
 			{
 				profilerPadWidget.AddTracedFunction(0,0,0,0,new DVariable{Name = trace_log+" not found.."});
 				return;
 			}
-		
-			lastProfiledProject = project;
-			profilerPadWidget.ClearTracedFunctions();
 			
 			var ctxt = ResolutionContext.Create(project.ParseCache, null, null);
 			
@@ -85,6 +83,7 @@ namespace MonoDevelop.D.Profiler
 				}
 			}
 		}
+
 		public void Clear()
 		{
 			profilerPadWidget.ClearTracedFunctions();

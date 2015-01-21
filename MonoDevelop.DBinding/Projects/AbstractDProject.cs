@@ -247,6 +247,13 @@ namespace MonoDevelop.D.Projects
 			return new MonoDevelop.D.Debugging.DExecutionCommand(GetOutputFileName(conf));
 		}
 
+		protected override void OnExecute (IProgressMonitor monitor, ExecutionContext context, ConfigurationSelector configuration)
+		{
+			base.OnExecute (monitor, context, configuration);
+
+			MonoDevelop.D.Profiler.Gui.ProfilerPadWidget.RefreshTraceLog();
+		}
+
 		public string GetAbsPath(string path)
 		{
 			try{

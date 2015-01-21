@@ -348,9 +348,6 @@
 	<!-- Profiler -->
 
 	<Extension path = "/MonoDevelop/Ide/Commands">
-		<Command id = "MonoDevelop.D.Profiler.Commands.ProfilerCommands.AnalyseTaceLog"
-                 defaultHandler = "MonoDevelop.D.Profiler.Commands.ProfilerCommandHandler"
-                 _label = "Analyse Tace Log" />
 		<Command id = "MonoDevelop.D.Profiler.Commands.ProfilerCommands.SwitchProfilerMode"
         		 type = "check"
         		 defaultHandler = "MonoDevelop.D.Profiler.Commands.ProfilerModeHandler"

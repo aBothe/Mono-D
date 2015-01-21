@@ -35,15 +35,25 @@ namespace MonoDevelop.D.Profiler.Commands
 		public static bool IsProfilerMode 
 		{
 			get { return isProfilerMode; } 
-			set 
+			set
 			{
+				var changed = isProfilerMode != value;
 				isProfilerMode = value;
-				
-				Pad pad =Ide.IdeApp.Workbench.GetPad<DProfilerPad>();
-				if(pad == null || !(pad.Content is DProfilerPad))
+
+				var pad = Ide.IdeApp.Workbench.GetPad<DProfilerPad> ();
+				if(pad == null)
 					return;
-				
-				((DProfilerPad)pad.Content).Widget.RefreshSwitchProfilingIcon();
+				var dpad = pad.Content as DProfilerPad;
+				if (dpad == null)
+					return;
+
+				if (isProfilerMode) {
+					pad.Visible = true;
+					if (changed)
+						pad.BringToFront ();
+				}
+
+				dpad.Widget.RefreshSwitchProfilingIcon();
 			}
 		}
 		
@@ -55,10 +65,7 @@ namespace MonoDevelop.D.Profiler.Commands
 		
 		protected override void Run ()
 		{
-			IsProfilerMode = !IsProfilerMode;
-			
-			if (!IsProfilerMode)
-				DProfilerPad.ShowPad (false);
+			IsProfilerMode = !IsProfilerMode;				
 		}
 	}
 }

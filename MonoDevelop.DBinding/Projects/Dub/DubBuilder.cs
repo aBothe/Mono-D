@@ -20,8 +20,11 @@ namespace MonoDevelop.D.Projects.Dub
 				sr.Append(' ').Append (DubSettings.Instance.CommonArgs);
 
 			var buildType = Ide.IdeApp.Workspace.ActiveExecutionTarget.Id;
-			if (!string.IsNullOrWhiteSpace(buildType))
-				sr.Append(" \"--build=").Append(buildType).Append("\"");
+			if (!string.IsNullOrWhiteSpace (buildType)) {
+				sr.Append (" \"--build=").Append (buildType).Append ("\"");
+
+				MonoDevelop.D.Profiler.Commands.ProfilerModeHandler.IsProfilerMode = buildType.ToLowerInvariant () == "profile";
+			}
 
 			if (prj.Configurations.Count > 1 && sel.GetConfiguration(prj).Name.ToLower() != "default")
 				sr.Append(" \"--config=").Append(sel.GetConfiguration(prj).Name).Append("\"");

@@ -11,16 +11,7 @@ namespace MonoDevelop.D.Profiler.Gui
 	{
 		private ProfilerPadWidget widget;
 		public TraceLogParser TraceParser {get; private set;}
-		
-		public static void ShowPad(bool visible)
-		{
-			Pad pad =Ide.IdeApp.Workbench.GetPad<DProfilerPad>();
-			if(pad == null || !(pad.Content is DProfilerPad))
-				return;
-			
-			pad.Visible = visible;
-		}
-		
+
 		public ProfilerPadWidget Widget
 		{
 			get { return widget; }
@@ -44,11 +35,9 @@ namespace MonoDevelop.D.Profiler.Gui
 			get { return widget; }
 		}
 
-		public void AnalyseTraceFile(AbstractDProject project)
+		public void AnalyseTraceFile()
 		{
-			TraceParser.Clear();
-			if(ProfilerModeHandler.IsProfilerMode)
-				TraceParser.Parse(project);
+			TraceParser.Parse();
 		}
 	}
 }
