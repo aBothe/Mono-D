@@ -372,11 +372,7 @@ namespace MonoDevelop.D.Building
                 out output,
                 out stdOutput);
 
-			// Error analysis
-			if (!string.IsNullOrEmpty (output))
-				targetBuildResult.AddError (f.FilePath, 0, 0, "", output);
-			if (!string.IsNullOrEmpty (stdOutput))
-				targetBuildResult.AddError (f.FilePath, 0, 0, "", stdOutput);
+			targetBuildResult.CompilerOutput = (stdOutput ?? "") + "\n" + (output ?? "");
 
 			ErrorExtracting.HandleReturnCode (monitor,targetBuildResult, _exitCode);
 
