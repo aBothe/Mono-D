@@ -25,7 +25,7 @@ namespace MonoDevelop.D.Profiler
 			profilerPadWidget = widget;
 		}
 
-		public static string FindTrageLogFileName(AbstractDProject project)
+		public static string FindTraceLogFileName(AbstractDProject project)
 		{
 			if(project == null)
 				return null;
@@ -49,7 +49,7 @@ namespace MonoDevelop.D.Profiler
 
 			var editor = MonoDevelop.Ide.IdeApp.Workbench.ActiveDocument;
 			var project = ((editor != null && editor.HasProject) ? editor.Project : MonoDevelop.Ide.IdeApp.ProjectOperations.CurrentSelectedProject) as AbstractDProject;
-			var file = FindTrageLogFileName(project);
+			var file = FindTraceLogFileName(project);
 			if(file == null)
 			{
 				profilerPadWidget.AddTracedFunction(0,0,0,0,new DVariable{Name = trace_log+" not found.."});

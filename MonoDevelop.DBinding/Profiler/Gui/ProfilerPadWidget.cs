@@ -90,7 +90,7 @@ namespace MonoDevelop.D.Profiler.Gui
 
 		protected void OnOpenTraceLogActionActivated (object sender, EventArgs e)
 		{
-			string file = TraceLogParser.FindTrageLogFileName(IdeApp.ProjectOperations.CurrentSelectedProject as AbstractDProject);
+			string file = TraceLogParser.FindTraceLogFileName(IdeApp.ProjectOperations.CurrentSelectedProject as AbstractDProject);
 			if(file != null)
 				IdeApp.Workbench.OpenDocument(new FilePath(file), null, true);
 		}
