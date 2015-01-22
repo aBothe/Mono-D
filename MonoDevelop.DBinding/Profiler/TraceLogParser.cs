@@ -46,8 +46,9 @@ namespace MonoDevelop.D.Profiler
 		public void Parse()
 		{
 			Clear();
-			
-			var project = MonoDevelop.Ide.IdeApp.ProjectOperations.CurrentSelectedProject as AbstractDProject;
+
+			var editor = MonoDevelop.Ide.IdeApp.Workbench.ActiveDocument;
+			var project = ((editor != null && editor.HasProject) ? editor.Project : MonoDevelop.Ide.IdeApp.ProjectOperations.CurrentSelectedProject) as AbstractDProject;
 			var file = FindTrageLogFileName(project);
 			if(file == null)
 			{
