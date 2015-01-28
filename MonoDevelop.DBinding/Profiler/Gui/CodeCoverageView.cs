@@ -185,6 +185,33 @@ namespace MonoDevelop.D
 			return true;
 		}
 
+		class CovLineMarker : LineBackgroundMarker
+		{
+			readonly int hits;
+			readonly Cairo.Color bg;
+
+			public CovLineMarker(int hits, Cairo.Color col, Cairo.Color bg) : base(col)
+			{
+				this.hits = hits;
+				this.bg = bg;
+			}
+
+			public override void DrawAfterEol (Mono.TextEditor.TextEditor textEditor, Cairo.Context cr, double y, EndOfLineMetrics lineHeight)
+			{
+				using (var pango = cr.CreateLayout ()) {
+					pango.FontDescription = textEditor.Options.Font;
+					cr.SetSourceColor (bg);
+
+					pango.SetText(hits.ToString ());
+
+					cr.MoveTo (lineHeight.TextRenderEndPosition, y);
+					cr.ShowLayout (pango);
+				}
+
+				base.DrawAfterEol (textEditor, cr, y, lineHeight);
+			}
+		}
+
 		readonly List<TextLineMarker> lastMarkers = new List<TextLineMarker> ();
 		void RefreshCoverageViewData()
 		{
@@ -194,9 +221,11 @@ namespace MonoDevelop.D
 
 			var red = new Cairo.Color (1, 0, 0, 0.4);
 			var green = new Cairo.Color (0, 200, 0, 0.4);
+			var bg = TextEditor.Options.GetColorStyle ().BackgroundReadOnly.Color;
+			bg = new Cairo.Color (1.0 - bg.R, 1.0 - bg.G, 1.0 - bg.B);
 
 			foreach (var kv in coverage) {
-				var mk = new LineBackgroundMarker ( kv.Value == 0 ? red : green);
+				var mk = new CovLineMarker (kv.Value, kv.Value == 0 ? red : green, bg);
 				Document.AddMarker (Document.GetLine(kv.Key), mk, false);
 				lastMarkers.Add (mk);
 			}
