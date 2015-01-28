@@ -6,7 +6,7 @@
 	copyright=""
 	description="D Language Binding"
 	category="Language bindings"
-	version="2.6.4">
+	version="2.7">
 
 	<!-- Resources -->
 
@@ -299,6 +299,9 @@
 
 		<!-- Usages highlighting -->
 		<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.Highlighting.HighlightUsagesExtension" />
+
+		<!-- Code Coverage highlighting -->
+		<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.Profiler.Gui.CodeCoverageEditorExtension" />
 	</Extension>
 
 	<Extension path = "/MonoDevelop/SourceEditor2/TooltipProviders">

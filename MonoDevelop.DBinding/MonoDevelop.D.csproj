@@ -330,6 +330,8 @@
     <Compile Include="Parser\DPseudoUnresolvedFile.cs" />
     <Compile Include="Refactoring\SortImportsCommandHandler.cs" />
     <Compile Include="Debugging\DExecutionCommand.cs" />
+    <Compile Include="Profiler\Gui\CodeCoverageView.cs" />
+    <Compile Include="Profiler\Gui\CodeCoverageEditorExtension.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
