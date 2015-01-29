@@ -222,7 +222,7 @@ namespace MonoDevelop.D
 			var red = new Cairo.Color (1, 0, 0, 0.4);
 			var green = new Cairo.Color (0, 200, 0, 0.4);
 			var bg = TextEditor.Options.GetColorStyle ().BackgroundReadOnly.Color;
-			bg = new Cairo.Color (1.0 - bg.R, 1.0 - bg.G, 1.0 - bg.B);
+			bg = new Cairo.Color (1.0 - bg.R, 1.0 - bg.G, 1.0 - bg.B, 0.4);
 
 			foreach (var kv in coverage) {
 				var mk = new CovLineMarker (kv.Value, kv.Value == 0 ? red : green, bg);
