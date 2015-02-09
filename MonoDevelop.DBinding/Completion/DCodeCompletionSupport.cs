@@ -148,7 +148,7 @@ namespace MonoDevelop.D.Completion
 		}
 	}
 
-	public class TokenCompletionData : CompletionData
+	class TokenCompletionData : CompletionData
 	{
 		public byte Token { get; set; }
 
@@ -207,7 +207,7 @@ namespace MonoDevelop.D.Completion
 		}
 	}
 
-	public class PackageCompletionData : CompletionData
+	class PackageCompletionData : CompletionData
 	{
 		public string Path;
 		public string Name;
@@ -281,7 +281,7 @@ namespace MonoDevelop.D.Completion
 		}
 	}
 
-	public class NamespaceCompletionData : CompletionData
+	class NamespaceCompletionData : CompletionData
 	{
 		string modName;
 		public readonly DModule Module;
@@ -351,7 +351,7 @@ namespace MonoDevelop.D.Completion
 		}
 	}
 
-	public class DCompletionData : CompletionData, IComparable<ICompletionData>
+	class DCompletionData : CompletionData, IComparable<ICompletionData>
 	{
 		internal class NodeCompletionCategory : CompletionCategory
 		{
