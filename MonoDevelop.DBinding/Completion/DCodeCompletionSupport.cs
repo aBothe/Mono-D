@@ -54,6 +54,7 @@ namespace MonoDevelop.D.Completion
 
 	class CompletionDataGenerator : ICompletionDataGenerator
 	{
+		public readonly Dictionary<INode, MonoDevelop.D.Completion.DCompletionData.NodeCompletionCategory> categoryCache = new Dictionary<INode, MonoDevelop.D.Completion.DCompletionData.NodeCompletionCategory>();
 		public readonly CompletionDataList CompletionDataList;
 		INode scopedBlock;
 
@@ -61,11 +62,6 @@ namespace MonoDevelop.D.Completion
 		{
 			CompletionDataList = l;
 			this.scopedBlock = scopedBlock;
-		}
-
-		~CompletionDataGenerator ()
-		{
-			DCompletionData.catCache.Clear();
 		}
 
 		Dictionary<int, DCompletionData> overloadCheckDict = new Dictionary<int, DCompletionData>();
@@ -82,7 +78,7 @@ namespace MonoDevelop.D.Completion
 			}
 			else
 			{
-				CompletionDataList.Add(overloadCheckDict[Node.NameHash] = new DCompletionData(Node, Node.Parent == scopedBlock));
+				CompletionDataList.Add(overloadCheckDict[Node.NameHash] = new DCompletionData(categoryCache, Node, Node.Parent == scopedBlock));
 			}
 		}
 
@@ -131,7 +127,7 @@ namespace MonoDevelop.D.Completion
 			}
 			else
 			{
-				CompletionDataList.Add(overloadCheckDict[Node.NameHash] = new DCompletionData(Node, Node.Parent == scopedBlock) {
+				CompletionDataList.Add(overloadCheckDict[Node.NameHash] = new DCompletionData(categoryCache, Node, Node.Parent == scopedBlock) {
 					CompletionText = codeToGenerate
 				});
 			}
@@ -391,13 +387,15 @@ namespace MonoDevelop.D.Completion
 		}
 
 		bool parentContainsLocals;
-		internal static Dictionary<INode, NodeCompletionCategory> catCache = new Dictionary<INode, NodeCompletionCategory>();
+		internal readonly Dictionary<INode, NodeCompletionCategory> catCache;
 
-		public DCompletionData(INode n, bool parentContainsLocals)
+		public DCompletionData(Dictionary<INode, NodeCompletionCategory> completionCategoryCache, INode n, bool parentContainsLocals)
 		{
 			Node = n as DNode;
 			this.parentContainsLocals = parentContainsLocals;
 			this.DisplayFlags = ICSharpCode.NRefactory.Completion.DisplayFlags.DescriptionHasMarkup;
+
+			this.catCache = completionCategoryCache;
 		}
 
 		public override IconId Icon
@@ -497,7 +495,7 @@ namespace MonoDevelop.D.Completion
 
 		public void AddOverload(INode n)
 		{
-			AddOverload(new DCompletionData(n, parentContainsLocals));
+			AddOverload(new DCompletionData(catCache, n, parentContainsLocals));
 		}
 
 		public override void AddOverload(ICompletionData n)
