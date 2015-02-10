@@ -73,19 +73,15 @@ namespace MonoDevelop.D.Highlighting
 				referencedNode = mr.Definition;
 			}
 
-
-			var parseCache = Document.HasProject ?
-						(Document.Project as AbstractDProject).ParseCache :
-						DCompilerService.Instance.GetDefaultCompiler().GenParseCacheView();
-
 			IEnumerable<ISyntaxRegion> refs = null;
-			try{
-				refs = D_Parser.Refactoring.ReferencesFinder.Scan(SyntaxTree, referencedNode, ctxt);
-			}
-			catch (Exception ex)
-			{
-				LoggingService.LogInfo("Error during highlighting usages", ex);
-			}
+
+			CodeCompletion.DoTimeoutableCompletionTask (null, ctxt, () => {
+				try {
+					refs = D_Parser.Refactoring.ReferencesFinder.Scan (SyntaxTree, referencedNode, ctxt);
+				} catch (Exception ex) {
+					LoggingService.LogInfo ("Error during highlighting usages", ex);
+				}
+			});
 			
 			if(refs != null)
 				foreach (var sr in refs)
