@@ -58,8 +58,7 @@ namespace MonoDevelop.D.Highlighting
 		protected override IEnumerable<Ide.FindInFiles.MemberReference> GetReferences(Tuple<ResolutionContext, DSymbol> tup, System.Threading.CancellationToken token)
 		{
 			var ctxt = tup.Item1;
-			ctxt.CancelOperation = false;
-			token.Register(()=>ctxt.CancelOperation = true);
+			ctxt.CancellationToken = token;
 			var mr = tup.Item2;
 
 			var referencedNode = mr.Definition;
