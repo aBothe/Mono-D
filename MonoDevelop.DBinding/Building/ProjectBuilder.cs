@@ -584,6 +584,9 @@ namespace MonoDevelop.D.Building
 
 		public static string GenAdditionalAttributes (DCompilerConfiguration compiler, DProjectConfiguration cfg)
 		{
+			if (compiler == null || cfg == null)
+				return string.Empty;
+			
 			var sb = new StringBuilder ();
 			var p = compiler.ArgumentPatterns;
 
@@ -614,6 +617,9 @@ namespace MonoDevelop.D.Building
 					sb.Append (p.VersionDefinition).Append('=').Append(id).Append(' ');
 
 			// DDoc handling
+			if (cfg.Project == null)
+				return sb.ToString ().Trim ();
+			
 			var ddocFiles = new List<string> ();
 			var files = cfg.Project.GetItemFiles (true);
 			foreach (var f in files)
