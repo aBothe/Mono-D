@@ -68,9 +68,6 @@ namespace MonoDevelop.D.Completion
 
 		public void Add(INode Node)
 		{
-			if (Node == null || Node.NameHash == 0)
-				return;
-
 			DCompletionData dc;
 			if (overloadCheckDict.TryGetValue(Node.NameHash, out dc))
 			{
