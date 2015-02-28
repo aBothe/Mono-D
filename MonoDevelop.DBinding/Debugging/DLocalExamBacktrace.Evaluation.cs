@@ -153,8 +153,8 @@ namespace MonoDevelop.D.Debugging
 
 				if (ctxt == null)
 					return null;
-
-				return AmbiguousType.Get(D_Parser.Resolver.TypeResolution.TypeDeclarationResolver.ResolveIdentifier (s.Name, ctxt, null));
+				
+				return AmbiguousType.Get(ExpressionTypeEvaluation.GetOverloads (new IdentifierExpression(s.Name), ctxt, null));
 			}
 
 			return null;
