@@ -152,7 +152,8 @@ namespace MonoDevelop.D.Resolver
 			ctxt = ResolutionContext.Create(ed, false);
 
 			//return DResolver.ResolveTypeLoosely(ed, out resolutionAttempt, ctxt);
-			return AmbiguousType.TryDissolve(DResolver.ResolveTypeLoosely(ed, out resolutionAttempt, ctxt)).ToArray();
+			ISyntaxRegion sr;
+			return AmbiguousType.TryDissolve(DResolver.ResolveTypeLoosely(ed, out resolutionAttempt, out sr, ctxt)).ToArray();
 		}
 	}
 }

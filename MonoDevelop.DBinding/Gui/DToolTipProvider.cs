@@ -44,13 +44,18 @@ namespace MonoDevelop.D.Gui
 
 		#endregion
 
+		class TTI{
+			public AbstractType t;
+			public ISyntaxRegion sr;
+		}
+
 		protected override Window CreateTooltipWindow (TextEditor editor, int offset, Gdk.ModifierType modifierState, TooltipItem item)
 		{
 			var doc = IdeApp.Workbench.ActiveDocument;
 			if (doc == null)
 				return null;
 
-			var titem = item.Item as AbstractType;
+			var titem = item.Item as TTI;
 
 			if (titem == null)
 				return null;
@@ -58,7 +63,7 @@ namespace MonoDevelop.D.Gui
 			var result = new TooltipInformationWindow ();
 			result.ShowArrow = true;
 
-			foreach(var i in AmbiguousType.TryDissolve(titem))
+			foreach(var i in AmbiguousType.TryDissolve(titem.t))
 			{
 				if (i == null)
 					continue;
@@ -78,10 +83,7 @@ namespace MonoDevelop.D.Gui
 
 		public override Window ShowTooltipWindow (TextEditor editor, int offset, Gdk.ModifierType modifierState, int mouseX, int mouseY, TooltipItem item)
 		{
-			var titems = item.Item as DSymbol;/*
-			if (lastNode != null && lastWindow != null && lastWindow.IsRealized && titem.Result != null && lastNode == titem.Result)
-				return lastWindow;*/
-
+			var titem = (item.Item as TTI).sr;
 			DestroyLastTooltipWindow ();
 
 			var tipWindow = CreateTooltipWindow (editor, offset, modifierState, item) as TooltipInformationWindow;
@@ -92,8 +94,8 @@ namespace MonoDevelop.D.Gui
 
 			Cairo.Point p1, p2;
 
-			DNode dn;
-			if (titems != null && (dn = titems.Definition) != null)
+			var dn = titem as INode;
+			if (dn != null)
 			{
 				if (dn.NameLocation.IsEmpty)
 					p1 = p2 = editor.LocationToPoint(dn.Location.Line, dn.Location.Column);
@@ -160,11 +162,13 @@ namespace MonoDevelop.D.Gui
 
 			// Let the engine build all contents
 			DResolver.NodeResolutionAttempt att;
-			var rr = DResolver.ResolveTypeLoosely(ed, out att);
+			ISyntaxRegion sr;
+			var rr = DResolver.ResolveTypeLoosely(ed, out att, out sr);
 
 			// Create tool tip item
 			if (rr != null)
-				return new TooltipItem(rr, offset, 1);
+				return new TooltipItem (new TTI{t = rr, sr = sr}, offset, 1);
+			
 			return null;
 		}
 	}
