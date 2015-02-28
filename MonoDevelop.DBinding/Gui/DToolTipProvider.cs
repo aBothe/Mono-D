@@ -78,7 +78,7 @@ namespace MonoDevelop.D.Gui
 
 		public override Window ShowTooltipWindow (TextEditor editor, int offset, Gdk.ModifierType modifierState, int mouseX, int mouseY, TooltipItem item)
 		{
-			var titems = item.Item as AbstractType;/*
+			var titems = item.Item as DSymbol;/*
 			if (lastNode != null && lastWindow != null && lastWindow.IsRealized && titem.Result != null && lastNode == titem.Result)
 				return lastWindow;*/
 
@@ -88,13 +88,12 @@ namespace MonoDevelop.D.Gui
 			if (tipWindow == null)
 				return null;
 
-			var titem = titems.DeclarationOrExpressionBase;
 			var positionWidget = editor.TextArea;
 
 			Cairo.Point p1, p2;
 
-			var dn = titem as INode;
-			if (dn != null)
+			DNode dn;
+			if (titems != null && (dn = titems.Definition) != null)
 			{
 				if (dn.NameLocation.IsEmpty)
 					p1 = p2 = editor.LocationToPoint(dn.Location.Line, dn.Location.Column);
@@ -104,10 +103,7 @@ namespace MonoDevelop.D.Gui
 					p2 = editor.LocationToPoint(dn.NameLocation.Line, dn.NameLocation.Column + (dn.Name ?? "").Length);
 				}
 			}
-			else if (titem != null) {
-				p1 = editor.LocationToPoint (titem.Location.Line, titem.Location.Column);
-				p2 = editor.LocationToPoint (titem.EndLocation.Line, titem.EndLocation.Column);
-			} else {
+			else {
 				p1 = editor.LocationToPoint (editor.OffsetToLocation(item.ItemSegment.Offset));
 				p2 = editor.LocationToPoint (editor.OffsetToLocation(item.ItemSegment.EndOffset));
 			}

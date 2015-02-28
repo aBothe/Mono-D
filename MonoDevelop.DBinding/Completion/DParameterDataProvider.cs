@@ -51,9 +51,9 @@ namespace MonoDevelop.D.Completion
 				var dr = (DelegateType)cur;
 
 				if (dr.IsFunctionLiteral)
-					return ((FunctionLiteral)dr.DeclarationOrExpressionBase).AnonymousMethod.Parameters;
+					return ((FunctionLiteral)dr.delegateTypeBase).AnonymousMethod.Parameters;
 				else
-					return ((DelegateDeclaration)dr.DeclarationOrExpressionBase).Parameters;
+					return ((DelegateDeclaration)dr.delegateTypeBase).Parameters;
 			}
 
 			return null;
