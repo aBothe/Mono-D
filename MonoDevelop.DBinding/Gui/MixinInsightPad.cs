@@ -120,13 +120,15 @@ namespace MonoDevelop.D.Gui
 				var sr = tup.Item1;
 				var ctxt = tup.Item2;
 
-				object result = null;
+				object result;
 				VariableValue vv;
 
 				if (sr is MixinStatement)
 					result = MixinAnalysis.ParseMixinDeclaration(sr as MixinStatement, ctxt, out vv);
 				else if (sr is TemplateMixin)
-					result = D_Parser.Resolver.ASTScanner.AbstractVisitor.GetTemplateMixinContent(ctxt, sr as TemplateMixin);
+					result = TypeDeclarationResolver.ResolveSingle((sr as TemplateMixin).Qualifier, ctxt);
+				else
+					result = null;
 
 				var o = ExpressionEvaluationPad.BuildObjectString(result);
 				DispatchService.GuiDispatch(() => outputEditor.Text = o);
