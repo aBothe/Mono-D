@@ -99,10 +99,10 @@ namespace MonoDevelop.D.Projects.Dub
 				foreach (var settings in Owner.GetBuildSettings(null))
 				{
 					List<DubBuildSetting> l;
-					if(settings.TryGetValue(DubBuildSettings.ImportPathsProperty, out l))
-						for (int i = l.Count - 1; i >= 0; i--) // Ignore architecture/os/compiler restrictions for now
-							for (int j = l[i].Values.Length - 1; j >= 0; j--)
-								yield return dir.ToAbsolute(l[i].Values[j]);
+					if (settings.TryGetValue (DubBuildSettings.ImportPathsProperty, out l))
+						foreach (var v in l) // Ignore architecture/os/compiler restrictions for now
+							foreach (var p in v.Values)
+								yield return dir.ToAbsolute (p);
 				}
 			}
 		}
