@@ -42,7 +42,7 @@ namespace MonoDevelop.D.Refactoring
 		protected override void Update(CommandArrayInfo info)
 		{
 			if (caps.Update ()) {
-				if (caps.resultResolutionAttempt != DResolver.NodeResolutionAttempt.RawSymbolLookup) {
+				if (caps.resultResolutionAttempt != LooseResolution.NodeResolutionAttempt.RawSymbolLookup) {
 					var refactoringMenu = new CommandInfoSet { Text = GettextCatalog.GetString ("Refactoring") };
 
 					if(caps.lastResults.Any(t => t is DSymbol && DRenameRefactoring.CanRenameNode ((t as DSymbol).Definition)))

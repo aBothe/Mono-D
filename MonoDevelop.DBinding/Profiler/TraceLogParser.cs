@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 using D_Parser.Dom;
@@ -131,7 +132,7 @@ namespace MonoDevelop.D.Profiler
 				AbstractType[] overloads = null;
 				D_Parser.Completion.CodeCompletion.DoTimeoutableCompletionTask (null, ctxt, () => {
 					try {
-						overloads = TypeDeclarationResolver.HandleNodeMatches(DResolver.LookupIdRawly(ctxt.ParseCache, q), ctxt, null, q);
+						overloads = AmbiguousType.TryDissolve(LooseResolution.LookupIdRawly(ctxt.ParseCache, q, ctxt.ScopedBlock.NodeRoot as DModule)).ToArray();
 					}
 					catch(Exception ex){ MonoDevelop.Core.LoggingService.LogWarning("Error during trace.log symbol resolution of "+q.ToString(), ex); }
 				});

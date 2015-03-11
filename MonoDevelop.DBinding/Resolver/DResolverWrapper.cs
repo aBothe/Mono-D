@@ -140,20 +140,18 @@ namespace MonoDevelop.D.Resolver
 			return AmbiguousType.TryDissolve(DResolver.ResolveType(edData, ctxt:ResolverContext)).ToArray();
 		}
 
-		public static AbstractType[] ResolveHoveredCodeLoosely(out ResolutionContext ctxt, out IEditorData ed, out DResolver.NodeResolutionAttempt resolutionAttempt, Document doc = null)
+		public static AbstractType[] ResolveHoveredCodeLoosely(out IEditorData ed, out LooseResolution.NodeResolutionAttempt resolutionAttempt, Document doc = null)
 		{
 			ed = CreateEditorData(doc);
 			if (ed == null)
 			{
-				resolutionAttempt = DResolver.NodeResolutionAttempt.Normal;
-				ctxt = null;
+				resolutionAttempt = LooseResolution.NodeResolutionAttempt.Normal;
 				return null;
 			}
-			ctxt = ResolutionContext.Create(ed, false);
 
 			//return DResolver.ResolveTypeLoosely(ed, out resolutionAttempt, ctxt);
 			ISyntaxRegion sr;
-			return AmbiguousType.TryDissolve(DResolver.ResolveTypeLoosely(ed, out resolutionAttempt, out sr, ctxt)).ToArray();
+			return AmbiguousType.TryDissolve(LooseResolution.ResolveTypeLoosely(ed, out resolutionAttempt, out sr)).ToArray();
 		}
 	}
 }

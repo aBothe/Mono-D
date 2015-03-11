@@ -161,9 +161,9 @@ namespace MonoDevelop.D.Gui
 			};
 
 			// Let the engine build all contents
-			DResolver.NodeResolutionAttempt att;
+			LooseResolution.NodeResolutionAttempt att;
 			ISyntaxRegion sr;
-			var rr = DResolver.ResolveTypeLoosely(ed, out att, out sr);
+			var rr = LooseResolution.ResolveTypeLoosely(ed, out att, out sr);
 
 			// Create tool tip item
 			if (rr != null)

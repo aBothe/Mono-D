@@ -30,7 +30,7 @@ namespace MonoDevelop.D.Refactoring.CodeActions
 			var refCtxt = refactoringContext as DRefactoringContext;
 
 			var res = refCtxt.CurrentResults;
-			if (res != null && refCtxt.resultResolutionAttempt == DResolver.NodeResolutionAttempt.RawSymbolLookup) {
+			if (res != null && refCtxt.resultResolutionAttempt == LooseResolution.NodeResolutionAttempt.RawSymbolLookup) {
 				foreach (var t in res)
 					if (t is DSymbol)
 						yield return new InnerAction ((t as DSymbol).Definition, refCtxt);

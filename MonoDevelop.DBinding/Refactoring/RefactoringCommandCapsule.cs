@@ -44,21 +44,23 @@ namespace MonoDevelop.D.Refactoring
 {
 	class RefactoringCommandCapsule
 	{
-		public ResolutionContext ctxt;
 		public D_Parser.Completion.IEditorData ed;
 		public AbstractType[] lastResults;
-		public DResolver.NodeResolutionAttempt resultResolutionAttempt;
+		public LooseResolution.NodeResolutionAttempt resultResolutionAttempt;
 		public Document lastDoc;
 
 		public bool Update(Document doc = null)
 		{
-			lastResults = DResolverWrapper.ResolveHoveredCodeLoosely(out ctxt, out ed, out resultResolutionAttempt, lastDoc = (doc ?? IdeApp.Workbench.ActiveDocument));
+			lastResults = DResolverWrapper.ResolveHoveredCodeLoosely(out ed, out resultResolutionAttempt, lastDoc = (doc ?? IdeApp.Workbench.ActiveDocument));
 
 			return lastResults != null && lastResults.Length > 0;
 		}
 
 		AbstractType GetResult()
 		{
+			if (lastResults == null || lastResults.Length < 1)
+				return null;
+
 			if (lastResults.Length == 1)
 				return lastResults [0];
 
@@ -68,7 +70,7 @@ namespace MonoDevelop.D.Refactoring
 
 		public void GotoDeclaration()
 		{
-			AbstractType res = GetResult();
+			var res = GetResult();
 			if (res != null)
 				GotoDeclaration(res);
 		}
@@ -89,7 +91,7 @@ namespace MonoDevelop.D.Refactoring
 
 		public void FindReferences(bool allOverloads = false)
 		{
-			AbstractType res = GetResult();
+			var res = GetResult();
 			INode n;
 			if (res != null && (n = DResolver.GetResultMember(res, true)) != null)
 				ReferenceFinding.StartReferenceSearchAsync(n, allOverloads);
@@ -104,6 +106,8 @@ namespace MonoDevelop.D.Refactoring
 		{
 			var monitor = IdeApp.Workbench.ProgressMonitors.GetSearchProgressMonitor(true, true);
 			monitor.BeginStepTask (GettextCatalog.GetString ("Find Derived Classes"), lastResults.Length,1);
+
+			var ctxt = ResolutionContext.Create (ed, true);
 
 			foreach (var t in lastResults)
 			{
@@ -130,7 +134,7 @@ namespace MonoDevelop.D.Refactoring
 
 		public void RenameSymbol()
 		{
-			AbstractType res = GetResult();
+			var res = GetResult();
 			INode n;
 			if (res != null && (n = DResolver.GetResultMember(res, true)) != null &&
 				DRenameRefactoring.CanRenameNode(n))

@@ -40,15 +40,14 @@ namespace MonoDevelop.D.Refactoring
 		public readonly ParsedDModule ParsedDoc;
 		AbstractType[] lastResults;
 
-		public ResolutionContext ctxt;
 		public IEditorData ed;
-		public DResolver.NodeResolutionAttempt resultResolutionAttempt;
+		public LooseResolution.NodeResolutionAttempt resultResolutionAttempt;
 
 		public AbstractType[] CurrentResults
 		{
 			get{
 				if (lastResults == null)
-					lastResults = DResolverWrapper.ResolveHoveredCodeLoosely (out ctxt, out ed, out resultResolutionAttempt, Doc);
+					lastResults = DResolverWrapper.ResolveHoveredCodeLoosely (out ed, out resultResolutionAttempt, Doc);
 
 				return lastResults;
 			}
