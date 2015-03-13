@@ -33,7 +33,7 @@ namespace MonoDevelop.D.Refactoring
 			{
 				if (t.Length == 2)
 				{
-					if(t[0].Equals("a"))
+					if(RefactoryCommands.ImportSymbol.Equals(t[0]))
 						ImportStmtCreation.GenerateImportStatementForNode(t[1] as INode, caps.ed, new TextDocumentAdapter(IdeApp.Workbench.ActiveDocument.Editor));
 				}
 			}
@@ -76,7 +76,7 @@ namespace MonoDevelop.D.Refactoring
 							importSymbolMenu.CommandInfos.Add (new CommandInfo {
 								Text = "import " + AbstractNode.GetNodePath (m, true) + ";", 
 								Icon = MonoDevelop.Ide.Gui.Stock.AddNamespace
-							}, new object[]{ "a", ds.Definition });
+							}, new object[]{ RefactoryCommands.ImportSymbol, ds.Definition });
 						}
 					}
 
