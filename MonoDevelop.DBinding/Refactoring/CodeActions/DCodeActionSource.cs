@@ -9,7 +9,7 @@ namespace MonoDevelop.D.Refactoring.CodeActions
 
 		public DCodeActionSource ()
 		{
-			providers.Add (new ImportSymbolAction ());
+			//TODO: Add nice code refactorings like "Extract Method", "Create Class of selected identifier", "Optimize out while(true)" and so on..
 		}
 
 		public IEnumerable<CodeActionProvider> GetProviders ()

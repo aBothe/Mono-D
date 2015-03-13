@@ -315,7 +315,6 @@
     <Compile Include="Unittest\UnittestSettings.cs" />
     <Compile Include="Completion\TooltipMarkupGen.cs" />
     <Compile Include="Completion\TooltipInfoGen.cs" />
-    <Compile Include="Refactoring\CodeActions\ImportSymbolAction.cs" />
     <Compile Include="GuiBuilder\GuiBuilderDisplayBinding.cs" />
     <Compile Include="GuiBuilder\GtkDProjectServiceExtension.cs" />
     <Compile Include="GuiBuilder\GuiBuilderView.cs" />
