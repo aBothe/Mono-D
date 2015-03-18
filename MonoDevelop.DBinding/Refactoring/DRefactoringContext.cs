@@ -31,6 +31,7 @@ using D_Parser.Resolver;
 using MonoDevelop.D.Resolver;
 using D_Parser.Completion;
 using D_Parser.Resolver.TypeResolution;
+using D_Parser.Dom;
 
 namespace MonoDevelop.D.Refactoring
 {
@@ -42,12 +43,13 @@ namespace MonoDevelop.D.Refactoring
 
 		public IEditorData ed;
 		public LooseResolution.NodeResolutionAttempt resultResolutionAttempt;
+		public ISyntaxRegion syntaxObject;
 
 		public AbstractType[] CurrentResults
 		{
 			get{
 				if (lastResults == null)
-					lastResults = DResolverWrapper.ResolveHoveredCodeLoosely (out ed, out resultResolutionAttempt, Doc);
+					lastResults = DResolverWrapper.ResolveHoveredCodeLoosely (out ed, out resultResolutionAttempt, out syntaxObject, Doc);
 
 				return lastResults;
 			}

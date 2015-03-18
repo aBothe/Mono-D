@@ -35,6 +35,12 @@ namespace MonoDevelop.D.Refactoring
 				{
 					if(RefactoryCommands.ImportSymbol.Equals(t[0]))
 						ImportStmtCreation.GenerateImportStatementForNode(t[1] as INode, caps.ed, new TextDocumentAdapter(IdeApp.Workbench.ActiveDocument.Editor));
+					if (RefactoryCommands.QuickFix.Equals (t [0])) {
+						var n = t [1] as DNode;
+						var textToGenerate = DNode.GetNodePath (n, false) + ".";
+
+						caps.lastDoc.Editor.Insert (caps.lastDoc.Editor.LocationToOffset(caps.lastSyntaxObject.Location.Line, caps.lastSyntaxObject.Location.Column), textToGenerate);
+					}
 				}
 			}
 		}
@@ -70,9 +76,11 @@ namespace MonoDevelop.D.Refactoring
 						var ds = t as DSymbol;
 						if (ds == null)
 							continue;
+						
 						var m = ds.Definition.NodeRoot as DModule;
 						if (m != null && !alreadyAddedItems.Contains (m)) {
 							alreadyAddedItems.Add (m);
+
 							importSymbolMenu.CommandInfos.Add (new CommandInfo {
 								Text = "import " + AbstractNode.GetNodePath (m, true) + ";", 
 								Icon = MonoDevelop.Ide.Gui.Stock.AddNamespace
@@ -81,6 +89,25 @@ namespace MonoDevelop.D.Refactoring
 					}
 
 					if (importSymbolMenu.CommandInfos.Count > 0) {
+						importSymbolMenu.CommandInfos.AddSeparator ();
+
+						alreadyAddedItems.Clear ();
+						foreach (var t in caps.lastResults) {
+							var ds = t as DSymbol;
+							if (ds == null)
+								continue;
+
+							var m = ds.Definition.NodeRoot as DModule;
+							if (m != null && !alreadyAddedItems.Contains (m)) {
+								alreadyAddedItems.Add (m);
+
+								importSymbolMenu.CommandInfos.Add (new CommandInfo{
+									Text = AbstractNode.GetNodePath(ds.Definition, true)
+								}, new object[] { RefactoryCommands.QuickFix, ds.Definition });
+							}
+						}
+
+
 						// To explicitly show the Ctrl+Alt+Space hint.
 						importSymbolMenu.CommandInfos.AddSeparator ();
 						importSymbolMenu.CommandInfos.Add (IdeApp.CommandService.GetCommandInfo (RefactoryCommands.ImportSymbol), new Action (caps.TryImportMissingSymbol));

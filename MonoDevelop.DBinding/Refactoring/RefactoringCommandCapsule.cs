@@ -48,10 +48,11 @@ namespace MonoDevelop.D.Refactoring
 		public AbstractType[] lastResults;
 		public LooseResolution.NodeResolutionAttempt resultResolutionAttempt;
 		public Document lastDoc;
+		public ISyntaxRegion lastSyntaxObject;
 
 		public bool Update(Document doc = null)
 		{
-			lastResults = DResolverWrapper.ResolveHoveredCodeLoosely(out ed, out resultResolutionAttempt, lastDoc = (doc ?? IdeApp.Workbench.ActiveDocument));
+			lastResults = DResolverWrapper.ResolveHoveredCodeLoosely(out ed, out resultResolutionAttempt, out lastSyntaxObject, lastDoc = (doc ?? IdeApp.Workbench.ActiveDocument));
 
 			return lastResults != null && lastResults.Length > 0;
 		}
