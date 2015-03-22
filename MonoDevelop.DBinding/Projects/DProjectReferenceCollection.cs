@@ -82,6 +82,12 @@ namespace MonoDevelop.D.Projects
 
 					yield return path;
 				}
+
+				foreach (var p in Owner.Files) {
+					if (p.IsLink && p.IsExternalToProject && Directory.Exists (p.Link)) {
+						yield return p.Link;
+					}
+				}
 			}
 		}
 		public virtual IEnumerable<string> ReferencedProjectIds {get { return new string[0];}}
