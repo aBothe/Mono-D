@@ -13,6 +13,7 @@ using MonoDevelop.Ide.Gui;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MonoDevelop.Projects;
 
 namespace MonoDevelop.D.Resolver
 {
@@ -60,15 +61,16 @@ namespace MonoDevelop.D.Resolver
 
 			if (EditorDocument.HasProject)
 			{
+				var versions = new List<string>();
+				var debugConstants = new List<string> ();
+
 				var cfg = EditorDocument.Project.GetConfiguration(IdeApp.Workspace.ActiveConfiguration);
 
 				if (cfg is DProjectConfiguration)
 				{
 					var dcfg = cfg as DProjectConfiguration;
-					ed.GlobalDebugIds = dcfg.CustomDebugIdentifiers;
 					ed.IsDebug = dcfg.DebugMode;
 					ed.DebugLevel = dcfg.DebugLevel;
-					ed.GlobalVersionIds = dcfg.GlobalVersionIdentifiers;
 					double d;
 					ulong v;
 					if (Double.TryParse(EditorDocument.Project.Version, out d))
@@ -78,24 +80,95 @@ namespace MonoDevelop.D.Resolver
 				}
 				else if (cfg is DubProjectConfiguration)
 				{
-					var versions = new List<string>(VersionIdEvaluation.GetOSAndCPUVersions());
+					versions.AddRange(VersionIdEvaluation.GetOSAndCPUVersions());
 					
 					var dcfg = cfg as DubProjectConfiguration;
 					ed.IsDebug = dcfg.DebugMode;
-
-					HandleDubSettingsConditionExtraction(versions, (dcfg.ParentItem as DubProject).CommonBuildSettings);
-					HandleDubSettingsConditionExtraction(versions, dcfg.BuildSettings);
-					
-					ed.GlobalVersionIds = versions.ToArray();
 				}
+
+				foreach (var prj in GetProjectDependencyHierarchyToCurrentStartupProject(EditorDocument.Project, cfg.Selector))
+					if(prj is AbstractDProject)
+						ExtractVersionDebugConstantsFromProject (prj as AbstractDProject, versions, debugConstants);
+				
+				ed.GlobalDebugIds = debugConstants.ToArray ();
+				ed.GlobalVersionIds = versions.ToArray ();
 			}
 
-			if (ed.GlobalVersionIds == null)
+			if (ed.GlobalVersionIds == null || ed.GlobalVersionIds.Length == 0)
 			{
 				ed.GlobalVersionIds = VersionIdEvaluation.GetOSAndCPUVersions();
 			}
 
 			return ed;
+		}
+
+		static List<SolutionItem> GetProjectDependencyHierarchyToCurrentStartupProject(SolutionItem prj, ConfigurationSelector cfg)
+		{
+			var currentlySearchedProjects = new List<SolutionItem> ();
+			var nextProjectsToSearchIn = new List<SolutionItem> ();
+			var topologicalParents = new Dictionary<SolutionItem, SolutionItem> ();
+
+			var topologicalChain = new List<SolutionItem> ();
+			topologicalChain.Add (prj);
+
+			if (prj.ParentSolution.SingleStartup)
+				currentlySearchedProjects.Add (prj.ParentSolution.StartupItem);
+			else
+				currentlySearchedProjects.AddRange (prj.ParentSolution.MultiStartupItems);
+
+			while (currentlySearchedProjects.Count != 0) {
+
+				foreach (var currentlySearchedProject in currentlySearchedProjects) {
+					if (currentlySearchedProject == prj) {
+						
+						// Build topological chain by walking from leaf to root dependency.
+						while (topologicalParents.TryGetValue (prj, out prj))
+							topologicalChain.Add (prj);
+
+						return topologicalChain;
+					}
+
+					IEnumerable<SolutionItem> deps;
+					if (currentlySearchedProject is AbstractDProject)
+						deps = (currentlySearchedProject as AbstractDProject).GetReferencedDProjects (cfg);
+					else
+						deps = currentlySearchedProject.GetReferencedItems (cfg);
+
+					foreach (var dep in deps) {
+						if (topologicalParents.ContainsKey (dep)) // Discard any second or dependency relationship, also prevents cycles.
+							continue;
+						topologicalParents [dep] = currentlySearchedProject;
+						nextProjectsToSearchIn.Add (dep);
+					}
+				}
+
+				currentlySearchedProjects.Clear ();
+				currentlySearchedProjects.AddRange (nextProjectsToSearchIn);
+				nextProjectsToSearchIn.Clear ();
+			}
+
+			return topologicalChain;
+		}
+
+		static void ExtractVersionDebugConstantsFromProject(AbstractDProject prj, List<string> versions, List<string> debugConstants)
+		{
+			var cfg = prj.GetConfiguration(IdeApp.Workspace.ActiveConfiguration);
+
+			if (cfg is DProjectConfiguration)
+			{
+				var dcfg = cfg as DProjectConfiguration;
+				if (dcfg.CustomDebugIdentifiers != null)
+					debugConstants.AddRange (dcfg.CustomDebugIdentifiers);
+				if (dcfg.GlobalVersionIdentifiers != null)
+					versions.AddRange (dcfg.GlobalVersionIdentifiers);
+			}
+			else if (cfg is DubProjectConfiguration)
+			{
+				var dcfg = cfg as DubProjectConfiguration;
+
+				HandleDubSettingsConditionExtraction(versions, (dcfg.ParentItem as DubProject).CommonBuildSettings);
+				HandleDubSettingsConditionExtraction(versions, dcfg.BuildSettings);
+			}
 		}
 
 		private static void HandleDubSettingsConditionExtraction(List<string> versions, DubBuildSettings buildSets)
