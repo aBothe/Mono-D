@@ -40,7 +40,7 @@ namespace MonoDevelop.D.Completion
 				return new ResolutionContext(ed.ParseCache, new ConditionalCompilationFlags(ed));
 			}
 
-			return new ResolutionContext(DResolverWrapper.CreateCacheList(),
+			return new ResolutionContext(DResolverWrapper.CreateParseCacheView(),
 				new ConditionalCompilationFlags(VersionIdEvaluation.GetOSAndCPUVersions(), 1, true));
 		}
 

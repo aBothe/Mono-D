@@ -151,8 +151,10 @@ namespace MonoDevelop.D.Highlighting
 				if (root == null)
 					return;
 
-				var pcl = MonoDevelop.D.Resolver.DResolverWrapper.CreateCacheList(GuiDoc);
-				if (pcl.Contains(root))
+				var mod = (GuiDoc.ParsedDocument as ParsedDModule).DDom;
+
+				var pcl = MonoDevelop.D.Resolver.DResolverWrapper.CreateParseCacheView(GuiDoc);
+				if (pcl.EnumRootPackagesSurroundingModule(mod).Contains(root))
 					HandleDocumentParsed(this, EventArgs.Empty);
 			}
 		}

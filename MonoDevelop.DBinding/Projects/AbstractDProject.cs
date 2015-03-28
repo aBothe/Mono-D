@@ -24,21 +24,7 @@ namespace MonoDevelop.D.Projects
 		public IEnumerable<string> LocalIncludes {get{return References.Includes;}}
 		public abstract DProjectReferenceCollection References { get; }
 
-		protected MutableRootPackage fileLinkModulesRoot;
-
-		public virtual ParseCacheView ParseCache
-		{
-			get
-			{
-				var r = new ParseCacheView(IncludePaths);
-				r.Add (GetSourcePaths ());
-
-				if(fileLinkModulesRoot != null)
-					r.Add (fileLinkModulesRoot);
-
-				return r;
-			}
-		}
+		public MutableRootPackage LinkedFilePackage { get; private set;}
 
 		public IEnumerable<string> GetSourcePaths()
 		{
@@ -153,7 +139,7 @@ namespace MonoDevelop.D.Projects
 					var r = new MutableRootPackage();
 					foreach (var f in hasFileLinks)
 						r.AddModule (DParser.ParseFile (f.FilePath));
-					fileLinkModulesRoot = r;
+					LinkedFilePackage = r;
 				}) { IsBackground = true }.Start();
 		}
 			

@@ -50,7 +50,7 @@ namespace MonoDevelop.D.Refactoring
 			
 			var project = doc.HasProject ? doc.Project as AbstractDProject : null;
 
-			var parseCache = DResolverWrapper.CreateCacheList(project);
+			var parseCache = DResolverWrapper.CreateParseCacheView(project);
 
 			var modules = new List<DModule>();
 			if(project == null)

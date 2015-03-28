@@ -19,6 +19,7 @@ namespace MonoDevelop.D.Resolver
 {
 	public static class DResolverWrapper
 	{
+		#region EditorData creation
 		public static EditorData CreateEditorData(Document EditorDocument)
 		{
 			if (EditorDocument == null)
@@ -48,7 +49,7 @@ namespace MonoDevelop.D.Resolver
 
 			var caretOffset = ctx.TriggerOffset - (removeChar ? 1 : 0);
 			var caretLocation = new CodeLocation(ctx.TriggerLineOffset - deltaOffset, ctx.TriggerLine);
-			var codeCache = CreateCacheList(EditorDocument);
+			var codeCache = CreateParseCacheView(EditorDocument);
 
 			var ed = new EditorData
 			{
@@ -183,19 +184,21 @@ namespace MonoDevelop.D.Resolver
 						if (!string.IsNullOrWhiteSpace(ver) && !versions.Contains(ver))
 							versions.Add(ver);
 		}
+		#endregion
 
-		public static ParseCacheView CreateCacheList(Document Editor)
+		public static ParseCacheView CreateParseCacheView(Document Editor)
 		{
-			return CreateCacheList(Editor.HasProject ? Editor.Project as AbstractDProject : null);
+			return CreateParseCacheView(Editor.HasProject ? Editor.Project as AbstractDProject : null);
 		}
 
-		public static ParseCacheView CreateCacheList(AbstractDProject Project = null)
+		public static ParseCacheView CreateParseCacheView(AbstractDProject Project = null)
 		{
 			if (Project != null)
-				return Project.ParseCache;
+				return new MonoDParseCacheView();
 			else
 				return DCompilerService.Instance.GetDefaultCompiler().GenParseCacheView();
 		}
+
 
 		public static AbstractType[] ResolveHoveredCode(
 			out ResolutionContext ResolverContext, out IEditorData edData, 

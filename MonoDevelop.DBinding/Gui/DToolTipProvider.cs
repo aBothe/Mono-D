@@ -147,7 +147,7 @@ namespace MonoDevelop.D.Gui
 				return null;
 
 			// Get code cache
-			var codeCache = DResolverWrapper.CreateCacheList(doc);
+			var codeCache = DResolverWrapper.CreateParseCacheView(doc);
 
 			// Create editor context
 			var line=editor.GetLineByOffset(offset);

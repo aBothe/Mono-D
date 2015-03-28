@@ -331,6 +331,7 @@
     <Compile Include="Debugging\DExecutionCommand.cs" />
     <Compile Include="Profiler\Gui\CodeCoverageView.cs" />
     <Compile Include="Profiler\Gui\CodeCoverageEditorExtension.cs" />
+    <Compile Include="Resolver\MonoDParseCacheView.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>

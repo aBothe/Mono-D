@@ -79,7 +79,7 @@ namespace MonoDevelop.D.Building
 		#region Parsing stuff
 		public ParseCacheView GenParseCacheView()
 		{
-			return new ParseCacheView (IncludePaths);
+			return new LegacyParseCacheView (IncludePaths);
 		}
 
 		void parsingFinished(ParsingFinishedEventArgs ea)

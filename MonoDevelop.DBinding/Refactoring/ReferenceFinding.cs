@@ -13,6 +13,7 @@ using D_Parser.Resolver;
 using D_Parser.Refactoring;
 using MonoDevelop.D.Projects;
 using MonoDevelop.D.Parser;
+using MonoDevelop.D.Resolver;
 
 namespace MonoDevelop.D.Refactoring
 {
@@ -62,9 +63,6 @@ namespace MonoDevelop.D.Refactoring
 		{
 			var searchResults = new List<SearchResult>();
 
-			var parseCache = project != null ?
-				project.ParseCache : DCompilerService.Instance.GetDefaultCompiler().GenParseCacheView();
-
 			var modules = new List<DModule>();
 
 			if (project != null)
@@ -77,7 +75,7 @@ namespace MonoDevelop.D.Refactoring
 				monitor.BeginStepTask ("Scan for references", modules.Count, 1);
 
 			List<ISyntaxRegion> references = null;
-			var ctxt = ResolutionContext.Create (parseCache, null);
+			var ctxt = ResolutionContext.Create (DResolverWrapper.CreateParseCacheView(project), null);
 			foreach (var mod in modules)
 			{
 				if (mod == null)

@@ -188,8 +188,7 @@ namespace MonoDevelop.D.Building
 		{
 			var matches = optlinkRegex.Matches(linkerOutput);
 
-			var ctxt = ResolutionContext.Create(Project == null ? DCompilerService.Instance.GetDefaultCompiler().GenParseCacheView() :
-												Project.ParseCache, null, null);
+			var ctxt = ResolutionContext.Create(MonoDevelop.D.Resolver.DResolverWrapper.CreateParseCacheView(Project), null, null);
 
 			ctxt.ContextIndependentOptions =
 				ResolutionOptions.IgnoreAllProtectionAttributes |

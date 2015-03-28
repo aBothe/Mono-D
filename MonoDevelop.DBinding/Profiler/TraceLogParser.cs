@@ -13,6 +13,7 @@ using MonoDevelop.D.Building;
 using MonoDevelop.D.Profiler.Gui;
 using MonoDevelop.D.Refactoring;
 using MonoDevelop.D.Projects;
+using MonoDevelop.D.Resolver;
 
 namespace MonoDevelop.D.Profiler
 {
@@ -57,7 +58,7 @@ namespace MonoDevelop.D.Profiler
 				return;
 			}
 			
-			var ctxt = ResolutionContext.Create(project.ParseCache, null, null);
+			var ctxt = ResolutionContext.Create(DResolverWrapper.CreateParseCacheView(editor), null, null);
 			
 			StreamReader reader = File.OpenText(file);
 			string line;
