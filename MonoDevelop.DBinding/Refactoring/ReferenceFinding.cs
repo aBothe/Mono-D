@@ -82,7 +82,7 @@ namespace MonoDevelop.D.Refactoring
 					continue;
 				try
 				{
-					references = ReferencesFinder.Scan(mod, member, ctxt).ToList();
+					references = ReferencesFinder.SearchModuleForASTNodeReferences(mod, member, ctxt).ToList();
 
 					if (references.Count < 1)
 					{

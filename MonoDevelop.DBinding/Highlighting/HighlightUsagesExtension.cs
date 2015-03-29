@@ -76,7 +76,7 @@ namespace MonoDevelop.D.Highlighting
 
 			CodeCompletion.DoTimeoutableCompletionTask (null, ctxt, () => {
 				try {
-					refs = D_Parser.Refactoring.ReferencesFinder.Scan (SyntaxTree, referencedNode, ctxt);
+					refs = D_Parser.Refactoring.ReferencesFinder.SearchModuleForASTNodeReferences (SyntaxTree, referencedNode, ctxt);
 				} catch (Exception ex) {
 					LoggingService.LogInfo ("Error during highlighting usages", ex);
 				}
