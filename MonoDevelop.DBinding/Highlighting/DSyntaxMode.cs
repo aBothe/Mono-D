@@ -145,13 +145,15 @@ namespace MonoDevelop.D.Highlighting
 		void GlobalParseCacheFilled(ParsingFinishedEventArgs ea)
 		{
 			var GuiDoc = GuiDocument;
-			if (GuiDoc != null && Document != null && ea.Package != null)
+			if (GuiDoc != null && Document != null && ea.Package != null && GuiDoc.ParsedDocument is ParsedDModule)
 			{
 				var root = ea.Package.Root;
 				if (root == null)
 					return;
 
 				var mod = (GuiDoc.ParsedDocument as ParsedDModule).DDom;
+				if (mod == null)
+					return;
 
 				var pcl = MonoDevelop.D.Resolver.DResolverWrapper.CreateParseCacheView(GuiDoc);
 				if (pcl.EnumRootPackagesSurroundingModule(mod).Contains(root))
