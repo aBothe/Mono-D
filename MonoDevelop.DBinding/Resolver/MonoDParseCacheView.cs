@@ -30,6 +30,9 @@ namespace MonoDevelop.D
 
 		public override IEnumerable<RootPackage> EnumRootPackagesSurroundingModule (DModule module)
 		{
+			if (module == null)
+				return globalIncludes;
+
 			RootPackage pack;
 			List<RootPackage> results;
 			if (cache.TryGetValue (module, out results))
