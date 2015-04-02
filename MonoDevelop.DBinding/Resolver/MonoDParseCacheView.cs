@@ -37,10 +37,10 @@ namespace MonoDevelop.D
 
 			results = new List<RootPackage> ();
 
-			foreach (var prj in Ide.IdeApp.Workspace.GetProjectsContainingFile(module.FileName)) {
+			foreach(var prj in Ide.IdeApp.Workspace.GetAllProjects()) {
 				var dprj = prj as AbstractDProject;
 
-				if (dprj == null)
+				if (dprj == null || !prj.IsFileInProject(module.FileName))
 					continue;
 
 				if (dprj is DProject)
