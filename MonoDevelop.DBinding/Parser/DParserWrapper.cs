@@ -206,12 +206,19 @@ namespace MonoDevelop.D.Parser
 				return pf.FilePath.FileNameWithoutExtension;
 
 			var dprj = pf.Project as AbstractDProject;
+			var returnedModuleName = string.Empty;
 
 			var sourcePaths = dprj.GetSourcePaths(ProjectBuilder._currentConfig ?? Ide.IdeApp.Workspace.ActiveConfiguration);
 			foreach(var path in sourcePaths)
 				if(pf.FilePath.IsChildPathOf(path))
-					return pf.FilePath.ToRelative(path).ChangeExtension(null).ToString().Replace(Path.DirectorySeparatorChar, '.');
-			return "";
+					returnedModuleName = pf.FilePath.ToRelative(path).ChangeExtension(null).ToString().Replace(Path.DirectorySeparatorChar, '.');
+
+			// Strip off .package as it's very often not wanted as module name.
+			const string packageModule = ".package";
+			if (returnedModuleName.EndsWith (packageModule))
+				returnedModuleName = returnedModuleName.Substring (0, returnedModuleName.Length - packageModule.Length);
+
+			return returnedModuleName;
 		}
 
 		/// <summary>
