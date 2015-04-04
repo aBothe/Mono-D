@@ -43,7 +43,7 @@ namespace MonoDevelop.D.Completion
 			currentBlock = DResolver.SearchBlockAt(Ast, caret);
 			currentStmt = DResolver.SearchStatementDeeplyAt(currentBlock, caret);
 
-			isBeforeBlockStart = currentBlock != null && caret <= currentBlock.BlockStartLocation;
+			isBeforeBlockStart = currentBlock != null && caret < currentBlock.BlockStartLocation;
 			isAtStmtStart = currentStmt != null && caret == currentStmt.Location;
 		}
 
