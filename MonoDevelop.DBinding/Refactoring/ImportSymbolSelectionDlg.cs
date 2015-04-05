@@ -2,12 +2,13 @@ using System;
 using Gtk;
 using D_Parser.Dom;
 using MonoDevelop.Ide;
+using System.Collections.Generic;
 
 namespace MonoDevelop.D
 {
 	public partial class ImportSymbolSelectionDlg : Dialog
 	{
-		public static T Show<T>(T[] items, string title, Func<object, string> nameGetter = null) where T : class
+		public static T Show<T>(IEnumerable<T> items, string title, Func<object, string> nameGetter = null) where T : class
 		{
 			var dlg = new ImportSymbolSelectionDlg(items, nameGetter);
 			dlg.Title = title;
@@ -20,7 +21,7 @@ namespace MonoDevelop.D
 			return (T)n;
 		}
 
-		ImportSymbolSelectionDlg (object[] nodes, Func<object, string> nameGetter = null)
+		ImportSymbolSelectionDlg (IEnumerable<object> nodes, Func<object, string> nameGetter = null)
 		{
 			this.Build ();
 

@@ -71,27 +71,18 @@ namespace MonoDevelop.D.Refactoring
 				} else {
 					var importSymbolMenu = new CommandInfoSet { Text = GettextCatalog.GetString ("Resolve") };
 
-					var alreadyAddedItems = new List<INode> ();
-					foreach (var t in caps.lastResults) {
-						var ds = t as DSymbol;
-						if (ds == null)
-							continue;
-						
-						var m = ds.Definition.NodeRoot as DModule;
-						if (m != null && !alreadyAddedItems.Contains (m)) {
-							alreadyAddedItems.Add (m);
+					foreach (var m in caps.GetImportableModulesForLastResults()) {
 
-							importSymbolMenu.CommandInfos.Add (new CommandInfo {
-								Text = "import " + AbstractNode.GetNodePath (m, true) + ";", 
-								Icon = MonoDevelop.Ide.Gui.Stock.AddNamespace
-							}, new object[]{ RefactoryCommands.ImportSymbol, ds.Definition });
-						}
+						importSymbolMenu.CommandInfos.Add (new CommandInfo {
+							Text = "import " + AbstractNode.GetNodePath (m, true) + ";", 
+							Icon = MonoDevelop.Ide.Gui.Stock.AddNamespace
+						}, new object[]{ RefactoryCommands.ImportSymbol, m });
 					}
 
 					if (importSymbolMenu.CommandInfos.Count > 0) {
 						importSymbolMenu.CommandInfos.AddSeparator ();
 
-						alreadyAddedItems.Clear ();
+						var alreadyAddedItems = new List<DModule> ();
 						foreach (var t in caps.lastResults) {
 							var ds = t as DSymbol;
 							if (ds == null)

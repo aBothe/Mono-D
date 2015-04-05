@@ -144,30 +144,44 @@ namespace MonoDevelop.D.Refactoring
 
 		public void TryImportMissingSymbol()
 		{
-			if (lastResults == null || lastResults.Length < 1)
+			DModule n;
+			var nodesToChooseFrom = GetImportableModulesForLastResults ();
+
+			var count = nodesToChooseFrom.Count ();
+			if (count == 0)
 				return;
 
-			DModule n;
+			if (count == 1)
+				n = nodesToChooseFrom.First();
+			else
+				n = ImportSymbolSelectionDlg.Show (nodesToChooseFrom, GettextCatalog.GetString ("Select symbol"));
+
+			if(n != null)
+				ImportStmtCreation.GenerateImportStatementForNode(n, ed, new TextDocumentAdapter(IdeApp.Workbench.ActiveDocument.Editor));
+		}
+
+		public IEnumerable<DModule> GetImportableModulesForLastResults()
+		{
 			var nodesToChooseFrom = new List<DModule> ();
+
+			if (lastResults == null || lastResults.Length < 1)
+				return nodesToChooseFrom;
 
 			foreach (var res in lastResults)
 				if (res is DSymbol) {
 					var mod = (res as DSymbol).Definition.NodeRoot as DModule;
-					if (mod != null && !nodesToChooseFrom.Contains (mod))
+					if (mod != null && !nodesToChooseFrom.Contains (mod)) {
 						nodesToChooseFrom.Add (mod);
+					}
+
 				}
 
-			if (nodesToChooseFrom.Count == 0)
-				return;
+			return nodesToChooseFrom;
+		}
 
-			if (nodesToChooseFrom.Count == 1)
-				n = nodesToChooseFrom [0];
-			else {
-				n = ImportSymbolSelectionDlg.Show (nodesToChooseFrom.ToArray(), GettextCatalog.GetString ("Select symbol"));
+
 			}
 
-			if(n != null)
-				ImportStmtCreation.GenerateImportStatementForNode(n, ed, new TextDocumentAdapter(IdeApp.Workbench.ActiveDocument.Editor));
 		}
 	}
 }
