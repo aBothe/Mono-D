@@ -124,7 +124,7 @@ namespace MonoDevelop.D.Refactoring
 					var file = (dc.NodeRoot as DModule).FileName;
 					var targetDoc = TextFileProvider.Instance.GetTextEditorData(new FilePath(file));
 
-					monitor.ReportResult(new SearchResult(new FileProvider(file, IdeApp.Workspace.GetProjectContainingFile(new FilePath(file))),
+					monitor.ReportResult(new SearchResult(new FileProvider(file, IdeApp.Workspace.GetProjectsContainingFile (file).FirstOrDefault ()),
 						targetDoc.LocationToOffset(dc.NameLocation.Line,dc.NameLocation.Column),dc.Name.Length));
 				}
 				monitor.Step (1);
