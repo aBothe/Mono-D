@@ -38,6 +38,7 @@ using MonoDevelop.Ide.FindInFiles;
 using MonoDevelop.Ide.Gui;
 using MonoDevelop.D.Parser;
 using MonoDevelop.D.Resolver;
+using D_Parser.Misc;
 
 
 namespace MonoDevelop.D.Refactoring
@@ -171,6 +172,10 @@ namespace MonoDevelop.D.Refactoring
 				if (res is DSymbol) {
 					var mod = (res as DSymbol).Definition.NodeRoot as DModule;
 					if (mod != null && !nodesToChooseFrom.Contains (mod)) {
+						var packageMod = TryGetGenericImportingPackageForSymbol ((res as DSymbol).Definition);
+						if (packageMod != null && !nodesToChooseFrom.Contains (packageMod))
+							nodesToChooseFrom.Add (packageMod);
+
 						nodesToChooseFrom.Add (mod);
 					}
 
@@ -179,9 +184,36 @@ namespace MonoDevelop.D.Refactoring
 			return nodesToChooseFrom;
 		}
 
+		static DModule TryGetGenericImportingPackageForSymbol(DNode nodeToTestImportabilityFor)
+		{
+			if (nodeToTestImportabilityFor == null)
+				return null;
+			
+			var moduleContainingPackage = GlobalParseCache.GetPackage(nodeToTestImportabilityFor.NodeRoot as DModule);
 
+			DModule packageModule = null;
+			while(packageModule == null && moduleContainingPackage != null){
+				// Search for package.d-Modules;
+				packageModule = (moduleContainingPackage.Parent ?? moduleContainingPackage).GetModule(moduleContainingPackage.NameHash);
+				if (packageModule == null)
+					moduleContainingPackage = moduleContainingPackage.Parent;
 			}
 
+			if (packageModule == null)
+				return null;
+
+			// Try to get from found package module to destination node
+			var ctxt = new ResolutionContext(new LegacyParseCacheView(new[]{ moduleContainingPackage.Root }), null, packageModule);
+			ctxt.CurrentContext.ContextDependentOptions = ResolutionOptions.ReturnMethodReferencesOnly | ResolutionOptions.DontResolveBaseTypes;
+
+			var td = D_Parser.Parser.DParser.ParseBasicType(DNode.GetNodePath (nodeToTestImportabilityFor, true));
+			var res = TypeDeclarationResolver.ResolveSingle (td, ctxt, false);
+
+			foreach (var ov in AmbiguousType.TryDissolve(res))
+				if (ov is DSymbol && (ov as DSymbol).Definition == nodeToTestImportabilityFor)
+					return packageModule;
+
+			return null;
 		}
 	}
 }
