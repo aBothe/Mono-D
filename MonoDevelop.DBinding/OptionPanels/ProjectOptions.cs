@@ -3,6 +3,7 @@ using MonoDevelop.D.Building;
 using MonoDevelop.Ide.Gui.Dialogs;
 using MonoDevelop.D.Projects;
 using System.Collections.Generic;
+using MonoDevelop.Core;
 
 namespace MonoDevelop.D.OptionPanels
 {
@@ -65,7 +66,7 @@ namespace MonoDevelop.D.OptionPanels
 
 			check_LinkThirdPartyLibs.Active = configuration.LinkinThirdPartyLibraries;
 			
-			text_BinDirectory.Text = proj.GetRelativeChildPath(config.OutputDirectory);
+			text_BinDirectory.Text = config.OutputDirectory;
 			text_TargetFile.Text = config.Output;
 			text_ObjectsDirectory.Text = config.ObjectDirectory;
 			text_DDocDir.Text = config.DDocDirectory;
@@ -134,7 +135,7 @@ namespace MonoDevelop.D.OptionPanels
 
 			configuration.LinkinThirdPartyLibraries = check_LinkThirdPartyLibs.Active;
 
-			configuration.OutputDirectory = text_BinDirectory.Text;
+			configuration.OutputDirectory = new FilePath (text_BinDirectory.Text).ToRelative(project.BaseDirectory).ToString().Trim('/','\\');
 			configuration.Output = text_TargetFile.Text;
 			configuration.ObjectDirectory = text_ObjectsDirectory.Text;
 			configuration.DDocDirectory = text_DDocDir.Text;
