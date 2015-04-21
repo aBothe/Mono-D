@@ -66,7 +66,7 @@ namespace MonoDevelop.D.OptionPanels
 
 			check_LinkThirdPartyLibs.Active = configuration.LinkinThirdPartyLibraries;
 			
-			text_BinDirectory.Text = config.OutputDirectory;
+			text_BinDirectory.Text = config.OutputDirectory.ToRelative(proj.BaseDirectory);
 			text_TargetFile.Text = config.Output;
 			text_ObjectsDirectory.Text = config.ObjectDirectory;
 			text_DDocDir.Text = config.DDocDirectory;
@@ -135,7 +135,7 @@ namespace MonoDevelop.D.OptionPanels
 
 			configuration.LinkinThirdPartyLibraries = check_LinkThirdPartyLibs.Active;
 
-			configuration.OutputDirectory = new FilePath (text_BinDirectory.Text).ToRelative(project.BaseDirectory).ToString().Trim('/','\\');
+			configuration.OutputDirectory = new FilePath (text_BinDirectory.Text).ToAbsolute(project.BaseDirectory);
 			configuration.Output = text_TargetFile.Text;
 			configuration.ObjectDirectory = text_ObjectsDirectory.Text;
 			configuration.DDocDirectory = text_DDocDir.Text;
