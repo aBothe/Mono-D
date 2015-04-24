@@ -273,8 +273,10 @@ namespace MonoDevelop.D.Building
 
 				if (f.Name.EndsWith (".rc", StringComparison.OrdinalIgnoreCase))
 					CompileResourceScript (br, f);
-				else
+				else if (DLanguageBinding.IsDFile (f.FilePath))
 					CompileSource (br, f);
+				else if (f.FilePath.Extension == ".o" || f.FilePath.Extension == ".obj")
+					BuiltObjects.Add (f.IsLink ? f.Link : f.FilePath);
 
 				monitor.Step (1);
 			}
@@ -568,6 +570,7 @@ namespace MonoDevelop.D.Building
 				slnPath = projCfg.Project.ParentSolution != null ? projCfg.Project.ParentSolution.BaseDirectory.ToString () : ""
 			});
 
+			// Link in lib files that are ought to be 'Compile'd
 			foreach (var pf in projCfg.Project.Files) {
 				if (pf.BuildAction != BuildAction.Compile)
 					continue;
