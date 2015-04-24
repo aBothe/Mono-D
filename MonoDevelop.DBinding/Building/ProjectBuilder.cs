@@ -568,6 +568,15 @@ namespace MonoDevelop.D.Building
 				slnPath = projCfg.Project.ParentSolution != null ? projCfg.Project.ParentSolution.BaseDirectory.ToString () : ""
 			});
 
+			foreach (var pf in projCfg.Project.Files) {
+				if (pf.BuildAction != BuildAction.Compile)
+					continue;
+				
+				var filePath = pf.IsLink ? pf.Link : pf.FilePath;
+				if (OS.IsWindows ? filePath.Extension == ".a" : filePath.Extension == ".lib")
+					yield return filePath;
+			}
+
 			if (compiler.EnableGDCLibPrefixing)
 				libraries = HandleGdcSpecificLibraryReferencing(libraries, projCfg.Project.BaseDirectory);
 
