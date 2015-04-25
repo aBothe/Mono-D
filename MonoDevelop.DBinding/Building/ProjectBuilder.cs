@@ -566,9 +566,9 @@ namespace MonoDevelop.D.Building
 
 		public static IEnumerable<string> GetLibraries(DProjectConfiguration projCfg, DCompilerConfiguration compiler)
 		{
-			IEnumerable<string> libraries = FillInMacros (projCfg.GetReferencedLibraries (projCfg.Selector), new PrjPathMacroProvider {
+			var libraries = new List<string>(FillInMacros (projCfg.GetReferencedLibraries (projCfg.Selector), new PrjPathMacroProvider {
 				slnPath = projCfg.Project.ParentSolution != null ? projCfg.Project.ParentSolution.BaseDirectory.ToString () : ""
-			});
+			}));
 
 			// Link in lib files that are ought to be 'Compile'd
 			foreach (var pf in projCfg.Project.Files) {
@@ -577,11 +577,11 @@ namespace MonoDevelop.D.Building
 				
 				var filePath = pf.IsLink ? pf.Link : pf.FilePath;
 				if (OS.IsWindows ? filePath.Extension == ".a" : filePath.Extension == ".lib")
-					yield return filePath;
+					libraries.Add(filePath);
 			}
 
 			if (compiler.EnableGDCLibPrefixing)
-				libraries = HandleGdcSpecificLibraryReferencing(libraries, projCfg.Project.BaseDirectory);
+				libraries = new List<string>(HandleGdcSpecificLibraryReferencing(libraries, projCfg.Project.BaseDirectory));
 
 			return libraries;
 		}
