@@ -304,6 +304,13 @@
 		<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.Profiler.Gui.CodeCoverageEditorExtension" />
 	</Extension>
 
+
+	<Extension path="/MonoDevelop/Ide/SearchCategories">
+		<!-- Type/Symbol Search Category -->
+		<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.Gui.DTypeSearchCategory" />
+	</Extension>
+
+
 	<Extension path = "/MonoDevelop/SourceEditor2/TooltipProviders">
 		<Class mimeTypes="text/x-d" id="DToolTipProvider" class="MonoDevelop.D.Gui.DToolTipProvider" />
 	</Extension>

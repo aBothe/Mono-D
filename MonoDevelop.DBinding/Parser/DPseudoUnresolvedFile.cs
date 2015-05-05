@@ -67,19 +67,19 @@ namespace MonoDevelop.D.Parser
 
 		public IList<IUnresolvedTypeDefinition> TopLevelTypeDefinitions {
 			get {
-				return null;
+				return EmptyList<IUnresolvedTypeDefinition>.Instance;
 			}
 		}
 
 		public IList<IUnresolvedAttribute> AssemblyAttributes {
 			get {
-				return null;
+				return EmptyList<IUnresolvedAttribute>.Instance;
 			}
 		}
 
 		public IList<IUnresolvedAttribute> ModuleAttributes {
 			get {
-				return null;
+				return EmptyList<IUnresolvedAttribute>.Instance;
 			}
 		}
 
