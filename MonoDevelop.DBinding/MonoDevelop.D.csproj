@@ -332,6 +332,7 @@
     <Compile Include="Profiler\Gui\CodeCoverageView.cs" />
     <Compile Include="Profiler\Gui\CodeCoverageEditorExtension.cs" />
     <Compile Include="Resolver\MonoDParseCacheView.cs" />
+    <Compile Include="Gui\DTypeSearchCategory.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
