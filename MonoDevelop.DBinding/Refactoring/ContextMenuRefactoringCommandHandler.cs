@@ -84,17 +84,16 @@ namespace MonoDevelop.D.Refactoring
 
 						var alreadyAddedItems = new List<DModule> ();
 						foreach (var t in caps.lastResults) {
-							var ds = t as DSymbol;
-							if (ds == null)
+							var n = DResolver.GetResultMember (t, true);
+							if (n == null)
 								continue;
-
-							var m = ds.Definition.NodeRoot as DModule;
+							var m = n.NodeRoot as DModule;
 							if (m != null && !alreadyAddedItems.Contains (m)) {
 								alreadyAddedItems.Add (m);
 
 								importSymbolMenu.CommandInfos.Add (new CommandInfo{
-									Text = AbstractNode.GetNodePath(ds.Definition, true)
-								}, new object[] { RefactoryCommands.QuickFix, ds.Definition });
+									Text = AbstractNode.GetNodePath(n, true)
+								}, new object[] { RefactoryCommands.QuickFix, n });
 							}
 						}
 

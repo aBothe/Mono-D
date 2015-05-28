@@ -168,11 +168,12 @@ namespace MonoDevelop.D.Refactoring
 			if (lastResults == null || lastResults.Length < 1)
 				return nodesToChooseFrom;
 
-			foreach (var res in lastResults)
-				if (res is DSymbol) {
-					var mod = (res as DSymbol).Definition.NodeRoot as DModule;
+			foreach (var res in lastResults) {
+				var n = DResolver.GetResultMember (res, true);
+				if (n != null) {
+					var mod = n.NodeRoot as DModule;
 					if (mod != null && !nodesToChooseFrom.Contains (mod)) {
-						var packageMod = TryGetGenericImportingPackageForSymbol ((res as DSymbol).Definition);
+						var packageMod = TryGetGenericImportingPackageForSymbol (n);
 						if (packageMod != null && !nodesToChooseFrom.Contains (packageMod))
 							nodesToChooseFrom.Add (packageMod);
 
@@ -180,6 +181,7 @@ namespace MonoDevelop.D.Refactoring
 					}
 
 				}
+			}
 
 			return nodesToChooseFrom;
 		}
