@@ -227,7 +227,7 @@ namespace MonoDevelop.D.Resolver
 			}
 
 			//return DResolver.ResolveTypeLoosely(ed, out resolutionAttempt, ctxt);
-			return AmbiguousType.TryDissolve(LooseResolution.ResolveTypeLoosely(ed, out resolutionAttempt, out sr)).ToArray();
+			return AmbiguousType.TryDissolve(LooseResolution.ResolveTypeLoosely(ed, out resolutionAttempt, out sr, true)).ToArray();
 		}
 	}
 }
