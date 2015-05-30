@@ -6,6 +6,11 @@ using MonoDevelop.Projects;
 using MonoDevelop.D.Projects;
 using D_Parser.Resolver;
 using D_Parser.Dom;
+using System.Collections.Generic;
+using D_Parser.Misc.Mangling;
+using System.Text;
+using MonoDevelop.D.Resolver;
+using D_Parser.Resolver.TypeResolution;
 
 namespace MonoDevelop.D.Building
 {
@@ -186,9 +191,7 @@ namespace MonoDevelop.D.Building
 
 		public static void HandleOptLinkOutput(AbstractDProject Project,BuildResult br, string linkerOutput)
 		{
-			var matches = optlinkRegex.Matches(linkerOutput);
-
-			var ctxt = ResolutionContext.Create(MonoDevelop.D.Resolver.DResolverWrapper.CreateParseCacheView(Project), null, null);
+			var ctxt = ResolutionContext.Create(DResolverWrapper.CreateParseCacheView(Project), null, null);
 
 			ctxt.ContextIndependentOptions =
 				ResolutionOptions.IgnoreAllProtectionAttributes |
@@ -196,7 +199,7 @@ namespace MonoDevelop.D.Building
 				ResolutionOptions.DontResolveBaseClasses |
 				ResolutionOptions.DontResolveAliases;
 
-			foreach (Match match in matches)
+			foreach (Match match in optlinkRegex.Matches(linkerOutput))
 			{
 				var error = new BuildError();
 
@@ -223,7 +226,7 @@ namespace MonoDevelop.D.Building
 					ITypeDeclaration qualifier;
 					try
 					{
-						var resSym = D_Parser.Misc.Mangling.Demangler.DemangleAndResolve(mangledSymbol, ctxt, out qualifier);
+						var resSym = Demangler.DemangleAndResolve(mangledSymbol, ctxt, out qualifier);
 						if (resSym is DSymbol)
 						{
 							var ds = resSym as DSymbol;
@@ -249,5 +252,75 @@ namespace MonoDevelop.D.Building
 				br.Append(error);
 			}
 		}
-    }
+
+		static Regex ldMangleRegex = new Regex(
+			@"`(?<underscore>_+)D(?<mangle>[\d\w_]+)'|\.text\.(?<underscore>_+)D(?<mangle>[\d\w_]+)",
+			RegexOptions.Compiled | RegexOptions.ExplicitCapture);
+
+		static Regex ldErrorRegex = new Regex(
+			@"^.+\.o: *(?<err>.+)(:\r?\n(?<msg>.+))?$",
+			RegexOptions.Compiled | RegexOptions.ExplicitCapture);
+
+		public static void HandleLdOutput(AbstractDProject prj, BuildResult br, string linkerOutput)
+		{
+			var ctxt = ResolutionContext.Create(DResolverWrapper.CreateParseCacheView(prj), null, null);
+
+			ctxt.ContextIndependentOptions =
+				ResolutionOptions.IgnoreAllProtectionAttributes |
+				ResolutionOptions.DontResolveBaseTypes |
+				ResolutionOptions.DontResolveBaseClasses |
+				ResolutionOptions.DontResolveAliases;
+
+			foreach (Match m in ldErrorRegex.Matches(linkerOutput))
+			{
+				var error = new BuildError();
+
+				var firstSymbolOccurring = ldMangleRegex.Match(m.Groups["err"].Value);
+
+				if(firstSymbolOccurring.Success)
+				{
+					var mangledString = "_D" + firstSymbolOccurring.Groups["mangle"].Value;
+					var associatedSymbol = DResolver.GetResultMember(Demangler.DemangleAndResolve(mangledString, ctxt));
+					if(associatedSymbol != null)
+					{
+						error.FileName = (associatedSymbol.NodeRoot as DModule).FileName;
+						error.Line = associatedSymbol.Location.Line;
+						error.Column = associatedSymbol.Location.Column;
+					}
+				}
+
+				error.ErrorText = m.Groups["msg"].Value;
+				if (string.IsNullOrWhiteSpace(error.ErrorText))
+					error.ErrorText = m.Groups["err"].Value;
+
+				error.ErrorText = DemangleLdOutput(error.ErrorText);
+
+				br.Append(error);
+			}
+		}
+
+		public static string DemangleLdOutput(string output)
+		{
+			var sb = new StringBuilder();
+			int lastInsertionEnd = 0;
+
+			foreach (Match match in ldMangleRegex.Matches(output))
+			{
+				int hasUnderscore = match.Groups["underscore"].Length;
+
+				var mangleGroup = match.Groups["mangle"];
+
+				var demangledSymbol = Demangler.DemangleQualifier("_D" + mangleGroup.Value).ToString();
+
+				sb.Append(output.Substring(lastInsertionEnd, mangleGroup.Index - lastInsertionEnd - hasUnderscore - 1));
+				sb.Append(demangledSymbol);
+
+				lastInsertionEnd = mangleGroup.Index + mangleGroup.Length;
+			}
+
+			sb.Append(output.Substring(lastInsertionEnd, output.Length - lastInsertionEnd));
+
+			return sb.ToString();
+		}
+	}
 }

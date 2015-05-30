@@ -216,6 +216,7 @@ namespace MonoDevelop.D.Building
 			ErrorExtracting.HandleCompilerOutput(Project,br, stdError);
 			ErrorExtracting.HandleCompilerOutput(Project,br, stdOut);
 			ErrorExtracting.HandleOptLinkOutput(Project, br, stdOut);
+			ErrorExtracting.HandleLdOutput(Project, br, stdOut);
 			ErrorExtracting.HandleReturnCode(monitor, br, exitCode);
 
 			if (cmdLineFile != null)
@@ -437,6 +438,7 @@ namespace MonoDevelop.D.Building
                 out linkerOutput);
 
 			ErrorExtracting.HandleOptLinkOutput (Project,br, linkerOutput);
+			ErrorExtracting.HandleLdOutput(Project, br, linkerOutput);
 			ErrorExtracting.HandleReturnCode(monitor,br, exitCode);
 
 			if (cmdLineFile != null && !br.Failed)
