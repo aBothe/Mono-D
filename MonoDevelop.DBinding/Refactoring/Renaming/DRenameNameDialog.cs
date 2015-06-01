@@ -16,6 +16,7 @@ namespace MonoDevelop.D
 	{
 		DRenameRefactoring rename;
 		RefactoringOptions options;
+		string originalName;
 
 		public DRenameNameDialog (RefactoringOptions options,DRenameRefactoring rename)
 		{
@@ -43,7 +44,7 @@ namespace MonoDevelop.D
 			Title = app;
 			#endregion
 
-			text_NewId.Text = ds.Name;
+			text_NewId.Text = originalName = ds.Name;
 
 			buttonPreview.Sensitive = buttonOk.Sensitive = false;
 
@@ -51,11 +52,16 @@ namespace MonoDevelop.D
 			buttonPreview.Clicked += OnPreviewClicked;
 			text_NewId.Changed += delegate { setNotifyIcon(buttonPreview.Sensitive = buttonOk.Sensitive = ValidateName()); };
 			ValidateName();
+
+			buttonOk.GrabDefault ();
+			buttonOk.ReceivesDefault = true;
+			text_NewId.GrabFocus ();
 		}
 
 		bool ValidateName()
 		{
-			return DRenameRefactoring.IsValidIdentifier(text_NewId.Text);
+			return originalName != text_NewId.Text && 
+				DRenameRefactoring.IsValidIdentifier(text_NewId.Text);
 		}
 
 		void setNotifyIcon(bool hasCorrectUserInput)

@@ -95,6 +95,7 @@ namespace MonoDevelop.D
 			w8.Fill = false;
 			// Container child dialog1_ActionArea.Gtk.ButtonBox+ButtonBoxChild
 			this.buttonOk = new global::Gtk.Button ();
+			this.buttonOk.CanDefault = true;
 			this.buttonOk.CanFocus = true;
 			this.buttonOk.Name = "buttonOk";
 			this.buttonOk.UseStock = true;
@@ -108,8 +109,9 @@ namespace MonoDevelop.D
 			if ((this.Child != null)) {
 				this.Child.ShowAll ();
 			}
-			this.DefaultWidth = 368;
+			this.DefaultWidth = 373;
 			this.DefaultHeight = 122;
+			this.buttonOk.HasDefault = true;
 			this.Show ();
 		}
 	}

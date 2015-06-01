@@ -173,9 +173,10 @@ namespace MonoDevelop.D.Refactoring
 				if (n != null) {
 					var mod = n.NodeRoot as DModule;
 					if (mod != null && !nodesToChooseFrom.Contains (mod)) {
-						var packageMod = TryGetGenericImportingPackageForSymbol (n);
-						if (packageMod != null && !nodesToChooseFrom.Contains (packageMod))
-							nodesToChooseFrom.Add (packageMod);
+						var i = Math.Max(0, nodesToChooseFrom.Count-1);
+						foreach(var packageMod in TryGetGenericImportingPackageForSymbol (n))
+							if (!nodesToChooseFrom.Contains (packageMod))
+								nodesToChooseFrom.Insert (i, packageMod);
 
 						nodesToChooseFrom.Add (mod);
 					}
@@ -186,36 +187,37 @@ namespace MonoDevelop.D.Refactoring
 			return nodesToChooseFrom;
 		}
 
-		static DModule TryGetGenericImportingPackageForSymbol(DNode nodeToTestImportabilityFor)
+		static IEnumerable<DModule> TryGetGenericImportingPackageForSymbol(DNode nodeToTestImportabilityFor)
 		{
 			if (nodeToTestImportabilityFor == null)
-				return null;
+				yield break;
 			
 			var moduleContainingPackage = GlobalParseCache.GetPackage(nodeToTestImportabilityFor.NodeRoot as DModule);
 
-			DModule packageModule = null;
-			while(packageModule == null && moduleContainingPackage != null){
+			while(moduleContainingPackage != null){
 				// Search for package.d-Modules;
-				packageModule = (moduleContainingPackage.Parent ?? moduleContainingPackage).GetModule(moduleContainingPackage.NameHash);
-				if (packageModule == null)
+				var packageModule = (moduleContainingPackage.Parent ?? moduleContainingPackage).GetModule(moduleContainingPackage.NameHash);
+
+				if (packageModule == null) {
 					moduleContainingPackage = moduleContainingPackage.Parent;
+					continue;
+				}
+
+				// Try to get from found package module to destination node
+				var ctxt = new ResolutionContext(new LegacyParseCacheView(new[]{ moduleContainingPackage.Root }), null, packageModule);
+				ctxt.CurrentContext.ContextDependentOptions = ResolutionOptions.ReturnMethodReferencesOnly | ResolutionOptions.DontResolveBaseTypes;
+
+				var td = D_Parser.Parser.DParser.ParseBasicType(DNode.GetNodePath (nodeToTestImportabilityFor, true));
+				var res = TypeDeclarationResolver.ResolveSingle (td, ctxt, false);
+
+				foreach (var ov in AmbiguousType.TryDissolve(res))
+					if (ov is DSymbol && (ov as DSymbol).Definition == nodeToTestImportabilityFor) {
+						yield return packageModule;
+						break;
+					}
+
+				moduleContainingPackage = moduleContainingPackage.Parent;
 			}
-
-			if (packageModule == null)
-				return null;
-
-			// Try to get from found package module to destination node
-			var ctxt = new ResolutionContext(new LegacyParseCacheView(new[]{ moduleContainingPackage.Root }), null, packageModule);
-			ctxt.CurrentContext.ContextDependentOptions = ResolutionOptions.ReturnMethodReferencesOnly | ResolutionOptions.DontResolveBaseTypes;
-
-			var td = D_Parser.Parser.DParser.ParseBasicType(DNode.GetNodePath (nodeToTestImportabilityFor, true));
-			var res = TypeDeclarationResolver.ResolveSingle (td, ctxt, false);
-
-			foreach (var ov in AmbiguousType.TryDissolve(res))
-				if (ov is DSymbol && (ov as DSymbol).Definition == nodeToTestImportabilityFor)
-					return packageModule;
-
-			return null;
 		}
 	}
 }
