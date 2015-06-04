@@ -356,7 +356,14 @@ namespace MonoDevelop.D.Building
 		}
 		
 		public static bool IsMac {
-			get{ return Environment.OSVersion.Platform == PlatformID.MacOSX;}	
+			get {
+				if(Environment.OSVersion.Platform != PlatformID.Unix)
+					return false;
+
+				Mono.Unix.Native.Utsname results;
+				Mono.Unix.Native.Syscall.uname(out results);
+				return results.sysname == "Darwin";
+			}
 		}
 		
 		public static bool IsLinux {
