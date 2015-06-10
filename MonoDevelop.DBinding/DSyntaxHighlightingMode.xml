@@ -183,7 +183,10 @@
 		<Word>version</Word>
 		<Word>with</Word>
 		<Word>__FILE__</Word>
+		<Word>__MODULE__</Word>
 		<Word>__LINE__</Word>
+		<Word>__FUNCTION__</Word>
+		<Word>__PRETTY_FUNCTION__</Word>
 		<Word>__thread</Word>
 		<Word>__traits</Word>
 		<Word>__vector</Word>
