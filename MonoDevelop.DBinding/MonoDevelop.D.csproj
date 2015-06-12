@@ -149,6 +149,10 @@
       <HintPath>..\ext\libsteticui.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Mono.Posix">
+      <HintPath>..\ext\Mono.Posix.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="gtk-gui\gui.stetic">
