@@ -352,22 +352,37 @@ namespace MonoDevelop.D.Building
 	public static class OS
 	{
 		public static bool IsWindows {
-			get{ return !IsMac && !IsLinux;} // acceptable here..	
+			get{ return Environment.OSVersion.Platform == PlatformID.Win32NT; } // acceptable here..	
 		}
-		
-		public static bool IsMac {
-			get {
-				if(Environment.OSVersion.Platform != PlatformID.Unix)
-					return false;
 
-				Mono.Unix.Native.Utsname results;
-				Mono.Unix.Native.Syscall.uname(out results);
-				return results.sysname == "Darwin";
+		static string unameResult;
+		static string Uname
+		{
+			get{
+				if(Environment.OSVersion.Platform != PlatformID.Unix)
+					return null;
+
+				if (unameResult == null) {
+					using (var unameProc = System.Diagnostics.Process.Start (new System.Diagnostics.ProcessStartInfo ("uname") {
+						UseShellExecute = false,
+						RedirectStandardOutput = true,
+						CreateNoWindow = true
+					})) {
+						unameProc.WaitForExit (1000);
+						unameResult = unameProc.StandardOutput.ReadLine ();
+					}
+				}
+
+				return unameResult;
 			}
 		}
 		
+		public static bool IsMac {
+			get { return Uname == "Darwin";	}
+		}
+		
 		public static bool IsLinux {
-			get{ return Environment.OSVersion.Platform == PlatformID.Unix;}	
+			get{ return Uname == "Linux"; }	
 		}
 	}
 }
