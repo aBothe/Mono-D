@@ -35,8 +35,10 @@ namespace MonoDevelop.D.Highlighting
 			get { return guiDoc; }
 			set
 			{
-				if (guiDoc != null)
+				if (guiDoc != null) {
 					guiDoc.DocumentParsed -= HandleDocumentParsed;
+					guiDoc.Saved -= HandleDocumentSaved;
+				}
 				guiDoc = value;
 				if (value != null)
 				{
@@ -45,6 +47,7 @@ namespace MonoDevelop.D.Highlighting
 
 					HandleDocumentParsed(this, EventArgs.Empty);
 					guiDoc.DocumentParsed += HandleDocumentParsed;
+					guiDoc.Saved += HandleDocumentSaved;
 				}
 			}
 		}
@@ -110,6 +113,14 @@ namespace MonoDevelop.D.Highlighting
 			GlobalParseCache.ParseTaskFinished -= GlobalParseCacheFilled;
 			segmentMarkerTree = null;
 			invalidCodeRegionTree = null;
+		}
+
+		void HandleDocumentSaved(object s, EventArgs ea)
+		{
+			// Fix https://github.com/aBothe/Mono-D/issues/383 highlighting misbehaviour if format-on-save has been activated 
+			// and partially escaped string literals shall be drawn.
+			if (PropertyService.Get ("AutoFormatDocumentOnSave", false))
+				ForceRedrawEditor ();
 		}
 
 		public static Match workaroundMatchCtor(string color, string regex)
@@ -322,7 +333,12 @@ namespace MonoDevelop.D.Highlighting
 			}
 
 			if (!token.IsCancellationRequested)
-				Ide.DispatchService.GuiDispatch(() =>
+				ForceRedrawEditor ();
+		}
+
+		void ForceRedrawEditor()
+		{
+			Ide.DispatchService.GuiDispatch(() =>
 				{
 					if (guiDoc.Editor != null)
 					{
