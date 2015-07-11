@@ -11,11 +11,11 @@
 	<!-- Resources -->
 
 	<Dependencies>
-		<Addin id="Ide" version = "5.0" />
-		<Addin id="Core" version = "5.0" />
-		<Addin id="SourceEditor2" version = "5.0" />
-		<Addin id="DesignerSupport" version = "5.0" />
-		<Addin id="Refactoring" version="5.0"/>
+		<Addin id="Ide" version = "6.0" />
+		<Addin id="Core" version = "6.0" />
+		<Addin id="SourceEditor2" version = "6.0" />
+		<Addin id="DesignerSupport" version = "6.0" />
+		<Addin id="Refactoring" version="6.0"/>
 	</Dependencies>
 
 	<Runtime>
