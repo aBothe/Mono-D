@@ -1,6 +1,7 @@
 */obj/*
 */bin/*
 *.suo
+*.sdf
 *.user
 build/index.html
 build/*.m*
