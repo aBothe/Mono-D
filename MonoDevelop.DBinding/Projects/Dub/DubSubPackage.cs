@@ -35,8 +35,8 @@ namespace MonoDevelop.D.Projects.Dub
 	public class DubSubPackage : DubProject
 	{
 		public bool useOriginalBasePath;
-		FilePath OriginalBasePath;
-		FilePath VirtualBasePath;
+		public FilePath OriginalBasePath;
+		public FilePath VirtualBasePath;
 
 		protected override FilePath GetDefaultBaseDirectory ()
 		{
@@ -49,56 +49,6 @@ namespace MonoDevelop.D.Projects.Dub
 			var en = base.GetSourcePaths (sel).ToList();
 			useOriginalBasePath = false;
 			return en;
-		}
-
-		public static DubSubPackage ReadAndAdd(DubProject superProject,JsonReader r, IProgressMonitor monitor)
-		{
-			DubSubPackage sub;
-			switch (r.TokenType) {
-				case JsonToken.StartObject:
-					break;
-				case JsonToken.String:
-
-					sub = PackageJsonParser.ReadPackageInformation (PackageJsonParser.GetDubJsonFilePath (superProject, r.Value as string), monitor, null, superProject) as DubSubPackage;
-					return sub;
-				default:
-					throw new JsonReaderException ("Illegal token on subpackage definition beginning");
-			}
-
-			sub = new DubSubPackage ();
-			sub.FileName = superProject.FileName;
-
-			sub.OriginalBasePath = superProject is DubSubPackage ? (superProject as DubSubPackage).OriginalBasePath : 
-				superProject.BaseDirectory;
-			sub.VirtualBasePath = sub.OriginalBasePath;
-
-			sub.BeginLoad ();
-
-			sub.AddProjectAndSolutionConfiguration(new DubProjectConfiguration { Name = GettextCatalog.GetString("Default"), Id = DubProjectConfiguration.DefaultConfigId });
-
-			superProject.packagesToAdd.Add(sub);
-
-			while (r.Read ()) {
-				if (r.TokenType == JsonToken.PropertyName)
-					sub.TryPopulateProperty (r.Value as string, r, monitor);
-				else if (r.TokenType == JsonToken.EndObject)
-					break;
-			}
-				
-			sub.packageName = superProject.packageName + ":" + (sub.packageName ?? string.Empty);
-
-			var sourcePaths = sub.GetSourcePaths ().ToArray();
-			if (sourcePaths.Length > 0 && !string.IsNullOrWhiteSpace(sourcePaths[0]))
-				sub.VirtualBasePath = new FilePath(sourcePaths [0]);
-
-			PackageJsonParser.LoadDubProjectReferences (sub, monitor);
-
-			// TODO: What to do with new configurations that were declared in this sub package? Add them to all other packages as well?
-			sub.EndLoad ();
-
-			if (r.TokenType != JsonToken.EndObject)
-				throw new JsonReaderException ("Illegal token on subpackage definition end");
-			return sub;
 		}
 
 		protected override void DoExecute (IProgressMonitor monitor, ExecutionContext context, ConfigurationSelector configuration)

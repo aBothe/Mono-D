@@ -87,7 +87,7 @@ namespace MonoDevelop.D.Projects.Dub
 		}
 
 		static readonly char[] PathSep = {Path.DirectorySeparatorChar};
-		public static bool CanContainFile(string f)
+		static bool CanContainFile(string f)
 		{
 			var i= f.LastIndexOfAny(PathSep);
 			return i < -1 ? !f.StartsWith (".") : f [i + 1] != '.';
@@ -270,80 +270,6 @@ namespace MonoDevelop.D.Projects.Dub
 
 			OnEndLoad ();
 			loading = false;
-		}
-
-		public bool TryPopulateProperty(string propName, JsonReader j, IProgressMonitor monitor)
-		{
-			switch (propName.ToLowerInvariant())
-			{
-				case "displayname":
-					displayName = j.ReadAsString ();
-					break;
-				case "name":
-					packageName = j.ReadAsString();
-					break;
-				case "description":
-					Description = j.ReadAsString();
-					break;
-				case "copyright":
-					Copyright = j.ReadAsString();
-					break;
-				case "homepage":
-					Homepage = j.ReadAsString();
-					break;
-				case "authors":
-					if (!j.Read() || j.TokenType != JsonToken.StartArray)
-						throw new JsonReaderException("Expected [ when parsing Authors");
-					authors.Clear();
-					while (j.Read() && j.TokenType != JsonToken.EndArray)
-						if (j.TokenType == JsonToken.String)
-							authors.Add(j.Value as string);
-					break;
-				case "dependencies":
-					if (!j.Read () || j.TokenType != JsonToken.StartObject)
-						throw new JsonReaderException ("Expected { when parsing Authors");
-
-					DubReferences.DeserializeDubPrjDependencies(j, monitor);
-					break;
-				case "configurations":
-					if (!j.Read() || j.TokenType != JsonToken.StartArray)
-						throw new JsonReaderException("Expected [ when parsing Configurations");
-
-					if(ParentSolution != null && ParentSolution.Configurations.Count == 1 && ParentSolution.Configurations[0].Id == DubProjectConfiguration.DefaultConfigId)
-						ParentSolution.Configurations.Clear();
-					if(Configurations.Count == 1 && Configurations[0].Id == DubProjectConfiguration.DefaultConfigId)
-						Configurations.Clear();
-
-					while (j.Read() && j.TokenType != JsonToken.EndArray)
-						AddProjectAndSolutionConfiguration(DubProjectConfiguration.DeserializeFromPackageJson(j));
-					break;
-				case "subpackages":
-					if (!j.Read () || j.TokenType != JsonToken.StartArray)
-						throw new JsonReaderException ("Expected [ when parsing subpackages");
-
-					while (j.Read () && j.TokenType != JsonToken.EndArray)
-						DubSubPackage.ReadAndAdd (this, j, monitor);
-					break;
-				case "buildtypes":
-					if (!j.Read() || j.TokenType != JsonToken.StartObject)
-						throw new JsonReaderException("Expected [ when parsing build types");
-
-					while (j.Read() && j.TokenType != JsonToken.EndObject)
-					{
-						var n = j.Value as string;
-						if (!buildTypes.Contains(n))
-							buildTypes.Add(n);
-
-						j.Skip();
-					}
-
-					buildTypes.Sort();
-					break;
-				default:
-					return CommonBuildSettings.TryDeserializeBuildSetting(j);
-			}
-
-			return true;
 		}
 
 		internal void AddProjectAndSolutionConfiguration(DubProjectConfiguration cfg)

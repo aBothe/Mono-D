@@ -24,13 +24,13 @@ namespace MonoDevelop.D.Projects.Dub
 		public override bool CanHandleFile(string fileName, string typeGuid)
 		{
 			return string.Compare(typeGuid, this.Guid, true) == 0 || 
-				(fileName = fileName.ToLower()).EndsWith(PackageJsonParser.DubJsonFile) || 
-				fileName.EndsWith(PackageJsonParser.PackageJsonFile);
+				(fileName = fileName.ToLower()).EndsWith(DubFileFormat.DubJsonFile) || 
+				fileName.EndsWith(DubFileFormat.PackageJsonFile);
 		}
 
 		public override SolutionEntityItem LoadSolutionItem(IProgressMonitor monitor, string fileName, MSBuildFileFormat expectedFormat, string itemGuid)
 		{
-			return PackageJsonParser.ReadPackageInformation(new FilePath(fileName), monitor);
+			return DubFileFormat.ReadPackageInformation(new FilePath(fileName), monitor);
 		}
 	}
 }
