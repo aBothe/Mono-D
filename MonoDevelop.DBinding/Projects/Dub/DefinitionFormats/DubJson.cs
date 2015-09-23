@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
+using Newtonsoft.Json;
+using MonoDevelop.Projects;
 
 namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 {
@@ -12,13 +15,38 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 		public const string DubJsonFile = "dub.json";
 		public const string DubSelectionsJsonFile = "dub.selections.json";
 
-
-
-		public static bool CanReadFile(string file)
+		public override bool CanLoad (string file)
 		{
 			file = System.IO.Path.GetFileName(file).ToLower();
 			return file == DubJsonFile || file == PackageJsonFile;
 		}
+
+		public override void Load (DubProject target, StreamReader s)
+		{
+			using (var r = new JsonTextReader (s)) {
+				Parse (r, target);
+			}
+		}
+
+		void Parse(JsonReader r, DubProject prj)
+		{
+			while (r.Read())
+			{
+				if (r.TokenType == JsonToken.PropertyName)
+				{
+					var propName = r.Value as string;
+					TryPopulateProperty(prj, propName, r);
+				}
+				else if (r.TokenType == JsonToken.EndObject)
+					break;
+			}
+
+			// https://github.com/aBothe/Mono-D/issues/555
+			var dubSelectionJsonPath = prj.BaseDirectory.Combine(DubSelectionsJsonFile);
+			if (File.Exists(dubSelectionJsonPath))
+				prj.Items.Add(new ProjectFile(dubSelectionJsonPath, BuildAction.None));
+		}
+
 
 
 		public static string GetDubJsonFilePath(AbstractDProject @base, string subPath)
@@ -39,57 +67,57 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 			return null;
 		}
 
-		public bool TryPopulateProperty(string propName, JsonReader j, IProgressMonitor monitor)
+		void TryPopulateProperty(DubProject prj, string propName, JsonReader j)
 		{
 			switch (propName.ToLowerInvariant())
 			{
 				case "displayname":
-					displayName = j.ReadAsString();
+					prj.Name = j.ReadAsString();
 					break;
 				case "name":
-					packageName = j.ReadAsString();
+					prj.packageName = j.ReadAsString();
 					break;
 				case "description":
-					Description = j.ReadAsString();
+					prj.Description = j.ReadAsString();
 					break;
 				case "copyright":
-					Copyright = j.ReadAsString();
+					prj.Copyright = j.ReadAsString();
 					break;
 				case "homepage":
-					Homepage = j.ReadAsString();
+					prj.Homepage = j.ReadAsString();
 					break;
 				case "authors":
 					if (!j.Read() || j.TokenType != JsonToken.StartArray)
 						throw new JsonReaderException("Expected [ when parsing Authors");
-					authors.Clear();
+					prj.Authors.Clear();
 					while (j.Read() && j.TokenType != JsonToken.EndArray)
 						if (j.TokenType == JsonToken.String)
-							authors.Add(j.Value as string);
+							prj.Authors.Add(j.Value as string);
 					break;
 				case "dependencies":
 					if (!j.Read() || j.TokenType != JsonToken.StartObject)
 						throw new JsonReaderException("Expected { when parsing Authors");
 
-					DubReferences.DeserializeDubPrjDependencies(j, monitor);
+					prj.DubReferences.DeserializeDubPrjDependencies(j);
 					break;
 				case "configurations":
-					if (!j.Read() || j.TokenType != JsonToken.StartArray)
-						throw new JsonReaderException("Expected [ when parsing Configurations");
-
-					if (ParentSolution != null && ParentSolution.Configurations.Count == 1 && ParentSolution.Configurations[0].Id == DubProjectConfiguration.DefaultConfigId)
-						ParentSolution.Configurations.Clear();
-					if (Configurations.Count == 1 && Configurations[0].Id == DubProjectConfiguration.DefaultConfigId)
-						Configurations.Clear();
+					if (!j.Read () || j.TokenType != JsonToken.StartArray)
+						throw new JsonReaderException ("Expected [ when parsing Configurations");
+					var sln = prj.ParentSolution;
+					if (sln != null && sln.Configurations.Count == 1 && sln.Configurations[0].Id == DubProjectConfiguration.DefaultConfigId)
+						sln.Configurations.Clear();
+					if (prj.Configurations.Count == 1 && prj.Configurations[0].Id == DubProjectConfiguration.DefaultConfigId)
+						prj.Configurations.Clear();
 
 					while (j.Read() && j.TokenType != JsonToken.EndArray)
-						AddProjectAndSolutionConfiguration(DubProjectConfiguration.DeserializeFromPackageJson(j));
+						prj.AddProjectAndSolutionConfiguration(DubProjectConfiguration.DeserializeFromPackageJson(j));
 					break;
 				case "subpackages":
 					if (!j.Read() || j.TokenType != JsonToken.StartArray)
 						throw new JsonReaderException("Expected [ when parsing subpackages");
 
 					while (j.Read() && j.TokenType != JsonToken.EndArray)
-						DubSubPackage.ReadAndAdd(this, j, monitor);
+						ReadSubPackage(prj, j);
 					break;
 				case "buildtypes":
 					if (!j.Read() || j.TokenType != JsonToken.StartObject)
@@ -98,97 +126,38 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 					while (j.Read() && j.TokenType != JsonToken.EndObject)
 					{
 						var n = j.Value as string;
-						if (!buildTypes.Contains(n))
-							buildTypes.Add(n);
+						if (!prj.buildTypes.Contains(n))
+							prj.buildTypes.Add(n);
 
 						j.Skip();
 					}
 
-					buildTypes.Sort();
+					prj.buildTypes.Sort();
+
 					break;
 				default:
-					return CommonBuildSettings.TryDeserializeBuildSetting(j);
+					return prj.CommonBuildSettings.TryDeserializeBuildSetting(j);
 			}
 
 			return true;
 		}
 
-		public static DubProject ReadPackageInformation(FilePath packageJsonPath, IProgressMonitor monitor, JsonReader r = null, DubProject superPackage = null)
+		void ReadSubPackage(DubProject superProject, JsonReader r)
 		{
-			DubProject defaultPackage;
-			bool free;
-			StreamReader s = null;
-			bool cleanupAlreadyLoadedPacks = AlreadyLoadedPackages == null;
-			if (cleanupAlreadyLoadedPacks)
-				AlreadyLoadedPackages = new Dictionary<string, DubProject>();
+			switch (r.TokenType) {
+				case JsonToken.StartObject:
+					break;
+				case JsonToken.String:
 
-			if (free = (r == null))
-			{
-				if (AlreadyLoadedPackages.TryGetValue(packageJsonPath, out defaultPackage))
-				{
-					if (cleanupAlreadyLoadedPacks)
-						AlreadyLoadedPackages = null;
-					return defaultPackage;
-				}
-
-				s = File.OpenText(packageJsonPath);
-				r = new JsonTextReader(s);
+					sub = DubFileFormat.ReadPackageInformation (DubFileFormat.GetDubJsonFilePath (superProject, r.Value as string), monitor, null, superProject) as DubSubPackage;
+					return sub;
+				default:
+					throw new JsonReaderException ("Illegal token on subpackage definition beginning");
 			}
 
-			defaultPackage = superPackage != null ? new DubSubPackage() : new DubProject();
-			try
-			{
-				defaultPackage.FileName = packageJsonPath;
-				AlreadyLoadedPackages[packageJsonPath] = defaultPackage;
-				defaultPackage.BaseDirectory = packageJsonPath.ParentDirectory;
-
-				defaultPackage.BeginLoad();
-
-				defaultPackage.AddProjectAndSolutionConfiguration(new DubProjectConfiguration { Name = GettextCatalog.GetString("Default"), Id = DubProjectConfiguration.DefaultConfigId });
-
-				if (superPackage != null)
-					superPackage.packagesToAdd.Add(defaultPackage);
-
-				while (r.Read())
-				{
-					if (r.TokenType == JsonToken.PropertyName)
-					{
-						var propName = r.Value as string;
-						defaultPackage.TryPopulateProperty(propName, r, monitor);
-					}
-					else if (r.TokenType == JsonToken.EndObject)
-						break;
-				}
-
-				if (superPackage != null)
-					defaultPackage.packageName = superPackage.packageName + ":" + (defaultPackage.packageName ?? string.Empty);
-
-				defaultPackage.Items.Add(new ProjectFile(packageJsonPath, BuildAction.None));
-
-				// https://github.com/aBothe/Mono-D/issues/555
-				var dubSelectionJsonPath = packageJsonPath.ParentDirectory.Combine(DubSelectionsJsonFile);
-				if (File.Exists(dubSelectionJsonPath))
-					defaultPackage.Items.Add(new ProjectFile(dubSelectionJsonPath, BuildAction.None));
-
-				defaultPackage.EndLoad();
-			}
-			catch (Exception ex)
-			{
-				monitor.ReportError("Exception while reading dub package " + packageJsonPath, ex);
-			}
-			finally
-			{
-				if (free)
-				{
-					r.Close();
-					s.Dispose();
-				}
-
-				if (cleanupAlreadyLoadedPacks)
-					AlreadyLoadedPackages = null;
-			}
-			return defaultPackage;
+			//DubFileManager.Instance.LoadSubPackage (superProject.FileName, superProject);
 		}
+
 
 		public static DubSubPackage ReadAndAdd(DubProject superProject,JsonReader r, IProgressMonitor monitor)
 		{

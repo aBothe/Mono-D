@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MonoDevelop.Projects;
 
 namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 {
@@ -13,11 +14,12 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 		public static readonly DubFileManager Instance = new DubFileManager();
 		[ThreadStatic]
 		static Dictionary<string, DubProject> filesBeingLoaded;
-		static Dictionary<string, DubProject> FilesBeingLoaded
+		internal static Dictionary<string, DubProject> FilesBeingLoaded
 		{
-			get {
+			get{
 				if (filesBeingLoaded == null)
 					filesBeingLoaded = new Dictionary<string, DubProject>();
+				
 				return filesBeingLoaded;
 			}
 		}
@@ -25,17 +27,19 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 		class FilesBeingLoadedCleanser : IDisposable
 		{
 			readonly bool clean;
+			readonly string file;
 
-			public FilesBeingLoadedCleanser()
+			public FilesBeingLoadedCleanser(string file)
 			{
-				clean = filesBeingLoaded == null;
+				clean = FilesBeingLoaded.Count == 0;
+				this.file = file;
 			}
 
 			public void Dispose()
 			{
-				if (clean) {
-					filesBeingLoaded = null;
+				FilesBeingLoaded.Remove (file);
 
+				if (clean) {
 					// Clear 'dub list' outputs
 					DubReferencesCollection.DubListOutputs.Clear();
 				}
@@ -57,12 +61,10 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 
 		public DubSolution LoadAsSolution(string file, IProgressMonitor monitor)
 		{
-			using (new FilesBeingLoadedCleanser())
-			{
-
-			}
-			
 			var sln = new DubSolution();
+
+			var defaultPackage = LoadProject (file, sln, monitor, false);
+
 			sln.RootFolder.AddItem(defaultPackage, false);
 			sln.StartupItem = defaultPackage;
 
@@ -70,7 +72,7 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 			foreach (var cfg in defaultPackage.Configurations)
 				sln.AddConfiguration(cfg.Name, false).Platform = cfg.Platform;
 
-			LoadDubProjectReferences(defaultPackage, monitor, sln);
+			LoadSubProjects(defaultPackage, monitor, sln);
 
 			// Apply subConfigurations
 			var subConfigurations = new Dictionary<string, string>(defaultPackage.CommonBuildSettings.subConfigurations);
@@ -96,117 +98,57 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 
 			sln.LoadUserProperties();
 
-			if (clearLoadedPrjList)
-			{
-				AlreadyLoadedPackages = null;
-
-				// Clear 'dub list' outputs
-				DubReferencesCollection.DubListOutputs.Clear();
-			}
-
 			return sln;
 		}
 
-		public DubProject LoadProject(string file, DubSolution parentSolution, IProgressMonitor monitor, bool loadDubPrjReferences = true)
+		public enum LoadFlags
+		{
+			None,
+			LoadReferences
+		}
+
+		public DubProject LoadProject(string file, DubSolution parentSolution, IProgressMonitor monitor, LoadFlags flags = LoadFlags.None)
 		{
 			DubProject prj;
 
 			if (FilesBeingLoaded.TryGetValue(file, out prj))
 				return prj;
 
-			try
-			{
-				prj = supportedDubFileFormats.First((i) => i.CanLoad(file)).Load(file);
-			}
-			catch (Exception ex)
-			{
-				if (clearLoadedPrjList)
-					AlreadyLoadedPackages = null;
-				monitor.ReportError("Couldn't load dub package \"" + file + "\"", ex);
-				return null;
+			using (new FilesBeingLoadedCleanser (file)) {
+				monitor.BeginTask ("Load dub project '"+file+"'");
+				try {
+					prj = supportedDubFileFormats.First ((i) => i.CanLoad (file)).Load (file, null, parentSolution);
+				} catch (Exception ex) {
+					monitor.ReportError ("Couldn't load dub package \"" + file + "\"", ex);
+				}finally{
+					monitor.EndTask ();
+				}
+
+				if (flags.HasFlag(LoadFlags.LoadReferences))
+					LoadSubProjects(prj, monitor);
 			}
 
-			LoadDubProjectReferences(defaultPackage, monitor);
-
+			return prj;
 		}
 
 		public void LoadSubProjects(DubProject defaultPackage, IProgressMonitor monitor)
 		{
+			var sln = defaultPackage.ParentSolution;
+
 			foreach (var dep in defaultPackage.DubReferences)
 			{
-				if (string.IsNullOrWhiteSpace(dep.Path))
+				if (String.IsNullOrWhiteSpace(dep.Path) || !CanLoad(dep.Path))
 					continue;
 
-				string packageJsonToLoad = GetDubJsonFilePath(defaultPackage, dep.Path);
-				if (packageJsonToLoad != null && packageJsonToLoad != defaultPackage.FileName)
-				{
-					var prj = ReadFile_(packageJsonToLoad, typeof(Project), monitor) as DubProject;
-					if (prj != null)
-					{
-						if (sln != null)
-						{
-							if (sln is DubSolution)
-								(sln as DubSolution).AddProject(prj);
-							else
-								sln.RootFolder.AddItem(prj, false);
-						}
-						else
-							defaultPackage.packagesToAdd.Add(prj);
-					}
-				}
+				var subProject = LoadProject_Internal (dep.Path, defaultPackage);
+
+				if (sln is DubSolution)
+					(sln as DubSolution).AddProject (subProject);
+				else if (sln != null)
+					sln.RootFolder.AddItem (subProject, false);
+				else
+					defaultPackage.packagesToAdd.Add (subProject);
 			}
-		}
-
-		public static DubSubPackage ReadAndAdd(DubProject superProject, JsonReader r, IProgressMonitor monitor)
-		{
-			DubSubPackage sub;
-			switch (r.TokenType)
-			{
-				case JsonToken.StartObject:
-					break;
-				case JsonToken.String:
-
-					sub = DubFileFormat.ReadPackageInformation(DubFileFormat.GetDubJsonFilePath(superProject, r.Value as string), monitor, null, superProject) as DubSubPackage;
-					return sub;
-				default:
-					throw new JsonReaderException("Illegal token on subpackage definition beginning");
-			}
-
-			sub = new DubSubPackage();
-			sub.FileName = superProject.FileName;
-
-			sub.OriginalBasePath = superProject is DubSubPackage ? (superProject as DubSubPackage).OriginalBasePath :
-				superProject.BaseDirectory;
-			sub.VirtualBasePath = sub.OriginalBasePath;
-
-			sub.BeginLoad();
-
-			sub.AddProjectAndSolutionConfiguration(new DubProjectConfiguration { Name = GettextCatalog.GetString("Default"), Id = DubProjectConfiguration.DefaultConfigId });
-
-			superProject.packagesToAdd.Add(sub);
-
-			while (r.Read())
-			{
-				if (r.TokenType == JsonToken.PropertyName)
-					sub.TryPopulateProperty(r.Value as string, r, monitor);
-				else if (r.TokenType == JsonToken.EndObject)
-					break;
-			}
-
-			sub.packageName = superProject.packageName + ":" + (sub.packageName ?? string.Empty);
-
-			var sourcePaths = sub.GetSourcePaths().ToArray();
-			if (sourcePaths.Length > 0 && !string.IsNullOrWhiteSpace(sourcePaths[0]))
-				sub.VirtualBasePath = new FilePath(sourcePaths[0]);
-
-			DubFileFormat.LoadDubProjectReferences(sub, monitor);
-
-			// TODO: What to do with new configurations that were declared in this sub package? Add them to all other packages as well?
-			sub.EndLoad();
-
-			if (r.TokenType != JsonToken.EndObject)
-				throw new JsonReaderException("Illegal token on subpackage definition end");
-			return sub;
 		}
 	}
 }
