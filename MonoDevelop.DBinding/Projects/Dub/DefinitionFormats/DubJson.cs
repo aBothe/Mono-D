@@ -21,21 +21,21 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 			return file == DubJsonFile || file == PackageJsonFile;
 		}
 
-		public override void Load (DubProject target, StreamReader s)
+		protected override void Read (DubProject target, StreamReader s)
 		{
 			using (var r = new JsonTextReader (s)) {
-				Parse (r, target);
+				Parse (r, s, target);
 			}
 		}
 
-		void Parse(JsonReader r, DubProject prj)
+		void Parse(JsonReader r, StreamReader sr, DubProject prj)
 		{
 			while (r.Read())
 			{
 				if (r.TokenType == JsonToken.PropertyName)
 				{
 					var propName = r.Value as string;
-					TryPopulateProperty(prj, propName, r);
+					TryPopulateProperty(prj, propName, r, sr);
 				}
 				else if (r.TokenType == JsonToken.EndObject)
 					break;
@@ -67,7 +67,7 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 			return null;
 		}
 
-		void TryPopulateProperty(DubProject prj, string propName, JsonReader j)
+		void TryPopulateProperty(DubProject prj, string propName, JsonReader j, StreamReader sr)
 		{
 			switch (propName.ToLowerInvariant())
 			{
@@ -117,7 +117,7 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 						throw new JsonReaderException("Expected [ when parsing subpackages");
 
 					while (j.Read() && j.TokenType != JsonToken.EndArray)
-						ReadSubPackage(prj, j);
+						ReadSubPackage(prj, j, sr);
 					break;
 				case "buildtypes":
 					if (!j.Read() || j.TokenType != JsonToken.StartObject)
@@ -136,77 +136,23 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 
 					break;
 				default:
-					return prj.CommonBuildSettings.TryDeserializeBuildSetting(j);
+					prj.CommonBuildSettings.TryDeserializeBuildSetting(j);
+					break;
 			}
-
-			return true;
 		}
 
-		void ReadSubPackage(DubProject superProject, JsonReader r)
+		void ReadSubPackage(DubProject superProject, JsonReader r, StreamReader sr)
 		{
 			switch (r.TokenType) {
 				case JsonToken.StartObject:
+					Load(superProject, superProject.ParentSolution, sr, superProject.FileName);
 					break;
 				case JsonToken.String:
-
-					sub = DubFileFormat.ReadPackageInformation (DubFileFormat.GetDubJsonFilePath (superProject, r.Value as string), monitor, null, superProject) as DubSubPackage;
-					return sub;
+					DubFileManager.Instance.LoadProject (GetDubJsonFilePath (superProject, r.Value as string), superProject.ParentSolution, null, DubFileManager.LoadFlags.None, superProject);
+					break;
 				default:
 					throw new JsonReaderException ("Illegal token on subpackage definition beginning");
 			}
-
-			//DubFileManager.Instance.LoadSubPackage (superProject.FileName, superProject);
-		}
-
-
-		public static DubSubPackage ReadAndAdd(DubProject superProject,JsonReader r, IProgressMonitor monitor)
-		{
-			DubSubPackage sub;
-			switch (r.TokenType) {
-				case JsonToken.StartObject:
-					break;
-				case JsonToken.String:
-
-					sub = DubFileFormat.ReadPackageInformation (DubFileFormat.GetDubJsonFilePath (superProject, r.Value as string), monitor, null, superProject) as DubSubPackage;
-					return sub;
-				default:
-					throw new JsonReaderException ("Illegal token on subpackage definition beginning");
-			}
-
-			sub = new DubSubPackage ();
-			sub.FileName = superProject.FileName;
-
-			sub.OriginalBasePath = superProject is DubSubPackage ? (superProject as DubSubPackage).OriginalBasePath : 
-				superProject.BaseDirectory;
-			sub.VirtualBasePath = sub.OriginalBasePath;
-
-			sub.BeginLoad ();
-
-			sub.AddProjectAndSolutionConfiguration(new DubProjectConfiguration { Name = GettextCatalog.GetString("Default"), Id = DubProjectConfiguration.DefaultConfigId });
-
-			superProject.packagesToAdd.Add(sub);
-
-			while (r.Read ()) {
-				if (r.TokenType == JsonToken.PropertyName)
-					sub.TryPopulateProperty (r.Value as string, r, monitor);
-				else if (r.TokenType == JsonToken.EndObject)
-					break;
-			}
-				
-			sub.packageName = superProject.packageName + ":" + (sub.packageName ?? string.Empty);
-
-			var sourcePaths = sub.GetSourcePaths ().ToArray();
-			if (sourcePaths.Length > 0 && !string.IsNullOrWhiteSpace(sourcePaths[0]))
-				sub.VirtualBasePath = new FilePath(sourcePaths [0]);
-
-			DubFileFormat.LoadDubProjectReferences (sub, monitor);
-
-			// TODO: What to do with new configurations that were declared in this sub package? Add them to all other packages as well?
-			sub.EndLoad ();
-
-			if (r.TokenType != JsonToken.EndObject)
-				throw new JsonReaderException ("Illegal token on subpackage definition end");
-			return sub;
 		}
 	}
 }

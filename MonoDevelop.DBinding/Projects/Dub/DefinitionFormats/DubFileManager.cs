@@ -54,16 +54,13 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 
 		DubFileManager() { }
 
-		public bool CanLoad(string file)
-		{
-			return supportedDubFileFormats.Any((i) => i.CanLoad(file));
-		}
+		public bool CanLoad(string file) => supportedDubFileFormats.Any((i) => i.CanLoad(file));
 
 		public DubSolution LoadAsSolution(string file, IProgressMonitor monitor)
 		{
 			var sln = new DubSolution();
 
-			var defaultPackage = LoadProject (file, sln, monitor, false);
+			var defaultPackage = LoadProject (file, sln, monitor);
 
 			sln.RootFolder.AddItem(defaultPackage, false);
 			sln.StartupItem = defaultPackage;
@@ -72,7 +69,7 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 			foreach (var cfg in defaultPackage.Configurations)
 				sln.AddConfiguration(cfg.Name, false).Platform = cfg.Platform;
 
-			LoadSubProjects(defaultPackage, monitor, sln);
+			LoadSubProjects(defaultPackage, monitor);
 
 			// Apply subConfigurations
 			var subConfigurations = new Dictionary<string, string>(defaultPackage.CommonBuildSettings.subConfigurations);
@@ -107,7 +104,7 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 			LoadReferences
 		}
 
-		public DubProject LoadProject(string file, DubSolution parentSolution, IProgressMonitor monitor, LoadFlags flags = LoadFlags.None)
+		public DubProject LoadProject(string file, Solution parentSolution, IProgressMonitor monitor, LoadFlags flags = LoadFlags.None, DubProject superProject = null)
 		{
 			DubProject prj;
 
@@ -115,9 +112,9 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 				return prj;
 
 			using (new FilesBeingLoadedCleanser (file)) {
-				monitor.BeginTask ("Load dub project '"+file+"'");
+				monitor.BeginTask ("Load dub project '"+file+"'", 1);
 				try {
-					prj = supportedDubFileFormats.First ((i) => i.CanLoad (file)).Load (file, null, parentSolution);
+					prj = supportedDubFileFormats.First ((i) => i.CanLoad (file)).Load (file, superProject, parentSolution);
 				} catch (Exception ex) {
 					monitor.ReportError ("Couldn't load dub package \"" + file + "\"", ex);
 				}finally{
@@ -140,7 +137,7 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 				if (String.IsNullOrWhiteSpace(dep.Path) || !CanLoad(dep.Path))
 					continue;
 
-				var subProject = LoadProject_Internal (dep.Path, defaultPackage);
+				var subProject = supportedDubFileFormats.First((i) => i.CanLoad(dep.Path)).Load(dep.Path, defaultPackage, sln);
 
 				if (sln is DubSolution)
 					(sln as DubSolution).AddProject (subProject);

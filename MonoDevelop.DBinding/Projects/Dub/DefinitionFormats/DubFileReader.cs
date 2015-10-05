@@ -15,7 +15,7 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 
 		protected abstract void Read(DubProject target, StreamReader r);
 
-		public DubProject Load(DubProject superPackage, DubSolution parentSolution, StreamReader s, string originalFile){
+		public DubProject Load(DubProject superPackage, Solution parentSolution, StreamReader s, string originalFile){
 			bool returnSubProject = superPackage != null;
 
 			var defaultPackage = returnSubProject ? new DubSubPackage() : new DubProject ();
@@ -37,7 +37,7 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 			if (returnSubProject) {
 				superPackage.packagesToAdd.Add (defaultPackage);
 			}
-
+			
 			Read (defaultPackage, s);
 
 			if (returnSubProject) {
@@ -47,6 +47,8 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 				var sourcePaths = sub.GetSourcePaths ().ToArray();
 				if (sourcePaths.Length > 0 && !string.IsNullOrWhiteSpace(sourcePaths[0]))
 					sub.VirtualBasePath = new FilePath(sourcePaths [0]);
+
+				// TODO: What to do with new configurations that were declared in this sub package? Add them to all other packages as well?
 			}
 
 			defaultPackage.Items.Add(new ProjectFile(originalFile, BuildAction.None));
@@ -56,11 +58,11 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 			return defaultPackage;
 		}
 
-		public DubProject Load(string file, DubProject superProject, DubSolution parentSolution)
+		public DubProject Load(string file, DubProject superProject, Solution parentSolution)
 		{
 			using (var fs = new FileStream(file, FileMode.Open))
 			using (var sr = new StreamReader(fs))
-				return Load(superProject, parentSolution, sr);
+				return Load(superProject, parentSolution, sr, file);
 		}
 	}
 }

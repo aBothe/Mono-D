@@ -3,6 +3,7 @@ using MonoDevelop.Projects.Extensions;
 using System;
 using System.Collections.Generic;
 using MonoDevelop.Projects;
+using System.Linq;
 
 namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 {
@@ -15,10 +16,7 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 				expectedObjectType.Equals(typeof(SolutionEntityItem)));
 		}
 
-		public bool CanWriteFile(object obj)
-		{
-			return true; // Everything has to be manipulated manually (atm)!
-		}
+		public bool CanWriteFile(object obj) => true; // Everything has to be manipulated manually (atm)!
 
 		public void ConvertToFormat(object obj)
 		{
@@ -30,34 +28,22 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 			yield return string.Empty;
 		}
 
-		public List<FilePath> GetItemFiles(object obj)
-		{
-			return new List<FilePath>();
-		}
+		public List<FilePath> GetItemFiles(object obj) => new List<FilePath>();
 
-		public FilePath GetValidFormatName(object obj, FilePath fileName)
-		{
-			return fileName;
-		}
+		public FilePath GetValidFormatName(object obj, FilePath fileName) => fileName;
 
 		public object ReadFile(FilePath file, Type expectedType, IProgressMonitor monitor)
 		{
-			if (expectedType.IsSubclassOf(typeof(DubSolution)))
+			if (expectedType.IsAssignableFrom(typeof(WorkspaceItem)))
 				return DubFileManager.Instance.LoadAsSolution(file, monitor);
-			if (expectedType.IsSubclassOf(typeof(DubProject)))
-				return DubFileManager.Instance.LoadProject(file, monitor);
+			if (expectedType.IsAssignableFrom(typeof(SolutionEntityItem)))
+				return DubFileManager.Instance.LoadProject(file, Ide.IdeApp.Workspace.GetAllSolutions().First(), monitor);
 			return null;
 		}
 
-		public bool SupportsFramework(Core.Assemblies.TargetFramework framework)
-		{
-			return false;
-		}
+		public bool SupportsFramework(Core.Assemblies.TargetFramework framework) => false;
 
-		public bool SupportsMixedFormats
-		{
-			get { return true; }
-		}
+		public bool SupportsMixedFormats => true;
 
 		public void WriteFile(FilePath file, object obj, IProgressMonitor monitor)
 		{

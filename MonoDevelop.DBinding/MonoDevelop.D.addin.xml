@@ -219,7 +219,7 @@
 	<!-- Project File Serialization Support -->
 
 	<Extension path = "/MonoDevelop/ProjectModel/FileFormats">
-		<FileFormat id ="DubPackageDefinition" class = "MonoDevelop.D.Projects.Dub.DubFormats.DubFileFormat" />
+		<FileFormat id ="DubPackageDefinition" class = "MonoDevelop.D.Projects.Dub.DefinitionFormats.DubFileFormat" />
 		<FileFormat id ="VisualDProject" class = "MonoDevelop.D.Projects.VisualD.VisualDProjFormat" />
 	</Extension>
 
