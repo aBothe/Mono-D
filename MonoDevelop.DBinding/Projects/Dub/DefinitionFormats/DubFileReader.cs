@@ -13,9 +13,9 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 	{
 		public abstract bool CanLoad(string file);
 
-		protected abstract void Read(DubProject target, StreamReader r);
+		protected abstract void Read(DubProject target, Object streamReader);
 
-		public DubProject Load(DubProject superPackage, Solution parentSolution, StreamReader s, string originalFile){
+		public DubProject Load(DubProject superPackage, Solution parentSolution, Object streamReader, string originalFile){
 			bool returnSubProject = superPackage != null;
 
 			var defaultPackage = returnSubProject ? new DubSubPackage() : new DubProject ();
@@ -38,7 +38,7 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 				superPackage.packagesToAdd.Add (defaultPackage);
 			}
 			
-			Read (defaultPackage, s);
+			Read (defaultPackage, streamReader);
 
 			if (returnSubProject) {
 				defaultPackage.packageName = superPackage.packageName + ":" + (defaultPackage.packageName ?? string.Empty);

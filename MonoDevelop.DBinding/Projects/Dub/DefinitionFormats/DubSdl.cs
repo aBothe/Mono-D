@@ -14,7 +14,7 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 			throw new NotImplementedException();
 		}
 
-		protected override void Read(DubProject target, StreamReader r)
+		protected override void Read(DubProject target, Object input)
 		{
 			throw new NotImplementedException();
 		}

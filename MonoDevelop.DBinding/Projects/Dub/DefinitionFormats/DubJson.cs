@@ -21,21 +21,26 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 			return file == DubJsonFile || file == PackageJsonFile;
 		}
 
-		protected override void Read (DubProject target, StreamReader s)
+		protected override void Read (DubProject target, Object input)
 		{
-			using (var r = new JsonTextReader (s)) {
-				Parse (r, s, target);
-			}
+			if (input is JsonReader)
+				Parse (input as JsonReader, target);
+			else if (input is TextReader) {
+				using (var r = new JsonTextReader (input as TextReader)) {
+					Parse (r, target);
+				}
+			} else
+				throw new ArgumentException ("input");
 		}
 
-		void Parse(JsonReader r, StreamReader sr, DubProject prj)
+		void Parse(JsonReader r, DubProject prj)
 		{
 			while (r.Read())
 			{
 				if (r.TokenType == JsonToken.PropertyName)
 				{
 					var propName = r.Value as string;
-					TryPopulateProperty(prj, propName, r, sr);
+					TryPopulateProperty(prj, propName, r);
 				}
 				else if (r.TokenType == JsonToken.EndObject)
 					break;
@@ -67,7 +72,7 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 			return null;
 		}
 
-		void TryPopulateProperty(DubProject prj, string propName, JsonReader j, StreamReader sr)
+		void TryPopulateProperty(DubProject prj, string propName, JsonReader j)
 		{
 			switch (propName.ToLowerInvariant())
 			{
@@ -117,7 +122,7 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 						throw new JsonReaderException("Expected [ when parsing subpackages");
 
 					while (j.Read() && j.TokenType != JsonToken.EndArray)
-						ReadSubPackage(prj, j, sr);
+						ReadSubPackage(prj, j);
 					break;
 				case "buildtypes":
 					if (!j.Read() || j.TokenType != JsonToken.StartObject)
@@ -141,11 +146,11 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 			}
 		}
 
-		void ReadSubPackage(DubProject superProject, JsonReader r, StreamReader sr)
+		void ReadSubPackage(DubProject superProject, JsonReader r)
 		{
 			switch (r.TokenType) {
 				case JsonToken.StartObject:
-					Load(superProject, superProject.ParentSolution, sr, superProject.FileName);
+					Load(superProject, superProject.ParentSolution, r, superProject.FileName);
 					break;
 				case JsonToken.String:
 					DubFileManager.Instance.LoadProject (GetDubJsonFilePath (superProject, r.Value as string), superProject.ParentSolution, null, DubFileManager.LoadFlags.None, superProject);
