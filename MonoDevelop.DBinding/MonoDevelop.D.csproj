@@ -250,6 +250,10 @@
     <Compile Include="Projects\Dub\DefinitionFormats\DubSdl.cs" />
     <Compile Include="Projects\Dub\DefinitionFormats\DubFileManager.cs" />
     <Compile Include="Projects\Dub\DefinitionFormats\PackageJson.cs" />
+    <Compile Include="Projects\Dub\DefinitionFormats\SDL\SdlLexer.cs" />
+    <Compile Include="Projects\Dub\DefinitionFormats\SDL\SDLObject.cs" />
+    <Compile Include="Projects\Dub\DefinitionFormats\SDL\SdlParser.cs" />
+    <Compile Include="Projects\Dub\DefinitionFormats\SDL\SDLDeclaration.cs" />
     <Compile Include="Projects\Dub\DubProjectItemTypeHandler.cs" />
     <Compile Include="Projects\Dub\DubSolution.cs" />
     <Compile Include="Projects\Dub\DubBuilder.cs" />

@@ -9,14 +9,19 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 {
 	class DubSdl : DubFileReader
 	{
-		public override bool CanLoad(string file)
-		{
-			throw new NotImplementedException();
-		}
+		public override bool CanLoad(string file) => Path.GetFileName(file).ToLower() == "dub.sdl";
 
 		protected override void Read(DubProject target, Object input)
 		{
-			throw new NotImplementedException();
+			var sr = (StreamReader)input;
+			
+			var tree = SDL.SdlParser.Parse(sr);
+			//TODO: Display parse errors?
+
+			foreach(var decl in tree.Children)
+			{
+
+			}
 		}
 	}
 }

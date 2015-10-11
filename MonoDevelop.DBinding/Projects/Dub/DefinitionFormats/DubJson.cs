@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 using System.IO;
 using Newtonsoft.Json;
 using MonoDevelop.Projects;
+using System.Text.RegularExpressions;
+using MonoDevelop.D.Building;
+using MonoDevelop.Core;
 
 namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 {
@@ -17,7 +20,7 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 
 		public override bool CanLoad (string file)
 		{
-			file = System.IO.Path.GetFileName(file).ToLower();
+			file = Path.GetFileName(file).ToLower();
 			return file == DubJsonFile || file == PackageJsonFile;
 		}
 
@@ -103,7 +106,7 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 					if (!j.Read() || j.TokenType != JsonToken.StartObject)
 						throw new JsonReaderException("Expected { when parsing Authors");
 
-					prj.DubReferences.DeserializeDubPrjDependencies(j);
+					DeserializeDubPrjDependencies(j, prj);
 					break;
 				case "configurations":
 					if (!j.Read () || j.TokenType != JsonToken.StartArray)
@@ -158,6 +161,54 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 				default:
 					throw new JsonReaderException ("Illegal token on subpackage definition beginning");
 			}
+		}
+
+		void DeserializeDubPrjDependencies(JsonReader j, DubProject prj)
+		{
+			prj.DubReferences.dependencies.Clear();
+			bool tryFillRemainingPaths = false;
+
+			while (j.Read() && j.TokenType != JsonToken.EndObject)
+			{
+				if (j.TokenType == JsonToken.PropertyName)
+				{
+					var depName = j.Value as string;
+					string depVersion = null;
+					string depPath = null;
+
+					if (!j.Read())
+						throw new JsonReaderException("Found EOF when parsing project dependency");
+
+					if (j.TokenType == JsonToken.StartObject)
+					{
+						while (j.Read() && j.TokenType != JsonToken.EndObject)
+						{
+							if (j.TokenType == JsonToken.PropertyName)
+							{
+								switch (j.Value as string)
+								{
+									case "version":
+										depVersion = j.ReadAsString();
+										break;
+									case "path":
+										depPath = j.ReadAsString();
+										break;
+								}
+							}
+						}
+					}
+					else if (j.TokenType == JsonToken.String)
+						depVersion = j.Value as string;
+
+					tryFillRemainingPaths |= string.IsNullOrEmpty(depPath);
+					prj.DubReferences.dependencies[depName] = new DubProjectDependency { Name = depName, Version = depVersion, Path = depPath };
+				}
+			}
+
+			if (tryFillRemainingPaths)
+				FillDubReferencesPaths(prj);
+			else
+				prj.DubReferences.FireUpdate();			
 		}
 	}
 }

@@ -41,7 +41,7 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 
 				if (clean) {
 					// Clear 'dub list' outputs
-					DubReferencesCollection.DubListOutputs.Clear();
+					DubFileReader.DubListOutputs.Clear();
 				}
 			}
 		}
