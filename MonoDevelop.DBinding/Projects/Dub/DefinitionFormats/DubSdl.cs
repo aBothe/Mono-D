@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MonoDevelop.D.Projects.Dub.DefinitionFormats.SDL;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -13,14 +14,27 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 
 		protected override void Read(DubProject target, Object input)
 		{
-			var sr = (StreamReader)input;
-			
-			var tree = SDL.SdlParser.Parse(sr);
-			//TODO: Display parse errors?
-
-			foreach(var decl in tree.Children)
+			if (input is StreamReader)
 			{
+				var tree = SDL.SdlParser.Parse(input as StreamReader);
+				//TODO: Display parse errors?
 
+				foreach (var decl in tree.Children)
+					ApplyProperty(decl, target);
+			}
+			else if (input is SDLObject)
+				foreach (var decl in (input as SDLObject).Children)
+					ApplyProperty(decl, target);
+			else
+				throw new ArgumentException("input");
+		}
+
+		void ApplyProperty(SDLDeclaration decl, DubProject target)
+		{
+			switch (decl.Name)
+			{
+				case "dependency":
+					break;
 			}
 		}
 	}
