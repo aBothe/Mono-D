@@ -73,7 +73,7 @@ namespace MonoDevelop.D.Building
 		}
 
 		public static string ExecutableExtension {
-			get{ return OS.IsWindows ? ".exe" : (OS.IsMac ? ".app" : null);}	
+			get{ return OS.IsWindows ? ".exe" : null; }	
 		}
 
 		public static string StaticLibraryExtension {
