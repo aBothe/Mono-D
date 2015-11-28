@@ -16,7 +16,6 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 	{
 		public const string PackageJsonFile = "package.json";
 		public const string DubJsonFile = "dub.json";
-		public const string DubSelectionsJsonFile = "dub.selections.json";
 
 		public override bool CanLoad (string file)
 		{
@@ -48,11 +47,6 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 				else if (r.TokenType == JsonToken.EndObject)
 					break;
 			}
-
-			// https://github.com/aBothe/Mono-D/issues/555
-			var dubSelectionJsonPath = prj.BaseDirectory.Combine(DubSelectionsJsonFile);
-			if (File.Exists(dubSelectionJsonPath))
-				prj.Items.Add(new ProjectFile(dubSelectionJsonPath, BuildAction.None));
 		}
 
 
@@ -118,7 +112,7 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 						prj.Configurations.Clear();
 
 					while (j.Read() && j.TokenType != JsonToken.EndArray)
-						prj.AddProjectAndSolutionConfiguration(DubProjectConfiguration.DeserializeFromPackageJson(j));
+						prj.AddProjectAndSolutionConfiguration(DeserializeFromPackageJson(j));
 					break;
 				case "subpackages":
 					if (!j.Read() || j.TokenType != JsonToken.StartArray)
@@ -144,7 +138,7 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 
 					break;
 				default:
-					prj.CommonBuildSettings.TryDeserializeBuildSetting(j);
+					TryDeserializeBuildSetting(prj.CommonBuildSettings, j);
 					break;
 			}
 		}
@@ -209,6 +203,118 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 				FillDubReferencesPaths(prj);
 			else
 				prj.DubReferences.FireUpdate();			
+		}
+
+		static DubProjectConfiguration DeserializeFromPackageJson(JsonReader j)
+		{
+			var c = new DubProjectConfiguration { Name = "<Undefined>" };
+
+			var srz = new JsonSerializer();
+			while (j.Read() && j.TokenType != JsonToken.EndObject)
+			{
+				if (j.TokenType == JsonToken.PropertyName)
+				{
+					switch (j.Value as string)
+					{
+						case "name":
+							c.Name = c.Id = j.ReadAsString();
+							break;
+						case "platforms":
+							j.Read();
+							c.Platform = string.Join("|", srz.Deserialize<string[]>(j));
+							break;
+						default:
+							if (!TryDeserializeBuildSetting(c.BuildSettings, j))
+								j.Skip();
+							break;
+					}
+				}
+			}
+
+			return c;
+		}
+
+		static bool TryDeserializeBuildSetting(DubBuildSettings cfg, JsonReader j)
+		{
+			if (!(j.Value is string))
+				return false;
+			var settingIdentifier = (j.Value as string).Split(new[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
+			if (settingIdentifier.Length < 1)
+				return false;
+
+			settingIdentifier[0] = settingIdentifier[0].ToLowerInvariant();
+			if (!DubBuildSettings.WantedProps.Contains(settingIdentifier[0]))
+			{
+				if (settingIdentifier[0] == "subconfigurations")
+				{
+					j.Read();
+					var subCfgs = (new JsonSerializer()).Deserialize<Dictionary<string, string>>(j);
+					foreach (var kv in subCfgs)
+						cfg.subConfigurations[kv.Key] = kv.Value;
+					return true;
+				}
+
+				j.Skip();
+				return false;
+			}
+
+			j.Read();
+			string[] flags;
+
+			if (j.TokenType == JsonToken.String)
+				flags = new[] { j.Value as string };
+			else if (j.TokenType == JsonToken.StartArray)
+				flags = (new JsonSerializer()).Deserialize<string[]>(j);
+			else
+			{
+				j.Skip();
+				//TODO: Probably throw or notify the user someway else
+				flags = null;
+				return true;
+			}
+
+			DubBuildSetting sett;
+
+			if (settingIdentifier.Length == 4)
+			{
+				sett = new DubBuildSetting
+				{
+					Name = settingIdentifier[0],
+					OperatingSystem = settingIdentifier[1],
+					Architecture = settingIdentifier[2],
+					Compiler = settingIdentifier[3],
+					Values = flags
+				};
+			}
+			else if (settingIdentifier.Length == 1)
+				sett = new DubBuildSetting { Name = settingIdentifier[0], Values = flags };
+			else
+			{
+				string Os = null;
+				string Arch = null;
+				string Compiler = null;
+
+				for (int i = 1; i < settingIdentifier.Length; i++)
+				{
+					var pn = settingIdentifier[i].ToLowerInvariant();
+					if (Os == null && DubBuildSettings.OsVersions.Contains(pn))
+						Os = pn;
+					else if (Arch == null && DubBuildSettings.Architectures.Contains(pn))
+						Arch = pn;
+					else
+						Compiler = pn;
+				}
+
+				sett = new DubBuildSetting { Name = settingIdentifier[0], OperatingSystem = Os, Architecture = Arch, Compiler = Compiler, Values = flags };
+			}
+
+			List<DubBuildSetting> setts;
+			if (!cfg.TryGetValue(settingIdentifier[0], out setts))
+				cfg.Add(settingIdentifier[0], setts = new List<DubBuildSetting>());
+
+			setts.Add(sett);
+
+			return true;
 		}
 	}
 }

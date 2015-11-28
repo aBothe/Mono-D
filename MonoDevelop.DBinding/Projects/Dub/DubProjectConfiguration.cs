@@ -1,5 +1,5 @@
 ﻿using MonoDevelop.Projects;
-using Newtonsoft.Json;
+
 namespace MonoDevelop.D.Projects.Dub
 {
 	public class DubProjectConfiguration : ProjectConfiguration
@@ -7,7 +7,7 @@ namespace MonoDevelop.D.Projects.Dub
 		public const string DefaultConfigId = "Default";
 		public DubBuildSettings BuildSettings = new DubBuildSettings();
 
-		public MonoDevelop.D.Building.DCompileTarget TargetType
+		public Building.DCompileTarget TargetType
 		{
 			get{ 
 				string targetType = null;
@@ -16,15 +16,15 @@ namespace MonoDevelop.D.Projects.Dub
 				BuildSettings.TryGetTargetTypeProperty (prj, Selector, ref targetType);
 
 				if (targetType == null)
-					return MonoDevelop.D.Building.DCompileTarget.Executable;
+					return Building.DCompileTarget.Executable;
 
 				switch (targetType.ToLowerInvariant ()) {
 					case "shared":
-						return MonoDevelop.D.Building.DCompileTarget.SharedLibrary;
+						return Building.DCompileTarget.SharedLibrary;
 					case "static":
-						return MonoDevelop.D.Building.DCompileTarget.StaticLibrary;
+						return Building.DCompileTarget.StaticLibrary;
 					default:
-						return MonoDevelop.D.Building.DCompileTarget.Executable;
+						return Building.DCompileTarget.Executable;
 				}
 			}
 		}
@@ -44,35 +44,6 @@ namespace MonoDevelop.D.Projects.Dub
 			ExternalConsole = true;
 			PauseConsoleOutput = true;
 			DebugMode = true;
-		}
-
-		public static DubProjectConfiguration DeserializeFromPackageJson(JsonReader j)
-		{
-			var c = new DubProjectConfiguration { Name = "<Undefined>" };
-
-			var srz = new JsonSerializer();
-			while (j.Read() && j.TokenType != JsonToken.EndObject)
-			{
-				if (j.TokenType == JsonToken.PropertyName)
-				{
-					switch (j.Value as string)
-					{
-						case "name":
-							c.Name = c.Id = j.ReadAsString();
-							break;
-						case "platforms":
-							j.Read();
-							c.Platform = string.Join("|",srz.Deserialize<string[]>(j));
-							break;
-						default:
-							if (!c.BuildSettings.TryDeserializeBuildSetting(j))
-								j.Skip();
-							break;
-					}
-				}
-			}
-
-			return c;
 		}
 	}
 }

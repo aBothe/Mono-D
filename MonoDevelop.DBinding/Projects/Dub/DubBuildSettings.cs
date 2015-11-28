@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using MonoDevelop.Projects;
 
@@ -48,7 +47,7 @@ namespace MonoDevelop.D.Projects.Dub
 			"x86_64","x86"
 		};
 
-		static HashSet<string> WantedProps = new HashSet<string> {
+		public static readonly HashSet<string> WantedProps = new HashSet<string> {
 			TargetTypeProperty,TargetNameProperty,TargetPathProperty,
 			SourceFilesProperty,SourcePathsProperty,"excludedsourcefiles",VersionsProperty,ImportPathsProperty,"stringimportpaths"
 		};
@@ -77,88 +76,6 @@ namespace MonoDevelop.D.Projects.Dub
 
 			TryGetTargetTypeProperty (prj, configuration, ref targetType);
 		}
-
-		public bool TryDeserializeBuildSetting(JsonReader j)
-		{
-			if (!(j.Value is string))
-				return false;
-			var settingIdentifier = (j.Value as string).Split(new[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
-			if (settingIdentifier.Length < 1)
-				return false;
-
-			settingIdentifier[0] = settingIdentifier [0].ToLowerInvariant ();
-			if (!WantedProps.Contains(settingIdentifier[0]))
-			{
-				if (settingIdentifier[0] == "subconfigurations")
-				{
-					j.Read();
-					var subCfgs = (new JsonSerializer()).Deserialize<Dictionary<string,string>>(j);
-					foreach (var kv in subCfgs)
-						subConfigurations[kv.Key] = kv.Value;
-					return true;
-				}
-
-				j.Skip();
-				return false;
-			}
-
-			j.Read();
-			string[] flags;
-
-			if (j.TokenType == JsonToken.String)
-				flags = new[]{ j.Value as string };
-			else if (j.TokenType == JsonToken.StartArray)
-				flags = (new JsonSerializer ()).Deserialize<string[]> (j);
-			else {
-				j.Skip ();
-				//TODO: Probably throw or notify the user someway else
-				flags = null;
-				return true;
-			}
-
-			DubBuildSetting sett;
-
-			if (settingIdentifier.Length == 4)
-			{
-				sett = new DubBuildSetting
-				{
-					Name = settingIdentifier[0],
-					OperatingSystem = settingIdentifier[1],
-					Architecture = settingIdentifier[2],
-					Compiler = settingIdentifier[3],
-					Values = flags
-				};
-			}
-			else if (settingIdentifier.Length == 1)
-				sett = new DubBuildSetting { Name = settingIdentifier[0], Values = flags };
-			else
-			{
-				string Os = null;
-				string Arch = null;
-				string Compiler = null;
-
-				for (int i = 1; i < settingIdentifier.Length; i++)
-				{
-					var pn = settingIdentifier[i].ToLowerInvariant();
-					if (Os == null && OsVersions.Contains(pn))
-						Os = pn;
-					else if (Arch == null && Architectures.Contains(pn))
-						Arch = pn;
-					else
-						Compiler = pn;
-				}
-
-				sett = new DubBuildSetting { Name = settingIdentifier[0], OperatingSystem = Os, Architecture = Arch, Compiler = Compiler, Values = flags };
-			}
-
-			List<DubBuildSetting> setts;
-			if (!TryGetValue(settingIdentifier[0], out setts))
-				Add(settingIdentifier[0], setts = new List<DubBuildSetting>());
-
-			setts.Add(sett);
-
-			return true;
-		}
 	}
 
 	public class DubBuildSetting : ICloneable
@@ -169,10 +86,7 @@ namespace MonoDevelop.D.Projects.Dub
 		public string Compiler;
 		public string[] Values;
 
-		public object Clone ()
-		{
-			return new DubBuildSetting{ Name = Name, OperatingSystem = OperatingSystem, Architecture = Architecture, Compiler = Compiler, Values = Values };
-		}
+		public object Clone() => new DubBuildSetting { Name = Name, OperatingSystem = OperatingSystem, Architecture = Architecture, Compiler = Compiler, Values = Values };
 	}
 	
 	public class DubProjectDependency

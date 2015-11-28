@@ -13,6 +13,8 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 {
 	public abstract class DubFileReader
 	{
+		public const string DubSelectionsJsonFile = "dub.selections.json";
+
 		public abstract bool CanLoad(string file);
 
 		protected abstract void Read(DubProject target, Object streamReader);
@@ -54,6 +56,11 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 			}
 
 			defaultPackage.Items.Add(new ProjectFile(originalFile, BuildAction.None));
+
+			// https://github.com/aBothe/Mono-D/issues/555
+			var dubSelectionJsonPath = defaultPackage.BaseDirectory.Combine(DubSelectionsJsonFile);
+			if (File.Exists(dubSelectionJsonPath))
+				defaultPackage.Items.Add(new ProjectFile(dubSelectionJsonPath, BuildAction.None));
 
 			defaultPackage.EndLoad();
 
