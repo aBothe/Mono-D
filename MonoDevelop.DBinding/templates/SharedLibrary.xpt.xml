@@ -36,6 +36,38 @@ MyClass createMyClass()
 }
 ]]>
 			</DFile>
+			<DFile name="dllmain.d">
+			<![CDATA[module ${ModuleName};
+
+version(Windows)
+{
+    import core.sys.windows.dll;    
+    import core.sys.windows.windows : HINSTANCE;
+
+    extern(Windows)
+    bool DllMain(HINSTANCE hInstance, uint ulReason, void* reserved)
+    {
+        import core.sys.windows.windows;
+        switch(ulReason)
+        {
+            default: assert(0);
+            case DLL_PROCESS_ATTACH:
+                return dll_process_attach( hInstance, true );
+
+            case DLL_PROCESS_DETACH:
+                dll_process_detach( hInstance, true );
+                return true;
+
+            case DLL_THREAD_ATTACH:
+                return dll_thread_attach( true, true );
+
+            case DLL_THREAD_DETACH:
+                return dll_thread_detach( true, true );
+        }
+    }
+}
+]]>
+			</DFile>
 		</Files>
 		</Project>
 	</Combine>
