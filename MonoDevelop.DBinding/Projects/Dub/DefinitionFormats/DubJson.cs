@@ -14,9 +14,6 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 {
 	class DubJson : DubFileReader
 	{
-		public const string PackageJsonFile = "package.json";
-		public const string DubJsonFile = "dub.json";
-
 		public override bool CanLoad (string file)
 		{
 			file = Path.GetFileName(file).ToLower();
@@ -47,26 +44,6 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 				else if (r.TokenType == JsonToken.EndObject)
 					break;
 			}
-		}
-
-
-
-		public static string GetDubJsonFilePath(AbstractDProject @base, string subPath)
-		{
-			var sub = @base as DubSubPackage;
-			if (sub != null)
-				sub.useOriginalBasePath = true;
-			var packageDir = @base.GetAbsPath(Building.ProjectBuilder.EnsureCorrectPathSeparators(subPath));
-
-			if (sub != null)
-				sub.useOriginalBasePath = false;
-
-			string packageJsonToLoad;
-			if (File.Exists(packageJsonToLoad = Path.Combine(packageDir, PackageJsonFile)) ||
-				File.Exists(packageJsonToLoad = Path.Combine(packageDir, DubJsonFile)))
-				return packageJsonToLoad;
-
-			return null;
 		}
 
 		void TryPopulateProperty(DubProject prj, string propName, JsonReader j)
@@ -150,7 +127,7 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 					Load(superProject, superProject.ParentSolution, r, superProject.FileName);
 					break;
 				case JsonToken.String:
-					DubFileManager.Instance.LoadProject (GetDubJsonFilePath (superProject, r.Value as string), superProject.ParentSolution, null, DubFileManager.LoadFlags.None, superProject);
+					DubFileManager.Instance.LoadProject (GetDubFilePath(superProject, r.Value as string), superProject.ParentSolution, null, DubFileManager.LoadFlags.None, superProject);
 					break;
 				default:
 					throw new JsonReaderException ("Illegal token on subpackage definition beginning");
@@ -205,7 +182,7 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 				prj.DubReferences.FireUpdate();			
 		}
 
-		static DubProjectConfiguration DeserializeFromPackageJson(JsonReader j)
+		DubProjectConfiguration DeserializeFromPackageJson(JsonReader j)
 		{
 			var c = new DubProjectConfiguration { Name = "<Undefined>" };
 
@@ -234,7 +211,7 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 			return c;
 		}
 
-		static bool TryDeserializeBuildSetting(DubBuildSettings cfg, JsonReader j)
+		bool TryDeserializeBuildSetting(DubBuildSettings cfg, JsonReader j)
 		{
 			if (!(j.Value is string))
 				return false;
@@ -248,8 +225,8 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 				if (settingIdentifier[0] == "subconfigurations")
 				{
 					j.Read();
-					var subCfgs = (new JsonSerializer()).Deserialize<Dictionary<string, string>>(j);
-					foreach (var kv in subCfgs)
+					var configurations = (new JsonSerializer()).Deserialize<Dictionary<string, string>>(j);
+                    foreach (var kv in configurations)
 						cfg.subConfigurations[kv.Key] = kv.Value;
 					return true;
 				}

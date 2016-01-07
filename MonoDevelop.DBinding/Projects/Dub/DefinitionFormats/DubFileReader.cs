@@ -14,8 +14,30 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 	public abstract class DubFileReader
 	{
 		public const string DubSelectionsJsonFile = "dub.selections.json";
+		public const string PackageJsonFile = "package.json";
+		public const string DubJsonFile = "dub.json";
+		public const string DubSdlFile = "dub.sdl";
 
 		public abstract bool CanLoad(string file);
+
+		public static string GetDubFilePath(AbstractDProject @base, string subPath)
+		{
+			var sub = @base as DubSubPackage;
+			if (sub != null)
+				sub.useOriginalBasePath = true;
+			var packageDir = @base.GetAbsPath(Building.ProjectBuilder.EnsureCorrectPathSeparators(subPath));
+
+			if (sub != null)
+				sub.useOriginalBasePath = false;
+
+			string dubFileToLoad;
+			if (File.Exists(dubFileToLoad = Path.Combine(packageDir, PackageJsonFile)) ||
+				File.Exists(dubFileToLoad = Path.Combine(packageDir, DubJsonFile)) ||
+				File.Exists(dubFileToLoad = Path.Combine(packageDir, DubSdlFile)))
+				return dubFileToLoad;
+
+			return null;
+		}
 
 		protected abstract void Read(DubProject target, Object streamReader);
 

@@ -126,7 +126,7 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 			}
 
 			return prj;
-		}
+		}		
 
 		public void LoadSubProjects(DubProject defaultPackage, IProgressMonitor monitor)
 		{

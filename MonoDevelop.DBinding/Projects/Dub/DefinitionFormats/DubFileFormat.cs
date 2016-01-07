@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using MonoDevelop.Projects;
 using System.Linq;
+using System.IO;
 
 namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 {

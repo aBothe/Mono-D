@@ -13,5 +13,5 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats.SDL
 		public SDLObject(string name, IEnumerable<Tuple<string, string>> attributes, SDLDeclaration[] children) : base(name, attributes) {
 			Children = children;
 		}
-    }
+	}
 }
