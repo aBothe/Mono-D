@@ -36,10 +36,10 @@ namespace MonoDevelop.D.Projects.Dub
 	public class DubReferencesCollection : DProjectReferenceCollection, IEnumerable<DubProjectDependency>
 	{
 		public new DubProject Owner { get { return base.Owner as DubProject; } }
+
 		public override event EventHandler Update;
 
-
-		public DubReferencesCollection (DubProject prj) : base(prj)
+		public DubReferencesCollection(DubProject prj) : base(prj)
 		{
 		}
 
@@ -47,35 +47,37 @@ namespace MonoDevelop.D.Projects.Dub
 
 		public override bool CanDelete { get { return false; } }
 
-		public override void DeleteProjectRef (string projectId)
+		public override void DeleteProjectRef(string projectId)
 		{
-			throw new NotImplementedException ();
+			throw new NotImplementedException();
 		}
 
-		public override void FireUpdate ()
+		public override void FireUpdate()
 		{
 			if (Update != null)
-				Update (this, EventArgs.Empty);
+				Update(this, EventArgs.Empty);
 		}
 
 		public override bool HasReferences { get { return GetDependencyEntries().GetEnumerator().MoveNext(); } }
 
-		public override string GetIncludeName (string path)
+		public override string GetIncludeName(string path)
 		{
-			foreach (var kv in dependencies)
+			foreach (var kv in GetDependencyEntries())
 				if (kv.Value.Path == path)
 					return kv.Key;
 
 			path = Path.GetFullPath(ProjectBuilder.EnsureCorrectPathSeparators(path));
-			foreach (var prj in Ide.IdeApp.Workspace.GetAllProjects ())
+			foreach (var prj in Ide.IdeApp.Workspace.GetAllProjects())
 				if (prj.BaseDirectory.ToString() == path)
 					return prj.Name;
 
 			return path;
 		}
 
-		public override IEnumerable<string> Includes {
-			get {
+		public override IEnumerable<string> Includes
+		{
+			get
+			{
 				var sub = Owner as DubSubPackage;
 				if (sub != null)
 					sub.useOriginalBasePath = true;
@@ -86,7 +88,7 @@ namespace MonoDevelop.D.Projects.Dub
 				foreach (var settings in Owner.GetBuildSettings(Ide.IdeApp.Workspace.ActiveConfiguration))
 				{
 					List<DubBuildSetting> l;
-					if (settings.TryGetValue (DubBuildSettings.ImportPathsProperty, out l))
+					if (settings.TryGetValue(DubBuildSettings.ImportPathsProperty, out l))
 						foreach (var v in l) // Ignore architecture/os/compiler restrictions for now
 							foreach (var p in v.Values)
 								yield return new FilePath(p).ToAbsolute(dir);

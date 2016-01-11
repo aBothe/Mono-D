@@ -13,8 +13,8 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 		public bool CanReadFile(FilePath file, Type expectedObjectType)
 		{
 			return DubFileManager.Instance.CanLoad(file.FileName) &&
-				(expectedObjectType.Equals(typeof(WorkspaceItem)) ||
-				expectedObjectType.Equals(typeof(SolutionEntityItem)));
+			(expectedObjectType.Equals(typeof(WorkspaceItem)) ||
+			expectedObjectType.Equals(typeof(SolutionEntityItem)));
 		}
 
 		public bool CanWriteFile(object obj)

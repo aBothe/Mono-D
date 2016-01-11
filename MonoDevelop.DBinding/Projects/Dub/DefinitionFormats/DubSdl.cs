@@ -53,14 +53,14 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 					target.Copyright = ExtractFirstAttribute(decl);
 					break;
 				case "subpackage":
-					if(decl is SDLObject)
+					if (decl is SDLObject)
 						base.Load(target, target.ParentSolution, decl, target.FileName);
 					else
 						DubFileManager.Instance.LoadProject(GetDubFilePath(target, ExtractFirstAttribute(decl)), target.ParentSolution, null, DubFileManager.LoadFlags.None, target);
 					break;
 				case "configuration":
 					var o = decl as SDLObject;
-					if(o != null)
+					if (o != null)
 					{
 						var c = new DubProjectConfiguration { Name = ExtractFirstAttribute(o) };
 						if (string.IsNullOrEmpty(c.Name))
@@ -182,7 +182,7 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 		}
 
 		/// <returns>string.Empty if nothing found</returns>
-		string ExtractFirstAttribute(SDLDeclaration d,string key = null)
+		string ExtractFirstAttribute(SDLDeclaration d, string key = null)
 		{
 			var i = d.Attributes.SingleOrDefault((kv) => kv.Item1 == key);
 			return i != null ? i.Item2 : string.Empty;

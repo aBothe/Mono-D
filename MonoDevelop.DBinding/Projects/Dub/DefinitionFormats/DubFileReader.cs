@@ -41,17 +41,19 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 
 		protected abstract void Read(DubProject target, Object streamReader);
 
-		public DubProject Load(DubProject superPackage, Solution parentSolution, Object streamReader, string originalFile){
+		public DubProject Load(DubProject superPackage, Solution parentSolution, Object streamReader, string originalFile)
+		{
 			bool returnSubProject = superPackage != null;
 
-			var defaultPackage = returnSubProject ? new DubSubPackage() : new DubProject ();
+			var defaultPackage = returnSubProject ? new DubSubPackage() : new DubProject();
 
 			defaultPackage.FileName = originalFile;
 			defaultPackage.BaseDirectory = defaultPackage.FileName.ParentDirectory;
 
-			if (returnSubProject) {
+			if (returnSubProject)
+			{
 				var sub = defaultPackage as DubSubPackage;
-				sub.OriginalBasePath = superPackage is DubSubPackage ? (superPackage as DubSubPackage).OriginalBasePath : 
+				sub.OriginalBasePath = superPackage is DubSubPackage ? (superPackage as DubSubPackage).OriginalBasePath :
 					superPackage.BaseDirectory;
 				sub.VirtualBasePath = sub.OriginalBasePath;
 			}
@@ -78,9 +80,9 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 				defaultPackage.packageName = superPackage.packageName + ":" + (defaultPackage.packageName ?? string.Empty);
 
 				var sub = defaultPackage as DubSubPackage;
-				var sourcePaths = sub.GetSourcePaths ().ToArray();
+				var sourcePaths = sub.GetSourcePaths().ToArray();
 				if (sourcePaths.Length > 0 && !string.IsNullOrWhiteSpace(sourcePaths[0]))
-					sub.VirtualBasePath = new FilePath(sourcePaths [0]);
+					sub.VirtualBasePath = new FilePath(sourcePaths[0]);
 
 				// TODO: What to do with new configurations that were declared in this sub package? Add them to all other packages as well?
 			}
@@ -230,7 +232,7 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 		/// Compares the versions.
 		/// </summary>
 		/// <returns>
-		/// greater 0 if actual greater than expected; 
+		/// greater 0 if actual greater than expected;
 		/// 0 if expected equals actual;
 		/// less 0 if actual less than expected</returns>
 		static int CompareVersions(Match expectedVer, Match actualVer)

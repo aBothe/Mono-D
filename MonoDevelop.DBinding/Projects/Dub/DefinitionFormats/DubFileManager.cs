@@ -40,22 +40,25 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 
 			public void Dispose()
 			{
-				FilesBeingLoaded.Remove (file);
+				FilesBeingLoaded.Remove(file);
 
-				if (clean) {
+				if (clean)
+				{
 					// Clear 'dub list' outputs
 					DubFileReader.DubListOutputs.Clear();
 				}
 			}
 		}
 
-		readonly HashSet<DubFileReader> supportedDubFileFormats = new HashSet<DubFileReader>
-		{
-			new DubJson(),
+		readonly HashSet<DubFileReader> supportedDubFileFormats = new HashSet<DubFileReader> {
+			new DubJson (),
 		};
+
 		#endregion
 
-		DubFileManager() { }
+		DubFileManager()
+		{
+		}
 
 		public bool CanLoad(string file)
 		{
@@ -117,14 +120,20 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 			if (FilesBeingLoaded.TryGetValue(file, out prj))
 				return prj;
 
-			using (new FilesBeingLoadedCleanser (file)) {
-				monitor.BeginTask ("Load dub project '"+file+"'", 1);
-				try {
-					prj = supportedDubFileFormats.First ((i) => i.CanLoad (file)).Load (file, superProject, parentSolution);
-				} catch (Exception ex) {
-					monitor.ReportError ("Couldn't load dub package \"" + file + "\"", ex);
-				}finally{
-					monitor.EndTask ();
+			using (new FilesBeingLoadedCleanser(file))
+			{
+				monitor.BeginTask("Load dub project '" + file + "'", 1);
+				try
+				{
+					prj = supportedDubFileFormats.First((i) => i.CanLoad(file)).Load(file, superProject, parentSolution);
+				}
+				catch (Exception ex)
+				{
+					monitor.ReportError("Couldn't load dub package \"" + file + "\"", ex);
+				}
+				finally
+				{
+					monitor.EndTask();
 				}
 
 				if (flags.HasFlag(LoadFlags.LoadReferences))
@@ -132,7 +141,7 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 			}
 
 			return prj;
-		}		
+		}
 
 		public void LoadSubProjects(DubProject defaultPackage, IProgressMonitor monitor)
 		{
@@ -147,11 +156,11 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 				var subProject = supportedDubFileFormats.First((i) => i.CanLoad(file)).Load(file, defaultPackage, sln);
 
 				if (sln is DubSolution)
-					(sln as DubSolution).AddProject (subProject);
+					(sln as DubSolution).AddProject(subProject);
 				else if (sln != null)
-					sln.RootFolder.AddItem (subProject, false);
+					sln.RootFolder.AddItem(subProject, false);
 				else
-					defaultPackage.packagesToAdd.Add (subProject);
+					defaultPackage.packagesToAdd.Add(subProject);
 			}
 		}
 	}

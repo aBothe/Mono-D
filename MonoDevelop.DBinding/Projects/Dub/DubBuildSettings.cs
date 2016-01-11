@@ -14,64 +14,64 @@ namespace MonoDevelop.D.Projects.Dub
 		public const string ImportPathsProperty = "importpaths";
 		public const string VersionsProperty = "versions";
 
-		public object Clone ()
+		public object Clone()
 		{
-			var s = new DubBuildSettings ();
+			var s = new DubBuildSettings();
 
-			foreach (var kv in this) {
-				var newList = new List<DubBuildSetting> ();
+			foreach (var kv in this)
+			{
+				var newList = new List<DubBuildSetting>();
 				foreach (var setting in kv.Value)
-					newList.Add (setting.Clone () as DubBuildSetting);
-				s [kv.Key] = newList;
+					newList.Add(setting.Clone() as DubBuildSetting);
+				s[kv.Key] = newList;
 			}
 
 			return s;
 		}
 
 		public readonly Dictionary<string, DubProjectDependency> dependencies = new Dictionary<string, DubProjectDependency>();
-		public readonly Dictionary<string, string> subConfigurations = new Dictionary<string,string>();
+		public readonly Dictionary<string, string> subConfigurations = new Dictionary<string, string>();
 
-		public static HashSet<string> OsVersions = new HashSet<string> { 
-			"windows","win32","win64","linux","osx",
-			"freebsd","openbsd","netbsd","dragonflybsd","bsd",
-			"solaris","posix","aix","haiku","skyos","sysv3","sysv4","hurd",
+		public static HashSet<string> OsVersions = new HashSet<string> {
+			"windows", "win32", "win64", "linux", "osx",
+			"freebsd", "openbsd", "netbsd", "dragonflybsd", "bsd",
+			"solaris", "posix", "aix", "haiku", "skyos", "sysv3", "sysv4", "hurd",
 			"android"
 		};
 
-		public static HashSet<string> Architectures = new HashSet<string> { 
-			"Alpha_HardFloat","Alpha_SoftFloat","Alpha","SH64","SH","HPPA64","HPPA","S390X","","S390",
-			"SPARC64","SPARC_HardFloat","SPARC_SoftFloat","SPARC_V8Plus","SPARC",
-			"MIPS_HardFloat","MIPS_SoftFloat","MIPS_EABI","MIPS_N64","MIPS_O64","MIPS_N32","MIPS_O32","MIPS64","MIPS32",
+		public static HashSet<string> Architectures = new HashSet<string> {
+			"Alpha_HardFloat", "Alpha_SoftFloat", "Alpha", "SH64", "SH", "HPPA64", "HPPA", "S390X", "", "S390",
+			"SPARC64", "SPARC_HardFloat", "SPARC_SoftFloat", "SPARC_V8Plus", "SPARC",
+			"MIPS_HardFloat", "MIPS_SoftFloat", "MIPS_EABI", "MIPS_N64", "MIPS_O64", "MIPS_N32", "MIPS_O32", "MIPS64", "MIPS32",
 			"ia64",
-			"PPC64","PPC_HardFloat","PPC_SoftFloat","PPC","AArch64",
-			"ARM_HardFloat","ARM_SoftFP","ARM_SoftFloat","ARM_Thumb","arm",
-			"x86_64","x86"
-		};
+			"PPC64", "PPC_HardFloat", "PPC_SoftFloat", "PPC", "AArch64",
+			"ARM_HardFloat", "ARM_SoftFP", "ARM_SoftFloat", "ARM_Thumb", "arm",
+			"x86_64", "x86"
 		};
 
 		public void TryGetTargetTypeProperty(DubProject prj, ConfigurationSelector cfg, ref string targetType)
 		{
 			List<DubBuildSetting> l;
-			if (TryGetValue (DubBuildSettings.TargetTypeProperty, out l))
+			if (TryGetValue(DubBuildSettings.TargetTypeProperty, out l))
 				foreach (var sett in l)
-					if (prj.BuildSettingMatchesConfiguration (sett, cfg))
-						targetType = sett.Values [0];
+					if (prj.BuildSettingMatchesConfiguration(sett, cfg))
+						targetType = sett.Values[0];
 		}
 
-		public void TryGetTargetFileProperties(DubProject prj, ConfigurationSelector configuration,ref string targetType, ref string targetName, ref string targetPath)
+		public void TryGetTargetFileProperties(DubProject prj, ConfigurationSelector configuration, ref string targetType, ref string targetName, ref string targetPath)
 		{
 			List<DubBuildSetting> l;
-			if (TryGetValue (DubBuildSettings.TargetNameProperty, out l))
+			if (TryGetValue(DubBuildSettings.TargetNameProperty, out l))
 				foreach (var sett in l)
-					if (prj.BuildSettingMatchesConfiguration (sett, configuration))
-						targetName = sett.Values [0];
+					if (prj.BuildSettingMatchesConfiguration(sett, configuration))
+						targetName = sett.Values[0];
 
-			if (TryGetValue (DubBuildSettings.TargetPathProperty, out l))
+			if (TryGetValue(DubBuildSettings.TargetPathProperty, out l))
 				foreach (var sett in l)
-					if (prj.BuildSettingMatchesConfiguration (sett, configuration))
-						targetPath = sett.Values [0];
+					if (prj.BuildSettingMatchesConfiguration(sett, configuration))
+						targetPath = sett.Values[0];
 
-			TryGetTargetTypeProperty (prj, configuration, ref targetType);
+			TryGetTargetTypeProperty(prj, configuration, ref targetType);
 		}
 	}
 

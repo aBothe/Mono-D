@@ -25,37 +25,46 @@ namespace MonoDevelop.D.Projects.Dub
 		public readonly DubBuildSettings CommonBuildSettings = new DubBuildSettings();
 
 		public readonly DubReferencesCollection DubReferences;
-		public override DProjectReferenceCollection References {get {return DubReferences;}} 
+		public override DProjectReferenceCollection References { get { return DubReferences; } }
 
 		public string packageName;
 		string displayName;
-		public override string Name { get{ 
+		public override string Name
+		{
+			get
+			{
 				if (!string.IsNullOrWhiteSpace(displayName))
 					return displayName;
 
-				if (string.IsNullOrWhiteSpace (packageName))
+				if (string.IsNullOrWhiteSpace(packageName))
 					return string.Empty;
 
-				var p = packageName.Split (':');
-				return p [p.Length - 1];
-			} 
-			set { displayName = value; } } // override because the name is normally derived from the file name -- package.json is not the project's file name!
+				var p = packageName.Split(':');
+				return p[p.Length - 1];
+			}
+			set { displayName = value; }
+		} // override because the name is normally derived from the file name -- package.json is not the project's file name!
 		FilePath filePath;
-		public override FilePath FileName { 
-			get{ return filePath; }
-			set{
+		public override FilePath FileName
+		{
+			get { return filePath; }
+			set
+			{
 				filePath = value;
-				if (File.Exists (value))
-					lastDubJsonModTime = File.GetLastWriteTimeUtc (value);
+				if (File.Exists(value))
+					lastDubJsonModTime = File.GetLastWriteTimeUtc(value);
 			}
 		}
 
 		DateTime lastDubJsonModTime;
-		public override bool NeedsReload {
-			get {
+		public override bool NeedsReload
+		{
+			get
+			{
 				return lastDubJsonModTime != File.GetLastWriteTimeUtc(FileName);
 			}
-			set {
+			set
+			{
 				//base.NeedsReload = value;
 			}
 		}
@@ -65,41 +74,40 @@ namespace MonoDevelop.D.Projects.Dub
 		public string Copyright;
 		public List<string> Authors { get { return authors; } }
 
-		public List<DubBuildSettings> GetBuildSettings(ConfigurationSelector sel)
+		public IEnumerable<DubBuildSettings> GetBuildSettings(ConfigurationSelector sel)
 		{
-			var settingsToScan = new List<DubBuildSettings>(4);
-			settingsToScan.Add(CommonBuildSettings);
+			yield return CommonBuildSettings;
 
 			DubProjectConfiguration pcfg;
 			if (sel == null || (pcfg = GetConfiguration(sel) as DubProjectConfiguration) == null)
 				foreach (DubProjectConfiguration cfg in Configurations)
-					settingsToScan.Add(cfg.BuildSettings);
+					yield return cfg.BuildSettings;
 			else
-				settingsToScan.Add(pcfg.BuildSettings);
-
-			return settingsToScan;
+				yield return pcfg.BuildSettings;
 		}
 
-		public override bool ItemFilesChanged {
-			get {
+		public override bool ItemFilesChanged
+		{
+			get
+			{
 				return loading;
 			}
 		}
 
-		static readonly char[] PathSep = {Path.DirectorySeparatorChar};
+		static readonly char[] PathSep = { Path.DirectorySeparatorChar };
 		static bool CanContainFile(string f)
 		{
-			var i= f.LastIndexOfAny(PathSep);
-			return i < -1 ? !f.StartsWith (".") : f [i + 1] != '.';
+			var i = f.LastIndexOfAny(PathSep);
+			return i < -1 ? !f.StartsWith(".") : f[i + 1] != '.';
 		}
 
 		protected override List<FilePath> OnGetItemFiles(bool includeReferencedFiles)
 		{
 			var files = new List<FilePath>();
 
-			foreach(var dir in GetSourcePaths((ConfigurationSelector)null))
+			foreach (var dir in GetSourcePaths((ConfigurationSelector)null))
 				foreach (var f in Directory.GetFiles(dir, "*", SearchOption.AllDirectories))
-					if(CanContainFile(f))
+					if (CanContainFile(f))
 						files.Add(new FilePath(f));
 
 			return files;
@@ -111,13 +119,18 @@ namespace MonoDevelop.D.Projects.Dub
 			List<DubBuildSetting> l;
 			string d;
 			bool returnedOneItem = false;
-			foreach (var sett in GetBuildSettings(sel)) {
-				if (sett.TryGetValue (DubBuildSettings.SourcePathsProperty, out l)) {
+			foreach (var sett in GetBuildSettings(sel))
+			{
+				if (sett.TryGetValue(DubBuildSettings.SourcePathsProperty, out l))
+				{
 					returnedOneItem = true;
-					foreach (var setting in l) {
-						foreach (var directory in setting.Values) {
+					foreach (var setting in l)
+					{
+						foreach (var directory in setting.Values)
+						{
 							d = ProjectBuilder.EnsureCorrectPathSeparators(directory);
-							if (!Path.IsPathRooted (d)) {
+							if (!Path.IsPathRooted(d))
+							{
 								if (this is DubSubPackage)
 									(this as DubSubPackage).useOriginalBasePath = true;
 								d = Path.GetFullPath(Path.Combine(BaseDirectory.ToString(), d));
@@ -127,7 +140,7 @@ namespace MonoDevelop.D.Projects.Dub
 
 							// Ignore os/arch/version constraints for now
 
-							if (dirs.Contains(d) || !Directory.Exists (d))
+							if (dirs.Contains(d) || !Directory.Exists(d))
 								continue;
 
 							dirs.Add(d);
@@ -180,16 +193,16 @@ namespace MonoDevelop.D.Projects.Dub
 				yield return new DubExecTarget(buildType);
 		}
 
-		public override string ToString ()
+		public override string ToString()
 		{
-			return string.Format ("[DubProject: Name={0}]", Name);
+			return string.Format("[DubProject: Name={0}]", Name);
 		}
 		#endregion
 
 		#region Constructor & Init
 		public DubProject()
 		{
-			DubReferences = new DubReferencesCollection (this);
+			DubReferences = new DubReferencesCollection(this);
 		}
 		#endregion
 
@@ -197,20 +210,22 @@ namespace MonoDevelop.D.Projects.Dub
 		internal void BeginLoad()
 		{
 			loading = true;
-			OnBeginLoad ();
-			Items.Clear ();
+			OnBeginLoad();
+			Items.Clear();
 		}
 
 		void _loadFilesFrom(string dir)
 		{
 			var baseDir = BaseDirectory;
 
-			foreach (var f in Directory.GetFiles(dir, "*", SearchOption.AllDirectories)) {
-				if(CanContainFile(f)) {
-					if (f.StartsWith (baseDir))
-						Items.Add (new ProjectFile (f));
+			foreach (var f in Directory.GetFiles(dir, "*", SearchOption.AllDirectories))
+			{
+				if (CanContainFile(f))
+				{
+					if (f.StartsWith(baseDir))
+						Items.Add(new ProjectFile(f));
 					else
-						Items.Add (new ProjectFile (f) { Link = f.Substring (dir.Length + 1) });
+						Items.Add(new ProjectFile(f) { Link = f.Substring(dir.Length + 1) });
 				}
 			}
 		}
@@ -219,56 +234,62 @@ namespace MonoDevelop.D.Projects.Dub
 		{
 			// Load project's files
 			var baseDir = BaseDirectory;
-			var baseDirs = new List<string> ();
+			var baseDirs = new List<string>();
 
-			foreach (var dir in GetSourcePaths((ConfigurationSelector)null)) {
+			foreach (var dir in GetSourcePaths((ConfigurationSelector)null))
+			{
 				bool skip = false;
 				foreach (var bdir in baseDirs)
-					if (dir.StartsWith (bdir)) {
+					if (dir.StartsWith(bdir))
+					{
 						skip = true;
 						break;
 					}
 				if (skip)
 					continue;
 
-				baseDirs.Add (dir);
-				_loadFilesFrom (dir);
+				baseDirs.Add(dir);
+				_loadFilesFrom(dir);
 			}
 
 			#region Add files specified via sourceFiles
-			var additionalFiles = new List<string> ();
+			var additionalFiles = new List<string>();
 			List<DubBuildSetting> l;
 
-			if (CommonBuildSettings.TryGetValue (DubBuildSettings.SourceFilesProperty, out l))
+			if (CommonBuildSettings.TryGetValue(DubBuildSettings.SourceFilesProperty, out l))
 				foreach (var sett in l)
 					foreach (var f in sett.Values)
-						additionalFiles.Add (f);
+						additionalFiles.Add(f);
 
-			foreach(DubProjectConfiguration cfg in Configurations)
-				if (cfg.BuildSettings.TryGetValue (DubBuildSettings.SourceFilesProperty, out l))
+			foreach (DubProjectConfiguration cfg in Configurations)
+				if (cfg.BuildSettings.TryGetValue(DubBuildSettings.SourceFilesProperty, out l))
 					foreach (var sett in l)
 						foreach (var f in sett.Values)
-							additionalFiles.Add (f);
+							additionalFiles.Add(f);
 
-			foreach (var f in additionalFiles) {
-				if (string.IsNullOrWhiteSpace (f))
+			foreach (var f in additionalFiles)
+			{
+				if (string.IsNullOrWhiteSpace(f))
 					continue;
 
-				if (Path.IsPathRooted (f)) {
+				if (Path.IsPathRooted(f))
+				{
 					bool skip = false;
 					foreach (var dir in baseDirs)
-						if (f.StartsWith (dir)) {
+						if (f.StartsWith(dir))
+						{
 							skip = true;
 							break;
 						}
 					if (!skip)
-						Items.Add (new ProjectFile (f));
-				} else
-					Items.Add (new ProjectFile(baseDir.Combine(f).ToString()));
+						Items.Add(new ProjectFile(f));
+				}
+				else
+					Items.Add(new ProjectFile(baseDir.Combine(f).ToString()));
 			}
 			#endregion
 
-			OnEndLoad ();
+			OnEndLoad();
 			loading = false;
 		}
 
@@ -286,21 +307,22 @@ namespace MonoDevelop.D.Projects.Dub
 				DefaultConfigurationId = cfg.Id;
 		}
 
-		protected override void OnEndLoad ()
+		protected override void OnEndLoad()
 		{
-			DubReferences.FireUpdate ();
-			base.OnEndLoad ();
+			DubReferences.FireUpdate();
+			base.OnEndLoad();
 		}
 
 		protected override void OnBoundToSolution()
 		{
 			base.OnBoundToSolution();
 
-			foreach (var sub in packagesToAdd) {
+			foreach (var sub in packagesToAdd)
+			{
 				if (ParentSolution is DubSolution)
-					(ParentSolution as DubSolution).AddProject (sub);
+					(ParentSolution as DubSolution).AddProject(sub);
 				else
-					ParentSolution.RootFolder.AddItem (sub, false);
+					ParentSolution.RootFolder.AddItem(sub, false);
 			}
 			packagesToAdd.Clear();
 		}
@@ -317,30 +339,30 @@ namespace MonoDevelop.D.Projects.Dub
 			return true;
 		}
 
-		public override FilePath GetOutputFileName (ConfigurationSelector configuration)
+		public override FilePath GetOutputFileName(ConfigurationSelector configuration)
 		{
-			var cfg = GetConfiguration (configuration) as DubProjectConfiguration;
+			var cfg = GetConfiguration(configuration) as DubProjectConfiguration;
 
 			string targetPath = null, targetName = null, targetType = null;
-			CommonBuildSettings.TryGetTargetFileProperties (this, configuration, ref targetType, ref targetName, ref targetPath);
-			cfg.BuildSettings.TryGetTargetFileProperties (this, configuration, ref targetType, ref targetName, ref targetPath);
+			CommonBuildSettings.TryGetTargetFileProperties(this, configuration, ref targetType, ref targetName, ref targetPath);
+			cfg.BuildSettings.TryGetTargetFileProperties(this, configuration, ref targetType, ref targetName, ref targetPath);
 
-			if (string.IsNullOrWhiteSpace (targetPath))
-				targetPath = BaseDirectory.ToString ();
-			else if (!Path.IsPathRooted (targetPath))
-				targetPath = BaseDirectory.Combine (targetPath).ToString ();
+			if (string.IsNullOrWhiteSpace(targetPath))
+				targetPath = BaseDirectory.ToString();
+			else if (!Path.IsPathRooted(targetPath))
+				targetPath = BaseDirectory.Combine(targetPath).ToString();
 
-			if (string.IsNullOrWhiteSpace (targetName))
+			if (string.IsNullOrWhiteSpace(targetName))
 			{
-				var packName = packageName.Split (':');
-				targetName = packName[packName.Length-1];
+				var packName = packageName.Split(':');
+				targetName = packName[packName.Length - 1];
 			}
 
-			if(string.IsNullOrWhiteSpace(targetType) ||
+			if (string.IsNullOrWhiteSpace(targetType) ||
 				(targetType = targetType.ToLowerInvariant()) == "executable" ||
 				targetType == "autodetect")
 			{
-				if(OS.IsWindows)
+				if (OS.IsWindows)
 					targetName += ".exe";
 			}
 			else
@@ -352,14 +374,14 @@ namespace MonoDevelop.D.Projects.Dub
 			return Path.Combine(targetPath, targetName);
 		}
 
-		protected override void PopulateOutputFileList (List<FilePath> list, ConfigurationSelector configuration)
+		protected override void PopulateOutputFileList(List<FilePath> list, ConfigurationSelector configuration)
 		{
-			base.PopulateOutputFileList (list, configuration);
+			base.PopulateOutputFileList(list, configuration);
 		}
 
 		protected override BuildResult DoBuild(IProgressMonitor monitor, ConfigurationSelector configuration)
 		{
-			return DubBuilder.BuildProject(this, monitor, configuration);			
+			return DubBuilder.BuildProject(this, monitor, configuration);
 		}
 
 		public override NativeExecutionCommand CreateExecutionCommand(ConfigurationSelector conf)
@@ -380,17 +402,19 @@ namespace MonoDevelop.D.Projects.Dub
 				return false;
 
 			string targetPath = null, targetName = null, targetType = null;
-			CommonBuildSettings.TryGetTargetFileProperties (this, configuration, ref targetType, ref targetName, ref targetPath);
+			CommonBuildSettings.TryGetTargetFileProperties(this, configuration, ref targetType, ref targetName, ref targetPath);
 			(GetConfiguration(configuration) as DubProjectConfiguration).BuildSettings
-				.TryGetTargetFileProperties (this, configuration, ref targetType, ref targetName, ref targetPath);
+				.TryGetTargetFileProperties(this, configuration, ref targetType, ref targetName, ref targetPath);
 
-			if (targetType == "autodetect" || string.IsNullOrWhiteSpace (targetType)) {
-				if (string.IsNullOrEmpty (targetName))
+			if (targetType == "autodetect" || string.IsNullOrWhiteSpace(targetType))
+			{
+				if (string.IsNullOrEmpty(targetName))
 					return true;
 
 				var ext = Path.GetExtension(targetName);
-				if(ext != null)
-					switch (ext.ToLowerInvariant()) {
+				if (ext != null)
+					switch (ext.ToLowerInvariant())
+					{
 						case ".dylib":
 						case ".so":
 						case ".a":
@@ -399,7 +423,7 @@ namespace MonoDevelop.D.Projects.Dub
 						case null:
 						default:
 							return true;
-				}
+					}
 			}
 
 			return targetType.ToLowerInvariant() == "executable";
@@ -407,23 +431,23 @@ namespace MonoDevelop.D.Projects.Dub
 
 		protected override void DoExecute(IProgressMonitor monitor, ExecutionContext context, ConfigurationSelector configuration)
 		{
-			DubBuilder.ExecuteProject(this,monitor, context, configuration);
+			DubBuilder.ExecuteProject(this, monitor, context, configuration);
 		}
 
-		public override SolutionItemConfiguration CreateConfiguration (string name)
+		public override SolutionItemConfiguration CreateConfiguration(string name)
 		{
 			return new DubProjectConfiguration { Name = name };
 		}
 
-		protected override void DoClean (IProgressMonitor monitor, ConfigurationSelector configuration)
+		protected override void DoClean(IProgressMonitor monitor, ConfigurationSelector configuration)
 		{
-			base.DoClean (monitor, configuration);
+			base.DoClean(monitor, configuration);
 		}
 		#endregion
 
-		public override void Save (IProgressMonitor monitor)
+		public override void Save(IProgressMonitor monitor)
 		{
-			monitor.ReportSuccess ("Skip saving dub project.");
+			monitor.ReportSuccess("Skip saving dub project.");
 		}
 	}
 }

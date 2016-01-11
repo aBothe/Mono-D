@@ -14,22 +14,25 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 {
 	class DubJson : DubFileReader
 	{
-		public override bool CanLoad (string file)
+		public override bool CanLoad(string file)
 		{
 			file = Path.GetFileName(file).ToLower();
 			return file == DubJsonFile || file == PackageJsonFile;
 		}
 
-		protected override void Read (DubProject target, Object input)
+		protected override void Read(DubProject target, Object input)
 		{
 			if (input is JsonReader)
-				Parse (input as JsonReader, target);
-			else if (input is TextReader) {
-				using (var r = new JsonTextReader (input as TextReader)) {
-					Parse (r, target);
+				Parse(input as JsonReader, target);
+			else if (input is TextReader)
+			{
+				using (var r = new JsonTextReader(input as TextReader))
+				{
+					Parse(r, target);
 				}
-			} else
-				throw new ArgumentException ("input");
+			}
+			else
+				throw new ArgumentException("input");
 		}
 
 		void Parse(JsonReader r, DubProject prj)
@@ -80,8 +83,8 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 					DeserializeDubPrjDependencies(j, prj.CommonBuildSettings);
 					break;
 				case "configurations":
-					if (!j.Read () || j.TokenType != JsonToken.StartArray)
-						throw new JsonReaderException ("Expected [ when parsing Configurations");
+					if (!j.Read() || j.TokenType != JsonToken.StartArray)
+						throw new JsonReaderException("Expected [ when parsing Configurations");
 					var sln = prj.ParentSolution;
 					if (sln != null && sln.Configurations.Count == 1 && sln.Configurations[0].Id == DubProjectConfiguration.DefaultConfigId)
 						sln.Configurations.Clear();
@@ -122,15 +125,16 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 
 		void ReadSubPackage(DubProject superProject, JsonReader r)
 		{
-			switch (r.TokenType) {
+			switch (r.TokenType)
+			{
 				case JsonToken.StartObject:
 					Load(superProject, superProject.ParentSolution, r, superProject.FileName);
 					break;
 				case JsonToken.String:
-					DubFileManager.Instance.LoadProject (GetDubFilePath(superProject, r.Value as string), superProject.ParentSolution, null, DubFileManager.LoadFlags.None, superProject);
+					DubFileManager.Instance.LoadProject(GetDubFilePath(superProject, r.Value as string), superProject.ParentSolution, null, DubFileManager.LoadFlags.None, superProject);
 					break;
 				default:
-					throw new JsonReaderException ("Illegal token on subpackage definition beginning");
+					throw new JsonReaderException("Illegal token on subpackage definition beginning");
 			}
 		}
 
