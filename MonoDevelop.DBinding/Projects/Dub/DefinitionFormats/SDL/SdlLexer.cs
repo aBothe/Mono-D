@@ -12,16 +12,11 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats.SDL
 		readonly TextReader reader;
 		int currentLine = 1;
 		int currentCol = 1;
+		Token backupToken;
 
-		public bool IsEOF { get; private set; }
+		public bool IsEOF { get { return CurrentToken != null && CurrentToken.Kind == Tokens.EOF; } }
 
 		public Token CurrentToken
-		{
-			get;
-			private set;
-		}
-
-		public Token PeekToken
 		{
 			get;
 			private set;
@@ -32,40 +27,38 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats.SDL
 			this.reader = reader;
 		}
 
+		/// <summary>
+		/// Marks the current token to be used for Reset()
+		/// </summary>
+		public void Mark()
+		{
+			backupToken = CurrentToken;
+		}
+
+		/// <summary>
+		/// Resets the current token to the token that has been marked via Mark()
+		/// </summary>
+		public void Reset()
+		{
+			CurrentToken = backupToken;
+		}
+
 		public void Step()
 		{
-			if (CurrentToken == null || CurrentToken.next == null)
-				CurrentToken = ReadToken();
-			else
-				CurrentToken = CurrentToken.next;
-
-			ResetPeek();
-		}
-
-		public void ResetPeek()
-		{
-			PeekToken = CurrentToken;
-		}
-
-		public void Peek()
-		{
-			if(PeekToken == null)
+			if(CurrentToken == null)
 			{
-				if(CurrentToken == null)
-					Step();
-				ResetPeek();
-				return;
+				CurrentToken = ReadToken();
 			}
-
-			if (PeekToken.next != null) {
-				PeekToken = PeekToken.next;
-				return;
+			else if(CurrentToken.next != null)
+			{
+				CurrentToken = CurrentToken.next;
 			}
-
-			PeekToken.next = ReadToken();
-			
-			PeekToken = PeekToken.next;
-			// CurrentToken still keeps references to prior tokens
+			else if(!IsEOF)
+			{
+				var next = ReadToken();
+				CurrentToken.next = next;
+				CurrentToken = next;
+			}
 		}
 
 
@@ -141,7 +134,7 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats.SDL
 						char curChar = (char)cur;
 						if (IsDigit(curChar))
 							return ReadNumeral(curChar);
-						if (IsLetterOrDigit(curChar))							
+						if (IsLetterOrDigit(curChar))
 							return new Token(Tokens.Identifier, ReadIdentifier(curChar), y, x);
 
 						if (char.IsWhiteSpace(curChar))
@@ -151,7 +144,6 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats.SDL
 				}
 			}
 
-			IsEOF = true;
 			return new Token(Tokens.EOF, currentLine, currentCol);
 		}
 

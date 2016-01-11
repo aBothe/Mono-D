@@ -50,20 +50,28 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats.SDL
 			var l = new List<SDLDeclaration>();
 			while (!Lexer.IsEOF)
 			{
-				Lexer.ResetPeek();
-				Lexer.Peek();
-				switch (Peek.Kind)
+				Step();
+				switch (Current.Kind)
 				{
 					case SdlLexer.Tokens.Identifier:
 						l.Add(ParseDeclaration());
 						break;
 					case SdlLexer.Tokens.CloseBrace:
 						if (braceForExit)
+						{
+							Step();
 							return l.ToArray();
+						}
 						else
 							goto default;
 					default:
-						ParseErrors.Add(new Error(Peek.Line, Peek.Column, "Invalid token: " + Peek.Kind.ToString()));
+						ParseErrors.Add(new Error(Current.Line, Current.Column, "Invalid token: " + Current.Kind.ToString()));
+						break;
+					case SdlLexer.Tokens.EOF:
+						if (braceForExit)
+						{
+							goto default;
+						}
 						break;
 					case SdlLexer.Tokens.Invalid:
 					case SdlLexer.Tokens.EOL:
@@ -86,7 +94,6 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats.SDL
 
 				if (Current.Kind == SdlLexer.Tokens.OpenBrace)
 				{
-					Step();
 					return new SDLObject(name, attributes, ParseChildren(true));
 				}
 				else
@@ -98,22 +105,34 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats.SDL
 
 		void TryDeclarationParseAttributes(List<Tuple<string, string>> attributes)
 		{
-			var tk = Current;
-			switch (tk.Kind)
+			while (!Lexer.IsEOF)
 			{
-				case SdlLexer.Tokens.String:
-					attributes.Add(new Tuple<string, string>(null, tk.Value));
-					break;
-				case SdlLexer.Tokens.Identifier:
-					var attrId = tk.Value;
-					if (Expect(SdlLexer.Tokens.Equals))
-					{
-						if (Expect(SdlLexer.Tokens.String))
-							attributes.Add(new Tuple<string, string>(attrId, Current.Value));
-					}
-					break;
-				default:
-					return;
+				var tk = Current;
+				switch (tk.Kind)
+				{
+					case SdlLexer.Tokens.String:
+						attributes.Add(new Tuple<string, string>(null, tk.Value));
+						Step();
+						break;
+					case SdlLexer.Tokens.Identifier:
+						var attrId = tk.Value;
+						Lexer.Mark();
+						Step();
+						if (Current.Kind == SdlLexer.Tokens.Equals)
+						{
+							Step();
+							if (Expect(SdlLexer.Tokens.String))
+							{
+								attributes.Add(new Tuple<string, string>(attrId, Current.Value));
+								Step();
+							}
+						}
+						else
+							Lexer.Reset();
+						break;
+					default:
+						return;
+				}
 			}
 		}
 
@@ -127,12 +146,8 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats.SDL
 		SdlLexer.Token Current
 		{ get { return Lexer.CurrentToken; } }
 
-		SdlLexer.Token Peek
-		{ get { return Lexer.PeekToken; } }
-
 		bool Expect(SdlLexer.Tokens kind)
 		{
-			Lexer.Step();
 			var tk = Current;
 			if (tk.Kind != kind)
 			{

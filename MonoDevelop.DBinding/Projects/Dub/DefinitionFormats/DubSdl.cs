@@ -36,8 +36,11 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 		{
 			switch (decl.Name.ToLower())
 			{
-				case "name":
+				case "displayname":
 					target.Name = ExtractFirstAttribute(decl);
+					break;
+				case "name":
+					target.packageName = ExtractFirstAttribute(decl);
 					break;
 				case "description":
 					target.Description = ExtractFirstAttribute(decl);
