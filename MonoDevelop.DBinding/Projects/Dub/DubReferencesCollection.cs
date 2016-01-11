@@ -23,14 +23,13 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-using System;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
-using Newtonsoft.Json;
-using MonoDevelop.D.Building;
-using System.IO;
 using MonoDevelop.Core;
+using MonoDevelop.D.Building;
+using MonoDevelop.Projects;
+using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.IO;
 
 namespace MonoDevelop.D.Projects.Dub
 {
@@ -39,7 +38,6 @@ namespace MonoDevelop.D.Projects.Dub
 		public new DubProject Owner { get { return base.Owner as DubProject; } }
 		public override event EventHandler Update;
 
-		internal Dictionary<string, DubProjectDependency> dependencies = new Dictionary<string, DubProjectDependency>();
 
 		public DubReferencesCollection (DubProject prj) : base(prj)
 		{
@@ -91,19 +89,25 @@ namespace MonoDevelop.D.Projects.Dub
 					if (settings.TryGetValue (DubBuildSettings.ImportPathsProperty, out l))
 						foreach (var v in l) // Ignore architecture/os/compiler restrictions for now
 							foreach (var p in v.Values)
-								yield return dir.ToAbsolute (p);
+								yield return new FilePath(p).ToAbsolute(dir);
 				}
 			}
 		}
 
-		public override IEnumerable<string> ReferencedProjectIds {
-			get {
-				var allProjects = Ide.IdeApp.Workspace.GetAllProjects ();
-				foreach (var kv in dependencies){
-					var depPath = kv.Value.Name;
-					foreach (var prj in allProjects)
-						if (prj is DubProject ? ((prj as DubProject).packageName == depPath) : prj.Name == depPath)
-							yield return prj.ItemId;
+		public override IEnumerable<string> ReferencedProjectIds
+		{
+			get
+			{
+				var emittedIds = new HashSet<string>();
+				var allProjects = Ide.IdeApp.Workspace.GetAllProjects();
+				foreach (var kv in GetDependencyEntries())
+				{
+					if (emittedIds.Add(kv.Key))
+					{
+						foreach (var prj in allProjects)
+							if (prj is DubProject ? ((prj as DubProject).packageName == kv.Value.Path) : prj.Name == kv.Value.Path)
+								yield return prj.ItemId;
+					}
 				}
 			}
 		}
@@ -113,9 +117,17 @@ namespace MonoDevelop.D.Projects.Dub
 			throw new NotImplementedException();
 		}
 
+		public IEnumerable<KeyValuePair<string, DubProjectDependency>> GetDependencyEntries(ConfigurationSelector cfgSelector = null)
+		{
+			foreach (var settings in Owner.GetBuildSettings(cfgSelector))
+				foreach (var kv in settings.dependencies)
+					yield return kv;
+		}
+
 		public IEnumerator<DubProjectDependency> GetEnumerator()
 		{
-			return dependencies.Values.GetEnumerator();
+			foreach (var kv in GetDependencyEntries())
+				yield return kv.Value;
 		}
 
 		IEnumerator IEnumerable.GetEnumerator()

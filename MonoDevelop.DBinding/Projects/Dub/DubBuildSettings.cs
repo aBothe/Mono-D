@@ -28,6 +28,7 @@ namespace MonoDevelop.D.Projects.Dub
 			return s;
 		}
 
+		public readonly Dictionary<string, DubProjectDependency> dependencies = new Dictionary<string, DubProjectDependency>();
 		public readonly Dictionary<string, string> subConfigurations = new Dictionary<string,string>();
 
 		public static HashSet<string> OsVersions = new HashSet<string> { 
@@ -46,10 +47,6 @@ namespace MonoDevelop.D.Projects.Dub
 			"ARM_HardFloat","ARM_SoftFP","ARM_SoftFloat","ARM_Thumb","arm",
 			"x86_64","x86"
 		};
-
-		public static readonly HashSet<string> WantedProps = new HashSet<string> {
-			TargetTypeProperty,TargetNameProperty,TargetPathProperty,
-			SourceFilesProperty,SourcePathsProperty,"excludedsourcefiles",VersionsProperty,ImportPathsProperty,"stringimportpaths"
 		};
 
 		public void TryGetTargetTypeProperty(DubProject prj, ConfigurationSelector cfg, ref string targetType)

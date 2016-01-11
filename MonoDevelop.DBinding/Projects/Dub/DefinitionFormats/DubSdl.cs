@@ -47,7 +47,7 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 					break;
 				case "authors":
 					target.Authors.Clear();
-					target.Authors.AddRange(from kv in decl.Attributes where kv.Item1 == null select kv.Item2);
+					target.Authors.AddRange(ExtractUnnamedAttributes(decl));
 					break;
 				case "copyright":
 					target.Copyright = ExtractFirstAttribute(decl);
@@ -66,8 +66,19 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 						if (string.IsNullOrEmpty(c.Name))
 							c.Name = "<Undefined>";
 
-						foreach(var childDecl in o.Children)
-							InterpretBuildSetting(childDecl, c.BuildSettings);
+						foreach (var childDecl in o.Children)
+						{
+							switch (childDecl.Name.ToLowerInvariant())
+							{
+								case "platforms":
+									c.Platform = string.Join("|", ExtractUnnamedAttributes(childDecl));
+									break;
+								default:
+									InterpretBuildSetting(childDecl, c.BuildSettings);
+									break;
+							}
+						}
+
 
 						target.AddProjectAndSolutionConfiguration(c);
 					}
@@ -90,16 +101,84 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 
 		void InterpretBuildSetting(SDLDeclaration decl, DubBuildSettings settings)
 		{
-			switch (decl.Name.ToLower())
+			var propName = decl.Name.ToLowerInvariant();
+			DubBuildSetting sett = null;
+
+			switch (propName)
 			{
 				case "dependency":
 					var depName = ExtractFirstAttribute(decl);
 					var depVersion = ExtractFirstAttribute(decl, "version");
 					var depPath = ExtractFirstAttribute(decl, "path");
 
+					if (!string.IsNullOrWhiteSpace(depName))
+						settings.dependencies[depName] = new DubProjectDependency
+						{
+							Name = depName,
+							Path = depPath,
+							Version = depVersion
+						};
+					break;
+				case "targettype":
+				case "targetname":
+				case "targetpath":
+				case "workingdirectory":
+				case "mainsourcefile":
+					if (decl.Attributes.Length >= 1)
+					{
+						sett = new DubBuildSetting { Name = propName, Values = new[] { ExtractFirstAttribute(decl) } };
+					}
+					break;
+				case "subconfiguration":
+					if (decl.Attributes.Length >= 2)
+					{
+						var subConfigName = decl.Attributes[0].Item2;
+						if (!string.IsNullOrWhiteSpace(subConfigName))
+							settings.subConfigurations[subConfigName] = decl.Attributes[1].Item2;
+					}
+					break;
+				case "sourcefiles":
+				case "sourcepaths":
+				case "excludedsourcefiles":
+				case "versions":
+				case "debugversions":
+				case "importpaths":
+				case "stringimportpaths":
+					sett = new DubBuildSetting();
+					sett.Values = ExtractUnnamedAttributes(decl).ToArray();
 
+					var platformConstraints = ExtractFirstAttribute(decl, "platform").Split('-');
+					if (platformConstraints.Length > 0)
+					{
+						foreach (var constraint in platformConstraints)
+						{
+							var pn = constraint.ToLowerInvariant();
+							if (sett.OperatingSystem == null && DubBuildSettings.OsVersions.Contains(pn))
+								sett.OperatingSystem = pn;
+							else if (sett.Architecture == null && DubBuildSettings.Architectures.Contains(pn))
+								sett.Architecture = pn;
+							else
+								sett.Compiler = pn;
+						}
+					}
 					break;
 			}
+
+			if (sett != null)
+			{
+				List<DubBuildSetting> setts;
+				if (!settings.TryGetValue(propName, out setts))
+					settings.Add(propName, setts = new List<DubBuildSetting>());
+
+				setts.Add(sett);
+			}
+		}
+
+		IEnumerable<string> ExtractUnnamedAttributes(SDLDeclaration d)
+		{
+			return from attr in d.Attributes
+				   where attr.Item1 == null
+				   select attr.Item2;
 		}
 
 		/// <returns>string.Empty if nothing found</returns>

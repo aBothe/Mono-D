@@ -60,13 +60,21 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 
 			defaultPackage.AddProjectAndSolutionConfiguration(new DubProjectConfiguration { Name = GettextCatalog.GetString("Default"), Id = DubProjectConfiguration.DefaultConfigId });
 
-			if (returnSubProject) {
-				superPackage.packagesToAdd.Add (defaultPackage);
+			if (returnSubProject)
+			{
+				superPackage.packagesToAdd.Add(defaultPackage);
 			}
-			
-			Read (defaultPackage, streamReader);
 
-			if (returnSubProject) {
+			Read(defaultPackage, streamReader);
+
+			// Fill dub references
+			if (defaultPackage.DubReferences.Any(dep => string.IsNullOrWhiteSpace(dep.Path)))
+				FillDubReferencesPaths(defaultPackage);
+			else
+				defaultPackage.DubReferences.FireUpdate();
+
+			if (returnSubProject)
+			{
 				defaultPackage.packageName = superPackage.packageName + ":" + (defaultPackage.packageName ?? string.Empty);
 
 				var sub = defaultPackage as DubSubPackage;
@@ -100,7 +108,7 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 		static Regex dubInstalledPackagesOutputRegex = new Regex("  (?<name>.+) (?<version>.+): (?<path>.+)", RegexOptions.Compiled | RegexOptions.Multiline | RegexOptions.ExplicitCapture);
 		internal static Dictionary<string, string> DubListOutputs = new Dictionary<string, string>();
 
-		protected void FillDubReferencesPaths(DubProject prj)
+		void FillDubReferencesPaths(DubProject prj)
 		{
 			string err, outp;
 			var baseDir = prj.BaseDirectory.ToString();
@@ -134,20 +142,25 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 
 		bool TryInterpretDubListOutput(DubProject prj, string outp)
 		{
-			bool ret = false;
-			DubProjectDependency dep;
 			if (string.IsNullOrEmpty(outp))
 				return false;
 
+			bool ret = false;
 			foreach (Match match in dubInstalledPackagesOutputRegex.Matches(outp))
 			{
 				ret = true;
-				if (match.Success && prj.DubReferences.dependencies.TryGetValue(match.Groups["name"].Value, out dep) &&
-					string.IsNullOrEmpty(dep.Path) &&
-					(string.IsNullOrEmpty(dep.Version) || CheckRequiredDepVersion(dep.Version, match.Groups["version"].Value))
-					/* && !dep.Name.Contains(":") */) // Since dub v0.9.20, subpackages' paths are included in the path list as well!
-					dep.Path = match.Groups["path"].Value.Trim();
-
+				if (match.Success)
+				{
+					foreach (var kv in prj.DubReferences.GetDependencyEntries())
+					{
+						var dep = kv.Value;
+						if (kv.Key == match.Groups["name"].Value && string.IsNullOrWhiteSpace(dep.Path) &&
+							(string.IsNullOrEmpty(dep.Version) || CheckRequiredDepVersion(dep.Version, match.Groups["version"].Value)))
+						{
+							dep.Path = match.Groups["path"].Value.Trim();
+						}
+					}
+				}
 			}
 			return ret;
 		}
@@ -163,6 +176,9 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 
 		static bool CheckRequiredDepVersion(string expectedVersion, string actualVersion)
 		{
+			if (expectedVersion == "*")
+				return true;
+
 			var expectedVer = SemVerRegex.Match(expectedVersion);
 			var actualVer = SemVerRegex.Match(actualVersion);
 

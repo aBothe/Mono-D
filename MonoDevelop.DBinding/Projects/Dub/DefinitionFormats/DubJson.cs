@@ -77,7 +77,7 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 					if (!j.Read() || j.TokenType != JsonToken.StartObject)
 						throw new JsonReaderException("Expected { when parsing Authors");
 
-					DeserializeDubPrjDependencies(j, prj);
+					DeserializeDubPrjDependencies(j, prj.CommonBuildSettings);
 					break;
 				case "configurations":
 					if (!j.Read () || j.TokenType != JsonToken.StartArray)
@@ -134,11 +134,8 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 			}
 		}
 
-		void DeserializeDubPrjDependencies(JsonReader j, DubProject prj)
+		void DeserializeDubPrjDependencies(JsonReader j, DubBuildSettings settings)
 		{
-			prj.DubReferences.dependencies.Clear();
-			bool tryFillRemainingPaths = false;
-
 			while (j.Read() && j.TokenType != JsonToken.EndObject)
 			{
 				if (j.TokenType == JsonToken.PropertyName)
@@ -171,15 +168,9 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 					else if (j.TokenType == JsonToken.String)
 						depVersion = j.Value as string;
 
-					tryFillRemainingPaths |= string.IsNullOrEmpty(depPath);
-					prj.DubReferences.dependencies[depName] = new DubProjectDependency { Name = depName, Version = depVersion, Path = depPath };
+					settings.dependencies[depName] = new DubProjectDependency { Name = depName, Version = depVersion, Path = depPath };
 				}
 			}
-
-			if (tryFillRemainingPaths)
-				FillDubReferencesPaths(prj);
-			else
-				prj.DubReferences.FireUpdate();			
 		}
 
 		DubProjectConfiguration DeserializeFromPackageJson(JsonReader j)
@@ -219,77 +210,69 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 			if (settingIdentifier.Length < 1)
 				return false;
 
-			settingIdentifier[0] = settingIdentifier[0].ToLowerInvariant();
-			if (!DubBuildSettings.WantedProps.Contains(settingIdentifier[0]))
+			var propName = settingIdentifier[0] = settingIdentifier[0].ToLowerInvariant();
+			DubBuildSetting sett = null;
+
+			switch (propName)
 			{
-				if (settingIdentifier[0] == "subconfigurations")
-				{
+				case "dependencies":
+					j.Read();
+					DeserializeDubPrjDependencies(j, cfg);
+					break;
+				case "targettype":
+				case "targetname":
+				case "targetpath":
+				case "workingdirectory":
+				case "mainsourcefile":
+					j.Read();
+					if (j.TokenType == JsonToken.String)
+					{
+						sett = new DubBuildSetting { Name = propName, Values = new[] { j.Value as string } };
+					}
+					break;
+				case "subconfigurations":
 					j.Read();
 					var configurations = (new JsonSerializer()).Deserialize<Dictionary<string, string>>(j);
-                    foreach (var kv in configurations)
+					foreach (var kv in configurations)
 						cfg.subConfigurations[kv.Key] = kv.Value;
-					return true;
-				}
+					break;
+				case "sourcefiles":
+				case "sourcepaths":
+				case "excludedsourcefiles":
+				case "versions":
+				case "debugversions":
+				case "importpaths":
+				case "stringimportpaths":
+					j.Read();
+					if (j.TokenType == JsonToken.StartArray)
+					{
+						sett = new DubBuildSetting { Name = propName, Values = (new JsonSerializer()).Deserialize<string[]>(j) };
 
-				j.Skip();
-				return false;
+						for (int i = 1; i < settingIdentifier.Length; i++)
+						{
+							var pn = settingIdentifier[i].ToLowerInvariant();
+							if (sett.OperatingSystem == null && DubBuildSettings.OsVersions.Contains(pn))
+								sett.OperatingSystem = pn;
+							else if (sett.Architecture == null && DubBuildSettings.Architectures.Contains(pn))
+								sett.Architecture = pn;
+							else
+								sett.Compiler = pn;
+						}
+					}
+					break;
+				default:
+					j.Skip();
+					return false;
 			}
 
-			j.Read();
-			string[] flags;
-
-			if (j.TokenType == JsonToken.String)
-				flags = new[] { j.Value as string };
-			else if (j.TokenType == JsonToken.StartArray)
-				flags = (new JsonSerializer()).Deserialize<string[]>(j);
-			else
+			if (sett != null)
 			{
-				j.Skip();
-				//TODO: Probably throw or notify the user someway else
-				flags = null;
-				return true;
+				List<DubBuildSetting> setts;
+				if (!cfg.TryGetValue(settingIdentifier[0], out setts))
+					cfg.Add(settingIdentifier[0], setts = new List<DubBuildSetting>());
+
+				setts.Add(sett);
 			}
-
-			DubBuildSetting sett;
-
-			if (settingIdentifier.Length == 4)
-			{
-				sett = new DubBuildSetting
-				{
-					Name = settingIdentifier[0],
-					OperatingSystem = settingIdentifier[1],
-					Architecture = settingIdentifier[2],
-					Compiler = settingIdentifier[3],
-					Values = flags
-				};
-			}
-			else if (settingIdentifier.Length == 1)
-				sett = new DubBuildSetting { Name = settingIdentifier[0], Values = flags };
-			else
-			{
-				string Os = null;
-				string Arch = null;
-				string Compiler = null;
-
-				for (int i = 1; i < settingIdentifier.Length; i++)
-				{
-					var pn = settingIdentifier[i].ToLowerInvariant();
-					if (Os == null && DubBuildSettings.OsVersions.Contains(pn))
-						Os = pn;
-					else if (Arch == null && DubBuildSettings.Architectures.Contains(pn))
-						Arch = pn;
-					else
-						Compiler = pn;
-				}
-
-				sett = new DubBuildSetting { Name = settingIdentifier[0], OperatingSystem = Os, Architecture = Arch, Compiler = Compiler, Values = flags };
-			}
-
-			List<DubBuildSetting> setts;
-			if (!cfg.TryGetValue(settingIdentifier[0], out setts))
-				cfg.Add(settingIdentifier[0], setts = new List<DubBuildSetting>());
-
-			setts.Add(sett);
 
 			return true;
 		}

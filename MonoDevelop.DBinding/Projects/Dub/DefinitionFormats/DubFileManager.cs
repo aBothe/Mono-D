@@ -66,7 +66,7 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 		{
 			var sln = new DubSolution();
 
-			var defaultPackage = LoadProject (file, sln, monitor);
+			var defaultPackage = LoadProject(file, sln, monitor, LoadFlags.None);
 
 			sln.RootFolder.AddItem(defaultPackage, false);
 			sln.StartupItem = defaultPackage;
@@ -110,7 +110,7 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 			LoadReferences
 		}
 
-		public DubProject LoadProject(string file, Solution parentSolution, IProgressMonitor monitor, LoadFlags flags = LoadFlags.None, DubProject superProject = null)
+		public DubProject LoadProject(string file, Solution parentSolution, IProgressMonitor monitor, LoadFlags flags = LoadFlags.LoadReferences, DubProject superProject = null)
 		{
 			DubProject prj;
 
@@ -140,10 +140,11 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 
 			foreach (var dep in defaultPackage.DubReferences)
 			{
-				if (String.IsNullOrWhiteSpace(dep.Path) || !CanLoad(dep.Path))
+				var file = DubFileReader.GetDubFilePath(defaultPackage, dep.Path);
+				if (String.IsNullOrWhiteSpace(dep.Path) || !CanLoad(file))
 					continue;
 
-				var subProject = supportedDubFileFormats.First((i) => i.CanLoad(dep.Path)).Load(dep.Path, defaultPackage, sln);
+				var subProject = supportedDubFileFormats.First((i) => i.CanLoad(file)).Load(file, defaultPackage, sln);
 
 				if (sln is DubSolution)
 					(sln as DubSolution).AddProject (subProject);
