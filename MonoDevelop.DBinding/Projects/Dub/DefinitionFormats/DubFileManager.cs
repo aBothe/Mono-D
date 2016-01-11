@@ -52,6 +52,7 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 
 		readonly HashSet<DubFileReader> supportedDubFileFormats = new HashSet<DubFileReader> {
 			new DubJson (),
+			new DubSdl()
 		};
 
 		#endregion
