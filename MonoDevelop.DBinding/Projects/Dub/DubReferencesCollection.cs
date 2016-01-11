@@ -36,7 +36,7 @@ namespace MonoDevelop.D.Projects.Dub
 {
 	public class DubReferencesCollection : DProjectReferenceCollection, IEnumerable<DubProjectDependency>
 	{
-		public new DubProject Owner => base.Owner as DubProject;
+		public new DubProject Owner { get { return base.Owner as DubProject; } }
 		public override event EventHandler Update;
 
 		internal Dictionary<string, DubProjectDependency> dependencies = new Dictionary<string, DubProjectDependency>();
@@ -45,9 +45,9 @@ namespace MonoDevelop.D.Projects.Dub
 		{
 		}
 
-		public override bool CanAdd => false;
+		public override bool CanAdd { get { return false; } }
 
-		public override bool CanDelete => false;
+		public override bool CanDelete { get { return false; } }
 
 		public override void DeleteProjectRef (string projectId)
 		{
@@ -60,7 +60,7 @@ namespace MonoDevelop.D.Projects.Dub
 				Update (this, EventArgs.Empty);
 		}
 
-		public override bool HasReferences => dependencies.Count > 0;
+		public override bool HasReferences { get { return GetDependencyEntries().GetEnumerator().MoveNext(); } }
 
 		public override string GetIncludeName (string path)
 		{
@@ -108,13 +108,20 @@ namespace MonoDevelop.D.Projects.Dub
 			}
 		}
 
-		public override bool AddReference ()
+		public override bool AddReference()
 		{
-			throw new NotImplementedException ();
+			throw new NotImplementedException();
 		}
 
-		public IEnumerator<DubProjectDependency> GetEnumerator() => dependencies.Values.GetEnumerator();
-		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+		public IEnumerator<DubProjectDependency> GetEnumerator()
+		{
+			return dependencies.Values.GetEnumerator();
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
 	}
 }
 

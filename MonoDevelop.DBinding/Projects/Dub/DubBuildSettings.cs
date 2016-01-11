@@ -86,9 +86,19 @@ namespace MonoDevelop.D.Projects.Dub
 		public string Compiler;
 		public string[] Values;
 
-		public object Clone() => new DubBuildSetting { Name = Name, OperatingSystem = OperatingSystem, Architecture = Architecture, Compiler = Compiler, Values = Values };
+		public object Clone()
+		{
+			return new DubBuildSetting
+			{
+				Name = Name,
+				OperatingSystem = OperatingSystem,
+				Architecture = Architecture,
+				Compiler = Compiler,
+				Values = Values
+			};
+		}
 	}
-	
+
 	public class DubProjectDependency
 	{
 		public string Name;

@@ -17,11 +17,14 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 				expectedObjectType.Equals(typeof(SolutionEntityItem)));
 		}
 
-		public bool CanWriteFile(object obj) => true; // Everything has to be manipulated manually (atm)!
+		public bool CanWriteFile(object obj)
+		{
+			return true; // Everything has to be manipulated manually (atm)!
+		}
 
 		public void ConvertToFormat(object obj)
 		{
-			
+
 		}
 
 		public IEnumerable<string> GetCompatibilityWarnings(object obj)
@@ -29,9 +32,15 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 			yield return string.Empty;
 		}
 
-		public List<FilePath> GetItemFiles(object obj) => new List<FilePath>();
+		public List<FilePath> GetItemFiles(object obj)
+		{
+			return new List<FilePath>();
+		}
 
-		public FilePath GetValidFormatName(object obj, FilePath fileName) => fileName;
+		public FilePath GetValidFormatName(object obj, FilePath fileName)
+		{
+			return fileName;
+		}
 
 		public object ReadFile(FilePath file, Type expectedType, IProgressMonitor monitor)
 		{
@@ -42,9 +51,12 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 			return null;
 		}
 
-		public bool SupportsFramework(Core.Assemblies.TargetFramework framework) => false;
+		public bool SupportsFramework(Core.Assemblies.TargetFramework framework)
+		{
+			return false;
+		}
 
-		public bool SupportsMixedFormats => true;
+		public bool SupportsMixedFormats { get { return true; } }
 
 		public void WriteFile(FilePath file, object obj, IProgressMonitor monitor)
 		{

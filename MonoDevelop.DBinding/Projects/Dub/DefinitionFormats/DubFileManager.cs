@@ -11,15 +11,18 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 	public class DubFileManager
 	{
 		#region Properties
+
 		public static readonly DubFileManager Instance = new DubFileManager();
 		[ThreadStatic]
 		static Dictionary<string, DubProject> filesBeingLoaded;
+
 		internal static Dictionary<string, DubProject> FilesBeingLoaded
 		{
-			get{
+			get
+			{
 				if (filesBeingLoaded == null)
 					filesBeingLoaded = new Dictionary<string, DubProject>();
-				
+
 				return filesBeingLoaded;
 			}
 		}
@@ -54,7 +57,10 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 
 		DubFileManager() { }
 
-		public bool CanLoad(string file) => supportedDubFileFormats.Any((i) => i.CanLoad(file));
+		public bool CanLoad(string file)
+		{
+			return supportedDubFileFormats.Any((i) => i.CanLoad(file));
+		}
 
 		public DubSolution LoadAsSolution(string file, IProgressMonitor monitor)
 		{

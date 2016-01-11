@@ -10,7 +10,10 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 {
 	class DubSdl : DubFileReader
 	{
-		public override bool CanLoad(string file) => Path.GetFileName(file).ToLower() == DubSdlFile;
+		public override bool CanLoad(string file)
+		{
+			return Path.GetFileName(file).ToLower() == DubSdlFile;
+		}
 
 		protected override void Read(DubProject target, Object input)
 		{

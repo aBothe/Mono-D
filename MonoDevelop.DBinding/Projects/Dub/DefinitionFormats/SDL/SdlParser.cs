@@ -26,12 +26,24 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats.SDL
 			}
 		}
 
-		private SdlParser(SdlLexer lex) { Lexer = lex; }
-		private SdlParser(TextReader r) : this(new SdlLexer(r)) { }
+		private SdlParser(SdlLexer lex)
+		{
+			Lexer = lex;
+		}
 
-		public static SDLObject Parse(TextReader reader) => new SdlParser(reader).ParseRoot();
+		private SdlParser(TextReader r) : this(new SdlLexer(r))
+		{
+		}
 
-		public SDLObject ParseRoot() => new SDLObject(string.Empty, new Tuple<string, string>[0], ParseChildren(false));
+		public static SDLObject Parse(TextReader reader)
+		{
+			return new SdlParser(reader).ParseRoot();
+		}
+
+		public SDLObject ParseRoot()
+		{
+			return new SDLObject(string.Empty, new Tuple<string, string>[0], ParseChildren(false));
+		}
 
 		SDLDeclaration[] ParseChildren(bool braceForExit)
 		{
@@ -51,7 +63,7 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats.SDL
 						else
 							goto default;
 					default:
-						ParseErrors.Add(new Error(Peek.Line, Peek.Column, "Invalid token: "+Peek.Kind.ToString()));
+						ParseErrors.Add(new Error(Peek.Line, Peek.Column, "Invalid token: " + Peek.Kind.ToString()));
 						break;
 					case SdlLexer.Tokens.Invalid:
 					case SdlLexer.Tokens.EOL:
@@ -106,25 +118,30 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats.SDL
 		}
 
 		#region Lexer IO
+
 		void Step()
 		{
 			Lexer.Step();
 		}
 
-		SdlLexer.Token Current => Lexer.CurrentToken;
-		SdlLexer.Token Peek => Lexer.PeekToken;
+		SdlLexer.Token Current
+		{ get { return Lexer.CurrentToken; } }
+
+		SdlLexer.Token Peek
+		{ get { return Lexer.PeekToken; } }
 
 		bool Expect(SdlLexer.Tokens kind)
 		{
 			Lexer.Step();
 			var tk = Current;
-			if(tk.Kind != kind)
+			if (tk.Kind != kind)
 			{
-				ParseErrors.Add(new Error(tk.Line, tk.Column, kind.ToString() + " expected, "+ tk.Kind.ToString()+" found"));
+				ParseErrors.Add(new Error(tk.Line, tk.Column, kind.ToString() + " expected, " + tk.Kind.ToString() + " found"));
 				return false;
 			}
 			return true;
 		}
+
 		#endregion
 
 
