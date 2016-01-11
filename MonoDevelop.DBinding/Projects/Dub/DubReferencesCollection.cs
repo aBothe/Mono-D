@@ -83,7 +83,7 @@ namespace MonoDevelop.D.Projects.Dub
 				if (sub != null)
 					sub.useOriginalBasePath = false;
 
-				foreach (var settings in Owner.GetBuildSettings(null))
+				foreach (var settings in Owner.GetBuildSettings(Ide.IdeApp.Workspace.ActiveConfiguration))
 				{
 					List<DubBuildSetting> l;
 					if (settings.TryGetValue (DubBuildSettings.ImportPathsProperty, out l))
