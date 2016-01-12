@@ -6,7 +6,7 @@
 	copyright=""
 	description="D Language Binding"
 	category="Language bindings"
-	version="2.13.5">
+	version="2.14">
 
 	<!-- Resources -->
 
@@ -74,7 +74,7 @@
 
 		<!-- Variables -->
 		<StockIcon stockid = "d-local" icon = "res:element-local-16.png" size="Menu"/>
-		
+
 		<StockIcon stockid = "d-parameter" icon = "res:element-parameter-16.png" size="Menu"/>
 		<StockIcon stockid = "d-ref-parameter" icon = "res:element-parameter-16.png|res:ref-16.png" size="Menu"/>
 		<StockIcon stockid = "d-out-parameter" icon = "res:element-parameter-16.png|res:out-16.png" size="Menu"/>
@@ -396,10 +396,10 @@
 			defaultHandler = "MonoDevelop.D.Unittest.Commands.UnittestCmdHdlrFromEditor"
 			_label = "Run Unit Tests" shortcut="Control|T" />
 	</Extension>
-	
-	
+
+
 	<!-- Tools/D -->
-	
+
 	<Extension path = "/MonoDevelop/Ide/MainMenu/Tools">
 		<ItemSet id = "D" _label = "D">
 			<CommandItem id = "MonoDevelop.D.Profiler.Commands.ProfilerCommands.SwitchProfilerMode" />
