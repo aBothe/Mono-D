@@ -82,8 +82,7 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 							}
 						}
 
-
-						target.AddProjectAndSolutionConfiguration(c);
+						IntroduceConfiguration(target, c);
 					}
 					break;
 				case "buildtype":

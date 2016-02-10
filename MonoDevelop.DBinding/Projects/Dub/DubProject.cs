@@ -18,7 +18,6 @@ namespace MonoDevelop.D.Projects.Dub
 		#region Properties
 		bool loading;
 		List<string> authors = new List<string>();
-		internal List<DubProject> packagesToAdd = new List<DubProject>();
 		/// <summary>
 		/// Project-wide cross-config build settings.
 		/// </summary>
@@ -293,38 +292,10 @@ namespace MonoDevelop.D.Projects.Dub
 			loading = false;
 		}
 
-		internal void AddProjectAndSolutionConfiguration(DubProjectConfiguration cfg)
-		{//TODO: Is an other config with the same id already existing?
-			if (ParentSolution != null)
-			{
-				var slnCfg = new SolutionConfiguration(cfg.Name, cfg.Platform);
-				ParentSolution.Configurations.Add(slnCfg);
-				slnCfg.AddItem(this).Build = true;
-			}
-			Configurations.Add(cfg);
-
-			if (Configurations.Count == 1)
-				DefaultConfigurationId = cfg.Id;
-		}
-
 		protected override void OnEndLoad()
 		{
 			DubReferences.FireUpdate();
 			base.OnEndLoad();
-		}
-
-		protected override void OnBoundToSolution()
-		{
-			base.OnBoundToSolution();
-
-			foreach (var sub in packagesToAdd)
-			{
-				if (ParentSolution is DubSolution)
-					(ParentSolution as DubSolution).AddProject(sub);
-				else
-					ParentSolution.RootFolder.AddItem(sub, false);
-			}
-			packagesToAdd.Clear();
 		}
 		#endregion
 
@@ -345,7 +316,8 @@ namespace MonoDevelop.D.Projects.Dub
 
 			string targetPath = null, targetName = null, targetType = null;
 			CommonBuildSettings.TryGetTargetFileProperties(this, configuration, ref targetType, ref targetName, ref targetPath);
-			cfg.BuildSettings.TryGetTargetFileProperties(this, configuration, ref targetType, ref targetName, ref targetPath);
+			if(cfg != null)
+				cfg.BuildSettings.TryGetTargetFileProperties(this, configuration, ref targetType, ref targetName, ref targetPath);
 
 			if (string.IsNullOrWhiteSpace(targetPath))
 				targetPath = BaseDirectory.ToString();
@@ -403,7 +375,8 @@ namespace MonoDevelop.D.Projects.Dub
 
 			string targetPath = null, targetName = null, targetType = null;
 			CommonBuildSettings.TryGetTargetFileProperties(this, configuration, ref targetType, ref targetName, ref targetPath);
-			(GetConfiguration(configuration) as DubProjectConfiguration).BuildSettings
+			var cfg = GetConfiguration(configuration) as DubProjectConfiguration;
+			if(cfg != null) cfg.BuildSettings
 				.TryGetTargetFileProperties(this, configuration, ref targetType, ref targetName, ref targetPath);
 
 			if (targetType == "autodetect" || string.IsNullOrWhiteSpace(targetType))

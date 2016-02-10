@@ -85,14 +85,9 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 				case "configurations":
 					if (!j.Read() || j.TokenType != JsonToken.StartArray)
 						throw new JsonReaderException("Expected [ when parsing Configurations");
-					var sln = prj.ParentSolution;
-					if (sln != null && sln.Configurations.Count == 1 && sln.Configurations[0].Id == DubProjectConfiguration.DefaultConfigId)
-						sln.Configurations.Clear();
-					if (prj.Configurations.Count == 1 && prj.Configurations[0].Id == DubProjectConfiguration.DefaultConfigId)
-						prj.Configurations.Clear();
 
 					while (j.Read() && j.TokenType != JsonToken.EndArray)
-						prj.AddProjectAndSolutionConfiguration(DeserializeFromPackageJson(j));
+						IntroduceConfiguration(prj, DeserializeFromPackageJson(j));
 					break;
 				case "subpackages":
 					if (!j.Read() || j.TokenType != JsonToken.StartArray)

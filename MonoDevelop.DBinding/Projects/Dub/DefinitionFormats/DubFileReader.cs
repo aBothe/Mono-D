@@ -43,9 +43,19 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 
 		public DubProject Load(DubProject superPackage, Solution parentSolution, Object streamReader, string originalFile)
 		{
+			DubProject defaultPackage;
+
+			if(parentSolution == null)
+				throw new InvalidDataException("Parent solution must be specified!");
+
+			if ((defaultPackage = parentSolution.GetProjectsContainingFile(new FilePath(originalFile)).FirstOrDefault() as DubProject) != null)
+			{
+				return defaultPackage;
+			}
+
 			bool returnSubProject = superPackage != null;
 
-			var defaultPackage = returnSubProject ? new DubSubPackage() : new DubProject();
+			defaultPackage = returnSubProject ? new DubSubPackage() : new DubProject();
 
 			defaultPackage.FileName = originalFile;
 			defaultPackage.BaseDirectory = defaultPackage.FileName.ParentDirectory;
@@ -60,11 +70,18 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 
 			defaultPackage.BeginLoad();
 
-			defaultPackage.AddProjectAndSolutionConfiguration(new DubProjectConfiguration { Name = GettextCatalog.GetString("Default"), Id = DubProjectConfiguration.DefaultConfigId });
+			if (parentSolution is DubSolution)
+				(parentSolution as DubSolution).AddProject(defaultPackage);
+			else
+				parentSolution.RootFolder.AddItem(defaultPackage, false);
 
-			if (returnSubProject)
+			foreach(SolutionConfiguration slnCfg in parentSolution.Configurations)
 			{
-				superPackage.packagesToAdd.Add(defaultPackage);
+				var slnCfgItemCfg = slnCfg.GetEntryForItem(defaultPackage) ?? slnCfg.AddItem(defaultPackage);
+				slnCfgItemCfg.Build = true;
+				slnCfgItemCfg.Deploy = true;
+
+				defaultPackage.Configurations.Add(new DubProjectConfiguration { Id = slnCfg.Id, Name = slnCfg.Name, Platform = slnCfg.Platform });
 			}
 
 			Read(defaultPackage, streamReader);
@@ -104,6 +121,40 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 			using (var fs = new FileStream(file, FileMode.Open))
 			using (var sr = new StreamReader(fs))
 				return Load(superProject, parentSolution, sr, file);
+		}
+
+		protected void IntroduceConfiguration(DubProject prj, DubProjectConfiguration projectConfiguration)
+		{
+			var sln = prj.ParentSolution;
+			if (sln != null && sln.Configurations.Count == 1 && sln.Configurations[0].Id == DubProjectConfiguration.DefaultConfigId)
+				sln.Configurations.Clear();
+			if (prj.Configurations.Count == 1 && prj.Configurations[0].Id == DubProjectConfiguration.DefaultConfigId)
+				prj.Configurations.Clear();
+
+			prj.Configurations.Add(projectConfiguration);
+
+			var slnCfg = sln.GetConfiguration(projectConfiguration.Selector);
+
+			if(slnCfg != null)
+			{
+				slnCfg.AddItem(prj).Build = true;
+			}
+			else
+			{
+				slnCfg = new SolutionConfiguration
+				{
+					Id = projectConfiguration.Id,
+					Name = projectConfiguration.Name,
+					Platform = projectConfiguration.Platform
+				};
+				sln.Configurations.Add(slnCfg);
+
+				foreach(var slnPrj in sln.GetAllProjects())
+				{
+					if(slnPrj != prj)
+						slnPrj.Configurations.Add(projectConfiguration);
+				}
+			}
 		}
 
 		#region Dub References

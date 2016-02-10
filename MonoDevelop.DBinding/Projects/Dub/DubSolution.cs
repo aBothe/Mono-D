@@ -16,7 +16,7 @@ namespace MonoDevelop.D.Projects.Dub
 
 		internal void AddProject(AbstractDProject sub)
 		{
-			var folder = !sub.BaseDirectory.IsChildPathOf (BaseDirectory) ? ExternalDepFolder : RootFolder;
+			var folder = sub.BaseDirectory == BaseDirectory || sub.BaseDirectory.IsChildPathOf (BaseDirectory) ? RootFolder : ExternalDepFolder;
 
 			if (!folder.Items.Contains (sub))
 				folder.AddItem (sub, false);
@@ -30,7 +30,7 @@ namespace MonoDevelop.D.Projects.Dub
 			}
 			set
 			{
-				
+
 			}
 		}
 
