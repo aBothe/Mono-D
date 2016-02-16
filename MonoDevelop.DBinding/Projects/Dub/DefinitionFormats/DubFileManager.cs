@@ -45,10 +45,6 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 
 			sln.StartupItem = defaultPackage;
 
-			// Introduce solution configurations
-			foreach (var cfg in defaultPackage.Configurations)
-				sln.AddConfiguration(cfg.Name, false).Platform = cfg.Platform;
-
 			LoadSubProjects(defaultPackage, monitor);
 
 			// Apply subConfigurations

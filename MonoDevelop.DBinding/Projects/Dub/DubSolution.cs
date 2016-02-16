@@ -1,5 +1,8 @@
 ﻿using MonoDevelop.Projects;
 using System;
+using MonoDevelop.Core.Execution;
+using System.Collections.Generic;
+
 namespace MonoDevelop.D.Projects.Dub
 {
 	/// <summary>

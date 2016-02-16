@@ -71,15 +71,7 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 
 						foreach (var childDecl in o.Children)
 						{
-							switch (childDecl.Name.ToLowerInvariant())
-							{
-								case "platforms":
-									c.Platform = string.Join("|", ExtractUnnamedAttributes(childDecl));
-									break;
-								default:
-									InterpretBuildSetting(childDecl, c.BuildSettings);
-									break;
-							}
+							InterpretBuildSetting(childDecl, c.BuildSettings);
 						}
 
 						IntroduceConfiguration(target, c);

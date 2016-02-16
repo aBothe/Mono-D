@@ -140,8 +140,8 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 				if (j.TokenType == JsonToken.PropertyName)
 				{
 					var depName = j.Value as string;
-					string depVersion = null;
-					string depPath = null;
+					string depVersion = string.Empty;
+					string depPath = string.Empty;
 
 					if (!j.Read())
 						throw new JsonReaderException("Found EOF when parsing project dependency");
@@ -170,6 +170,7 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 					settings.dependencies[depName] = new DubProjectDependency { Name = depName, Version = depVersion, Path = depPath };
 				}
 			}
+
 		}
 
 		DubProjectConfiguration DeserializeFromPackageJson(JsonReader j)
@@ -185,10 +186,6 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 					{
 						case "name":
 							c.Name = c.Id = j.ReadAsString();
-							break;
-						case "platforms":
-							j.Read();
-							c.Platform = string.Join("|", srz.Deserialize<string[]>(j));
 							break;
 						default:
 							if (!TryDeserializeBuildSetting(c.BuildSettings, j))

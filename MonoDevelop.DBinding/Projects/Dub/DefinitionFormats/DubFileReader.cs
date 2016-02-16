@@ -36,7 +36,7 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 				File.Exists(dubFileToLoad = Path.Combine(packageDir, DubSdlFile)))
 				return dubFileToLoad;
 
-			return null;
+			return string.Empty;
 		}
 
 		protected abstract void Read(DubProject target, Object streamReader);
@@ -131,13 +131,16 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 			if (prj.Configurations.Count == 1 && prj.Configurations[0].Id == DubProjectConfiguration.DefaultConfigId)
 				prj.Configurations.Clear();
 
-			prj.Configurations.Add(projectConfiguration);
+
 
 			var slnCfg = sln.GetConfiguration(projectConfiguration.Selector);
 
 			if(slnCfg != null)
 			{
-				slnCfg.AddItem(prj).Build = true;
+				prj.Configurations.Add(projectConfiguration);
+
+				var slnPrjCfg = slnCfg.GetEntryForItem(prj) ?? slnCfg.AddItem(prj);
+				slnPrjCfg.Build = true;
 			}
 			else
 			{
@@ -151,8 +154,8 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 
 				foreach(var slnPrj in sln.GetAllProjects())
 				{
-					if(slnPrj != prj)
-						slnPrj.Configurations.Add(projectConfiguration);
+					slnCfg.AddItem(slnPrj).Build = true;
+					slnPrj.Configurations.Add(projectConfiguration);
 				}
 			}
 		}

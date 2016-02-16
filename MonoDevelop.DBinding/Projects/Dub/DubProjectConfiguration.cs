@@ -9,7 +9,7 @@ namespace MonoDevelop.D.Projects.Dub
 
 		public Building.DCompileTarget TargetType
 		{
-			get{ 
+			get{
 				string targetType = null;
 				var prj = base.ParentItem as DubProject;
 				prj.CommonBuildSettings.TryGetTargetTypeProperty (prj, Selector, ref targetType);
