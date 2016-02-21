@@ -107,7 +107,7 @@ namespace MonoDevelop.D.Projects.Dub
 					if (emittedIds.Add(kv.Key))
 					{
 						foreach (var prj in allProjects)
-							if (prj is DubProject ? ((prj as DubProject).packageName == kv.Value.Path) : prj.Name == kv.Value.Path)
+							if (prj is DubProject ? ((prj as DubProject).packageName == kv.Value.Name) : prj.Name == kv.Value.Name)
 								yield return prj.ItemId;
 					}
 				}

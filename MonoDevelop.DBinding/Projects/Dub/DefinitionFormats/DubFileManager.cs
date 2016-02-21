@@ -32,20 +32,24 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 
 		public DubSolution LoadAsSolution(string file, IProgressMonitor monitor)
 		{
-			var sln = new DubSolution();
-			sln.FileName = file;
-			sln.BaseDirectory = new FilePath(file).ParentDirectory;
-
-			sln.Configurations.Add(new SolutionConfiguration {
-				Name = GettextCatalog.GetString("Default"),
-				Id = DubProjectConfiguration.DefaultConfigId
-			});
+			var sln = new DubSolution{
+				FileName = file,
+				BaseDirectory = new FilePath(file).ParentDirectory
+			};
 
 			var defaultPackage = LoadProject(file, sln, monitor, LoadFlags.None);
 
 			sln.StartupItem = defaultPackage;
 
 			LoadSubProjects(defaultPackage, monitor);
+
+			// Populate project configurations to solution
+			if (defaultPackage.Configurations.Count == 0)
+				sln.CreateDefaultConfigurations ();
+			else {
+				foreach (var prjCfg in defaultPackage.Configurations)
+					sln.AddConfiguration (prjCfg.Name, false);
+			}
 
 			// Apply subConfigurations
 			var subConfigurations = new Dictionary<string, string>(defaultPackage.CommonBuildSettings.subConfigurations);
@@ -108,9 +112,12 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 				if (String.IsNullOrWhiteSpace(dep.Path) || !CanLoad(file))
 					continue;
 
-				var subProject = supportedDubFileFormats.First((i) => i.CanLoad(file)).Load(file, defaultPackage, sln);
+				var subProject = supportedDubFileFormats.First((i) => i.CanLoad(file)).Load(file, null, sln);
 
-				LoadSubProjects(subProject, monitor);
+				if (defaultPackage != subProject) 
+				{
+					LoadSubProjects (subProject, monitor);
+				}
 			}
 		}
 	}

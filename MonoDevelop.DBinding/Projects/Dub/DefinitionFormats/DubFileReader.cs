@@ -39,7 +39,7 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 			return string.Empty;
 		}
 
-		protected abstract void Read(DubProject target, Object streamReader);
+		protected abstract void Read(DubProject target, Object streamReader, List<Object> subPackages);
 
 		public DubProject Load(DubProject superPackage, Solution parentSolution, Object streamReader, string originalFile)
 		{
@@ -48,12 +48,12 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 			if(parentSolution == null)
 				throw new InvalidDataException("Parent solution must be specified!");
 
-			if ((defaultPackage = parentSolution.GetProjectsContainingFile(new FilePath(originalFile)).FirstOrDefault() as DubProject) != null)
+			bool returnSubProject = superPackage != null;
+
+			if (!returnSubProject && (defaultPackage = parentSolution.GetProjectsContainingFile(new FilePath(originalFile)).FirstOrDefault() as DubProject) != null)
 			{
 				return defaultPackage;
 			}
-
-			bool returnSubProject = superPackage != null;
 
 			defaultPackage = returnSubProject ? new DubSubPackage() : new DubProject();
 
@@ -70,28 +70,14 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 
 			defaultPackage.BeginLoad();
 
-			if (parentSolution is DubSolution)
-				(parentSolution as DubSolution).AddProject(defaultPackage);
-			else
-				parentSolution.RootFolder.AddItem(defaultPackage, false);
+			var subPackagesToBeLoadedDeferred = new List<Object> ();
+			Read(defaultPackage, streamReader, subPackagesToBeLoadedDeferred);
 
-			foreach(SolutionConfiguration slnCfg in parentSolution.Configurations)
-			{
-				var slnCfgItemCfg = slnCfg.GetEntryForItem(defaultPackage) ?? slnCfg.AddItem(defaultPackage);
-				slnCfgItemCfg.Build = true;
-				slnCfgItemCfg.Deploy = true;
-
-				defaultPackage.Configurations.Add(new DubProjectConfiguration { Id = slnCfg.Id, Name = slnCfg.Name, Platform = slnCfg.Platform });
+			if (defaultPackage.Configurations.Count == 0) {
+				defaultPackage.Configurations.Add (new DubProjectConfiguration{ Id = DubProjectConfiguration.DefaultConfigId, Name = "Default" });
 			}
 
-			Read(defaultPackage, streamReader);
-
-			// Fill dub references
-			if (defaultPackage.DubReferences.Any(dep => string.IsNullOrWhiteSpace(dep.Path)))
-				FillDubReferencesPaths(defaultPackage);
-			else
-				defaultPackage.DubReferences.FireUpdate();
-
+			// Set subpackage packageName
 			if (returnSubProject)
 			{
 				defaultPackage.packageName = superPackage.packageName + ":" + (defaultPackage.packageName ?? string.Empty);
@@ -104,12 +90,33 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 				// TODO: What to do with new configurations that were declared in this sub package? Add them to all other packages as well?
 			}
 
-			defaultPackage.Items.Add(new ProjectFile(originalFile, BuildAction.None));
+			// Add package to solution
+			if (parentSolution is DubSolution)
+				(parentSolution as DubSolution).AddProject(defaultPackage);
+			else
+				parentSolution.RootFolder.AddItem(defaultPackage, false);
 
-			// https://github.com/aBothe/Mono-D/issues/555
-			var dubSelectionJsonPath = defaultPackage.BaseDirectory.Combine(DubSelectionsJsonFile);
-			if (File.Exists(dubSelectionJsonPath))
-				defaultPackage.Items.Add(new ProjectFile(dubSelectionJsonPath, BuildAction.None));
+			// Load subpackages
+			foreach (var subPackageDeclaration in subPackagesToBeLoadedDeferred) {
+				ReadSubPackage (defaultPackage, subPackageDeclaration);
+			}
+
+			// Fill dub references
+			if (defaultPackage.DubReferences.Any(dep => string.IsNullOrWhiteSpace(dep.Path)))
+				FillDubReferencesPaths(defaultPackage);
+			else
+				defaultPackage.DubReferences.FireUpdate();
+
+			// Add dub.json/sdl+selections file
+			if (!returnSubProject)
+			{
+				defaultPackage.Items.Add (new ProjectFile (originalFile, BuildAction.None));
+
+				// https://github.com/aBothe/Mono-D/issues/555
+				var dubSelectionJsonPath = defaultPackage.BaseDirectory.Combine (DubSelectionsJsonFile);
+				if (File.Exists (dubSelectionJsonPath))
+					defaultPackage.Items.Add (new ProjectFile (dubSelectionJsonPath, BuildAction.None));
+			}
 
 			defaultPackage.EndLoad();
 
@@ -125,40 +132,10 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 
 		protected void IntroduceConfiguration(DubProject prj, DubProjectConfiguration projectConfiguration)
 		{
-			var sln = prj.ParentSolution;
-			if (sln != null && sln.Configurations.Count == 1 && sln.Configurations[0].Id == DubProjectConfiguration.DefaultConfigId)
-				sln.Configurations.Clear();
-			if (prj.Configurations.Count == 1 && prj.Configurations[0].Id == DubProjectConfiguration.DefaultConfigId)
-				prj.Configurations.Clear();
-
-
-
-			var slnCfg = sln.GetConfiguration(projectConfiguration.Selector);
-
-			if(slnCfg != null)
-			{
-				prj.Configurations.Add(projectConfiguration);
-
-				var slnPrjCfg = slnCfg.GetEntryForItem(prj) ?? slnCfg.AddItem(prj);
-				slnPrjCfg.Build = true;
-			}
-			else
-			{
-				slnCfg = new SolutionConfiguration
-				{
-					Id = projectConfiguration.Id,
-					Name = projectConfiguration.Name,
-					Platform = projectConfiguration.Platform
-				};
-				sln.Configurations.Add(slnCfg);
-
-				foreach(var slnPrj in sln.GetAllProjects())
-				{
-					slnCfg.AddItem(slnPrj).Build = true;
-					slnPrj.Configurations.Add(projectConfiguration);
-				}
-			}
+			prj.Configurations.Add (projectConfiguration);
 		}
+
+		protected abstract DubProject ReadSubPackage (DubProject superProject, Object definition);
 
 		#region Dub References
 		static Regex dubInstalledPackagesOutputRegex = new Regex("  (?<name>.+) (?<version>.+): (?<path>.+)", RegexOptions.Compiled | RegexOptions.Multiline | RegexOptions.ExplicitCapture);

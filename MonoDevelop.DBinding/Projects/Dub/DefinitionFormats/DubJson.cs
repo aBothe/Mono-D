@@ -16,222 +16,167 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 	{
 		public override bool CanLoad(string file)
 		{
-			file = Path.GetFileName(file).ToLower();
+			file = Path.GetFileName (file).ToLower ();
 			return file == DubJsonFile || file == PackageJsonFile;
 		}
 
-		protected override void Read(DubProject target, Object input)
+		protected override void Read(DubProject target, Object input, List<Object> subPackages)
 		{
-			if (input is JsonReader)
-				Parse(input as JsonReader, target);
-			else if (input is TextReader)
-			{
-				using (var r = new JsonTextReader(input as TextReader))
-				{
-					Parse(r, target);
-				}
-			}
-			else
+			var json = input as JSONObject;
+
+			if (input is TextReader)
+				json = new JSONThingDeserializer().Deserialize (input as TextReader);
+			else if(json == null)
 				throw new ArgumentException("input");
+
+			foreach (var kv in json.Properties)
+				TryPopulateProperty (target, kv.Key, kv.Value, subPackages);
 		}
 
-		void Parse(JsonReader r, DubProject prj)
+		string ExpectJsonStringValue(JSONThing j, string propName)
 		{
-			while (r.Read())
-			{
-				if (r.TokenType == JsonToken.PropertyName)
-				{
-					var propName = r.Value as string;
-					TryPopulateProperty(prj, propName, r);
-				}
-				else if (r.TokenType == JsonToken.EndObject)
-					break;
-			}
+			if (!(j is JSONValueLeaf))
+				throw new InvalidDataException ("Invalid value type for property "+propName);
+
+			return (j as JSONValueLeaf).Value;
 		}
 
-		void TryPopulateProperty(DubProject prj, string propName, JsonReader j)
+		JSONArray ExpectJsonArray(JSONThing j, string propName)
 		{
-			switch (propName.ToLowerInvariant())
+			if (!(j is JSONArray))
+				throw new InvalidDataException ("Expected array as value for property "+propName);
+
+			return j as JSONArray;
+		}
+
+		JSONObject ExpectJsonObject(JSONThing j, string propName)
+		{
+			if (!(j is JSONObject))
+				throw new InvalidDataException ("Expected object as value for property "+propName);
+
+			return j as JSONObject;
+		}
+
+		void TryPopulateProperty(DubProject prj, string propName, JSONThing j, List<Object> subPackages)
+		{
+			switch (propName)
 			{
 				case "displayname":
-					prj.Name = j.ReadAsString();
+					prj.Name = ExpectJsonStringValue (j, propName);
 					break;
 				case "name":
-					prj.packageName = j.ReadAsString();
+					prj.packageName = ExpectJsonStringValue (j, propName);
 					break;
 				case "description":
-					prj.Description = j.ReadAsString();
+					prj.Description = ExpectJsonStringValue (j, propName);
 					break;
 				case "copyright":
-					prj.Copyright = j.ReadAsString();
+					prj.Copyright = ExpectJsonStringValue (j, propName);
 					break;
 				case "homepage":
-					prj.Homepage = j.ReadAsString();
+					prj.Homepage = ExpectJsonStringValue (j, propName);
 					break;
 				case "authors":
-					if (!j.Read() || j.TokenType != JsonToken.StartArray)
-						throw new JsonReaderException("Expected [ when parsing Authors");
 					prj.Authors.Clear();
-					while (j.Read() && j.TokenType != JsonToken.EndArray)
-						if (j.TokenType == JsonToken.String)
-							prj.Authors.Add(j.Value as string);
+					foreach(var authorValue in ExpectJsonArray(j, propName).Items)
+						prj.Authors.Add(ExpectJsonStringValue(authorValue, propName));
 					break;
 				case "dependencies":
-					if (!j.Read() || j.TokenType != JsonToken.StartObject)
-						throw new JsonReaderException("Expected { when parsing Authors");
-
-					DeserializeDubPrjDependencies(j, prj.CommonBuildSettings);
+					DeserializeDubPrjDependencies(ExpectJsonObject(j, propName), prj.CommonBuildSettings);
 					break;
 				case "configurations":
-					if (!j.Read() || j.TokenType != JsonToken.StartArray)
-						throw new JsonReaderException("Expected [ when parsing Configurations");
-
-					while (j.Read() && j.TokenType != JsonToken.EndArray)
-						IntroduceConfiguration(prj, DeserializeFromPackageJson(j));
+					foreach(var o in ExpectJsonArray(j, propName).Items)
+						IntroduceConfiguration(prj, DeserializeFromPackageJson(ExpectJsonObject(o, propName)));
 					break;
 				case "subpackages":
-					if (!j.Read() || j.TokenType != JsonToken.StartArray)
-						throw new JsonReaderException("Expected [ when parsing subpackages");
-
-					while (j.Read() && j.TokenType != JsonToken.EndArray)
-						ReadSubPackage(prj, j);
+					subPackages.AddRange (ExpectJsonArray(j, propName).Items);
 					break;
 				case "buildtypes":
-					if (!j.Read() || j.TokenType != JsonToken.StartObject)
-						throw new JsonReaderException("Expected [ when parsing build types");
-
-					while (j.Read() && j.TokenType != JsonToken.EndObject)
-					{
-						var n = j.Value as string;
-						if (!prj.buildTypes.Contains(n))
-							prj.buildTypes.Add(n);
-
-						j.Skip();
-					}
-
-					prj.buildTypes.Sort();
-
+					foreach (var kv in ExpectJsonObject(j, propName).Properties)
+						prj.buildTypes.Add (kv.Key);
 					break;
 				default:
-					TryDeserializeBuildSetting(prj.CommonBuildSettings, j);
+					TryDeserializeBuildSetting(prj.CommonBuildSettings, propName, j);
 					break;
 			}
 		}
 
-		void ReadSubPackage(DubProject superProject, JsonReader r)
+		protected override DubProject ReadSubPackage(DubProject superProject, Object definition)
 		{
-			switch (r.TokenType)
-			{
-				case JsonToken.StartObject:
-					Load(superProject, superProject.ParentSolution, r, superProject.FileName);
-					break;
-				case JsonToken.String:
-					DubFileManager.Instance.LoadProject(GetDubFilePath(superProject, r.Value as string), superProject.ParentSolution, null, DubFileManager.LoadFlags.None, superProject);
-					break;
-				default:
-					throw new JsonReaderException("Illegal token on subpackage definition beginning");
-			}
+			if(definition is JSONValueLeaf)
+				return DubFileManager.Instance.LoadProject(GetDubFilePath(superProject, (definition as JSONValueLeaf).Value), superProject.ParentSolution, null, DubFileManager.LoadFlags.None, superProject);
+			if (definition is JSONObject)
+				return Load (superProject, superProject.ParentSolution, definition as JSONObject, superProject.FileName);
+			
+			throw new InvalidDataException ("definition");
 		}
 
-		void DeserializeDubPrjDependencies(JsonReader j, DubBuildSettings settings)
+		void DeserializeDubPrjDependencies(JSONObject j, DubBuildSettings settings)
 		{
-			while (j.Read() && j.TokenType != JsonToken.EndObject)
-			{
-				if (j.TokenType == JsonToken.PropertyName)
-				{
-					var depName = j.Value as string;
-					string depVersion = string.Empty;
-					string depPath = string.Empty;
+			foreach (var kv in j.Properties) {
+				var depName = kv.Key;
+				var depVersion = string.Empty;
+				var depPath = string.Empty;
 
-					if (!j.Read())
-						throw new JsonReaderException("Found EOF when parsing project dependency");
-
-					if (j.TokenType == JsonToken.StartObject)
-					{
-						while (j.Read() && j.TokenType != JsonToken.EndObject)
-						{
-							if (j.TokenType == JsonToken.PropertyName)
-							{
-								switch (j.Value as string)
-								{
-									case "version":
-										depVersion = j.ReadAsString();
-										break;
-									case "path":
-										depPath = j.ReadAsString();
-										break;
-								}
-							}
+				if (kv.Value is JSONValueLeaf)
+					depVersion = (kv.Value as JSONValueLeaf).Value;
+				else if (kv.Value is JSONObject) {
+					foreach (var kvv in (kv.Value as JSONObject).Properties) {
+						switch (kvv.Key) {
+							case "version":
+								depVersion = ExpectJsonStringValue (kvv.Value, "version");
+								break;
+							case "path":
+								depPath = ExpectJsonStringValue (kvv.Value, "path");
+								break;
 						}
 					}
-					else if (j.TokenType == JsonToken.String)
-						depVersion = j.Value as string;
+				} else
+					throw new InvalidDataException ("Error while deserializing dub project dependency");
 
-					settings.dependencies[depName] = new DubProjectDependency { Name = depName, Version = depVersion, Path = depPath };
-				}
+				settings.dependencies[depName] =  new DubProjectDependency { Name = depName, Version = depVersion, Path = depPath };
 			}
-
 		}
 
-		DubProjectConfiguration DeserializeFromPackageJson(JsonReader j)
+		DubProjectConfiguration DeserializeFromPackageJson(JSONObject j)
 		{
 			var c = new DubProjectConfiguration { Name = "<Undefined>" };
 
-			var srz = new JsonSerializer();
-			while (j.Read() && j.TokenType != JsonToken.EndObject)
-			{
-				if (j.TokenType == JsonToken.PropertyName)
-				{
-					switch (j.Value as string)
-					{
-						case "name":
-							c.Name = c.Id = j.ReadAsString();
-							break;
-						default:
-							if (!TryDeserializeBuildSetting(c.BuildSettings, j))
-								j.Skip();
-							break;
-					}
-				}
+			if (j.Properties.ContainsKey ("name"))
+				c.Name = ExpectJsonStringValue(j.Properties ["name"], "name");
+
+			foreach (var kv in j.Properties) {
+				TryDeserializeBuildSetting (c.BuildSettings, kv.Key, kv.Value);
 			}
 
 			return c;
 		}
 
-		bool TryDeserializeBuildSetting(DubBuildSettings cfg, JsonReader j)
+		bool TryDeserializeBuildSetting(DubBuildSettings cfg, string propName, JSONThing j)
 		{
-			if (!(j.Value is string))
-				return false;
-			var settingIdentifier = (j.Value as string).Split(new[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
+			var settingIdentifier = propName.Split(new[] { '-' }, StringSplitOptions.RemoveEmptyEntries);
 			if (settingIdentifier.Length < 1)
 				return false;
 
-			var propName = settingIdentifier[0] = settingIdentifier[0].ToLowerInvariant();
-			DubBuildSetting sett = null;
+			propName = settingIdentifier[0] = settingIdentifier[0].ToLowerInvariant();
+			DubBuildSetting sett;
 
 			switch (propName)
 			{
 				case "dependencies":
-					j.Read();
-					DeserializeDubPrjDependencies(j, cfg);
-					break;
+					DeserializeDubPrjDependencies(ExpectJsonObject(j, propName), cfg);
+					return true;
 				case "targettype":
 				case "targetname":
 				case "targetpath":
 				case "workingdirectory":
 				case "mainsourcefile":
-					j.Read();
-					if (j.TokenType == JsonToken.String)
-					{
-						sett = new DubBuildSetting { Name = propName, Values = new[] { j.Value as string } };
-					}
+					sett = new DubBuildSetting { Name = propName, Values = new[] { ExpectJsonStringValue(j, propName) } };
 					break;
 				case "subconfigurations":
-					j.Read();
-					var configurations = (new JsonSerializer()).Deserialize<Dictionary<string, string>>(j);
-					foreach (var kv in configurations)
-						cfg.subConfigurations[kv.Key] = kv.Value;
-					break;
+					foreach (var kv in ExpectJsonObject(j, propName).Properties)
+						cfg.subConfigurations[kv.Key] = ExpectJsonStringValue(kv.Value, kv.Key);
+					return true;
 				case "sourcefiles":
 				case "sourcepaths":
 				case "excludedsourcefiles":
@@ -239,36 +184,32 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 				case "debugversions":
 				case "importpaths":
 				case "stringimportpaths":
-					j.Read();
-					if (j.TokenType == JsonToken.StartArray)
-					{
-						sett = new DubBuildSetting { Name = propName, Values = (new JsonSerializer()).Deserialize<string[]>(j) };
+					var values = new List<string> ();
+					foreach (var i in ExpectJsonArray(j, propName).Items)
+						values.Add (ExpectJsonStringValue(i, propName));
 
-						for (int i = 1; i < settingIdentifier.Length; i++)
-						{
-							var pn = settingIdentifier[i].ToLowerInvariant();
-							if (sett.OperatingSystem == null && DubBuildSettings.OsVersions.Contains(pn))
-								sett.OperatingSystem = pn;
-							else if (sett.Architecture == null && DubBuildSettings.Architectures.Contains(pn))
-								sett.Architecture = pn;
-							else
-								sett.Compiler = pn;
-						}
+					sett = new DubBuildSetting { Name = propName, Values = values.ToArray() };
+
+					for (int i = 1; i < settingIdentifier.Length; i++)
+					{
+						var pn = settingIdentifier[i].ToLowerInvariant();
+						if (sett.OperatingSystem == null && DubBuildSettings.OsVersions.Contains(pn))
+							sett.OperatingSystem = pn;
+						else if (sett.Architecture == null && DubBuildSettings.Architectures.Contains(pn))
+							sett.Architecture = pn;
+						else
+							sett.Compiler = pn;
 					}
 					break;
 				default:
-					j.Skip();
 					return false;
 			}
 
-			if (sett != null)
-			{
-				List<DubBuildSetting> setts;
-				if (!cfg.TryGetValue(settingIdentifier[0], out setts))
-					cfg.Add(settingIdentifier[0], setts = new List<DubBuildSetting>());
+			List<DubBuildSetting> setts;
+			if (!cfg.TryGetValue(settingIdentifier[0], out setts))
+				cfg.Add(settingIdentifier[0], setts = new List<DubBuildSetting>());
 
-				setts.Add(sett);
-			}
+			setts.Add(sett);
 
 			return true;
 		}

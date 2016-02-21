@@ -2,6 +2,7 @@
 using System;
 using MonoDevelop.Core.Execution;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace MonoDevelop.D.Projects.Dub
 {
@@ -20,6 +21,25 @@ namespace MonoDevelop.D.Projects.Dub
 		internal void AddProject(AbstractDProject sub)
 		{
 			var folder = sub.BaseDirectory == BaseDirectory || sub.BaseDirectory.IsChildPathOf (BaseDirectory) ? RootFolder : ExternalDepFolder;
+
+			if (folder == ExternalDepFolder && sub is DubProject) {
+				var packageName = (sub as DubProject).packageName.Split(':');
+				for (int i = 0; i < packageName.Length - 1; i++) {
+					bool foundSubFolder = false;
+					foreach (var subFolder in folder.GetAllItems<SolutionFolder>()) {
+						if (String.Equals (subFolder.Name, packageName [i], StringComparison.CurrentCultureIgnoreCase)) {
+							folder = subFolder;
+							foundSubFolder = true;
+							break;
+						}
+					}
+					if (!foundSubFolder) {
+						var newSubFolder = new SolutionFolder{ Name = packageName [i] };
+						folder.AddItem (newSubFolder);
+						folder = newSubFolder;
+					}
+				}
+			}
 
 			if (!folder.Items.Contains (sub))
 				folder.AddItem (sub, false);

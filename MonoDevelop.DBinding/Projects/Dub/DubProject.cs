@@ -162,7 +162,7 @@ namespace MonoDevelop.D.Projects.Dub
 			return dirs;
 		}
 
-		public readonly List<string> buildTypes = new List<string>(new[] { "plain", "debug", "release", "unittest", "docs", "ddox", "profile", "cov", "unittest-cov" });
+		public readonly SortedSet<string> buildTypes = new SortedSet<string>(new[] { "plain", "debug", "release", "unittest", "docs", "ddox", "profile", "cov", "unittest-cov" });
 
 		public class DubExecTarget : ExecutionTarget
 		{

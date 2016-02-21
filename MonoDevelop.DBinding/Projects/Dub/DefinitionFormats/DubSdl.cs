@@ -15,7 +15,7 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 			return Path.GetFileName(file).ToLower() == DubSdlFile;
 		}
 
-		protected override void Read(DubProject target, Object input)
+		protected override void Read(DubProject target, Object input, List<Object> subPackagesToBeReadLater)
 		{
 			if (input is StreamReader)
 			{
@@ -30,6 +30,14 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 					InterpretGlobalProperty(decl, target);
 			else
 				throw new ArgumentException("input");
+		}
+
+		protected override DubProject ReadSubPackage (DubProject superProject, object definition)
+		{
+			if (definition is SDLObject)
+				return Load (superProject, superProject.ParentSolution, definition, superProject.FileName);
+
+			throw new ArgumentException ("definition");
 		}
 
 		void InterpretGlobalProperty(SDLDeclaration decl, DubProject target)
@@ -84,8 +92,6 @@ namespace MonoDevelop.D.Projects.Dub.DefinitionFormats
 						target.buildTypes.Add(name);
 					}
 					// Ignore remaining contents as they're not needed by mono-d
-
-					target.buildTypes.Sort();
 					break;
 				default:
 					InterpretBuildSetting(decl, target.CommonBuildSettings);

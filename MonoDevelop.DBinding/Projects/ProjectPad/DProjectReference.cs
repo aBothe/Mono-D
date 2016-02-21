@@ -28,6 +28,7 @@ using MonoDevelop.D.Projects;
 using System.ComponentModel;
 using MonoDevelop.Projects;
 using System.IO;
+using MonoDevelop.D.Projects.Dub;
 
 namespace MonoDevelop.D.Projects.ProjectPad
 {
@@ -71,7 +72,7 @@ namespace MonoDevelop.D.Projects.ProjectPad
 						return reference;
 					case ReferenceType.Project:
 						var prj = ReferencedProject;
-						return prj == null ? "<No Project specified>" : prj.Name;
+						return prj == null ? "<No Project specified>" : (prj is DubProject ? (prj as DubProject).packageName : prj.Name);
 					default:
 						throw new InvalidDataException ("Invalid case");
 				}

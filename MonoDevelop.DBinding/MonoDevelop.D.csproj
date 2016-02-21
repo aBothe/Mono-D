@@ -342,6 +342,11 @@
     <Compile Include="Profiler\Gui\CodeCoverageEditorExtension.cs" />
     <Compile Include="Resolver\MonoDParseCacheView.cs" />
     <Compile Include="Gui\DTypeSearchCategory.cs" />
+    <Compile Include="Projects\Dub\DefinitionFormats\JSON\JSONObject.cs" />
+    <Compile Include="Projects\Dub\DefinitionFormats\JSON\JSONArray.cs" />
+    <Compile Include="Projects\Dub\DefinitionFormats\JSON\JSONValueLeaf.cs" />
+    <Compile Include="Projects\Dub\DefinitionFormats\JSON\JSONThing.cs" />
+    <Compile Include="Projects\Dub\DefinitionFormats\JSON\JSONThingDeserializer.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
