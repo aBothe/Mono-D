@@ -10,21 +10,20 @@ namespace MonoDevelop.D
 {
 	public class MonoDParseCacheView : ParseCacheView
 	{
-		readonly Dictionary<DModule, List<RootPackage>> cache = new Dictionary<DModule, List<RootPackage>>();
-		readonly List<RootPackage> globalIncludes = new List<RootPackage>();
+		readonly Dictionary<DModule, ISet<RootPackage>> cache = new Dictionary<DModule, ISet<RootPackage>>();
+		readonly ISet<RootPackage> globalIncludes = new HashSet<RootPackage>();
 
 		public MonoDParseCacheView()
 		{
 			Add (globalIncludes, DCompilerService.Instance.GetDefaultCompiler ().IncludePaths);
 		}
 
-		static void Add(List<RootPackage> results, IEnumerable<string> paths)
+		static void Add(ISet<RootPackage> results, IEnumerable<string> paths)
 		{
 			RootPackage pack;
 			foreach(var p in paths)
 				if((pack = GlobalParseCache.GetRootPackage (p)) != null) {
-					if(!results.Contains(pack))
-						results.Add (pack);
+					results.Add (pack);
 				}
 		}
 
@@ -33,12 +32,11 @@ namespace MonoDevelop.D
 			if (module == null)
 				return globalIncludes;
 
-			RootPackage pack;
-			List<RootPackage> results;
+			ISet<RootPackage> results;
 			if (cache.TryGetValue (module, out results))
 				return results;
 
-			results = new List<RootPackage> ();
+			results = new HashSet<RootPackage> ();
 
 			foreach(var prj in Ide.IdeApp.Workspace.GetAllProjects()) {
 				var dprj = prj as AbstractDProject;
@@ -46,28 +44,12 @@ namespace MonoDevelop.D
 				if (dprj == null || !prj.IsFileInProject(module.FileName))
 					continue;
 
-				if (dprj is DProject)
-					Add (results, (dprj as DProject).Compiler.IncludePaths);
-				else if (dprj is DubProject)
-					results.AddRange (globalIncludes);
+				Add (results, dprj.GetSourcePaths ());
 
-				foreach (var p in dprj.GetSourcePaths())
-					if ((pack = GlobalParseCache.GetRootPackage (p)) != null) {
-						if (!results.Contains (pack)) {
-							foreach (DModule m in pack)
-								cache [m] = results;
-
-							results.Add (pack);
-						}
-					}
+				Add (results, dprj.IncludePaths);
 
 				if (dprj.LinkedFilePackage != null)
 					results.Add (dprj.LinkedFilePackage);
-
-				Add(results, dprj.References.Includes);
-
-				foreach (var depPrj in dprj.GetReferencedDProjects(Ide.IdeApp.Workspace.ActiveConfiguration))
-					Add(results, depPrj.GetSourcePaths());
 			}
 
 			if (results.Count == 0)

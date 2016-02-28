@@ -117,12 +117,11 @@ namespace MonoDevelop.D.Projects.Dub
 			var dirs = new List<string>();
 			List<DubBuildSetting> l;
 			string d;
-			bool returnedOneItem = false;
+
 			foreach (var sett in GetBuildSettings(sel))
 			{
 				if (sett.TryGetValue(DubBuildSettings.SourcePathsProperty, out l))
 				{
-					returnedOneItem = true;
 					foreach (var setting in l)
 					{
 						foreach (var directory in setting.Values)
@@ -148,7 +147,7 @@ namespace MonoDevelop.D.Projects.Dub
 				}
 			}
 
-			if (!returnedOneItem)
+			if (dirs.Count == 0)
 			{
 				d = BaseDirectory.Combine("source").ToString();
 				if (Directory.Exists(d))
@@ -229,6 +228,23 @@ namespace MonoDevelop.D.Projects.Dub
 			}
 		}
 
+		IEnumerable<string> AdditionalSourceFiles
+		{
+			get{
+				List<DubBuildSetting> l;
+				if (CommonBuildSettings.TryGetValue (DubBuildSettings.SourceFilesProperty, out l))
+					foreach (var sett in l)
+						foreach (var f in sett.Values)
+							yield return f;
+
+				foreach (DubProjectConfiguration cfg in Configurations)
+					if (cfg.BuildSettings.TryGetValue (DubBuildSettings.SourceFilesProperty, out l))
+						foreach (var sett in l)
+							foreach (var f in sett.Values)
+								yield return f;
+			}
+		}
+
 		internal void EndLoad()
 		{
 			// Load project's files
@@ -252,24 +268,12 @@ namespace MonoDevelop.D.Projects.Dub
 			}
 
 			#region Add files specified via sourceFiles
-			var additionalFiles = new List<string>();
-			List<DubBuildSetting> l;
-
-			if (CommonBuildSettings.TryGetValue(DubBuildSettings.SourceFilesProperty, out l))
-				foreach (var sett in l)
-					foreach (var f in sett.Values)
-						additionalFiles.Add(f);
-
-			foreach (DubProjectConfiguration cfg in Configurations)
-				if (cfg.BuildSettings.TryGetValue(DubBuildSettings.SourceFilesProperty, out l))
-					foreach (var sett in l)
-						foreach (var f in sett.Values)
-							additionalFiles.Add(f);
-
-			foreach (var f in additionalFiles)
+			foreach (var f in AdditionalSourceFiles)
 			{
 				if (string.IsNullOrWhiteSpace(f))
 					continue;
+
+				ProjectFile fileToAdd;
 
 				if (Path.IsPathRooted(f))
 				{
@@ -280,11 +284,14 @@ namespace MonoDevelop.D.Projects.Dub
 							skip = true;
 							break;
 						}
-					if (!skip)
-						Items.Add(new ProjectFile(f));
+					fileToAdd = skip ? null : new ProjectFile(f);
 				}
 				else
-					Items.Add(new ProjectFile(baseDir.Combine(f).ToString()));
+					fileToAdd = new ProjectFile(baseDir.Combine(f).ToString());
+
+				if(fileToAdd != null){
+					Items.Add(fileToAdd);
+				}
 			}
 			#endregion
 
