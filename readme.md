@@ -1,12 +1,11 @@
 
 Mono-D is a language binding for MonoDevelop for the [D Programming language](http://dlang.org).
 
-[Project site](http://mono-d.alexanderbothe.com).
+[Project site](http://wiki.dlang.org/Mono-D).
 
 Few (none?) GNU/Linux distros package a new enough MonoDevelop required by Mono-D.
 You can download pre-built binaries built with mono3 below. Unpack to `/opt/mono`.
-* [MonoDevelop 4 GNU/Linux **x86**](http://simendsjo.me/files/abothe/MonoDevelop.x86.Master.tar.xz)
-* [MonoDevelop 4 GNU/Linux **x64**](http://simendsjo.me/files/abothe/MonoDevelop.x64.Master.tar.xz)
+* [MonoDevelop GNU/Linux **x64**](http://simendsjo.me/files/abothe/MonoDevelop.x64.Master.tar.xz)
 
 # How to initialize Mono-D development under Linux
 
