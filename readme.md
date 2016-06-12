@@ -4,52 +4,59 @@ Mono-D is a language binding for MonoDevelop for the [D Programming language](ht
 [Project site](http://wiki.dlang.org/Mono-D).
 
 # Dev agenda
+## General
 * [ ] Prepare D addin to be used & extended in MonoDevelop
 * [ ] Bind in text/d mimetype
-* [ ] Project support
-** [ ] dub
-** [ ] native legacy
-** [ ] Visual-D
 * [ ] Project & File templates
-* [ ] Project building
-** [ ] dub
-** [ ] native legacy
-** [ ] Visual-D
+
+## Project/building support
+* [ ] Dub
+* [ ] Native/Legacy Mono-D projects
+* [ ] Visual-D
 * [ ] Project build option panels
 * [ ] Global build option panels
 * [ ] D Option Panels
-* Editing support
-** [ ] Static Syntax highlighting
-** [ ] Re-Establish completion infrastructure with D_Parser
-** [ ] Semantic/AST-affine syntax highlighting
-** [ ] Global/Local option panel for syntax settings
-** [ ] Code indentation
-*** [ ] Re-Use existing indentation API from D_Parser
-** [ ] Code formatting
-*** [ ] Re-Use existing formatting API from D_Parser
-*** [ ] Extend D_Parser's formatting abilities
-* Debug support
-** [ ] Find a way to p/invoke native WinDbg-Engine infrastructure without using C++/CLI anymore
-** [ ] Hook on gdb
-** [ ] Have a generalized infrastructure for using parser's AST cache as variable evaluation assistance
-** [ ] Hack in toString()-Evaluation, especially on WinDBG which requires heavy tinkering
-** [ ] Dynamic expression evaluation -- why not CTFE-ish pure code execution using run-time local values?
+
+### Further building-related features
 * [ ] DMD profiling evaluation support
 * [ ] Unittests build & report evaluation support
-* Editing candy
-** Obligatory "Refactorings" & code intelligence
-*** [ ] Find symbol references
-*** [ ] Symbol renaming
-*** [ ] Symbol import-stmt generation
-*** Stuff I've experienced while using Eclipse in real-world-usecases:
-**** [ ] Automatic import-stmt generation/deletion/sort/"organization"
-**** [ ] Method extraction
-**** [ ] Switch-case completion && write down all possible cases
-**** [ ] Expression2LocalVariable extraction
-**** [ ] Display type inheritance hierachy
-**** [ ] Check local-scoped symbols for whether not being used anymore
-** [ ] Have diff-based highlighting
-** [ ] Mixin evaluation panel for real-time execution-alike code insight magic
+* [ ] Makefile/dub.sdl generation support?
+* [ ] Dub registry browser?
+
+## Editing support
+* [ ] Static Syntax highlighting
+* [ ] Re-Establish completion infrastructure with D_Parser
+* [ ] Semantic/AST-affine syntax highlighting
+* [ ] Global/Local option panel for syntax settings
+
+### Code indentation/formatting
+* [ ] Provide indentation binding codebase
+* [ ] Provide formatting binding codebase
+* [ ] Re-Use existing indentation API from D_Parser
+* [ ] Re-Use existing formatting API from D_Parser
+* [ ] Extend D_Parser's formatting abilities
+
+## Debug support
+* [ ] Find a way to p/invoke native WinDbg-Engine infrastructure without using C++/CLI anymore
+* [ ] Hook on gdb
+* [ ] Have a generalized infrastructure for using parser's AST cache as variable evaluation assistance
+* [ ] Hack in toString()-Evaluation, especially on WinDBG which requires heavy tinkering
+* [ ] Dynamic expression evaluation -- why not CTFE-ish pure code execution using run-time local values?
+
+## Obligatory editing-candy
+* [ ] Find symbol references
+* [ ] Symbol renaming
+* [ ] Symbol import-stmt generation
+
+### Stuff I've experienced while using Eclipse in real-world use cases:
+* [ ] Automatic import-stmt generation/deletion/sort/"organization"
+* [ ] Method extraction
+* [ ] Switch-case completion && write down all possible cases
+* [ ] Expression2LocalVariable extraction
+* [ ] Display type inheritance hierachy
+* [ ] Check local-scoped symbols for whether not being used anymore
+* [ ] Have diff-based highlighting
+* [ ] Mixin evaluation panel for real-time execution-alike code insight magic
 
 # Get MonoDevelop on Linux
 
