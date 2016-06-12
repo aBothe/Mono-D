@@ -155,9 +155,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="gtk-gui\gui.stetic">
-      <LogicalName>gui.stetic</LogicalName>
-    </EmbeddedResource>
     <EmbeddedResource Include="DietTemplateSyntaxDefinition.xml">
       <LogicalName>DietTemplateSyntaxDefinition.xml</LogicalName>
       <Gettext-ScanForTranslations>False</Gettext-ScanForTranslations>
@@ -197,54 +194,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="gtk-gui\generated.cs">
-      <LogicalName></LogicalName>
-    </Compile>
-    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.ProjectOptions.cs">
-      <LogicalName></LogicalName>
-    </Compile>
-    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.DGlobalOptions.cs">
-      <LogicalName></LogicalName>
-    </Compile>
-    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.DCompilerOptions.cs">
-      <LogicalName></LogicalName>
-    </Compile>
-    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.BuildArgumentOptions.cs">
-      <LogicalName></LogicalName>
-    </Compile>
-    <Compile Include="gtk-gui\MonoDevelop.D.ResourcesCompilerOptionsPanel.cs">
-      <LogicalName></LogicalName>
-    </Compile>
-    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.EditCompilerName.cs">
-      <LogicalName></LogicalName>
-    </Compile>
-    <Compile Include="gtk-gui\MonoDevelop.D.Formatting.FormattingPanelWidget.cs">
-      <LogicalName></LogicalName>
-    </Compile>
-    <Compile Include="gtk-gui\MonoDevelop.D.ImportSymbolSelectionDlg.cs">
-      <LogicalName></LogicalName>
-    </Compile>
-    <Compile Include="gtk-gui\MonoDevelop.D.DRenameNameDialog.cs">
-      <LogicalName></LogicalName>
-    </Compile>
-    <Compile Include="gtk-gui\MonoDevelop.D.Profiler.Gui.ProfilerPadWidget.cs">
-      <LogicalName></LogicalName>
-    </Compile>
-    <Compile Include="gtk-gui\MonoDevelop.D.ProjectDependenciesWidget.cs">
-      <LogicalName></LogicalName>
-    </Compile>
-    <Compile Include="gtk-gui\MonoDevelop.D.ProjectIncludesWidget.cs">
-      <LogicalName></LogicalName>
-    </Compile>
-    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.DubOptionPanel.cs">
-      <LogicalName></LogicalName>
-    </Compile>
-    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.UnittestOptions.cs">
-      <LogicalName></LogicalName>
-    </Compile>
-    <Compile Include="gtk-gui\MonoDevelop.D.Refactoring.DustMiteArgDlg.cs">
-      <LogicalName></LogicalName>
-    </Compile>
+    <Compile Include="AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
