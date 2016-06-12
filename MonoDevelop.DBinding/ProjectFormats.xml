@@ -11,10 +11,10 @@
 		<ItemProperty member="libs" name="Libs"/>
 		<ItemProperty member="libs" scope="*" name="Lib" valueType="System.String"/>
 	</DataItem>
-	
+
 	<DataItem class = "MonoDevelop.D.DProjectConfiguration">
 		<ItemProperty member="output" name="Output/output"/>
-
+		
 		<ItemProperty member="sourcepath" name="SourcePath"/>
 		<ItemProperty member="extra_compiler_args" name="CodeGeneration/ExtraCompilerArguments"/>
 		<ItemProperty member="extra_linker_args" name="CodeGeneration/ExtraLinkerArguments"/>

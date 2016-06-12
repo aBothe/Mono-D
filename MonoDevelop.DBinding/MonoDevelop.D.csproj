@@ -25,6 +25,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>full</DebugType>
     <Optimize>False</Optimize>
+    <OutputPath>/home/lx/Dokumente/Projects/Mono-D/MonoDevelop.DBinding/bin/Debug</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>False</ConsolePause>
@@ -47,10 +48,12 @@
         <Variable name="LD_LIBRARY_PATH" value="/usr/lib:$LD_LIBRARY_PATH" />
       </EnvironmentVariables>
     </EnvironmentVariables>
+    <IntermediateOutputPath>/home/lx/Dokumente/Projects/Mono-D/MonoDevelop.DBinding/obj/Debug</IntermediateOutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>full</DebugType>
     <Optimize>True</Optimize>
+    <OutputPath>/home/lx/Dokumente/Projects/Mono-D/MonoDevelop.DBinding/bin/Debug</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>False</ConsolePause>
@@ -63,9 +66,10 @@
     <DebugSymbols>True</DebugSymbols>
     <CustomCommands>
       <CustomCommands>
-        <Command type="Execute" command="/opt/mono/lib/monodevelop/bin/MonoDevelop.exe" />
+        <Command type="Execute" command="/usr/lib/monodevelop/bin/MonoDevelop.exe" />
       </CustomCommands>
     </CustomCommands>
+    <IntermediateOutputPath>/home/lx/Dokumente/Projects/Mono-D/MonoDevelop.DBinding/obj/Release</IntermediateOutputPath>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Mono.Addins">
@@ -82,24 +86,6 @@
     <Reference Include="System" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Data" />
-    <Reference Include="gtk-sharp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
-      <SpecificVersion>False</SpecificVersion>
-    </Reference>
-    <Reference Include="gdk-sharp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
-      <SpecificVersion>False</SpecificVersion>
-    </Reference>
-    <Reference Include="glib-sharp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
-      <SpecificVersion>False</SpecificVersion>
-    </Reference>
-    <Reference Include="glade-sharp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
-      <SpecificVersion>False</SpecificVersion>
-    </Reference>
-    <Reference Include="pango-sharp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
-      <SpecificVersion>False</SpecificVersion>
-    </Reference>
-    <Reference Include="atk-sharp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
-      <SpecificVersion>False</SpecificVersion>
-    </Reference>
     <Reference Include="ICSharpCode.NRefactory">
       <HintPath>..\ext\ICSharpCode.NRefactory.dll</HintPath>
       <Private>False</Private>
@@ -149,6 +135,24 @@
       <HintPath>..\ext\libsteticui.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="gtk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <Aliases></Aliases>
+    </Reference>
+    <Reference Include="gdk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <Aliases></Aliases>
+    </Reference>
+    <Reference Include="glib-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <Aliases></Aliases>
+    </Reference>
+    <Reference Include="glade-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <Aliases></Aliases>
+    </Reference>
+    <Reference Include="pango-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <Aliases></Aliases>
+    </Reference>
+    <Reference Include="atk-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
+      <Aliases></Aliases>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="gtk-gui\gui.stetic">
@@ -157,10 +161,6 @@
     <EmbeddedResource Include="DietTemplateSyntaxDefinition.xml">
       <LogicalName>DietTemplateSyntaxDefinition.xml</LogicalName>
       <Gettext-ScanForTranslations>False</Gettext-ScanForTranslations>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Building\CompilerPresets\ldc2.xml">
-      <SubType>Designer</SubType>
-      <LogicalName>CompilerPresets.ldc2.xml</LogicalName>
     </EmbeddedResource>
     <EmbeddedResource Include="icons\d-asm-avx-16.png">
       <LogicalName>d-asm-avx-16.png</LogicalName>
@@ -197,156 +197,54 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AssemblyInfo.cs" />
-    <Compile Include="Building\ArgumentMacroProvider.cs" />
-    <Compile Include="Building\ErrorExtracting.cs" />
-    <Compile Include="Building\ProjectBuilder.cs" />
-    <Compile Include="Completion\AstUpdater.cs" />
-    <Compile Include="Completion\DIcons.cs" />
-    <Compile Include="Debugging\DebugSymbolTypeEvalVisitor.cs" />
-    <Compile Include="Debugging\DebugSymbolValueProvider.cs" />
-    <Compile Include="Debugging\ExamHelpers.cs" />
-    <Compile Include="Debugging\DLocalExamBacktrace.cs" />
-    <Compile Include="Debugging\IDBacktraceHelpers.cs" />
-    <Compile Include="Debugging\LazyEvaluationValue.cs" />
-    <Compile Include="Formatting\DFormattingPolicy.cs" />
-    <Compile Include="Formatting\FormattingPanel.cs" />
-    <Compile Include="Formatting\Indentation\DIndentEngine.cs" />
-    <Compile Include="Formatting\Indentation\DIndentationTracker.cs" />
-    <Compile Include="Formatting\Indentation\DTextEditorIndentation.cs" />
-    <Compile Include="gtk-gui\generated.cs" />
-    <Compile Include="Completion\DCodeCompletionSupport.cs" />
-    <Compile Include="Completion\EditorCompletionExtension.cs" />
-    <Compile Include="DLanguageBinding.cs" />
-    <Compile Include="Formatting\DCodeFormatter.cs" />
-    <Compile Include="Gui\DModuleOutlineExtension.cs" />
-    <Compile Include="Gui\DToolTipProvider.cs" />
-    <Compile Include="Gui\EditorPathBarExtension.cs" />
-    <Compile Include="Gui\MixinInsightPad.cs" />
-    <Compile Include="Highlighting\DiffbasedHighlighting.cs" />
-    <Compile Include="Highlighting\HighlightUsagesExtension.cs" />
-    <Compile Include="Highlighting\DSyntaxMode.cs" />
-    <Compile Include="OptionPanels\ProjectOptions.cs" />
-    <Compile Include="Parser\DParserWrapper.cs" />
-    <Compile Include="Parser\FoldingParser.cs" />
-    <Compile Include="Parser\ParsedDModule.cs" />
-    <Compile Include="Projects\AbstractDProject.cs" />
-    <Compile Include="Projects\DProjectBinding.cs" />
-    <Compile Include="Projects\DProject.cs" />
-    <Compile Include="Projects\DProjectConfiguration.cs" />
-    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.ProjectOptions.cs" />
-    <Compile Include="Building\DCompilerConfiguration.cs" />
-    <Compile Include="OptionPanels\DGlobalOptions.cs" />
-    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.DGlobalOptions.cs" />
-    <Compile Include="Completion\DParameterDataProvider.cs" />
-    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.DCompilerOptions.cs" />
-    <Compile Include="OptionPanels\BuildArgumentOptions.cs" />
-    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.BuildArgumentOptions.cs" />
-    <Compile Include="OptionPanels\DCompilerOptions.cs" />
-    <Compile Include="OptionPanels\ResourcesCompilerOptions.cs" />
-    <Compile Include="gtk-gui\MonoDevelop.D.ResourcesCompilerOptionsPanel.cs" />
-    <Compile Include="Projects\Dub\DefinitionFormats\DubFileReader.cs" />
-    <Compile Include="Projects\Dub\DefinitionFormats\DubJson.cs" />
-    <Compile Include="Projects\Dub\DefinitionFormats\DubSdl.cs" />
-    <Compile Include="Projects\Dub\DefinitionFormats\DubFileManager.cs" />
-    <Compile Include="Projects\Dub\DefinitionFormats\PackageJson.cs" />
-    <Compile Include="Projects\Dub\DefinitionFormats\SDL\SdlLexer.cs" />
-    <Compile Include="Projects\Dub\DefinitionFormats\SDL\SDLObject.cs" />
-    <Compile Include="Projects\Dub\DefinitionFormats\SDL\SdlParser.cs" />
-    <Compile Include="Projects\Dub\DefinitionFormats\SDL\SDLDeclaration.cs" />
-    <Compile Include="Projects\Dub\DubProjectItemTypeHandler.cs" />
-    <Compile Include="Projects\Dub\DubSolution.cs" />
-    <Compile Include="Projects\Dub\DubBuilder.cs" />
-    <Compile Include="Projects\Dub\DubBuildSettings.cs" />
-    <Compile Include="Projects\Dub\DubProject.cs" />
-    <Compile Include="Projects\Dub\DubProjectConfiguration.cs" />
-    <Compile Include="Projects\Dub\DefinitionFormats\DubFileFormat.cs" />
-    <Compile Include="Projects\ProjectJsonConfig.cs" />
-    <Compile Include="Refactoring\CodeActions\DCodeActionSource.cs" />
-    <Compile Include="Gui\EditorPathbarProvider.cs" />
-    <Compile Include="Refactoring\RefactoringCommandsExtension.cs" />
-    <Compile Include="Refactoring\ReferenceFinding.cs" />
-    <Compile Include="Refactoring\TextDocumentAdapter.cs" />
-    <Compile Include="Resolver\DResolverWrapper.cs" />
-    <Compile Include="Building\DCompilerService.cs" />
-    <Compile Include="Building\CompilerPresets\PresetLoader.cs" />
-    <Compile Include="OptionPanels\EditCompilerName.cs" />
-    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.EditCompilerName.cs" />
-    <Compile Include="templates\AnsiFile.cs" />
-    <Compile Include="templates\DFileDescriptionTemplate.cs" />
-    <Compile Include="Formatting\FormattingPanelWidget.cs" />
-    <Compile Include="gtk-gui\MonoDevelop.D.Formatting.FormattingPanelWidget.cs" />
-    <Compile Include="Refactoring\ImportSymbolSelectionDlg.cs" />
-    <Compile Include="gtk-gui\MonoDevelop.D.ImportSymbolSelectionDlg.cs" />
-    <Compile Include="Refactoring\Renaming\DRenameRefactoring.cs" />
-    <Compile Include="Refactoring\Renaming\DRenameNameDialog.cs" />
-    <Compile Include="gtk-gui\MonoDevelop.D.DRenameNameDialog.cs" />
-    <Compile Include="Refactoring\Renaming\DRenameHandler.cs" />
-    <Compile Include="Profiler\Gui\ProfilerPadWidget.cs" />
-    <Compile Include="gtk-gui\MonoDevelop.D.Profiler.Gui.ProfilerPadWidget.cs" />
-    <Compile Include="Profiler\TraceLogParser.cs" />
-    <Compile Include="Profiler\Commands\ProfilerCommands.cs" />
-    <Compile Include="Profiler\Commands\ProfilerModeHandler.cs" />
-    <Compile Include="Profiler\Gui\DProfilerPad.cs" />
-    <Compile Include="Gui\ExpressionEvaluationWidget.cs" />
-    <Compile Include="Gui\MixinInsightExtension.cs" />
-    <Compile Include="OptionPanels\ProjectDependencyPanelBinding.cs" />
-    <Compile Include="OptionPanels\ProjectDependenciesWidget.cs" />
-    <Compile Include="gtk-gui\MonoDevelop.D.ProjectDependenciesWidget.cs" />
-    <Compile Include="OptionPanels\ProjectIncludesWidget.cs" />
-    <Compile Include="gtk-gui\MonoDevelop.D.ProjectIncludesWidget.cs" />
-    <Compile Include="OptionPanels\ProjectIncludesWidgetBinding.cs" />
-    <Compile Include="Projects\DProjectReferenceCollection.cs" />
-    <Compile Include="Projects\ProjectPad\DPrjRefNode.cs" />
-    <Compile Include="Projects\ProjectPad\DProjectReferenceFolderNodeBuilder.cs" />
-    <Compile Include="Projects\ProjectPad\DProjectNodeExtension.cs" />
-    <Compile Include="Projects\ProjectPad\DProjectReference.cs" />
-    <Compile Include="Projects\Dub\DubReferencesCollection.cs" />
-    <Compile Include="Projects\DefaultDReferencesCollection.cs" />
-    <Compile Include="Refactoring\DRefactoringContext.cs" />
-    <Compile Include="Unittest\Commands\UnittestCommandHandler.cs" />
-    <Compile Include="Unittest\Commands\UnittestCommands.cs" />
-    <Compile Include="Unittest\UnittestCore.cs" />
-    <Compile Include="Projects\Dub\DubSettings.cs" />
-    <Compile Include="Projects\Dub\DubSubPackage.cs" />
-    <Compile Include="Refactoring\ContextMenuRefactoringCommandHandler.cs" />
-    <Compile Include="Refactoring\RefactoringCommandCapsule.cs" />
-    <Compile Include="Projects\VisualD\VisualDProjFormat.cs" />
-    <Compile Include="Projects\VisualD\VisualDProject.cs" />
-    <Compile Include="Projects\VisualD\VisualDPrjConfig.cs" />
-    <Compile Include="Projects\VisualD\VisualDProjectReferenceCollection.cs" />
-    <Compile Include="OptionPanels\DubOptionPanel.cs" />
-    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.DubOptionPanel.cs" />
-    <Compile Include="Formatting\DietTemplateFormattingPanel.cs" />
-    <Compile Include="Highlighting\DietTemplateSyntaxMode.cs" />
-    <Compile Include="OptionPanels\UnittestOptions.cs" />
-    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.UnittestOptions.cs" />
-    <Compile Include="Unittest\UnittestSettings.cs" />
-    <Compile Include="Completion\TooltipMarkupGen.cs" />
-    <Compile Include="Completion\TooltipInfoGen.cs" />
-    <Compile Include="GuiBuilder\GuiBuilderDisplayBinding.cs" />
-    <Compile Include="GuiBuilder\GtkDProjectServiceExtension.cs" />
-    <Compile Include="GuiBuilder\GuiBuilderView.cs" />
-    <Compile Include="GuiBuilder\GuiBuilderWindow.cs" />
-    <Compile Include="GuiBuilder\GuiBuilderProject.cs" />
-    <Compile Include="GuiBuilder\GtkDesignInfo.cs" />
-    <Compile Include="GuiBuilder\ProjectResourceProvider.cs" />
-    <Compile Include="Refactoring\DustMiteIntegration\DustMite.cs" />
-    <Compile Include="Refactoring\DustMiteIntegration\DustMiteArgDlg.cs" />
-    <Compile Include="gtk-gui\MonoDevelop.D.Refactoring.DustMiteArgDlg.cs" />
-    <Compile Include="Debugging\ObjectCacheNode.cs" />
-    <Compile Include="Parser\DPseudoUnresolvedFile.cs" />
-    <Compile Include="Refactoring\SortImportsCommandHandler.cs" />
-    <Compile Include="Debugging\DExecutionCommand.cs" />
-    <Compile Include="Profiler\Gui\CodeCoverageView.cs" />
-    <Compile Include="Profiler\Gui\CodeCoverageEditorExtension.cs" />
-    <Compile Include="Resolver\MonoDParseCacheView.cs" />
-    <Compile Include="Gui\DTypeSearchCategory.cs" />
-    <Compile Include="Projects\Dub\DefinitionFormats\JSON\JSONObject.cs" />
-    <Compile Include="Projects\Dub\DefinitionFormats\JSON\JSONArray.cs" />
-    <Compile Include="Projects\Dub\DefinitionFormats\JSON\JSONValueLeaf.cs" />
-    <Compile Include="Projects\Dub\DefinitionFormats\JSON\JSONThing.cs" />
-    <Compile Include="Projects\Dub\DefinitionFormats\JSON\JSONThingDeserializer.cs" />
+    <Compile Include="gtk-gui\generated.cs">
+      <LogicalName></LogicalName>
+    </Compile>
+    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.ProjectOptions.cs">
+      <LogicalName></LogicalName>
+    </Compile>
+    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.DGlobalOptions.cs">
+      <LogicalName></LogicalName>
+    </Compile>
+    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.DCompilerOptions.cs">
+      <LogicalName></LogicalName>
+    </Compile>
+    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.BuildArgumentOptions.cs">
+      <LogicalName></LogicalName>
+    </Compile>
+    <Compile Include="gtk-gui\MonoDevelop.D.ResourcesCompilerOptionsPanel.cs">
+      <LogicalName></LogicalName>
+    </Compile>
+    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.EditCompilerName.cs">
+      <LogicalName></LogicalName>
+    </Compile>
+    <Compile Include="gtk-gui\MonoDevelop.D.Formatting.FormattingPanelWidget.cs">
+      <LogicalName></LogicalName>
+    </Compile>
+    <Compile Include="gtk-gui\MonoDevelop.D.ImportSymbolSelectionDlg.cs">
+      <LogicalName></LogicalName>
+    </Compile>
+    <Compile Include="gtk-gui\MonoDevelop.D.DRenameNameDialog.cs">
+      <LogicalName></LogicalName>
+    </Compile>
+    <Compile Include="gtk-gui\MonoDevelop.D.Profiler.Gui.ProfilerPadWidget.cs">
+      <LogicalName></LogicalName>
+    </Compile>
+    <Compile Include="gtk-gui\MonoDevelop.D.ProjectDependenciesWidget.cs">
+      <LogicalName></LogicalName>
+    </Compile>
+    <Compile Include="gtk-gui\MonoDevelop.D.ProjectIncludesWidget.cs">
+      <LogicalName></LogicalName>
+    </Compile>
+    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.DubOptionPanel.cs">
+      <LogicalName></LogicalName>
+    </Compile>
+    <Compile Include="gtk-gui\MonoDevelop.D.OptionPanels.UnittestOptions.cs">
+      <LogicalName></LogicalName>
+    </Compile>
+    <Compile Include="gtk-gui\MonoDevelop.D.Refactoring.DustMiteArgDlg.cs">
+      <LogicalName></LogicalName>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
@@ -355,7 +253,7 @@
         <Policies>
           <DotNetNamingPolicy DirectoryNamespaceAssociation="None" ResourceNamePolicy="FileName" />
           <TextStylePolicy inheritsSet="null" scope="text/x-csharp" />
-          <CSharpFormattingPolicy IndentSwitchBody="True" AfterDelegateDeclarationParameterComma="True" inheritsSet="Mono" inheritsScope="text/x-csharp" scope="text/x-csharp" />
+          <CSharpFormattingPolicy inheritsSet="Mono" inheritsScope="text/x-csharp" scope="text/x-csharp" />
         </Policies>
         <GtkDesignInfo gettextClass="MonoDevelop.Core.GettextCatalog" />
       </Properties>
@@ -367,16 +265,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="icons\dproj16.png">
       <LogicalName>dproj16.png</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="templates\EmptyDFile.xft.xml">
-      <LogicalName>EmptyDFile.xft.xml</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="templates\ConsoleProject.xpt.xml">
-      <LogicalName>ConsoleProject.xpt.xml</LogicalName>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="templates\EmptyProject.xpt.xml">
-      <LogicalName>EmptyProject.xpt.xml</LogicalName>
     </EmbeddedResource>
     <EmbeddedResource Include="icons\element-parameter-16.png">
       <LogicalName>element-parameter-16.png</LogicalName>
@@ -407,15 +295,7 @@
     <EmbeddedResource Include="icons\dproj32.png" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="templates\StaticLibrary.xpt.xml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="ProjectFormats.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="templates\SharedLibrary.xpt.xml" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="DSyntaxHighlightingMode.xml">
@@ -423,20 +303,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="templates\EmptyDClass.xft.xml" />
-    <EmbeddedResource Include="templates\Win32Project.xpt.xml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="templates\EmptyRCFile.xft.xml" />
-    <EmbeddedResource Include="Building\CompilerPresets\dmd.xml">
-      <SubType>Designer</SubType>
-      <LogicalName>CompilerPresets.dmd.xml</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Building\CompilerPresets\gdc.xml">
-      <SubType>Designer</SubType>
-      <LogicalName>CompilerPresets.gdc.xml</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Formatting\DPolicy.xml" />
     <EmbeddedResource Include="icons\element-alias-16.png" />
     <EmbeddedResource Include="MonoDevelop.D.addin.xml">
       <SubType>Designer</SubType>
@@ -460,14 +326,6 @@
     <StartProgram>C:\Program Files (x86)\Xamarin Studio\bin\XamarinStudio.exe</StartProgram>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Debugging\DLocalExamBacktrace.Evaluation.cs" />
-    <None Include="Formatting\Indentation\doc.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="GuiBuilder\GtkDCore\" />
-    <Folder Include="Projects\Dub\DefinitionFormats\JSON\" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\Parser\DParser2\DParser2.csproj">
       <Project>{0290A229-9AA1-41C3-B525-CAFB86D8BC42}</Project>
       <Name>DParser2</Name>
@@ -479,4 +337,9 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
+  <ItemGroup>
+    <None Include="..\readme.md">
+      <Link>readme.md</Link>
+    </None>
+  </ItemGroup>
 </Project>

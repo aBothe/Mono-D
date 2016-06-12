@@ -6,22 +6,24 @@
 	copyright=""
 	description="D Language Binding"
 	category="Language bindings"
-	version="2.14.4">
+	version="2.15">
 
 	<!-- Resources -->
 
 	<Dependencies>
-		<Addin id="Ide" version = "5.0" />
-		<Addin id="Core" version = "5.0" />
-		<Addin id="SourceEditor2" version = "5.0" />
-		<Addin id="DesignerSupport" version = "5.0" />
-		<Addin id="Refactoring" version="5.0"/>
+		<Addin id="Ide" version = "6.0" />
+		<Addin id="Core" version = "6.0" />
+		<Addin id="SourceEditor2" version = "6.0" />
+		<Addin id="DesignerSupport" version = "6.0" />
+		<Addin id="Refactoring" version="6.0"/>
 	</Dependencies>
 
 	<Runtime>
 		<Import assembly="D_Parser.dll"/>
 		<Import assembly="Newtonsoft.Json.dll"/>
 	</Runtime>
+
+	
 
 	<Extension path = "/MonoDevelop/Core/StockIcons">
 		<!-- File/Project icons -->

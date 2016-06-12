@@ -1,6 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<DFormattingPolicy scope="text/x-d" allowDiffSerialize="True">
-	<CommentOutStandardHeaders>True</CommentOutStandardHeaders>
-	<InsertStarAtCommentNewLine>True</InsertStarAtCommentNewLine>
-	<KeepAlignmentSpaces>True</KeepAlignmentSpaces>
-</DFormattingPolicy>
