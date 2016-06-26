@@ -45,7 +45,8 @@
     </CustomCommands>
     <EnvironmentVariables>
       <EnvironmentVariables>
-        <Variable name="LD_LIBRARY_PATH" value="/usr/lib:$LD_LIBRARY_PATH" />
+        <Variable name="LD_LIBRARY_PATH" value="/opt/mono/lib:/usr/lib:$LD_LIBRARY_PATH" />
+        <Variable name="PATH" value="/opt/mono:$PATH" />
       </EnvironmentVariables>
     </EnvironmentVariables>
     <IntermediateOutputPath>/home/lx/Dokumente/Projects/Mono-D/MonoDevelop.DBinding/obj/Debug</IntermediateOutputPath>
@@ -66,10 +67,16 @@
     <DebugSymbols>True</DebugSymbols>
     <CustomCommands>
       <CustomCommands>
-        <Command type="Execute" command="/usr/lib/monodevelop/bin/MonoDevelop.exe" />
+        <Command type="Execute" command="/opt/mono/bin/monodevelop" />
       </CustomCommands>
     </CustomCommands>
     <IntermediateOutputPath>/home/lx/Dokumente/Projects/Mono-D/MonoDevelop.DBinding/obj/Release</IntermediateOutputPath>
+    <EnvironmentVariables>
+      <EnvironmentVariables>
+        <Variable name="PATH" value="/opt/mono/bin:$PATH" />
+        <Variable name="LD_LIBRARY_PATH" value="/opt/mono/lib:$LD_LIBRARY_PATH" />
+      </EnvironmentVariables>
+    </EnvironmentVariables>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Mono.Addins">
@@ -194,7 +201,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="AddinInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
@@ -291,5 +298,9 @@
     <None Include="..\readme.md">
       <Link>readme.md</Link>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Projecting\" />
+    <Folder Include="Editing\" />
   </ItemGroup>
 </Project>
