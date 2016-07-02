@@ -97,14 +97,18 @@ namespace MonoDevelop.D.Projects
 		#endregion
 
 		#region Init
-		public DProject (){
-			referenceCollection = new DefaultDReferencesCollection (this);
-		}
-
-		public DProject (ProjectCreateInformation info, XmlElement projectOptions)
+		public DProject ()
 		{
 			referenceCollection = new DefaultDReferencesCollection (this);
-			
+
+			// HACK: gnome-terminal no longer supports --disable-factory 
+			// option which crashes MD. So we unset GNOME_DESKTOP_SESSION_ID 
+			// for current process. That forces MD to use xterm.
+			Environment.SetEnvironmentVariable ("GNOME_DESKTOP_SESSION_ID", null, EnvironmentVariableTarget.Process);
+		}
+
+		public DProject (ProjectCreateInformation info, XmlElement projectOptions) : this()
+		{
 			if (info != null) {
 				Name = info.ProjectName;
 
@@ -391,7 +395,7 @@ namespace MonoDevelop.D.Projects
 
 			monitor.Log.WriteLine("Running project...");
 
-			
+
 
 			var operationMonitor = new AggregatedOperationMonitor (monitor);
 
