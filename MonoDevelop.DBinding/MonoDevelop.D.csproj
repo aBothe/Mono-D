@@ -39,7 +39,7 @@
     <DefineConstants>DEBUG</DefineConstants>
     <CustomCommands>
       <CustomCommands>
-        <Command type="Execute" command="/opt/mono/lib/monodevelop/bin/MonoDevelop.exe" workingdir="" />
+        <Command type="Execute" command="/usr/lib/monodevelop/bin/MonoDevelop.exe" workingdir="/usr/lib/monodevelop/bin" />
       </CustomCommands>
     </CustomCommands>
     <EnvironmentVariables>
@@ -63,7 +63,7 @@
     <DebugSymbols>True</DebugSymbols>
     <CustomCommands>
       <CustomCommands>
-        <Command type="Execute" command="/opt/mono/lib/monodevelop/bin/MonoDevelop.exe" />
+        <Command type="Execute" command="/usr/lib/monodevelop/bin/MonoDevelop.exe" workingdir="/usr/lib/monodevelop/bin" />
       </CustomCommands>
     </CustomCommands>
   </PropertyGroup>
@@ -84,21 +84,27 @@
     <Reference Include="System.Data" />
     <Reference Include="gtk-sharp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
       <SpecificVersion>False</SpecificVersion>
+      <Package>gtk-sharp-2.0</Package>
     </Reference>
     <Reference Include="gdk-sharp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
       <SpecificVersion>False</SpecificVersion>
+      <Package>gtk-sharp-2.0</Package>
     </Reference>
     <Reference Include="glib-sharp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
       <SpecificVersion>False</SpecificVersion>
+      <Package>glib-sharp-2.0</Package>
     </Reference>
     <Reference Include="glade-sharp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
       <SpecificVersion>False</SpecificVersion>
+      <Package>glade-sharp-2.0</Package>
     </Reference>
     <Reference Include="pango-sharp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
       <SpecificVersion>False</SpecificVersion>
+      <Package>gtk-sharp-2.0</Package>
     </Reference>
     <Reference Include="atk-sharp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f">
       <SpecificVersion>False</SpecificVersion>
+      <Package>gtk-sharp-2.0</Package>
     </Reference>
     <Reference Include="ICSharpCode.NRefactory">
       <HintPath>..\ext\ICSharpCode.NRefactory.dll</HintPath>
