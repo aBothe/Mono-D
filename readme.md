@@ -9,6 +9,8 @@ You can download pre-built binaries built with mono3 below. Unpack to `/opt/mono
 
 # How to initialize Mono-D development under Linux
 
+[![Join the chat at https://gitter.im/aBothe/Mono-D](https://badges.gitter.im/aBothe/Mono-D.svg)](https://gitter.im/aBothe/Mono-D?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 * Setup MonoDevelop to use /opt/mono instead of other runtimes
 	- Open MonoDevelop
 	- Go to Edit -> Options -> Projects tab -> .NET Runtimes
