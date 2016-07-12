@@ -47,9 +47,9 @@
         <Variable name="LD_LIBRARY_PATH" value="/usr/lib:$LD_LIBRARY_PATH" />
       </EnvironmentVariables>
     </EnvironmentVariables>
+    <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>full</DebugType>
     <Optimize>True</Optimize>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -60,12 +60,12 @@
     <FileAlignment>4096</FileAlignment>
     <StartAction>Program</StartAction>
     <StartProgram>C:\Program Files (x86)\Xamarin Studio\bin\XamarinStudio.exe</StartProgram>
-    <DebugSymbols>True</DebugSymbols>
     <CustomCommands>
       <CustomCommands>
         <Command type="Execute" command="/usr/lib/monodevelop/bin/MonoDevelop.exe" workingdir="/usr/lib/monodevelop/bin" />
       </CustomCommands>
     </CustomCommands>
+    <OutputPath>bin\Release\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Mono.Addins">
