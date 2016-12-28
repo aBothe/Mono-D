@@ -162,10 +162,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="DietTemplateSyntaxDefinition.xml">
-      <LogicalName>DietTemplateSyntaxDefinition.xml</LogicalName>
-      <Gettext-ScanForTranslations>False</Gettext-ScanForTranslations>
-    </EmbeddedResource>
     <EmbeddedResource Include="icons\d-asm-avx-16.png">
       <LogicalName>d-asm-avx-16.png</LogicalName>
     </EmbeddedResource>
@@ -199,9 +195,19 @@
     <EmbeddedResource Include="icons\d-asm-x86-16.png">
       <LogicalName>d-asm-x86-16.png</LogicalName>
     </EmbeddedResource>
+    <EmbeddedResource Include="Editing\Highlighting\DietTemplateSyntaxMode.xml">
+      <LogicalName>DietTemplateSyntaxMode.xml</LogicalName>
+      <Gettext-ScanForTranslations>False</Gettext-ScanForTranslations>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Editing\Highlighting\DSyntaxMode.xml">
+      <SubType>Designer</SubType>
+      <LogicalName>DSyntaxMode.xml</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AddinInfo.cs" />
+    <Compile Include="Editing\Highlighting\DSyntaxMode.cs" />
+    <Compile Include="Editing\Highlighting\HighlightUsagesExtension.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
@@ -255,11 +261,6 @@
     <EmbeddedResource Include="ProjectFormats.xml" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="DSyntaxHighlightingMode.xml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="icons\element-alias-16.png" />
     <EmbeddedResource Include="MonoDevelop.D.addin.xml">
       <SubType>Designer</SubType>
@@ -302,5 +303,6 @@
   <ItemGroup>
     <Folder Include="Projecting\" />
     <Folder Include="Editing\" />
+    <Folder Include="Editing\Highlighting\" />
   </ItemGroup>
 </Project>

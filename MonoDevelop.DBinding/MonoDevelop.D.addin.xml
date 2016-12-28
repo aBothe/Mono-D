@@ -247,9 +247,9 @@
 
 	<!-- Syntax Highlighting and Formatting -->
 
-	<Extension path = "/MonoDevelop/SourceEditor2/CustomModes">
-		<SyntaxMode mimeTypes="text/x-d" class="MonoDevelop.D.Highlighting.DSyntaxMode"/>
-		<SyntaxMode mimeTypes="text/x-dt" class="MonoDevelop.D.Highlighting.DietTemplateSyntaxMode"/>
+	<Extension path = "/MonoDevelop/SourceEditor2/SyntaxModes">
+		<SyntaxMode mimeTypes="text/x-d" resource="DSyntaxMode.xml"/>
+		<SyntaxMode mimeTypes="text/x-dt" resource="DietTemplateSyntaxMode.xml"/>
 	</Extension>
 
 	<!--<Extension path = "/MonoDevelop/Ide/CodeFormatters">
@@ -258,16 +258,16 @@
 
 	<!-- Code Completion -->
 
-	<!--<Extension path = "/MonoDevelop/Ide/TextEditorExtensions">
-		<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.Formatting.Indentation.DTextEditorIndentation" />
+	<Extension path = "/MonoDevelop/Ide/TextEditorExtensions">
+		<!--<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.Formatting.Indentation.DTextEditorIndentation" />
 		<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.DEditorCompletionExtension" />
 		<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.Refactoring.RefactoringCommandsExtension" />
 		<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.Gui.DModuleOutlineExtension" />
 		<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.Gui.EditorPathBarExtension" />
 		<Class mimeTypes ="text/x-d" class = "MonoDevelop.D.Gui.MixinInsightExtension" />
-		<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.Highlighting.HighlightUsagesExtension" />
-		<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.Profiler.Gui.CodeCoverageEditorExtension" />
-	</Extension>-->
+		<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.Profiler.Gui.CodeCoverageEditorExtension" />-->
+		<Class mimeTypes = "text/x-d" class = "MonoDevelop.D.Editing.Highlighting.HighlightUsagesExtension" />
+	</Extension>
 
 
 	<!--<Extension path="/MonoDevelop/Ide/SearchCategories">
