@@ -1,6 +1,9 @@
 build/index.html
 build/*.m*
 
+.idea
+.vs
+
 *.orig
 
 ## Ignore Visual Studio temporary files, build results, and
